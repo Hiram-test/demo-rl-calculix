@@ -8,7 +8,12 @@ on:
     paths:
       - archived-src/state_aware_dqn_agent.py
       - archived-src/state_aware_env.py
+      - archived-src/mesh_goal.py
+      - archived-src/calculix_backend.py
       - archived-src/rl_main_state_aware.py
+      - archived-src/rl_main_local.py
+      - archived-src/examples/**
+      - archived-src/scripts/**
       - archived-src/tests/**
       - archived-src/requirements-state-aware.txt
       - .github/workflows/state-aware-v2-tests.yml
@@ -38,9 +43,73 @@ jobs:
       - name: Compile V2 modules
         working-directory: archived-src
         run: |
-          python -m py_compile state_aware_dqn_agent.py state_aware_env.py rl_main_state_aware.py
+          python -m py_compile \
+            state_aware_dqn_agent.py \
+            state_aware_env.py \
+            mesh_goal.py \
+            calculix_backend.py \
+            rl_main_state_aware.py \
+            rl_main_local.py
 
       - name: Run V2 regression tests
         working-directory: archived-src
         run: |
-          python -m unittest discover -s tests -p 'test_state_aware_*.py' -v
+          python -m unittest discover -s tests -p 'test_*.py' -v
+
+  calculix-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: archived-src/requirements-state-aware.txt
+
+      - name: Install Python and solver dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          sudo apt-get update
+          sudo apt-get install -y gmsh calculix-ccx
+
+      - name: Locate local solver commands
+        id: solvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          GMSH_BIN="$(command -v gmsh)"
+          CCX_BIN="$(command -v ccx || true)"
+          if [[ -z "$CCX_BIN" ]]; then
+            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"
+          fi
+          test -x "$GMSH_BIN"
+          test -x "$CCX_BIN"
+          echo "gmsh=$GMSH_BIN" >> "$GITHUB_OUTPUT"
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
+          "$GMSH_BIN" --version
+          "$CCX_BIN" -v || true
+
+      - name: Run a real Gmsh and CalculiX solve
+        working-directory: archived-src
+        shell: bash
+        run: |
+          python rl_main_local.py \
+            --backend calculix \
+            --mode solve \
+            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
+            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
+            --plate-config examples/calculix_plate.json \
+            --goal-file examples/goal_local.json \
+            --simulations-root simulations_ci/calculix \
+            --ckpt-dir checkpoints_ci/calculix \
+            --global-mesh-size 1.2 \
+            --baseline-mesh-size 0.6 \
+            --cell-min-mesh-size 0.15 \
+            --cell-max-mesh-size 2.0 \
+            --min-elements 1 \
+            --max-elements 50000 \
+            --solver-timeout 180
