@@ -1,0 +1,41 @@
+name: Import elastoplastic source bundle
+
+on:
+  push:
+    branches:
+      - agent/elastoplastic-path-dqn
+    paths:
+      - .github/plastic-bundle.ready
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/elastoplastic-path-dqn
+
+      - name: Decode and verify source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/plastic-bundle.part-* | base64 --decode > /tmp/plastic-bundle.tar.gz
+          echo "4440cf4547d89f02f5ed438099ac162a43e662310c414378a32e2b0899df13e9  /tmp/plastic-bundle.tar.gz" | sha256sum --check --strict
+          tar -xzf /tmp/plastic-bundle.tar.gz
+
+      - name: Commit imported source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archived-src .github/workflows/elastoplastic-full-training.yml
+          if git diff --cached --quiet; then
+            echo "Elastoplastic source is already imported."
+            exit 0
+          fi
+          git commit -m "Add elastoplastic load-path mesh DQN"
+          git push origin HEAD:agent/elastoplastic-path-dqn
