@@ -1,0 +1,76 @@
+name: Elastoplastic VM training orchestrator
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/elastoplastic-pr-vm.yml
+      - archived-src/.plastic-vm-trigger
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-and-collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 190
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      TRAINING_WORKFLOW: elastoplastic-full-training.yml
+      TRAINING_BRANCH: agent/elastoplastic-path-dqn
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dispatch durable full-training VM
+        id: dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(gh run list --repo "$REPOSITORY" --workflow "$TRAINING_WORKFLOW" --branch "$TRAINING_BRANCH" --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          gh workflow run "$TRAINING_WORKFLOW" --repo "$REPOSITORY" --ref "$TRAINING_BRANCH"
+          run_id=""
+          for attempt in $(seq 1 30); do
+            candidate="$(gh run list --repo "$REPOSITORY" --workflow "$TRAINING_WORKFLOW" --branch "$TRAINING_BRANCH" --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+            if [[ "$candidate" != "0" && "$candidate" != "$before" ]]; then
+              run_id="$candidate"
+              break
+            fi
+            sleep 4
+          done
+          test -n "$run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "Dispatched training run $run_id"
+
+      - name: Follow full training to completion
+        shell: bash
+        run: |
+          set -o pipefail
+          gh run watch '${{ steps.dispatch.outputs.run_id }}' --repo "$REPOSITORY" --exit-status
+
+      - name: Download full-training result
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p collected
+          gh run download '${{ steps.dispatch.outputs.run_id }}' --repo "$REPOSITORY" --name elastoplastic-path-dqn-100ep --dir collected
+
+      - name: Capture failed training logs
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p collected
+          gh run view '${{ steps.dispatch.outputs.run_id }}' --repo "$REPOSITORY" --log-failed > collected/failed-training.log 2>&1 || true
+
+      - name: Upload collected VM result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elastoplastic-path-dqn-vm-result
+          path: collected
+          compression-level: 6
+          retention-days: 7
+          if-no-files-found: warn
