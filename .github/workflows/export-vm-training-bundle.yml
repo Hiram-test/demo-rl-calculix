@@ -1,0 +1,98 @@
+name: Export VM training bundle
+
+on:
+  push:
+    branches:
+      - agent/dqn-state-fix
+    paths:
+      - .github/workflows/export-vm-training-bundle.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Gmsh, CalculiX and dependency scanner
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gmsh calculix pax-utils
+
+      - name: Build portable VM bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf vm-training-bundle
+          mkdir -p vm-training-bundle/project vm-training-bundle/runtime/bin vm-training-bundle/runtime/lib
+          cp -a archived-src/. vm-training-bundle/project/
+
+          GMSH_BIN="$(command -v gmsh)"
+          CCX_BIN="$(command -v ccx || true)"
+          if [[ -z "$CCX_BIN" ]]; then
+            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n1)"
+          fi
+          test -x "$GMSH_BIN"
+          test -x "$CCX_BIN"
+
+          cp "$GMSH_BIN" vm-training-bundle/runtime/bin/gmsh.real
+          cp "$CCX_BIN" vm-training-bundle/runtime/bin/ccx.real
+
+          copy_runtime_libs() {
+            local executable="$1"
+            while IFS= read -r library; do
+              [[ -f "$library" ]] || continue
+              case "$library" in
+                */ld-linux*|*/libc.so.*|*/libm.so.*|*/libpthread.so.*|*/libdl.so.*|*/librt.so.*|*/libgcc_s.so.*|*/libstdc++.so.*)
+                  continue
+                  ;;
+              esac
+              cp -L "$library" "vm-training-bundle/runtime/lib/$(basename "$library")"
+            done < <(lddtree -l "$executable" | tail -n +2 | sort -u)
+          }
+
+          copy_runtime_libs "$GMSH_BIN"
+          copy_runtime_libs "$CCX_BIN"
+
+          cat > vm-training-bundle/runtime/bin/gmsh <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+          export LD_LIBRARY_PATH="$HERE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          exec "$HERE/bin/gmsh.real" "$@"
+          SH
+
+          cat > vm-training-bundle/runtime/bin/ccx <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+          export LD_LIBRARY_PATH="$HERE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          exec "$HERE/bin/ccx.real" "$@"
+          SH
+          chmod +x vm-training-bundle/runtime/bin/gmsh vm-training-bundle/runtime/bin/ccx
+
+          {
+            echo "gmsh_source=$GMSH_BIN"
+            "$GMSH_BIN" --version
+            echo "ccx_source=$CCX_BIN"
+            "$CCX_BIN" -v || true
+            echo "runtime_libraries=$(find vm-training-bundle/runtime/lib -type f | wc -l)"
+          } > vm-training-bundle/BUNDLE_INFO.txt 2>&1
+
+          tar -czf vm-training-bundle.tar.gz vm-training-bundle
+          sha256sum vm-training-bundle.tar.gz > vm-training-bundle.tar.gz.sha256
+
+      - name: Upload VM bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vm-training-bundle
+          path: |
+            vm-training-bundle.tar.gz
+            vm-training-bundle.tar.gz.sha256
+          compression-level: 0
+          retention-days: 1
