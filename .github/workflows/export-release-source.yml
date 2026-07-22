@@ -20,38 +20,50 @@ jobs:
           ref: agent/dqn-state-fix
 
       - name: Download and extract archive
-        id: import
-        continue-on-error: true
         shell: bash
         run: |
-          set -uox pipefail
+          set -euo pipefail
           : > workflow-diagnostics.txt
-          {
-            date -u
-            echo "commit=$GITHUB_SHA"
-            echo "ref=$GITHUB_REF"
-            curl --version
-            curl --fail --location --retry 3 \
-              "https://github.com/Hiram-test/demo-rl-calculix/releases/download/v1.0.0/demo.zip" \
-              --output demo.zip
-            download_status=$?
-            echo "download_status=$download_status"
-            if [[ $download_status -eq 0 ]]; then
-              sha256sum demo.zip
-              echo "7E3F7E7E385BBFDE2581EADF457BD5154D899E682CDC12C61106956CFC78A553  demo.zip" \
-                | sha256sum --check --strict
-              checksum_status=$?
-              echo "checksum_status=$checksum_status"
-              if [[ $checksum_status -eq 0 ]]; then
-                rm -rf archived-src
-                mkdir -p archived-src
-                unzip -q demo.zip -d archived-src
-                find archived-src -type f -printf '%p\n' | sort > archived-src/file-list.txt
-              fi
-            fi
-          } >> workflow-diagnostics.txt 2>&1
+          exec > >(tee -a workflow-diagnostics.txt) 2>&1
 
-      - name: Commit source or diagnostics
+          date -u
+          echo "commit=$GITHUB_SHA"
+          echo "ref=$GITHUB_REF"
+
+          curl --fail --location --retry 3 \
+            "https://github.com/Hiram-test/demo-rl-calculix/releases/download/v1.0.0/demo.zip" \
+            --output demo.zip
+
+          echo "7E3F7E7E385BBFDE2581EADF457BD5154D899E682CDC12C61106956CFC78A553  demo.zip" \
+            | sha256sum --check --strict
+
+          rm -rf archived-src
+          mkdir -p archived-src
+
+          python - <<'PY'
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+
+          destination = Path("archived-src").resolve()
+          with ZipFile("demo.zip") as archive:
+              for member in archive.infolist():
+                  normalized = member.filename.replace("\\", "/")
+                  relative = PurePosixPath(normalized)
+                  if relative.is_absolute() or ".." in relative.parts:
+                      raise RuntimeError(f"Unsafe archive path: {member.filename!r}")
+                  target = destination.joinpath(*relative.parts)
+                  if member.is_dir() or normalized.endswith("/"):
+                      target.mkdir(parents=True, exist_ok=True)
+                      continue
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  with archive.open(member) as source, target.open("wb") as output:
+                      output.write(source.read())
+          PY
+
+          find archived-src -type f -printf '%p\n' | sort > archived-src/file-list.txt
+          echo "Extracted $(wc -l < archived-src/file-list.txt) files."
+
+      - name: Commit imported source
         if: always()
         shell: bash
         run: |
@@ -66,5 +78,5 @@ jobs:
             echo "No generated changes."
             exit 0
           fi
-          git commit -m "Capture archived RL source import result"
+          git commit -m "Import archived RL source for state-aware DQN refactor"
           git push origin HEAD:agent/dqn-state-fix
