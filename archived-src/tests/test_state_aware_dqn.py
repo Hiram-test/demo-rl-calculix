@@ -4,6 +4,8 @@ import unittest
 
 import torch
 
+from rl_main_local import NStepAccumulator, PendingTransition
+
 from state_aware_dqn_agent import (
     GraphState,
     ReplayBufferV2,
@@ -117,6 +119,29 @@ class StateAwareDQNTests(unittest.TestCase):
         loss = agent.train_step(replay, batch_size=8)
         self.assertIsInstance(loss, float)
         self.assertTrue(torch.isfinite(torch.tensor(loss)))
+
+
+    def test_n_step_accumulator_flushes_discounted_returns(self):
+        state = make_state([[0.1, 0.2]], [], cell_ids=(10,))
+        replay = ReplayBufferV2(capacity=8)
+        accumulator = NStepAccumulator(replay, n_steps=3, gamma=0.5)
+        for index, reward in enumerate((1.0, 2.0, 3.0)):
+            accumulator.append(
+                PendingTransition(
+                    state=state,
+                    action_node=0,
+                    action_type=0,
+                    reward=reward,
+                    next_state=state,
+                    done=index == 2,
+                    cell_id=10,
+                )
+            )
+        self.assertEqual(len(replay), 3)
+        self.assertAlmostEqual(replay.storage[0].reward, 2.75)
+        self.assertAlmostEqual(replay.storage[1].reward, 3.5)
+        self.assertAlmostEqual(replay.storage[2].reward, 3.0)
+        self.assertEqual([item.n_steps for item in replay.storage], [3, 2, 1])
 
     def test_graph_builder_preserves_stable_cell_mapping(self):
         observations = {
