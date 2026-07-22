@@ -6,6 +6,9 @@ on:
       - agent/dqn-state-fix
     paths:
       - .github/workflows/export-vm-training-bundle.yml
+  pull_request:
+    paths:
+      - .github/workflows/export-vm-training-bundle.yml
   workflow_dispatch:
 
 permissions:
