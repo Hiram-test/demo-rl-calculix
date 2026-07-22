@@ -1,4 +1,4 @@
-name: Export archived RL source
+name: Import archived RL source
 
 on:
   push:
@@ -8,14 +8,16 @@ on:
       - .github/workflows/export-release-source.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export-source:
+  import-source:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out refactor branch
         uses: actions/checkout@v4
+        with:
+          ref: agent/dqn-state-fix
 
       - name: Download archived Abaqus demo
         shell: bash
@@ -27,18 +29,25 @@ jobs:
           echo "7E3F7E7E385BBFDE2581EADF457BD5154D899E682CDC12C61106956CFC78A553  demo.zip" \
             | sha256sum --check --strict
 
-      - name: Extract source
+      - name: Extract source into branch
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p exported-source
-          unzip -q demo.zip -d exported-source
-          find exported-source -type f -printf '%p\n' | sort | tee exported-source/file-list.txt
+          rm -rf archived-src
+          mkdir -p archived-src
+          unzip -q demo.zip -d archived-src
+          find archived-src -type f -printf '%p\n' | sort > archived-src/file-list.txt
 
-      - name: Upload extracted source
-        uses: actions/upload-artifact@v4
-        with:
-          name: archived-rl-source
-          path: exported-source
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit extracted source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archived-src
+          if git diff --cached --quiet; then
+            echo "Archived source is already present."
+            exit 0
+          fi
+          git commit -m "Import archived RL source for state-aware DQN refactor"
+          git push origin HEAD:agent/dqn-state-fix
