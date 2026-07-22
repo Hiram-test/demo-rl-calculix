@@ -85,6 +85,11 @@ The CalculiX path performs the following operations for every mesh decision:
 6. reconstruct triangle strain, stress, von Mises stress, and strain energy;
 7. aggregate those values to the fixed virtual-cell graph used by the DQN.
 
+Native CalculiX FRD result records use fixed-width numeric fields.  The parser
+therefore reads the documented column widths first and only falls back to
+whitespace splitting for compact fixtures or third-party converted files.  This
+also handles adjacent signed values that contain no separating space.
+
 Each step keeps its generated `.geo`, `.msh`, `.inp`, `.frd`, and command logs
 under `simulations_local/calculix/` for inspection.
 
