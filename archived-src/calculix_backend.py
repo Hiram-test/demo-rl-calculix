@@ -207,11 +207,30 @@ def parse_frd_displacements(filepath: str | Path) -> Dict[int, Tuple[float, floa
                 current = {}
             continue
         if in_disp and tokens[0] == "-1":
-            if len(tokens) < 4:
-                continue
-            node_id = int(tokens[1])
-            values = [float(value.replace("D", "E").replace("d", "e")) for value in tokens[2:5]]
-            values.extend([0.0] * (3 - len(values)))
+            # Native CalculiX FRD result records are fixed-width: I3, I10,
+            # followed by E12.5 fields.  Adjacent signed values therefore do
+            # not necessarily contain whitespace (for example
+            # ``9.06566E-05-9.63721E-02``), so a plain ``split`` is unsafe.
+            try:
+                node_id = int(raw_line[3:13].strip())
+                fields = [raw_line[start : start + 12] for start in (13, 25, 37)]
+                if any(not field.strip() for field in fields):
+                    raise ValueError("incomplete fixed-width FRD record")
+                values = [
+                    float(field.replace("D", "E").replace("d", "e"))
+                    for field in fields
+                ]
+            except (ValueError, IndexError):
+                # Keep compatibility with compact hand-written fixtures and
+                # third-party converters that emit whitespace-delimited FRD.
+                if len(tokens) < 4:
+                    continue
+                node_id = int(tokens[1])
+                values = [
+                    float(value.replace("D", "E").replace("d", "e"))
+                    for value in tokens[2:5]
+                ]
+                values.extend([0.0] * (3 - len(values)))
             current[node_id] = (values[0], values[1], values[2])
             continue
         if in_disp and tokens[0] == "-3":

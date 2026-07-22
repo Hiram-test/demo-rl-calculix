@@ -62,6 +62,19 @@ FRD_TEXT = """    1Cexample
  9999
 """
 
+FRD_FIXED_WIDTH_TEXT = """    1Cexample
+  100CL101
+ -4  DISP        4    1
+ -5  D1          1    2    1    0
+ -5  D2          1    2    2    0
+ -5  D3          1    2    3    0
+ -1         1 9.06566E-05-9.63721E-02 0.00000E+00
+ -1         2 0.00000E+00 0.00000E+00 0.00000E+00
+ -1         3-8.01312E-02-3.04778E-01 0.00000E+00
+ -3
+ 9999
+"""
+
 
 class CalculixIOTests(unittest.TestCase):
     def test_parse_msh2(self):
@@ -80,6 +93,16 @@ class CalculixIOTests(unittest.TestCase):
             values = parse_frd_displacements(path)
         self.assertAlmostEqual(values[2][1], -0.01)
         self.assertEqual(len(values), 4)
+
+    def test_parse_native_fixed_width_frd_without_spaces_between_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "model.frd"
+            path.write_text(FRD_FIXED_WIDTH_TEXT, encoding="utf-8")
+            values = parse_frd_displacements(path)
+        self.assertAlmostEqual(values[1][0], 9.06566e-05)
+        self.assertAlmostEqual(values[1][1], -9.63721e-02)
+        self.assertAlmostEqual(values[3][0], -8.01312e-02)
+        self.assertAlmostEqual(values[3][1], -3.04778e-01)
 
     def test_triangle_response_zero_for_rigid_translation(self):
         mises, energy, strain = triangle_response(
