@@ -36,9 +36,9 @@ jobs:
       - name: Install test dependencies
         shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install numpy
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --upgrade pip --quiet
+          python -m pip install numpy --quiet
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
 
       - name: Compile V2 modules
         working-directory: archived-src
@@ -70,11 +70,13 @@ jobs:
       - name: Install Python and solver dependencies
         shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install numpy
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-          sudo apt-get update
-          sudo apt-get install -y gmsh calculix-ccx
+          set -euo pipefail
+          python -m pip install --upgrade pip --quiet
+          python -m pip install numpy --quiet
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
+          sudo apt-get update -qq >/tmp/apt-update.log 2>&1
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gmsh calculix-ccx \
+            >/tmp/apt-install.log 2>&1
 
       - name: Locate local solver commands
         id: solvers
@@ -90,6 +92,8 @@ jobs:
           test -x "$CCX_BIN"
           echo "gmsh=$GMSH_BIN" >> "$GITHUB_OUTPUT"
           echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
+          echo "gmsh=$GMSH_BIN"
+          echo "ccx=$CCX_BIN"
           "$GMSH_BIN" --version
           "$CCX_BIN" -v || true
 
@@ -97,7 +101,8 @@ jobs:
         working-directory: archived-src
         shell: bash
         run: |
-          python rl_main_local.py \
+          set -o pipefail
+          if ! python rl_main_local.py \
             --backend calculix \
             --mode solve \
             --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
@@ -112,4 +117,27 @@ jobs:
             --cell-max-mesh-size 2.0 \
             --min-elements 1 \
             --max-elements 50000 \
-            --solver-timeout 180
+            --solver-timeout 180 \
+            > /tmp/calculix-smoke.log 2>&1; then
+            echo '--- CalculiX smoke output ---'
+            cat /tmp/calculix-smoke.log
+            echo '--- generated files ---'
+            find simulations_ci -maxdepth 5 -type f -printf '%p\n' | sort || true
+            echo '--- solver logs ---'
+            find simulations_ci -type f \( -name '*.log' -o -name '*.sta' -o -name '*.dat' \) \
+              -print -exec sh -c 'echo "===== $1 ====="; tail -n 120 "$1"' _ {} \; || true
+            exit 1
+          fi
+          cat /tmp/calculix-smoke.log
+
+      - name: Upload CalculiX smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculix-smoke-diagnostics
+          path: |
+            archived-src/simulations_ci/
+            /tmp/calculix-smoke.log
+            /tmp/apt-install.log
+          if-no-files-found: warn
+          retention-days: 3
