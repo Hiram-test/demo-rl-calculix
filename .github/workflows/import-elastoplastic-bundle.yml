@@ -6,6 +6,11 @@ on:
       - agent/elastoplastic-path-dqn
     paths:
       - .github/plastic-bundle.ready
+  pull_request:
+    paths:
+      - .github/plastic-bundle.ready
+      - .github/plastic-bundle.part-*
+      - .github/workflows/import-elastoplastic-bundle.yml
 
 permissions:
   contents: write
