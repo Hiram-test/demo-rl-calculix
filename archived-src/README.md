@@ -1,6 +1,22 @@
-﻿# DRL Adaptive Mesh Demo
+# DRL Adaptive Mesh Demo
 
 本压缩包为“基于深度强化学习的有限元自适应网格划分”课程作业代码包。项目以 Abaqus/CAE 模型为计算环境，通过 DQN 智能体根据有限元反馈调整局部网格密度，并用 ALLSE、单元数量和最大位移等指标评价训练效果。
+
+## V2：Abaqus 与 CalculiX 双后端本地运行
+
+新的 V2 保留原始 Abaqus 代码作为对照，同时提供统一的本地入口：
+
+```bash
+python rl_main_local.py --backend calculix --mode preflight
+python rl_main_local.py --backend calculix --mode solve
+python rl_main_local.py --backend calculix --mode train --max-episodes 3 --max-steps 10
+
+python rl_main_local.py --backend abaqus --mode preflight --abaqus-cmd abaqus
+python rl_main_local.py --backend abaqus --mode solve --template-cae-file DEMO.cae
+python rl_main_local.py --backend abaqus --mode train --max-episodes 3 --max-steps 10
+```
+
+两套后端共用 `StateAwareDQNAgent`、全局 `(cell, action)` Double-DQN target、目标 JSON 和经验回放语义。CalculiX 版通过 Gmsh 生成二维带孔板网格，Abaqus 版复用现有 CAE 和 ODB 提取流程。安装方法、Windows/Linux 启动脚本和参数说明见 [`LOCAL_DUAL_BACKEND.md`](LOCAL_DUAL_BACKEND.md)。
 
 ## 1. 运行环境
 
@@ -8,6 +24,8 @@
 - Abaqus/CAE，可通过命令行调用 `abaqus`
 - Python 依赖主要由 Abaqus Python 环境和本目录脚本提供
 - 如系统中 `abaqus` 命令不可直接调用，可在运行前通过环境变量 `ABAQUS_CMD` 指定 Abaqus 命令路径
+
+V2 训练入口应在安装了较新 PyTorch 的普通 Python 环境中运行；该进程会把 Abaqus、Gmsh 或 CalculiX 作为外部命令调用。
 
 ## 2. 主要文件
 
@@ -23,6 +41,10 @@
 - `get_max_displacement.py` / `run_max_displacement.py`：提取最大位移相关结果
 - `rl_eval.py`：训练后策略或网格方案评估
 - `test.py`：根据已有 `cell_mesh_density.json` 重新生成网格、运行 FEA 并输出评价结果
+- `state_aware_dqn_agent.py`：V2 状态感知图 DQN
+- `state_aware_env.py`：V2 Abaqus 后端
+- `calculix_backend.py`：V2 Gmsh/CalculiX 后端
+- `rl_main_local.py`：V2 双后端统一入口
 
 ## 3. 训练运行方式
 
@@ -67,6 +89,12 @@ abaqus cae noGUI=rl_main.py -- --max-episodes 50 --cpus 4 --max-elements 60000
 - Abaqus 求解失败、网格生成失败或超过最大单元数时，环境会给出异常惩罚或终止当前 episode；
 - 奖励函数主要依赖 ALLSE，因此对局部应力峰值、疲劳或裂纹扩展等目标的代表性有限。
 
+V2 快速测试可运行：
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
 ## 5. 训练后单个网格方案评估
 
 如果已经有训练输出的 `cell_mesh_density.json`，可用 `test.py` 对该网格方案重新运行分析：
@@ -80,8 +108,10 @@ python test.py --mesh_density_file simulations/run_021/cell_mesh_density.json --
 ## 6. 报告中可引用的代码对应关系
 
 - 理论与算法：`dqn_agent.py`、`abaqus_env.py`
+- V2 理论与算法：`state_aware_dqn_agent.py`
 - 有限元反馈闭环：`mesh_generation.py`、`run_fea_analysis.py`、`extract_results.py`
-- 训练过程：`rl_main.py`
+- CalculiX 闭环：`calculix_backend.py`
+- 训练过程：`rl_main.py`、`rl_main_local.py`
 - 结果验证：`test.py`、`rl_eval.py`
 - 位移指标：`get_max_displacement.py`、`run_max_displacement.py`
 
