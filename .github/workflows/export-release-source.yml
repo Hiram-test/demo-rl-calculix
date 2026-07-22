@@ -1,0 +1,44 @@
+name: Export archived RL source
+
+on:
+  push:
+    branches:
+      - agent/dqn-state-fix
+    paths:
+      - .github/workflows/export-release-source.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download archived Abaqus demo
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            "https://github.com/Hiram-test/demo-rl-calculix/releases/download/v1.0.0/demo.zip" \
+            --output demo.zip
+          echo "7E3F7E7E385BBFDE2581EADF457BD5154D899E682CDC12C61106956CFC78A553  demo.zip" \
+            | sha256sum --check --strict
+
+      - name: Extract source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p exported-source
+          unzip -q demo.zip -d exported-source
+          find exported-source -type f -printf '%p\n' | sort | tee exported-source/file-list.txt
+
+      - name: Upload extracted source
+        uses: actions/upload-artifact@v4
+        with:
+          name: archived-rl-source
+          path: exported-source
+          if-no-files-found: error
+          retention-days: 1
