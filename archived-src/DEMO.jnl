@@ -1,0 +1,1371 @@
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.seedPartInstance(deviationFactor=0.1, 
+    minSizeFactor=0.1, regions=(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'], ), size=
+    550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[0], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[1], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[2], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[3], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[298], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[300], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[318], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[319], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[400], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[402], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[404], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[406], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[407], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[410], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[412], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[414], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[417], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[419], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[420], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[421], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[422], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[423], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[424], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[425], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[426], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[427], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[428], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[429], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[430], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[431], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[432], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[433], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[434], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[435], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[436], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[437], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[438], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[439], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[440], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[441]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[275], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[295], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[297], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[298], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[375], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[377], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[379], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[381], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[383], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[385], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[387], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[389], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[391], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[393], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[395], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[396], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[397], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[398], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[399], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[400], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[401], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[402], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[403], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[404], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[405], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[406], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[407], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[408], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[409], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[410], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[411], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[412], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[413], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[414], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[415], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[416], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[417], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[418], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[419], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[420]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[15], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[252], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[274], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[275], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[350], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[352], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[354], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[356], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[358], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[360], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[362], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[364], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[366], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[368], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[370], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[371], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[372], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[374], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[375], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[376], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[377], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[378], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[379], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[380], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[381], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[382], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[383], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[384], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[385], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[386], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[387], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[388], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[389], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[390], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[391], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[392], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[393], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[394], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[395], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[396], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[397]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[44], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[230], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[232], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[233], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[252], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[331], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[334], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[336], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[338], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[339], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[341], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[343], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[345], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[346], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[347], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[348], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[349], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[350], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[351], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[352], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[353], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[354], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[355], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[356], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[357], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[358], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[359], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[360], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[361], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[362], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[363], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[364], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[365], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[366], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[367], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[368], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[369], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[370], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[371], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[372]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[43], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[44], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[45], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[46], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[47], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[48], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[49], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[50], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[233], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[242], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[250], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[251], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[320], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[321], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[322], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[323], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[324], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[325], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[326], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[327], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[328], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[329], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[330], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[331], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[332], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[333], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[334], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[335], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[336], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[337], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[338], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[339], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[340], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[341], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[342], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[343], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[344], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[345], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[346], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[347]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[35], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[36], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[37], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[38], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[176], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[178], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[199], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[200], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[276], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[278], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[280], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[283], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[285], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[287], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[290], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[292], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[294], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[296], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[298], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[299], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[300], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[301], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[302], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[303], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[304], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[305], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[306], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[307], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[308], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[309], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[310], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[311], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[312], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[313], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[314], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[315], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[316], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[317], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[318], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[319]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[12], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[150], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[161], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[175], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[176], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[253], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[255], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[257], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[259], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[261], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[263], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[265], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[267], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[269], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[271], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[273], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[275], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[276], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[277], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[278], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[279], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[280], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[281], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[282], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[283], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[284], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[285], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[286], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[287], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[288], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[289], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[290], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[291], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[292], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[293], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[294], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[295], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[296], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[297], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[298]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[4], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[5], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[6], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[7], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[8], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[9], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[10], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[11], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[12], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[13], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[14], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[15], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[16], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[17], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[18], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[19], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[125], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[149], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[150], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[202], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[205], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[208], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[210], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[213], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[215], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[218], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[220], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[223], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[226], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[229], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[252], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[253], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[254], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[255], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[256], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[257], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[258], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[259], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[260], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[261], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[262], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[263], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[264], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[265], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[266], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[267], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[268], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[269], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[270], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[271], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[272], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[273], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[274], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[275]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[51], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[52], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[53], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[54], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[55], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[56], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[57], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[58], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[76], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[95], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[96], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[98], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[201], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[204], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[207], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[212], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[217], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[222], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[225], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[228], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[231], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[233], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[234], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[235], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[236], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[237], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[238], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[239], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[240], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[241], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[242], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[243], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[244], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[245], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[246], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[247], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[248], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[249], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[250], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[251]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[14], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[53], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[98], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[123], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[124], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[125], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[201], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[202], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[203], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[204], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[205], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[206], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[207], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[208], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[209], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[210], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[211], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[212], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[213], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[214], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[215], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[216], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[217], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[218], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[219], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[220], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[221], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[222], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[223], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[224], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[225], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[226], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[227], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[228], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[229], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[230], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[231], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[232], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[233], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[252]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[39], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[40], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[41], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[42], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[151], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[154], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[156], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[158], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[160], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[163], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[165], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[167], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[170], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[172], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[174], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[176], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[177], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[178], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[179], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[180], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[181], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[182], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[183], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[184], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[185], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[186], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[187], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[188], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[189], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[190], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[191], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[192], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[193], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[194], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[195], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[196], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[197], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[198], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[199], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[200]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[32], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[126], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[128], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[130], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[132], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[134], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[136], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[138], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[140], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[142], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[144], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[146], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[148], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[150], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[151], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[152], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[153], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[154], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[155], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[156], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[157], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[158], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[159], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[160], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[161], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[162], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[163], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[164], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[165], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[166], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[167], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[168], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[169], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[170], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[171], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[172], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[173], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[174], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[175], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[176]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[13], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[20], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[21], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[22], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[23], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[24], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[25], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[26], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[27], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[28], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[29], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[30], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[31], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[32], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[33], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[34], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[99], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[102], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[104], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[106], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[108], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[110], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[112], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[114], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[116], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[118], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[120], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[122], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[125], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[126], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[127], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[128], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[129], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[130], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[131], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[132], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[133], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[134], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[135], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[136], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[137], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[138], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[139], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[140], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[141], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[142], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[143], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[144], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[145], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[146], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[147], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[148], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[149], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[150]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[34], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[61], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[79], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[81], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[83], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[85], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[87], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[88], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[90], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[92], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[94], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[97], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[98], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[99], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[100], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[101], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[102], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[103], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[104], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[105], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[106], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[107], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[108], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[109], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[110], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[111], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[112], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[113], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[114], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[115], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[116], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[117], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[118], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[119], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[120], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[121], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[122], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[123], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[124], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[125]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    [mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[59], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[60], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[61], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[62], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[63], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[64], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[65], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[66], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[67], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[68], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[69], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[70], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[71], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[72], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[73], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[74], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[75], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[76], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[77], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[78], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[79], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[80], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[81], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[82], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[83], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[84], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[85], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[86], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[87], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[88], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[89], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[90], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[91], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[92], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[93], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[94], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[95], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[96], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[97], 
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[98]], 
+    minSizeFactor=0.1, size=550.0)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'], ))
+mdb.Job(model='Model-1', name='job_run_001_init')
+mdb.jobs['job_run_001_init'].submit()
+# Save by 10602 on 2025_11_13-16.40.14; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.2)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.4)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.6)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.7)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.5)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.75)
+mdb.models['Model-1'].rootAssembly.DatumPointByEdgeParam(edge=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    parameter=0.65)
+del mdb.models['Model-1'].rootAssembly.features['Datum pt-22']
+del mdb.models['Model-1'].rootAssembly.features['Datum pt-23']
+del mdb.models['Model-1'].rootAssembly.features['Datum pt-24']
+del mdb.models['Model-1'].rootAssembly.features['Datum pt-21']
+mdb.models['Model-1'].rootAssembly.DatumPlaneByPointNormal(normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    point=mdb.models['Model-1'].rootAssembly.datums[412])
+mdb.models['Model-1'].rootAssembly.DatumPlaneByPointNormal(normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    point=mdb.models['Model-1'].rootAssembly.datums[407])
+mdb.models['Model-1'].rootAssembly.DatumPlaneByPointNormal(normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[373], 
+    point=mdb.models['Model-1'].rootAssembly.datums[406])
+mdb.models['Model-1'].rootAssembly.deleteMesh(regions=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#7fff ]', ), ))
+mdb.models['Model-1'].rootAssembly.PartitionCellByDatumPlane(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#1084 ]', ), ), datumPlane=
+    mdb.models['Model-1'].rootAssembly.datums[413])
+mdb.models['Model-1'].rootAssembly.PartitionCellByDatumPlane(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#13 ]', ), ), datumPlane=mdb.models['Model-1'].rootAssembly.datums[414])
+mdb.models['Model-1'].rootAssembly.PartitionCellByDatumPlane(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#23 ]', ), ), datumPlane=mdb.models['Model-1'].rootAssembly.datums[415])
+# Save by 10602 on 2025_11_13-16.53.17; build 2024 2023_09_21-20.55.25 RELr426 190762
+# Save by 10602 on 2025_11_13-16.53.18; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#8000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[326]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[335]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[327])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[315]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[316]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[310])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2000000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[268]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[269]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[279])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#800000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[304]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[307]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[505], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#100000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[583], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[333])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#10000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[668], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[360])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2140 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[153], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[122])
+# Save by Administrator on 2025_11_14-10.39.36; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[531], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[329])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#4000000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[82], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[70])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[83], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[70])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #8 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[484], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[319])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[594], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[350])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#20000000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[175], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[132])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#10700000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[450], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[274])
+# Save by Administrator on 2025_11_14-10.53.51; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#8000007 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[696], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[371])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #10 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[26]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[27]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[721], 
+    MIDDLE))
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-13']
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-14']
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-15']
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlanePointNormal(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2000000 ]', ), ), normal=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[620], 
+    point=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[358])
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-13']
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2000000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[361]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[358]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[629], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #2000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[338]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[331]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[539], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #20 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[85]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[86]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[686], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #800 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[177]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[176]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[625], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #8000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[20]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[21]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[572], 
+    MIDDLE))
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-12']
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-11']
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#1000000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[368]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[154]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[147])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #200 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[361]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[168]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[163])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#10000000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[175]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[357]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[352])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #1000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[23]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[22]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[655], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #20000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[190]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[189]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[596], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #100 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[151]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[152]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[588], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #1e0 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[11]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[10]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[219])
+# Save by Administrator on 2025_11_14-11.03.04; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2180 #13 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[36]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[39]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[602], 
+    MIDDLE))
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-27']
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#100 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[36]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[39]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[602], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#100 #26 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[1], 
+    point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[0], 
+    point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[349], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#200000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[9], 
+    point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[8], 
+    point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[598], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #2000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[64]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[92], 
+    MIDDLE), point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[102], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#40000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[1], 
+    point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[322], 
+    MIDDLE), point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[58], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[204])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[121])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#400 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[195])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#1000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[287])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#10000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[276])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #1 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[267])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #200000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[329])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#4000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[44])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#40 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[38])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#100 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[42])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#40000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[48])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#100000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[241])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #10 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[45])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[296])
+# Save by Administrator on 2025_11_14-11.10.03; build 2024 2023_09_21-20.55.25 RELr426 190762
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #100 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[417])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #400 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[406])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #2 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[220])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[197])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #2 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[262])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #8 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[404])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #2000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[380])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #20000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[398])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #10000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[446])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #40000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[437])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[218])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[429])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #200 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[246])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[301])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #200000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[414])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[430])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #8000000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[252]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[251]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[844], 
+    MIDDLE))
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-62']
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-18']
+#* Regeneration Failed
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0 #70000000 #8000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[412]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[340]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[827], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #4 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[9], 
+    point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[8], 
+    point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[843], 
+    MIDDLE))
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-16']
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #800000 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[325]
+    , point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[319]
+    , point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[320])
+mdb.models['Model-1'].rootAssembly.PartitionCellByPlaneThreePoints(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #2 ]', ), ), point1=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[1], 
+    point2=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].vertices[2], 
+    point3=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].InterestingPoint(
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].edges[820], 
+    MIDDLE))
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #2000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[483])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #8 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[500])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#800 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[333])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#200 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[266])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#800 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[225])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#2000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[527])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #20000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[545])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #100000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[564])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #400 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[512])
+del mdb.models['Model-1'].rootAssembly.features['Partition cell-72']
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:3 #2 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[512])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #800 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[30])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[549])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[349])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#80 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[300])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#200000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[264])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:3 #20 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[577])
+mdb.models['Model-1'].rootAssembly.PartitionCellByExtendFace(cells=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].cells.getSequenceFromMask(
+    ('[#0:2 #10000000 ]', ), ), extendFace=
+    mdb.models['Model-1'].rootAssembly.instances['The whole beam'].faces[594])
+# Save by Administrator on 2025_11_14-11.21.48; build 2024 2023_09_21-20.55.25 RELr426 190762
+# Save by Administrator on 2025_11_14-11.23.35; build 2024 2023_09_21-20.55.25 RELr426 190762
+# Save by Administrator on 2025_11_14-11.23.35; build 2024 2023_09_21-20.55.25 RELr426 190762
+# Save by Administrator on 2025_11_14-11.23.39; build 2024 2023_09_21-20.55.25 RELr426 190762
+# Save by Administrator on 2025_11_14-11.23.39; build 2024 2023_09_21-20.55.25 RELr426 190762

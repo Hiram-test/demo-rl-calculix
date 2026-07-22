@@ -1,0 +1,33 @@
++ date -u
+Wed Jul 22 04:56:51 UTC 2026
++ echo commit=708b6b743c40c80c43572cfbce58842183c01a9d
+commit=708b6b743c40c80c43572cfbce58842183c01a9d
++ echo ref=refs/heads/agent/dqn-state-fix
+ref=refs/heads/agent/dqn-state-fix
++ curl --version
+curl 8.5.0 (x86_64-pc-linux-gnu) libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+Release-Date: 2023-12-06, security patched: 8.5.0-2ubuntu10.11
+Protocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp
+Features: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
++ curl --fail --location --retry 3 https://github.com/Hiram-test/demo-rl-calculix/releases/download/v1.0.0/demo.zip --output demo.zip
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 4725k  100 4725k    0     0  12.6M      0 --:--:-- --:--:-- --:--:-- 26.8M
++ download_status=0
++ echo download_status=0
+download_status=0
++ [[ 0 -eq 0 ]]
++ sha256sum demo.zip
+7e3f7e7e385bbfde2581eadf457bd5154d899e682cdc12c61106956cfc78a553  demo.zip
++ echo '7E3F7E7E385BBFDE2581EADF457BD5154D899E682CDC12C61106956CFC78A553  demo.zip'
++ sha256sum --check --strict
+demo.zip: OK
++ checksum_status=0
++ echo checksum_status=0
+checksum_status=0
++ [[ 0 -eq 0 ]]
++ rm -rf archived-src
++ mkdir -p archived-src
++ unzip -q demo.zip -d archived-src
+warning:  demo.zip appears to use backslashes as path separators
