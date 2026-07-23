@@ -1,6 +1,11 @@
 name: MeshPilot TQZ support-family full VM runner
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/meshpilot-tqz-runner.yml
   pull_request:
     branches:
       - main
@@ -23,6 +28,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: agent/meshpilot-tqz-support-family
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -47,6 +54,8 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: agent/meshpilot-tqz-support-family
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
