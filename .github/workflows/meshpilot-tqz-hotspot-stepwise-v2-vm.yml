@@ -1,0 +1,115 @@
+name: MeshPilot TQZ guided stepwise hotspot V2 VM
+
+on:
+  push:
+    branches:
+      - agent/meshpilot-hotspot-stepwise-pso
+    paths:
+      - archived-src/meshpilot_guided_stepwise_pso.py
+      - archived-src/meshpilot_tqz_hotspot_batch_v2.py
+      - archived-src/tests/test_meshpilot_guided_stepwise.py
+      - .github/workflows/meshpilot-tqz-hotspot-stepwise-v2-vm.yml
+  pull_request:
+    paths:
+      - archived-src/meshpilot_guided_stepwise_pso.py
+      - archived-src/meshpilot_tqz_hotspot_batch_v2.py
+      - archived-src/tests/test_meshpilot_guided_stepwise.py
+      - .github/workflows/meshpilot-tqz-hotspot-stepwise-v2-vm.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guided-stepwise-real-six-case:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real Gmsh, CalculiX and NumPy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install numpy --quiet
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gmsh calculix-ccx
+      - name: Compile and test guided stepwise modules
+        working-directory: archived-src
+        run: |
+          python -m py_compile \
+            meshpilot_stepwise_pso.py \
+            meshpilot_guided_stepwise_pso.py \
+            meshpilot_tqz_hotspot_backend.py \
+            meshpilot_tqz_hotspot_batch.py \
+            meshpilot_tqz_hotspot_batch_v2.py
+          python -m unittest discover -s tests -p 'test_meshpilot_*stepwise.py' -v
+          python -m unittest discover -s tests -p 'test_meshpilot_tqz_hotspot.py' -v
+      - name: Resolve real solvers
+        id: solvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "gmsh=$(command -v gmsh)" >> "$GITHUB_OUTPUT"
+          CCX_BIN="$(command -v ccx || true)"
+          if [[ -z "$CCX_BIN" ]]; then
+            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n1)"
+          fi
+          test -x "$CCX_BIN"
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
+      - name: Run full guided-stepwise four-method comparison
+        working-directory: archived-src
+        shell: bash
+        run: |
+          set -o pipefail
+          python meshpilot_tqz_hotspot_batch_v2.py \
+            --request examples/meshpilot_tqz_hotspot_request.json \
+            --output meshpilot_tqz_hotspot_v2_results \
+            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
+            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
+            2>&1 | tee meshpilot_tqz_hotspot_v2.log
+      - name: Validate all six real cases and fair FE caps
+        working-directory: archived-src
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('meshpilot_tqz_hotspot_v2_results/hotspot_batch_results.json').read_text())
+          assert data['real_solver_only'] is True
+          assert data['surrogate_used'] is False
+          summary = data['summary']
+          assert summary['completed_cases'] == 6, summary
+          methods = (
+              'fixed_round_cold',
+              'hotspot_round_cold',
+              'hotspot_stepwise_cold',
+              'hotspot_stepwise_transfer',
+          )
+          limit = int(data['pso']['max_unique_evaluations'])
+          for method in methods:
+              assert summary['methods'][method]['feasible_cases'] == 6
+          for case in data['cases']:
+              assert case['status'] == 'completed', case
+              assert len(case['hotspot_candidates']) == 6
+              for method in methods:
+                  row = case[method]
+                  assert row['best_feasible']
+                  assert row['unique_fe_evaluations'] <= limit
+              assert case['hotspot_stepwise_cold']['config']['particles'] == 4
+              assert case['hotspot_stepwise_cold']['config']['iterations'] >= 12
+          print(json.dumps(summary, indent=2, ensure_ascii=False))
+          PY
+      - name: Upload guided-stepwise real results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: meshpilot-tqz-guided-stepwise-hotspot-v2-full-vm
+          path: |
+            archived-src/meshpilot_tqz_hotspot_v2.log
+            archived-src/meshpilot_tqz_hotspot_v2_results/hotspot_batch_results.json
+            archived-src/meshpilot_tqz_hotspot_v2_results/hotspot_batch_metrics.csv
+            archived-src/meshpilot_tqz_hotspot_v2_results/hotspot_batch_report.md
+          compression-level: 6
+          retention-days: 14
