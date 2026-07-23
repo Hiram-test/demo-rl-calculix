@@ -43,8 +43,7 @@ jobs:
                   archived-src/examples/meshpilot_batch_request.json \
                   archived-src/tests/test_meshpilot_pso.py \
                   archived-src/tests/test_meshpilot_batch_agent.py \
-                  docs/MESHPILOT_BATCH_TRANSFER_PSO.md \
-                  .github/workflows/meshpilot-batch-pso-vm.yml
+                  docs/MESHPILOT_BATCH_TRANSFER_PSO.md
           if git diff --cached --quiet; then
             echo "MeshPilot source already imported."
             exit 0
