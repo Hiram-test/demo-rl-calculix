@@ -6,6 +6,15 @@ on:
       - main
     paths:
       - .github/workflows/meshpilot-tqz-diagnostic.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - archived-src/meshpilot_tqz_backend.py
+      - archived-src/meshpilot_tqz_batch.py
+      - archived-src/examples/meshpilot_tqz_support_family.json
+      - docs/MESHPILOT_TQZ_SUPPORT_VM_RESULTS.md
+      - .github/workflows/meshpilot-tqz-diagnostic.yml
   workflow_dispatch:
 
 permissions:
