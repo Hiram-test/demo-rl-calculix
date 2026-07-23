@@ -8,18 +8,24 @@ on:
       - archived-src/meshpilot_pso.py
       - archived-src/meshpilot_tqz_backend.py
       - archived-src/meshpilot_tqz_batch.py
+      - archived-src/meshpilot_tqz_dense_tags.py
+      - archived-src/meshpilot_tqz_batch_dense.py
       - archived-src/examples/meshpilot_tqz_support_family.json
       - archived-src/tests/test_meshpilot_tqz.py
       - docs/MESHPILOT_TQZ_SUPPORT_FAMILY.md
+      - docs/MESHPILOT_TQZ_SUPPORT_VM_RESULTS.md
       - .github/workflows/meshpilot-tqz-support-vm.yml
   pull_request:
     paths:
       - archived-src/meshpilot_pso.py
       - archived-src/meshpilot_tqz_backend.py
       - archived-src/meshpilot_tqz_batch.py
+      - archived-src/meshpilot_tqz_dense_tags.py
+      - archived-src/meshpilot_tqz_batch_dense.py
       - archived-src/examples/meshpilot_tqz_support_family.json
       - archived-src/tests/test_meshpilot_tqz.py
       - docs/MESHPILOT_TQZ_SUPPORT_FAMILY.md
+      - docs/MESHPILOT_TQZ_SUPPORT_VM_RESULTS.md
       - .github/workflows/meshpilot-tqz-support-vm.yml
   workflow_dispatch:
 
@@ -44,11 +50,28 @@ jobs:
           python -m py_compile \
             meshpilot_pso.py \
             meshpilot_tqz_backend.py \
-            meshpilot_tqz_batch.py
+            meshpilot_tqz_batch.py \
+            meshpilot_tqz_dense_tags.py \
+            meshpilot_tqz_batch_dense.py
       - name: Run TQZ regression tests
         working-directory: archived-src
         run: |
           python -m unittest discover -s tests -p 'test_meshpilot_tqz.py' -v
+      - name: Verify sparse-tag and near-zero compatibility
+        working-directory: archived-src
+        run: |
+          python - <<'PY'
+          from meshpilot_tqz_backend import SupportMesh
+          from meshpilot_tqz_dense_tags import compact_number, renumber_support_mesh
+          mesh = SupportMesh(
+              nodes={10: (0.0, 0.0, 0.0), 20: (1.0, 0.0, 0.0), 40: (0.0, 1.0, 0.0), 80: (0.0, 0.0, 1.0)},
+              tetrahedra={99: (10, 20, 40, 80)},
+          )
+          dense = renumber_support_mesh(mesh)
+          assert list(dense.nodes) == [1, 2, 3, 4]
+          assert dense.tetrahedra == {1: (1, 2, 3, 4)}
+          assert compact_number(-1.477928890381008e-12) == '0'
+          PY
 
   real-calculix-tqz-batch:
     runs-on: ubuntu-24.04
@@ -85,7 +108,7 @@ jobs:
       - name: Expand ordered TQZ manifest
         working-directory: archived-src
         run: |
-          python meshpilot_tqz_batch.py \
+          python meshpilot_tqz_batch_dense.py \
             --request examples/meshpilot_tqz_support_family.json \
             --manifest-only > meshpilot_tqz_manifest.json
       - name: Run full six-case cold versus guarded transfer calculation
@@ -93,7 +116,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python meshpilot_tqz_batch.py \
+          python meshpilot_tqz_batch_dense.py \
             --request examples/meshpilot_tqz_support_family.json \
             --output meshpilot_tqz_vm_results \
             --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
