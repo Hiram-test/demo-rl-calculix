@@ -1,0 +1,162 @@
+name: MeshPilot TQZ real-hotspot stepwise runner
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/meshpilot-tqz-hotspot-runner.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-hotspot-six-case:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/meshpilot-hotspot-stepwise-pso
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real Gmsh, CalculiX and NumPy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install numpy --quiet
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gmsh calculix-ccx
+      - name: Compile and test hotspot modules
+        working-directory: archived-src
+        run: |
+          python -m py_compile \
+            meshpilot_stepwise_pso.py \
+            meshpilot_tqz_hotspot_backend.py \
+            meshpilot_tqz_hotspot_batch.py
+          python -m unittest discover -s tests -p 'test_meshpilot_tqz_hotspot.py' -v
+      - name: Resolve real solvers
+        id: solvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          GMSH_BIN="$(command -v gmsh)"
+          CCX_BIN="$(command -v ccx || true)"
+          if [[ -z "$CCX_BIN" ]]; then
+            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n1)"
+          fi
+          test -x "$GMSH_BIN"
+          test -x "$CCX_BIN"
+          echo "gmsh=$GMSH_BIN" >> "$GITHUB_OUTPUT"
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
+          "$GMSH_BIN" --version
+          "$CCX_BIN" -v || true
+      - name: Expand real-hotspot manifest
+        working-directory: archived-src
+        run: |
+          python meshpilot_tqz_hotspot_batch.py \
+            --request examples/meshpilot_tqz_hotspot_request.json \
+            --manifest-only > meshpilot_tqz_hotspot_manifest.json
+      - name: Run full four-method six-case real calculation
+        working-directory: archived-src
+        shell: bash
+        run: |
+          set -o pipefail
+          python meshpilot_tqz_hotspot_batch.py \
+            --request examples/meshpilot_tqz_hotspot_request.json \
+            --output meshpilot_tqz_hotspot_results \
+            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
+            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
+            2>&1 | tee meshpilot_tqz_hotspot.log
+      - name: Validate real solver, hotspots, algorithms and budgets
+        working-directory: archived-src
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('meshpilot_tqz_hotspot_results/hotspot_batch_results.json').read_text())
+          assert data['real_solver_only'] is True
+          assert data['surrogate_used'] is False
+          summary = data['summary']
+          assert summary['completed_cases'] == 6, summary
+          methods = (
+              'fixed_round_cold',
+              'hotspot_round_cold',
+              'hotspot_stepwise_cold',
+              'hotspot_stepwise_transfer',
+          )
+          limit = int(data['pso']['max_unique_evaluations'])
+          for method in methods:
+              assert summary['methods'][method]['feasible_cases'] == 6
+          for case in data['cases']:
+              assert case['status'] == 'completed', case
+              assert case['hotspot_source'] == 'real_uniform_coarse_calculix_stress'
+              assert len(case['hotspot_candidates']) == 6
+              raw = case['case']
+              reference = case['reference']
+              expected_vertical = -float(raw['nominal_vertical_capacity_kN']) * 1000.0
+              expected_horizontal = 1.5 * float(raw['ag']) * abs(expected_vertical)
+              expected_moment = -expected_horizontal * float(raw['H'])
+              assert abs(reference['total_vertical_force'] - expected_vertical) <= max(1e-3, abs(expected_vertical) * 1e-10)
+              assert abs(reference['total_horizontal_force'] - expected_horizontal) <= max(1e-3, abs(expected_horizontal) * 1e-10)
+              assert abs(reference['applied_moment_y'] - expected_moment) <= max(1e-2, abs(expected_moment) * 1e-10)
+              for method in methods:
+                  row = case[method]
+                  assert row['best_feasible'], (case['case_id'], method, row)
+                  assert row['unique_fe_evaluations'] <= limit
+              assert case['hotspot_stepwise_cold']['algorithm'] == 'stepwise_discrete_pso'
+              assert case['hotspot_stepwise_transfer']['algorithm'] == 'stepwise_discrete_pso'
+          print(json.dumps(summary, indent=2, ensure_ascii=False))
+          PY
+      - name: Collect reference, coarse and four winning decks
+        working-directory: archived-src
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import shutil
+          from pathlib import Path
+
+          result_path = Path('meshpilot_tqz_hotspot_results/hotspot_batch_results.json')
+          keep = Path('meshpilot_tqz_hotspot_keep')
+          keep.mkdir(exist_ok=True)
+          if result_path.exists():
+              data = json.loads(result_path.read_text())
+              methods = (
+                  'fixed_round_cold',
+                  'hotspot_round_cold',
+                  'hotspot_stepwise_cold',
+                  'hotspot_stepwise_transfer',
+              )
+              for case in data.get('cases', []):
+                  if case.get('status') != 'completed':
+                      continue
+                  sources = [
+                      ('reference', case['reference']['workdir']),
+                      ('coarse', case['coarse']['workdir']),
+                  ]
+                  sources.extend((method, case[method]['best_metadata'].get('workdir')) for method in methods)
+                  for label, source_text in sources:
+                      if not source_text:
+                          continue
+                      source = Path(source_text)
+                      if source.exists():
+                          shutil.copytree(source, keep / case['case_id'] / label, dirs_exist_ok=True)
+          PY
+      - name: Upload real-hotspot full-calculation artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: meshpilot-tqz-real-hotspot-stepwise-full-vm
+          path: |
+            archived-src/meshpilot_tqz_hotspot_manifest.json
+            archived-src/meshpilot_tqz_hotspot.log
+            archived-src/meshpilot_tqz_hotspot_results/hotspot_batch_results.json
+            archived-src/meshpilot_tqz_hotspot_results/hotspot_batch_metrics.csv
+            archived-src/meshpilot_tqz_hotspot_results/hotspot_batch_report.md
+            archived-src/meshpilot_tqz_hotspot_keep/
+          compression-level: 6
+          retention-days: 14
