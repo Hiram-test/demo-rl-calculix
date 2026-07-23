@@ -6,6 +6,11 @@ on:
       - agent/meshpilot-batch-transfer-pso
     paths:
       - .github/meshpilot-bundle.ready
+  pull_request:
+    paths:
+      - .github/meshpilot-bundle.ready
+      - .github/meshpilot-bundle.part-*
+      - .github/workflows/import-meshpilot-batch-pso.yml
   workflow_dispatch:
 
 permissions:
