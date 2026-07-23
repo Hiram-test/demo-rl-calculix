@@ -1,6 +1,17 @@
 name: MeshPilot TQZ support-family full VM
 
 on:
+  push:
+    branches:
+      - agent/meshpilot-tqz-support-family
+    paths:
+      - archived-src/meshpilot_pso.py
+      - archived-src/meshpilot_tqz_backend.py
+      - archived-src/meshpilot_tqz_batch.py
+      - archived-src/examples/meshpilot_tqz_support_family.json
+      - archived-src/tests/test_meshpilot_tqz.py
+      - docs/MESHPILOT_TQZ_SUPPORT_FAMILY.md
+      - .github/workflows/meshpilot-tqz-support-vm.yml
   pull_request:
     paths:
       - archived-src/meshpilot_pso.py
