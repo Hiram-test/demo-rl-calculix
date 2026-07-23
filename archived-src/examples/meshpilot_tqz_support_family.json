@@ -107,11 +107,13 @@
     "model_type": "local_3d_linear_elastic_support_pedestal",
     "solver": "Gmsh + CalculiX",
     "included": [
-      "support footprint and pedestal dimensions",
-      "surrounding local concrete block",
-      "vertical resultant transferred through a loaded top footprint",
-      "fixed or symmetry constraints on remote cut faces",
-      "six deterministic mesh-control patches around load edges and pedestal junctions"
+      "drawing-derived A x B local block envelope and C x D effective load footprint",
+      "C50 three-dimensional linear-elastic concrete solid",
+      "nominal vertical resultant",
+      "1.5Ag horizontal resultant",
+      "statically equivalent H-arm moment",
+      "fully fixed remote bottom cut face",
+      "six deterministic 3 x 2 top-footprint mesh-control patches"
     ],
     "excluded_in_first_benchmark": [
       "bearing contact and friction",
@@ -125,9 +127,38 @@
       "elastic compliance",
       "element count"
     ],
-    "mesh_levels_mm": [120.0, 80.0, 50.0, 30.0],
-    "reference_mesh_size_mm": 20.0,
+    "mesh_levels_mm": [180.0, 130.0, 95.0, 70.0],
+    "reference_mesh_size_mm": 55.0,
+    "block_margin_x_mm": 260.0,
+    "block_margin_y_mm": 260.0,
+    "block_depth_mm": 600.0,
+    "patch_depth_mm": 280.0,
+    "element_budget": 18000,
+    "resource_weight": 0.025,
+    "budget_penalty": 5.0,
+    "solver_timeout_seconds": 300,
     "max_unique_evaluations": 32
+  },
+  "pso": {
+    "particles": 8,
+    "iterations": 8,
+    "max_level": 3,
+    "inertia_start": 0.85,
+    "inertia_end": 0.35,
+    "cognitive": 1.55,
+    "social": 1.55,
+    "velocity_limit": 2.0,
+    "stagnation_iterations": 4,
+    "target_objective": null,
+    "transfer_fraction": 0.5,
+    "max_unique_evaluations": 32,
+    "refill_repeats": true,
+    "seed": 23
+  },
+  "transfer": {
+    "min_unique_evaluations": 10,
+    "distance_scale": 0.75,
+    "guard_ratio": 1.2
   },
   "review_gate": {
     "raw_dimensions_verified": true,
