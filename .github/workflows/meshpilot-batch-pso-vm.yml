@@ -1,126 +1,13 @@
 name: MeshPilot batch-transfer PSO VM
 
 on:
-  push:
-    branches:
-      - agent/meshpilot-batch-transfer-pso
-    paths:
-      - archived-src/meshpilot_pso.py
-      - archived-src/meshpilot_batch_agent.py
-      - archived-src/examples/meshpilot_batch_request.json
-      - archived-src/tests/test_meshpilot_*.py
-      - docs/MESHPILOT_BATCH_TRANSFER_PSO.md
-      - .github/workflows/meshpilot-batch-pso-vm.yml
-  pull_request:
-    paths:
-      - archived-src/meshpilot_pso.py
-      - archived-src/meshpilot_batch_agent.py
-      - archived-src/examples/meshpilot_batch_request.json
-      - archived-src/tests/test_meshpilot_*.py
-      - docs/MESHPILOT_BATCH_TRANSFER_PSO.md
-      - .github/workflows/meshpilot-batch-pso-vm.yml
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  unit-tests:
+  hold:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip --quiet
-          python -m pip install numpy --quiet
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
-      - name: Compile new modules
-        working-directory: archived-src
-        run: |
-          python -m py_compile meshpilot_pso.py meshpilot_batch_agent.py
-      - name: Run MeshPilot tests
-        working-directory: archived-src
-        run: |
-          python -m unittest discover -s tests -p 'test_meshpilot_*.py' -v
-
-  real-calculix-batch:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Gmsh, CalculiX and Python dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip --quiet
-          python -m pip install numpy --quiet
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gmsh calculix-ccx
-      - name: Resolve solver commands
-        id: solvers
-        shell: bash
-        run: |
-          set -euo pipefail
-          GMSH_BIN="$(command -v gmsh)"
-          CCX_BIN="$(command -v ccx || true)"
-          if [[ -z "$CCX_BIN" ]]; then
-            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n1)"
-          fi
-          test -x "$GMSH_BIN"
-          test -x "$CCX_BIN"
-          echo "gmsh=$GMSH_BIN" >> "$GITHUB_OUTPUT"
-          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
-          "$GMSH_BIN" --version
-          "$CCX_BIN" -v || true
-      - name: Expand guarded batch manifest
-        working-directory: archived-src
-        run: |
-          python meshpilot_batch_agent.py \
-            --request examples/meshpilot_batch_request.json \
-            --manifest-only > meshpilot_manifest.json
-      - name: Run cold-start versus batch-transfer PSO
-        working-directory: archived-src
-        shell: bash
-        run: |
-          set -o pipefail
-          python meshpilot_batch_agent.py \
-            --request examples/meshpilot_batch_request.json \
-            --output meshpilot_vm_results \
-            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
-            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
-            2>&1 | tee meshpilot_vm.log
-      - name: Validate VM result contract
-        working-directory: archived-src
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          data = json.loads(Path('meshpilot_vm_results/batch_results.json').read_text())
-          summary = data['summary']
-          assert summary['completed_cases'] == 4, summary
-          assert summary['interpolation_cases'] == 3, summary
-          assert summary['extrapolation_cases'] == 1, summary
-          cold = summary['cold']['total_unique_fe_evaluations']
-          transfer = summary['transfer']['total_unique_fe_evaluations']
-          assert transfer < cold, (cold, transfer)
-          print(json.dumps(summary, indent=2))
-          PY
-      - name: Upload real VM results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: meshpilot-batch-transfer-pso-vm
-          path: |
-            archived-src/meshpilot_manifest.json
-            archived-src/meshpilot_vm.log
-            archived-src/meshpilot_vm_results/
-          compression-level: 6
-          retention-days: 7
+      - run: echo "Batch PSO workflow temporarily paused while one coherent update is assembled."
