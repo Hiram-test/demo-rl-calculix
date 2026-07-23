@@ -20,9 +20,12 @@
     "hole_center_x": [3.8, 4.0, 4.2, 4.5],
     "load_y": [-900.0, -1000.0, -1100.0, -1200.0]
   },
+  "batch_order": "nearest_path",
   "allow_extrapolation": true,
   "transfer_to_extrapolation": true,
   "transfer_distance_scale": 0.75,
+  "transfer_min_evaluations": 8,
+  "transfer_guard_ratio": 1.05,
   "scope": {
     "calibration": {
       "hole_radius": [0.50, 0.90],
@@ -54,6 +57,8 @@
     "stagnation_iterations": 3,
     "target_objective": 0.045,
     "transfer_fraction": 0.50,
+    "max_unique_evaluations": 32,
+    "refill_repeats": true,
     "seed": 17
   }
 }
