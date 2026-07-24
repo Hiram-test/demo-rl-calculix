@@ -18,12 +18,14 @@ Abaqus preflight and training::
 from __future__ import annotations
 
 import argparse
+from collections import deque
+from dataclasses import dataclass
 import json
 import math
 import os
 from pathlib import Path
 import random
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Deque, Dict, Optional, Tuple
 
 import numpy as np
 import torch
@@ -34,15 +36,77 @@ from calculix_backend import (
     command_available,
     split_command,
 )
+from calculix_plastic_backend import (
+    PlasticPlateConfig,
+    StateAwareCalculixPlasticEnv,
+)
 from mesh_goal import GoalCondition
-from state_aware_dqn_agent import ACTION_NAMES, ReplayBufferV2, StateAwareDQNAgent
+from state_aware_dqn_agent import ACTION_NAMES, GraphState, ReplayBufferV2, StateAwareDQNAgent
+
+
+@dataclass
+class PendingTransition:
+    state: GraphState
+    action_node: int
+    action_type: int
+    reward: float
+    next_state: GraphState
+    done: bool
+    cell_id: int
+
+
+class NStepAccumulator:
+    """Convert a stream of one-step transitions into replay-safe n-step returns."""
+
+    def __init__(self, replay: ReplayBufferV2, n_steps: int, gamma: float) -> None:
+        self.replay = replay
+        self.n_steps = max(1, int(n_steps))
+        self.gamma = float(gamma)
+        self.pending: Deque[PendingTransition] = deque()
+
+    def append(self, transition: PendingTransition) -> None:
+        self.pending.append(transition)
+        if transition.done:
+            self.flush()
+        elif len(self.pending) >= self.n_steps:
+            self._emit_one(self.n_steps)
+
+    def _emit_one(self, horizon: int) -> None:
+        items = list(self.pending)[:horizon]
+        if not items:
+            return
+        first = items[0]
+        last = items[-1]
+        discounted_reward = sum(
+            (self.gamma ** index) * item.reward
+            for index, item in enumerate(items)
+        )
+        self.replay.add(
+            state=first.state,
+            action_node=first.action_node,
+            action_type=first.action_type,
+            reward=discounted_reward,
+            next_state=last.next_state,
+            done=any(item.done for item in items),
+            cell_id=first.cell_id,
+            n_steps=len(items),
+        )
+        self.pending.popleft()
+
+    def flush(self) -> None:
+        while self.pending:
+            self._emit_one(min(self.n_steps, len(self.pending)))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Local state-aware graph DQN runner for Abaqus or CalculiX"
     )
-    parser.add_argument("--backend", choices=("abaqus", "calculix"), required=True)
+    parser.add_argument(
+        "--backend",
+        choices=("abaqus", "calculix", "calculix-plastic"),
+        required=True,
+    )
     parser.add_argument("--mode", choices=("preflight", "solve", "train"), default="train")
     parser.add_argument("--goal-file", default="examples/goal_local.json")
     parser.add_argument("--sample-goals", action="store_true")
@@ -74,12 +138,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--updates-per-step", type=int, default=1)
     parser.add_argument("--updates-after-episode", type=int, default=32)
     parser.add_argument("--target-update-tau", type=float, default=0.01)
+    parser.add_argument("--n-step", type=int, default=1)
     parser.add_argument("--epsilon", type=float, default=0.30)
     parser.add_argument("--epsilon-decay", type=float, default=0.995)
     parser.add_argument("--epsilon-min", type=float, default=0.05)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--resume-v2", action="store_true")
     parser.add_argument("--save-frequency", type=int, default=1)
+    parser.add_argument(
+        "--eval-frequency",
+        type=int,
+        default=0,
+        help="Run a deterministic epsilon=0 validation every N episodes (0 disables)",
+    )
+    parser.add_argument(
+        "--best-resource-weight",
+        type=float,
+        default=0.10,
+        help="Resource term used to rank deterministic validation checkpoints",
+    )
     parser.add_argument("--debug", action="store_true")
 
     # Abaqus backend.
@@ -100,6 +177,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--ccx-cmd", default=os.environ.get("CCX_CMD", "ccx"))
     parser.add_argument("--plate-config", default="examples/calculix_plate.json")
+    parser.add_argument(
+        "--plastic-plate-config",
+        default="examples/calculix_plastic_plate.json",
+    )
     parser.add_argument("--solver-timeout", type=int, default=300)
     return parser.parse_args()
 
@@ -134,6 +215,30 @@ def _value(value: Optional[float | int], fallback: float | int):
 
 
 def create_backend(args: argparse.Namespace, goal: GoalCondition):
+    if args.backend == "calculix-plastic":
+        plate = PlasticPlateConfig.from_json(args.plastic_plate_config)
+        env = StateAwareCalculixPlasticEnv(
+            plate=plate,
+            simulations_root=args.simulations_root or "simulations_local/calculix_plastic",
+            gmsh_cmd=args.gmsh_cmd,
+            ccx_cmd=args.ccx_cmd,
+            global_mesh_size=float(_value(args.global_mesh_size, 0.80)),
+            cell_min_mesh_size=float(_value(args.cell_min_mesh_size, 0.15)),
+            cell_max_mesh_size=float(_value(args.cell_max_mesh_size, 1.60)),
+            max_elements=int(_value(args.max_elements, 8_000)),
+            min_elements=int(_value(args.min_elements, 50)),
+            refine_step_size=float(_value(args.refine_step_size, 0.20)),
+            coarsen_step_size=float(_value(args.coarsen_step_size, 0.20)),
+            max_consecutive_failures=args.max_consecutive_failures,
+            solver_timeout_seconds=args.solver_timeout,
+        )
+        env.set_goal(goal)
+        defaults = {
+            "baseline_mesh_size": float(_value(args.baseline_mesh_size, 0.25)),
+            "ckpt_dir": args.ckpt_dir or "checkpoints_local/calculix_plastic",
+        }
+        return env, defaults
+
     if args.backend == "calculix":
         plate = PlateConfig.from_json(args.plate_config)
         env = StateAwareCalculixEnv(
@@ -193,7 +298,7 @@ def create_backend(args: argparse.Namespace, goal: GoalCondition):
 
 
 def backend_preflight(args: argparse.Namespace, env: Any) -> dict[str, Any]:
-    if args.backend == "calculix":
+    if args.backend in {"calculix", "calculix-plastic"}:
         return env.preflight()
     command = split_command(args.abaqus_cmd)
     cae_path = Path(args.template_cae_file)
@@ -328,7 +433,67 @@ def run_solve_mode(env: Any, goal: GoalCondition, args: argparse.Namespace) -> N
         "resource_usage": resource_usage(env),
         "relative_error": relative_error(env),
     }
+    evaluation = getattr(env, "evaluation_metrics", None)
+    if callable(evaluation):
+        summary["metrics"] = evaluation()
     print(json.dumps(summary, indent=2, ensure_ascii=False))
+
+
+def run_greedy_evaluation(
+    env: Any,
+    goal: GoalCondition,
+    args: argparse.Namespace,
+    episode_number: int,
+) -> dict[str, Any]:
+    """Evaluate the current network without exploration or replay updates."""
+
+    env.set_goal(goal)
+    env.reset(run_id=f"{args.backend}_greedy_eval_{episode_number:03d}")
+    state = env.build_state(goal, max_steps=args.max_steps)
+    actions: list[dict[str, Any]] = []
+    end_reason = "max_steps"
+    for step_number in range(1, args.max_steps + 1):
+        selection = _EVAL_AGENT.select_action(state, epsilon=0.0)
+        if selection is None:
+            end_reason = "no_valid_cell_action"
+            break
+        cell_id = int(selection["cell_id"])
+        action_type = int(selection["action"])
+        _, reward, env_done, info = env.step({cell_id: action_type})
+        actions.append(
+            {
+                "step": step_number,
+                "cell_id": cell_id,
+                "action": action_type,
+                "action_name": ACTION_NAMES.get(action_type, str(action_type)),
+                "q_value": selection.get("q_value"),
+                "reward": float(reward),
+                "load_fraction": info.get("load_fraction"),
+                "relative_error": relative_error(env),
+                "resource_usage": resource_usage(env, info),
+            }
+        )
+        state = env.build_state(goal, max_steps=args.max_steps)
+        if env_done:
+            end_reason = "environment_done"
+            break
+        if not bool(state.action_mask.any()):
+            end_reason = "no_valid_cell_action"
+            break
+    metrics_method = getattr(env, "evaluation_metrics", None)
+    metrics = metrics_method() if callable(metrics_method) else {}
+    return {
+        "episode": episode_number,
+        "end_reason": end_reason,
+        "relative_error": relative_error(env),
+        "resource_usage": resource_usage(env),
+        "metrics": metrics,
+        "actions": actions,
+    }
+
+
+# Set only inside run_training while deterministic validation is executing.
+_EVAL_AGENT: StateAwareDQNAgent
 
 
 def run_training(
@@ -343,16 +508,26 @@ def run_training(
         global_dim=env.global_feature_dim,
         feat_dim=env.CELL_FEATURE_DIM,
         hidden_dim=args.hidden_dim,
-        num_actions=2,
+        num_actions=int(getattr(env, "num_actions", 2)),
         num_gcn_layers=args.gcn_layers,
         gamma=args.gamma,
         lr=args.learning_rate,
         dropout=args.dropout,
     )
     replay = ReplayBufferV2(capacity=args.replay_capacity)
+    global _EVAL_AGENT
+    _EVAL_AGENT = agent
     start_episode = 0
     epsilon = float(args.epsilon)
     history: list[dict[str, Any]] = []
+    best_score = math.inf
+    best_path = os.path.join(ckpt_dir, "best_evaluation_v2.json")
+    if os.path.exists(best_path):
+        try:
+            with open(best_path, "r", encoding="utf-8") as stream:
+                best_score = float(json.load(stream).get("score", math.inf))
+        except Exception:
+            best_score = math.inf
     if args.resume_v2:
         start_episode, epsilon, history = load_training_state(
             ckpt_dir, args.backend, agent, replay
@@ -368,6 +543,7 @@ def run_training(
         env.set_goal(goal)
         env.reset(run_id=f"{args.backend}_v2_{episode_number:03d}")
         state = env.build_state(goal, max_steps=args.max_steps)
+        accumulator = NStepAccumulator(replay, args.n_step, args.gamma)
         episode_reward = 0.0
         losses: list[float] = []
         action_log: list[dict[str, Any]] = []
@@ -394,20 +570,23 @@ def run_training(
             current_error = relative_error(env)
             target_reached = bool(
                 args.stop_on_target
+                and getattr(env, "allow_early_stop", True)
                 and current_error is not None
                 and current_error <= goal.target_relative_error
             )
             no_next_action = not bool(next_state.action_mask.any())
             time_limit = step_number >= args.max_steps
             done = bool(env_done or target_reached or no_next_action or time_limit)
-            replay.add(
-                state=previous_state,
-                action_node=action_node,
-                action_type=action_type,
-                reward=float(reward),
-                next_state=next_state,
-                done=done,
-                cell_id=cell_id,
+            accumulator.append(
+                PendingTransition(
+                    state=previous_state,
+                    action_node=action_node,
+                    action_type=action_type,
+                    reward=float(reward),
+                    next_state=next_state,
+                    done=done,
+                    cell_id=cell_id,
+                )
             )
             if len(replay) >= args.replay_warmup:
                 for _ in range(max(0, args.updates_per_step)):
@@ -431,6 +610,12 @@ def run_training(
                 "relative_error": current_error,
                 "mesh_unchanged": bool(info.get("mesh_unchanged", False)),
                 "state_rollback": bool(info.get("state_rollback", False)),
+                "load_step": info.get("load_step"),
+                "load_fraction": info.get("load_fraction"),
+                "reaction_force_x": info.get("reaction_force_x"),
+                "plastic_zone_fraction": info.get("plastic_zone_fraction"),
+                "max_peeq": info.get("max_peeq"),
+                "error_metrics": info.get("error_metrics"),
             }
             action_log.append(entry)
             episode_reward += float(reward)
@@ -453,6 +638,7 @@ def run_training(
                     end_reason = "max_steps"
                 break
 
+        accumulator.flush()
         if len(replay) >= args.replay_warmup:
             for _ in range(max(0, args.updates_after_episode)):
                 loss = agent.train_step(
@@ -475,6 +661,30 @@ def run_training(
             "resource_usage": resource_usage(env),
             "actions": action_log,
         }
+        evaluation = getattr(env, "evaluation_metrics", None)
+        if callable(evaluation):
+            record["final_metrics"] = evaluation()
+
+        if args.eval_frequency > 0 and episode_number % args.eval_frequency == 0:
+            validation = run_greedy_evaluation(env, goal, args, episode_number)
+            score = float(validation.get("relative_error") or math.inf) + (
+                float(args.best_resource_weight)
+                * float(validation.get("resource_usage") or 0.0)
+            )
+            validation["score"] = score
+            record["greedy_validation"] = validation
+            print(
+                f"[GREEDY EVAL] episode={episode_number}, score={score:.6f}, "
+                f"error={validation.get('relative_error')}, "
+                f"resource={validation.get('resource_usage')}"
+            )
+            if score < best_score:
+                best_score = score
+                agent.save_checkpoint(os.path.join(ckpt_dir, "best_agent_v2.pt"))
+                with open(best_path, "w", encoding="utf-8") as stream:
+                    json.dump(validation, stream, indent=2, ensure_ascii=False)
+                print(f"[BEST] deterministic checkpoint updated: score={best_score:.6f}")
+
         history.append(record)
         print(
             f"[EPISODE] reward={episode_reward:+.6f}, end={end_reason}, "
