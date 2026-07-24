@@ -6,14 +6,18 @@ on:
       - agent/bridge-fea-mesh-requirements-clean
     paths:
       - data/bridge_fea_mesh_cases/**
+      - data/bridge_engineer_questions/**
       - data/bridge_mesh_question_templates.json
+      - docs/bridge_fea_mesh/**
       - schemas/bridge_mesh_intent.schema.json
       - scripts/validate_bridge_mesh_corpus.py
       - .github/workflows/bridge-mesh-corpus-check.yml
   pull_request:
     paths:
       - data/bridge_fea_mesh_cases/**
+      - data/bridge_engineer_questions/**
       - data/bridge_mesh_question_templates.json
+      - docs/bridge_fea_mesh/**
       - schemas/bridge_mesh_intent.schema.json
       - scripts/validate_bridge_mesh_corpus.py
       - .github/workflows/bridge-mesh-corpus-check.yml
@@ -30,5 +34,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Validate source catalog and JSON contracts
+      - name: Validate case sources, engineer questions and JSON contracts
         run: python scripts/validate_bridge_mesh_corpus.py
