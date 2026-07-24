@@ -1,29 +1,24 @@
-# 桥梁有限元工程师问题数据
+# 桥梁工程师直接问题语料
 
-## 文件
+## 当前可用文件
 
-- `bridge_engineer_questions.csv.gz`：174 个原子问题的 UTF-8 CSV 压缩文件；
-- `summary.json`：渠道、工作阶段、工程师工作和问题族汇总。
+- `summary.json`：第一轮公开问题调研的渠道、工作阶段、工程师工作、需求族、回答模式和网格角色统计；
+- `../../docs/bridge_fea_mesh/ENGINEER_QUESTION_FINDINGS.md`：数量结果、代表性原子问题和产品含义；
+- `../../docs/bridge_fea_mesh/QUESTION_CODING_METHOD.md`：问题拆分、字段编码、证据边界和人工复核方法。
 
-数据来自 81 个独立帖子或官方 FAQ：
+第一轮共整理：
 
-- 57 个 SIMULIA Community 原子问题；
-- 57 个 Ansys Innovation Space 原子问题；
-- 25 个 ResearchGate 原子问题；
-- 35 个 Eng-Tips、Dlubal、SOFiSTiK、Autodesk 和 Physics Forums 原子问题。
+- 81 个独立公开帖子或官方 FAQ；
+- 174 个原子问题；
+- 81 个唯一来源 URL。
 
-解压示例：
+此前提交的压缩明细文件未通过完整性校验，已经从分支删除，不能作为可用数据。当前仓库只保留已经通过复核的汇总、方法和代表性问题；原子级明细将在改为可逐行审查的文本分片并通过 CI 后再进入主语料。
 
-```bash
-gzip -dc data/bridge_engineer_questions/bridge_engineer_questions.csv.gz   > bridge_engineer_questions.csv
-```
-
-## 边界
+## 数据边界
 
 - 这是公开问题样本，不是统计抽样调查；
-- 一个来源可以拆出多个原子问题；
-- 论坛回答不作为权威结论；
-- 问题文本为人工转述，不复制来源正文；
-- 频次只能解释为“在本样本中出现”，不能外推为工程师总体比例。
-
-详细方法见 `docs/bridge_fea_mesh/QUESTION_CODING_METHOD.md`。
+- 一个帖子可拆成多个原子问题；
+- 问题为人工转述，不复制来源正文；
+- 论坛回答不作为权威技术结论；
+- 英语软件社区来源占比较高；
+- 频次只能解释为“在本样本中反复出现”。
