@@ -102,7 +102,7 @@ jobs:
 
       - name: Confirm DeepSeek credential is available from ds
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
         run: |
           if [ -n "$DEEPSEEK_API_KEY" ]; then
             echo "::add-mask::$DEEPSEEK_API_KEY"
@@ -110,7 +110,7 @@ jobs:
           else
             AVAILABLE=false
           fi
-          printf '{\n  "available": %s,\n  "environment": "ds",\n  "accepted_names": ["DEEPSEEK_API_KEY", "DEEPSEEK_KEY", "DEEPSEEK", "API_KEY", "API", "KEY", "TOKEN", "DS", "DS_KEY", "DS_API_KEY"],\n  "accepted_scopes": ["environment_secret", "environment_variable"],\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
+          printf '{\n  "available": %s,\n  "environment": "ds",\n  "accepted_names": ["D", "DEEPSEEK_API_KEY", "DEEPSEEK_KEY", "DEEPSEEK", "API_KEY", "API", "KEY", "TOKEN", "DS", "DS_KEY", "DS_API_KEY"],\n  "accepted_scopes": ["environment_secret", "environment_variable"],\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
             "$AVAILABLE" "$GITHUB_EVENT_NAME" "$GITHUB_SHA" \
             > examples/mesh_need/deepseek_secret_status.json
           git add examples/mesh_need/deepseek_secret_status.json
@@ -124,7 +124,7 @@ jobs:
 
       - name: Ask DeepSeek to analyze the focused solver evidence
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
           DEEPSEEK_MODEL: deepseek-v4-pro
         run: |
           echo "::add-mask::$DEEPSEEK_API_KEY"
