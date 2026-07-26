@@ -1,4 +1,4 @@
-name: Mesh Need AI Evidence Demo
+name: Mesh Need DeepSeek Analysis Demo
 
 on:
   workflow_dispatch:
@@ -8,6 +8,7 @@ on:
       - "scripts/run_mesh_need_demo.py"
       - "scripts/run_real_calculix_demo.py"
       - "scripts/run_upper_right_refinement.py"
+      - "scripts/call_deepseek.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -19,6 +20,7 @@ on:
       - "scripts/run_mesh_need_demo.py"
       - "scripts/run_real_calculix_demo.py"
       - "scripts/run_upper_right_refinement.py"
+      - "scripts/call_deepseek.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -27,9 +29,9 @@ permissions:
   contents: read
 
 jobs:
-  generate-evidence-and-test-contract:
+  generate-evidence-and-run-deepseek:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -40,12 +42,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install CalculiX solver
+      - name: Install CalculiX solver and DeepSeek client
         run: |
           sudo apt-get update
           sudo apt-get install -y calculix-ccx
           command -v ccx
           dpkg-query -W calculix-ccx
+          python -m pip install --upgrade pip
+          python -m pip install "openai>=1.61,<3"
 
       - name: Generate CalculiX solver evidence
         run: |
@@ -69,10 +73,21 @@ jobs:
       - name: Test the AI contract
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
-      - name: Upload solver evidence and AI packets
+      - name: Ask DeepSeek to analyze the focused solver evidence
+        if: github.event_name != 'pull_request'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: deepseek-v4-pro
+        run: |
+          python scripts/call_deepseek.py \
+            artifacts/upper-right-refinement/ai_analysis_packet.json \
+            artifacts/upper-right-refinement/deepseek_analysis.json \
+            | tee artifacts/upper-right-refinement/deepseek_call_summary.json
+
+      - name: Upload solver evidence, packets, and AI analysis
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mesh-need-ai-evidence-packets
+          name: mesh-need-deepseek-analysis
           path: artifacts/
           if-no-files-found: error
