@@ -57,7 +57,6 @@ def build_distributed_nodal_loads(
 ) -> dict[int, float]:
     """Return consistent nodal forces for a uniform vertical edge-line load."""
 
-    del nx  # node IDs still use nx below; retained in signature for symmetry.
     dy = HEIGHT / ny
     segment_count_float = segment_height / dy
     segment_count = int(round(segment_count_float))
