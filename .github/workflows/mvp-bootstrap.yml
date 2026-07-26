@@ -7,6 +7,13 @@ on:
     paths:
       - ".mvp-bootstrap/**"
       - ".github/workflows/mvp-bootstrap.yml"
+  pull_request:
+    branches:
+      - agent/bridge-fea-mesh-requirements-clean
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".mvp-bootstrap/**"
+      - ".github/workflows/mvp-bootstrap.yml"
 
 permissions:
   contents: write
