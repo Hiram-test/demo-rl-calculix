@@ -102,28 +102,28 @@ jobs:
 
       - name: Confirm DeepSeek secret is available from ds
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.KEY || secrets.DEEPSEEK_KEY }}
         run: |
           if [ -n "$DEEPSEEK_API_KEY" ]; then
             AVAILABLE=true
           else
             AVAILABLE=false
           fi
-          printf '{\n  "available": %s,\n  "environment": "ds",\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
+          printf '{\n  "available": %s,\n  "environment": "ds",\n  "accepted_names": ["DEEPSEEK_API_KEY", "KEY", "DEEPSEEK_KEY"],\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
             "$AVAILABLE" "$GITHUB_EVENT_NAME" "$GITHUB_SHA" \
             > examples/mesh_need/deepseek_secret_status.json
           git add examples/mesh_need/deepseek_secret_status.json
           git commit -m "Record DeepSeek secret availability [skip ci]"
           git push origin HEAD:feat/model-aware-fea-mvp
           if [ "$AVAILABLE" != true ]; then
-            echo "DEEPSEEK_API_KEY is missing from environment ds"
+            echo "No accepted DeepSeek secret name was found in environment ds"
             exit 1
           fi
           echo "DeepSeek secret from environment ds is available"
 
       - name: Ask DeepSeek to analyze the focused solver evidence
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.KEY || secrets.DEEPSEEK_KEY }}
           DEEPSEEK_MODEL: deepseek-v4-pro
         run: |
           python scripts/call_deepseek.py \
