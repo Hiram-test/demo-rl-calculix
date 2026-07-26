@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
-"""Run a focused mesh-refinement study at the upper-right point-load corner.
+"""Run a focused right-upper-corner refinement study for AI interpretation.
 
-The benchmark is the same plane-stress cantilever used by
-``run_real_calculix_demo.py``.  This script deliberately separates four
-quantities so a singular local peak is not confused with the rest of the model:
-
-1. the peak von Mises stress in the single element touching the loaded corner;
-2. the mean stress in a fixed 5--10 mm ring around the loaded corner;
-3. the mean stress in a fixed 10 x 10 mm upper-right patch;
-4. the vertical displacement at the fixed mid-plate probe node.
-
-For a two-dimensional point load, the nearest integration-point stress is
-expected to scale approximately as 1/r.  Therefore ``sigma_peak * r_min``
-should remain nearly constant as the mesh is refined, while fixed-distance and
-remote quantities should approach stable values.
+The script extracts region-specific quantities but deliberately makes no claim
+about the governing physical mechanism and applies no physics decision rules.
 """
 
 from __future__ import annotations
@@ -24,9 +13,17 @@ import json
 import math
 import statistics
 import subprocess
+import sys
 from pathlib import Path
 
-from run_real_calculix_demo import _numbers, resolve_ccx, write_input
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC = REPO_ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from mesh_need import build_analysis_packet  # noqa: E402
+from run_real_calculix_demo import _numbers, resolve_ccx, write_input  # noqa: E402
 
 
 LENGTH = 100.0
@@ -48,8 +45,6 @@ def _von_mises(values: list[float]) -> float:
 
 
 def parse_dat(path: Path, probe_node: int) -> tuple[list[tuple[int, int, float]], float]:
-    """Return ``(element, integration_point, von_mises)`` rows and probe U2."""
-
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     in_displacements = False
     in_stresses = False
@@ -83,10 +78,8 @@ def parse_dat(path: Path, probe_node: int) -> tuple[list[tuple[int, int, float]]
         if in_stresses:
             values = _numbers(line)
             if len(values) >= 8:
-                element = int(round(values[0]))
-                integration_point = int(round(values[1]))
                 stress_rows.append(
-                    (element, integration_point, _von_mises(values[2:8]))
+                    (int(round(values[0])), int(round(values[1])), _von_mises(values[2:8]))
                 )
                 stress_started = True
                 continue
@@ -101,25 +94,19 @@ def parse_dat(path: Path, probe_node: int) -> tuple[list[tuple[int, int, float]]
 
 
 def _element_centroid(element: int, nx: int, ny: int) -> tuple[float, float]:
-    del ny  # structured numbering only needs nx
     index = element - 1
     i = index % nx
     j = index // nx
     dx = LENGTH / nx
-    dy = HEIGHT / (HEIGHT / dx)  # meshes are square in this benchmark
+    dy = HEIGHT / ny
     return (i + 0.5) * dx, (j + 0.5) * dy
 
 
-def _nearest_in_plane_integration_point_distance(nx: int, ny: int) -> float:
-    """Distance from loaded corner to nearest 2x2 Gauss point in CPS4."""
-
+def _nearest_gauss_distance(nx: int, ny: int) -> float:
     dx = LENGTH / nx
     dy = HEIGHT / ny
-    gauss_offset_fraction = (1.0 - 1.0 / math.sqrt(3.0)) / 2.0
-    return math.hypot(
-        gauss_offset_fraction * dx,
-        gauss_offset_fraction * dy,
-    )
+    offset = (1.0 - 1.0 / math.sqrt(3.0)) / 2.0
+    return math.hypot(offset * dx, offset * dy)
 
 
 def _relative_change(previous: float, current: float) -> float:
@@ -130,7 +117,6 @@ def solve_one(ccx: str, output_dir: Path, nx: int, ny: int) -> dict[str, float |
     job = f"upper_right_{nx}x{ny}"
     inp = output_dir / f"{job}.inp"
     metadata = write_input(inp, nx, ny)
-
     completed = subprocess.run(
         [ccx, job],
         cwd=output_dir,
@@ -142,14 +128,9 @@ def solve_one(ccx: str, output_dir: Path, nx: int, ny: int) -> dict[str, float |
     )
     (output_dir / f"{job}.stdout.txt").write_text(completed.stdout, encoding="utf-8")
     if completed.returncode != 0:
-        raise RuntimeError(
-            f"CalculiX failed for {job} with code {completed.returncode}:\n{completed.stdout}"
-        )
+        raise RuntimeError(f"CalculiX failed for {job}:\n{completed.stdout}")
 
     dat = output_dir / f"{job}.dat"
-    if not dat.exists():
-        raise RuntimeError(f"CalculiX did not create {dat.name}")
-
     stress_rows, probe_u2 = parse_dat(dat, int(metadata["probe_node"]))
     corner_element = nx * ny
     corner_values = [vm for eid, _ip, vm in stress_rows if eid == corner_element]
@@ -166,10 +147,7 @@ def solve_one(ccx: str, output_dir: Path, nx: int, ny: int) -> dict[str, float |
         if cx >= PATCH_X_MIN and cy >= PATCH_Y_MIN:
             patch_values.append(vm)
 
-    if not ring_values or not patch_values:
-        raise RuntimeError("Upper-right fixed regions did not contain stress samples")
-
-    nearest_distance = _nearest_in_plane_integration_point_distance(nx, ny)
+    nearest_distance = _nearest_gauss_distance(nx, ny)
     corner_peak = max(corner_values)
     return {
         **metadata,
@@ -199,31 +177,26 @@ def main() -> int:
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    meshes = [(20, 4), (40, 8), (80, 16), (160, 32)]
-    history = [solve_one(ccx, output_dir, nx, ny) for nx, ny in meshes]
+    history = [
+        solve_one(ccx, output_dir, nx, ny)
+        for nx, ny in [(20, 4), (40, 8), (80, 16), (160, 32)]
+    ]
 
     corner_peaks = [float(row["upper_right_corner_peak_stress"]) for row in history]
     scaled_peaks = [float(row["corner_peak_times_distance"]) for row in history]
     ring_means = [float(row["upper_right_ring_mean_stress"]) for row in history]
     patch_means = [float(row["upper_right_patch_mean_stress"]) for row in history]
     probe_displacements = [float(row["remote_probe_vertical_displacement"]) for row in history]
-
-    corner_ratios = [b / a for a, b in zip(corner_peaks, corner_peaks[1:])]
     scaled_mean = statistics.fmean(scaled_peaks)
-    scaled_cv = statistics.pstdev(scaled_peaks) / abs(scaled_mean)
 
-    summary = {
+    evidence = {
         "solver": {
             "executable": ccx,
             "version_output": subprocess.run(
-                [ccx, "-v"],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                check=False,
+                [ccx, "-v"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
             ).stdout.strip(),
         },
-        "benchmark": "upper_right_point_load_refinement",
+        "benchmark": "upper_right_nodal_load_refinement",
         "model": {
             "geometry_mm": [LENGTH, HEIGHT],
             "element_type": "CPS4",
@@ -231,48 +204,42 @@ def main() -> int:
             "left_boundary": "fully fixed in x and y",
         },
         "regions": {
-            "corner": "single element touching the loaded upper-right corner",
+            "corner": "single element touching the upper-right loaded node",
             "ring_mm": [RING_INNER, RING_OUTER],
             "patch_mm": {"x_min": PATCH_X_MIN, "y_min": PATCH_Y_MIN},
-            "remote_probe": "fixed node at (50 mm, 10 mm)",
+            "remote_probe": "fixed point at (50 mm, 10 mm)",
         },
         "mesh_history": history,
-        "observed": {
-            "corner_peak_strictly_increases": all(
-                b > a for a, b in zip(corner_peaks, corner_peaks[1:])
-            ),
-            "corner_peak_refinement_ratios": corner_ratios,
+        "derived_numerical_summaries": {
+            "corner_peak_successive_ratios": [b / a for a, b in zip(corner_peaks, corner_peaks[1:])],
             "corner_peak_times_distance_mean": scaled_mean,
-            "corner_peak_times_distance_coefficient_of_variation": scaled_cv,
+            "corner_peak_times_distance_coefficient_of_variation": (
+                statistics.pstdev(scaled_peaks) / abs(scaled_mean)
+            ),
             "ring_mean_last_relative_change": _relative_change(ring_means[-2], ring_means[-1]),
             "patch_mean_last_relative_change": _relative_change(patch_means[-2], patch_means[-1]),
             "remote_probe_last_relative_change": _relative_change(
                 probe_displacements[-2], probe_displacements[-1]
             ),
         },
-        "interpretation": {
-            "near_field": (
-                "The upper-right nearest-element stress grows approximately in inverse "
-                "proportion to its distance from the point load."
-            ),
-            "fixed_distance": (
-                "The fixed physical ring and patch change much less than the nearest "
-                "point-load peak as the mesh is refined."
-            ),
-            "remote_field": (
-                "The fixed remote displacement converges, consistent with a localized "
-                "load-introduction singularity and Saint-Venant-type far-field stability."
-            ),
-            "mesh_decision": (
-                "Do not use the raw upper-right point-load peak as a convergence target "
-                "or PSO objective. Replace the point load with a finite load-transfer "
-                "region when local stress is the engineering quantity of interest."
-            ),
-        },
     }
+    case = {
+        "question": (
+            "请分析右上角附近的网格加密结果。不要预设它是奇异性；比较多个可能的"
+            "载荷引入、边界、离散和结果提取解释，并提出最小的区分性试验。"
+        ),
+        "intended_use": "判断右上角局部结果是否能支持工程决策，以及下一步模型应如何改进",
+        "qoi": "尚待AI根据工程用途和证据澄清",
+        "model_context": {**evidence["model"], **evidence["regions"]},
+    }
+    packet = build_analysis_packet(case, evidence)
 
-    json_path = output_dir / "upper_right_refinement.json"
-    json_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    (output_dir / "solver_evidence.json").write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    (output_dir / "ai_analysis_packet.json").write_text(
+        json.dumps(packet, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     csv_path = output_dir / "upper_right_refinement.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
@@ -280,18 +247,7 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(history)
 
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
-
-    if not summary["observed"]["corner_peak_strictly_increases"]:
-        raise SystemExit("Upper-right point-load peak did not increase monotonically")
-    if min(corner_ratios) < 1.75:
-        raise SystemExit(f"Corner peak did not show strong inverse-distance growth: {corner_ratios}")
-    if scaled_cv > 0.03:
-        raise SystemExit(f"sigma*r is not sufficiently stable: coefficient of variation={scaled_cv:.3%}")
-    if summary["observed"]["ring_mean_last_relative_change"] > 0.03:
-        raise SystemExit("Fixed 5--10 mm ring mean did not stabilize within 3%")
-    if summary["observed"]["remote_probe_last_relative_change"] > 0.01:
-        raise SystemExit("Remote displacement did not stabilize within 1%")
+    print(json.dumps(packet, ensure_ascii=False, indent=2))
     return 0
 
 
