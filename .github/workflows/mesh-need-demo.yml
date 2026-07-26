@@ -1,4 +1,4 @@
-name: Mesh Need DeepSeek Analysis Demo
+name: Mesh Need DeepSeek Load Comparison
 
 on:
   workflow_dispatch:
@@ -7,19 +7,19 @@ on:
       - feat/model-aware-fea-mvp
     paths:
       - "src/mesh_need/**"
-      - "scripts/run_mesh_need_demo.py"
       - "scripts/run_real_calculix_demo.py"
       - "scripts/run_upper_right_refinement.py"
+      - "scripts/run_distributed_edge_comparison.py"
       - "scripts/call_deepseek.py"
-      - "examples/mesh_need/fatigue_weld_hotspot_question.json"
       - "tests/test_mesh_need_diagnosis.py"
+      - "tests/test_distributed_edge_case.py"
       - ".github/workflows/mesh-need-demo.yml"
 
 permissions:
   contents: write
 
 jobs:
-  generate-evidence-and-run-deepseek:
+  compare-load-introduction:
     runs-on: ubuntu-24.04
     environment: ds
     timeout-minutes: 30
@@ -33,127 +33,89 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Discover repository environments
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          import urllib.request
-
-          repo = os.environ["GITHUB_REPOSITORY"]
-          request = urllib.request.Request(
-              f"https://api.github.com/repos/{repo}/environments?per_page=100",
-              headers={
-                  "Accept": "application/vnd.github+json",
-                  "User-Agent": "mesh-need-environment-discovery",
-              },
-          )
-          with urllib.request.urlopen(request, timeout=30) as response:
-              payload = json.load(response)
-          result = {
-              "environment_names": [item["name"] for item in payload.get("environments", [])],
-              "total_count": payload.get("total_count", 0),
-          }
-          with open("examples/mesh_need/github_environments.json", "w", encoding="utf-8") as handle:
-              json.dump(result, handle, ensure_ascii=False, indent=2)
-              handle.write("\n")
-          print(json.dumps(result, ensure_ascii=False))
-          PY
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add examples/mesh_need/github_environments.json
-          if git diff --cached --quiet; then
-            echo "Environment list is unchanged"
-          else
-            git commit -m "Record repository environment names [skip ci]"
-            git push origin HEAD:feat/model-aware-fea-mvp
-          fi
-
-      - name: Install CalculiX solver and DeepSeek client
+      - name: Install CalculiX and DeepSeek client
         run: |
           sudo apt-get update
           sudo apt-get install -y calculix-ccx
           command -v ccx
-          dpkg-query -W calculix-ccx
           python -m pip install --upgrade pip
           python -m pip install "openai>=1.61,<3"
 
-      - name: Generate CalculiX solver evidence
+      - name: Test analysis contract and distributed resultant
         run: |
-          mkdir -p artifacts/real-calculix
-          python scripts/run_real_calculix_demo.py \
-            --output-dir artifacts/real-calculix \
-            | tee artifacts/real-calculix/ai_analysis_packet_stdout.json
+          python -m unittest \
+            tests/test_mesh_need_diagnosis.py \
+            tests/test_distributed_edge_case.py \
+            -v
 
-      - name: Generate focused upper-right evidence
+      - name: Generate point-load refinement evidence
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p artifacts/upper-right-refinement
           python scripts/run_upper_right_refinement.py \
             --output-dir artifacts/upper-right-refinement \
             | tee artifacts/upper-right-refinement/ai_analysis_packet_stdout.json
 
-      - name: Build static-question AI packet
+      - name: Generate 2.5 mm distributed-edge comparison
+        shell: bash
         run: |
-          python scripts/run_mesh_need_demo.py \
-            | tee artifacts/fatigue_weld_ai_analysis_packet.json
+          set -o pipefail
+          mkdir -p artifacts/distributed-edge-comparison
+          python scripts/run_distributed_edge_comparison.py \
+            --point-evidence artifacts/upper-right-refinement/solver_evidence.json \
+            --output-dir artifacts/distributed-edge-comparison \
+            | tee artifacts/distributed-edge-comparison/comparison_packet_stdout.json
 
-      - name: Test the AI contract
-        run: python -m unittest tests/test_mesh_need_diagnosis.py -v
-
-      - name: Confirm DeepSeek credential is available from ds
+      - name: Confirm DeepSeek credential
         env:
           DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
         run: |
-          if [ -n "$DEEPSEEK_API_KEY" ]; then
-            echo "::add-mask::$DEEPSEEK_API_KEY"
-            AVAILABLE=true
-          else
-            AVAILABLE=false
-          fi
-          printf '{\n  "available": %s,\n  "environment": "ds",\n  "accepted_names": ["D", "DEEPSEEK_API_KEY", "DEEPSEEK_KEY", "DEEPSEEK", "API_KEY", "API", "KEY", "TOKEN", "DS", "DS_KEY", "DS_API_KEY"],\n  "accepted_scopes": ["environment_secret", "environment_variable"],\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
-            "$AVAILABLE" "$GITHUB_EVENT_NAME" "$GITHUB_SHA" \
-            > examples/mesh_need/deepseek_secret_status.json
-          git add examples/mesh_need/deepseek_secret_status.json
-          git commit -m "Record DeepSeek credential availability [skip ci]"
-          git push origin HEAD:feat/model-aware-fea-mvp
-          if [ "$AVAILABLE" != true ]; then
-            echo "No accepted DeepSeek credential name was found in environment ds"
-            exit 1
-          fi
-          echo "DeepSeek credential from environment ds is available"
+          test -n "$DEEPSEEK_API_KEY"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          echo "DeepSeek credential is available from environment ds"
 
-      - name: Ask DeepSeek to analyze the focused solver evidence
+      - name: Ask DeepSeek to compare the two modeling cases
         env:
           DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
           DEEPSEEK_MODEL: deepseek-v4-pro
         run: |
           echo "::add-mask::$DEEPSEEK_API_KEY"
           python scripts/call_deepseek.py \
-            artifacts/upper-right-refinement/ai_analysis_packet.json \
-            artifacts/upper-right-refinement/deepseek_analysis.json \
-            > artifacts/upper-right-refinement/deepseek_call_summary.json
-          cat artifacts/upper-right-refinement/deepseek_call_summary.json
-          test -s artifacts/upper-right-refinement/deepseek_analysis.json
+            artifacts/distributed-edge-comparison/comparison_ai_analysis_packet.json \
+            artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json \
+            > artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json
+          cat artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json
+          test -s artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json
 
-      - name: Publish validated DeepSeek analysis to the branch
+      - name: Publish comparison evidence and AI analysis
         run: |
-          cp artifacts/upper-right-refinement/deepseek_analysis.json \
-            examples/mesh_need/latest_deepseek_analysis.json
-          cp artifacts/upper-right-refinement/deepseek_call_summary.json \
-            examples/mesh_need/latest_deepseek_call_summary.json
-          git add examples/mesh_need/latest_deepseek_analysis.json \
-            examples/mesh_need/latest_deepseek_call_summary.json
+          cp artifacts/distributed-edge-comparison/distributed_solver_evidence.json \
+            examples/mesh_need/latest_distributed_edge_evidence.json
+          cp artifacts/distributed-edge-comparison/comparison_solver_evidence.json \
+            examples/mesh_need/latest_load_comparison_evidence.json
+          cp artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json \
+            examples/mesh_need/latest_deepseek_comparison_analysis.json
+          cp artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json \
+            examples/mesh_need/latest_deepseek_comparison_call_summary.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            examples/mesh_need/latest_distributed_edge_evidence.json \
+            examples/mesh_need/latest_load_comparison_evidence.json \
+            examples/mesh_need/latest_deepseek_comparison_analysis.json \
+            examples/mesh_need/latest_deepseek_comparison_call_summary.json
           if git diff --cached --quiet; then
-            echo "Published analysis is unchanged"
+            echo "Published comparison is unchanged"
           else
-            git commit -m "Store latest DeepSeek FEA analysis [skip ci]"
+            git commit -m "Store point-versus-distributed load analysis [skip ci]"
             git push origin HEAD:feat/model-aware-fea-mvp
           fi
 
-      - name: Upload solver evidence, packets, and AI analysis
+      - name: Upload complete comparison artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mesh-need-deepseek-analysis
+          name: mesh-need-load-comparison
           path: artifacts/
           if-no-files-found: error
