@@ -1,0 +1,53 @@
+name: Mesh Need Demo
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/mesh_need/**"
+      - "scripts/run_mesh_need_demo.py"
+      - "examples/mesh_need/**"
+      - "tests/test_mesh_need_diagnosis.py"
+      - ".github/workflows/mesh-need-demo.yml"
+  push:
+    branches:
+      - feat/model-aware-fea-mvp
+    paths:
+      - "src/mesh_need/**"
+      - "scripts/run_mesh_need_demo.py"
+      - "examples/mesh_need/**"
+      - "tests/test_mesh_need_diagnosis.py"
+      - ".github/workflows/mesh-need-demo.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run the example diagnosis
+        run: |
+          mkdir -p artifacts
+          python scripts/run_mesh_need_demo.py | tee artifacts/fatigue_weld_diagnosis.json
+
+      - name: Run regression tests
+        run: python -m unittest tests/test_mesh_need_diagnosis.py -v
+
+      - name: Upload diagnosis artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesh-need-demo-diagnosis
+          path: artifacts/fatigue_weld_diagnosis.json
+          if-no-files-found: warn
