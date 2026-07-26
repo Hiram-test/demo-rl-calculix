@@ -29,6 +29,7 @@ jobs:
           echo "c28869631950846cb13966dd1b33f40992b86b46c675e0bf45eac2565b1e68cb  /tmp/model-aware-fea-mvp.tar.gz" | sha256sum --check --strict
           tar -xzf /tmp/model-aware-fea-mvp.tar.gz
           rm -rf .mvp-bootstrap
+          rm -f .github/workflows/mesh-need-mvp.yml
 
       - name: Set up Python
         uses: actions/setup-python@v5
