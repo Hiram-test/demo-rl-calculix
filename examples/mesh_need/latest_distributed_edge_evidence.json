@@ -1,0 +1,143 @@
+{
+  "solver": {
+    "executable": "/usr/bin/ccx",
+    "version_output": "This is Version 2.21"
+  },
+  "benchmark": "upper_right_finite_edge_load_refinement",
+  "model": {
+    "geometry_mm": [
+      100.0,
+      20.0
+    ],
+    "element_type": "CPS4",
+    "left_boundary": "fully fixed in x and y",
+    "load": "-1000 N resultant represented as a uniform vertical line load over the upper 2.5 mm of the right edge",
+    "load_discretization": "consistent equivalent nodal forces on aligned edge segments"
+  },
+  "regions": {
+    "corner": "single element touching the upper-right loaded node",
+    "ring_mm": [
+      5.0,
+      10.0
+    ],
+    "patch_mm": {
+      "x_min": 90.0,
+      "y_min": 10.0
+    },
+    "remote_probe": "fixed point at (50 mm, 10 mm)"
+  },
+  "mesh_history": [
+    {
+      "nx": 40,
+      "ny": 8,
+      "elements": 320,
+      "nodes": 369,
+      "mesh_size": 2.5,
+      "probe_node": 185,
+      "load_node_count": 2,
+      "load_segment_height_mm": 2.5,
+      "line_load_n_per_mm": -400.0,
+      "applied_total_vertical_force_n": -1000.0,
+      "job": "distributed_edge_40x8",
+      "global_peak_stress": 1449.3312253091135,
+      "upper_right_corner_element": 320,
+      "upper_right_corner_peak_stress": 424.3122945862691,
+      "nearest_integration_point_distance": 0.7471462268067112,
+      "corner_peak_times_distance": 317.02332988782865,
+      "upper_right_ring_sample_count": 80,
+      "upper_right_ring_mean_stress": 150.54678787643994,
+      "upper_right_ring_peak_stress": 333.40210638985553,
+      "upper_right_patch_sample_count": 128,
+      "upper_right_patch_mean_stress": 174.07833650133173,
+      "upper_right_patch_peak_stress": 524.7849461068369,
+      "remote_probe_vertical_displacement": -0.7672666
+    },
+    {
+      "nx": 80,
+      "ny": 16,
+      "elements": 1280,
+      "nodes": 1377,
+      "mesh_size": 1.25,
+      "probe_node": 689,
+      "load_node_count": 3,
+      "load_segment_height_mm": 2.5,
+      "line_load_n_per_mm": -400.0,
+      "applied_total_vertical_force_n": -1000.0,
+      "job": "distributed_edge_80x16",
+      "global_peak_stress": 1636.5914598141549,
+      "upper_right_corner_element": 1280,
+      "upper_right_corner_peak_stress": 462.02535046565123,
+      "nearest_integration_point_distance": 0.3735731134033556,
+      "corner_peak_times_distance": 172.60024864472985,
+      "upper_right_ring_sample_count": 312,
+      "upper_right_ring_mean_stress": 153.81270710788203,
+      "upper_right_ring_peak_stress": 363.5880368296719,
+      "upper_right_patch_sample_count": 512,
+      "upper_right_patch_mean_stress": 178.6215441014748,
+      "upper_right_patch_peak_stress": 773.744781040493,
+      "remote_probe_vertical_displacement": -0.7728704
+    },
+    {
+      "nx": 160,
+      "ny": 32,
+      "elements": 5120,
+      "nodes": 5313,
+      "mesh_size": 0.625,
+      "probe_node": 2657,
+      "load_node_count": 5,
+      "load_segment_height_mm": 2.5,
+      "line_load_n_per_mm": -400.0,
+      "applied_total_vertical_force_n": -1000.0,
+      "job": "distributed_edge_160x32",
+      "global_peak_stress": 1853.8718189179099,
+      "upper_right_corner_element": 5120,
+      "upper_right_corner_peak_stress": 502.0183815807241,
+      "nearest_integration_point_distance": 0.1867865567016778,
+      "corner_peak_times_distance": 93.77028489641245,
+      "upper_right_ring_sample_count": 1208,
+      "upper_right_ring_mean_stress": 155.93017595015746,
+      "upper_right_ring_peak_stress": 390.7125244094624,
+      "upper_right_patch_sample_count": 2048,
+      "upper_right_patch_mean_stress": 180.34405634996753,
+      "upper_right_patch_peak_stress": 994.5800028235839,
+      "remote_probe_vertical_displacement": -0.7744371
+    },
+    {
+      "nx": 320,
+      "ny": 64,
+      "elements": 20480,
+      "nodes": 20865,
+      "mesh_size": 0.3125,
+      "probe_node": 10433,
+      "load_node_count": 9,
+      "load_segment_height_mm": 2.5,
+      "line_load_n_per_mm": -400.0,
+      "applied_total_vertical_force_n": -1000.0,
+      "job": "distributed_edge_320x64",
+      "global_peak_stress": 2104.1918357522823,
+      "upper_right_corner_element": 20480,
+      "upper_right_corner_peak_stress": 502.0051041715292,
+      "nearest_integration_point_distance": 0.0933932783508389,
+      "corner_peak_times_distance": 46.883902427433505,
+      "upper_right_ring_sample_count": 4832,
+      "upper_right_ring_mean_stress": 156.5409106397526,
+      "upper_right_ring_peak_stress": 406.48247679536405,
+      "upper_right_patch_sample_count": 8192,
+      "upper_right_patch_mean_stress": 180.8885992494772,
+      "upper_right_patch_peak_stress": 1152.6090165095266,
+      "remote_probe_vertical_displacement": -0.7748878
+    }
+  ],
+  "derived_numerical_summaries": {
+    "corner_peak_successive_ratios": [
+      1.0888804221809192,
+      1.086560252754023,
+      0.9999735519461397
+    ],
+    "corner_peak_times_distance_mean": 157.56944146410112,
+    "corner_peak_times_distance_coefficient_of_variation": 0.6501049501456497,
+    "ring_mean_last_relative_change": 0.00391671904346704,
+    "patch_mean_last_relative_change": 0.0030194668487048093,
+    "remote_probe_last_relative_change": 0.0005819710858377344
+  }
+}
