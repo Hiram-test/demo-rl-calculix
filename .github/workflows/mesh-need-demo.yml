@@ -32,6 +32,42 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Discover repository environments
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          request = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/environments?per_page=100",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "User-Agent": "mesh-need-environment-discovery",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              payload = json.load(response)
+          result = {
+              "environment_names": [item["name"] for item in payload.get("environments", [])],
+              "total_count": payload.get("total_count", 0),
+          }
+          with open("examples/mesh_need/github_environments.json", "w", encoding="utf-8") as handle:
+              json.dump(result, handle, ensure_ascii=False, indent=2)
+              handle.write("\n")
+          print(json.dumps(result, ensure_ascii=False))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/mesh_need/github_environments.json
+          if git diff --cached --quiet; then
+            echo "Environment list is unchanged"
+          else
+            git commit -m "Record repository environment names [skip ci]"
+            git push origin HEAD:feat/model-aware-fea-mvp
+          fi
+
       - name: Install CalculiX solver and DeepSeek client
         run: |
           sudo apt-get update
@@ -75,8 +111,6 @@ jobs:
           printf '{\n  "available": %s,\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
             "$AVAILABLE" "$GITHUB_EVENT_NAME" "$GITHUB_SHA" \
             > examples/mesh_need/deepseek_secret_status.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add examples/mesh_need/deepseek_secret_status.json
           git commit -m "Record DeepSeek secret availability [skip ci]"
           git push origin HEAD:feat/model-aware-fea-mvp
