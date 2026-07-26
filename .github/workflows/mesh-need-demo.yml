@@ -74,7 +74,7 @@ jobs:
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
       - name: Ask DeepSeek to analyze the focused solver evidence
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_MODEL: deepseek-v4-pro
