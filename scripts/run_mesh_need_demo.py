@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one model-aware mesh-need diagnosis example."""
+"""Build an AI analysis packet for one engineering question."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ SRC = REPO_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from mesh_need import diagnose_question  # noqa: E402
+from mesh_need import build_analysis_packet  # noqa: E402
 
 
 def main() -> int:
@@ -32,8 +32,8 @@ def main() -> int:
     except (OSError, json.JSONDecodeError) as exc:
         parser.error(f"cannot read case {case_path}: {exc}")
 
-    diagnosis = diagnose_question(case)
-    print(json.dumps(diagnosis, ensure_ascii=False, indent=2))
+    packet = build_analysis_packet(case)
+    print(json.dumps(packet, ensure_ascii=False, indent=2))
     return 0
 
 
