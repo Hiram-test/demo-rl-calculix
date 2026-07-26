@@ -73,6 +73,17 @@ jobs:
       - name: Test the AI contract
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
+      - name: Confirm DeepSeek secret is available
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "DEEPSEEK_API_KEY repository secret is missing"
+            exit 1
+          fi
+          echo "DeepSeek repository secret is available"
+
       - name: Ask DeepSeek to analyze the focused solver evidence
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
@@ -82,7 +93,9 @@ jobs:
           python scripts/call_deepseek.py \
             artifacts/upper-right-refinement/ai_analysis_packet.json \
             artifacts/upper-right-refinement/deepseek_analysis.json \
-            | tee artifacts/upper-right-refinement/deepseek_call_summary.json
+            > artifacts/upper-right-refinement/deepseek_call_summary.json
+          cat artifacts/upper-right-refinement/deepseek_call_summary.json
+          test -s artifacts/upper-right-refinement/deepseek_analysis.json
 
       - name: Upload solver evidence, packets, and AI analysis
         if: always()
