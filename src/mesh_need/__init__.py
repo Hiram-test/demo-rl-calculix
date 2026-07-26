@@ -1,5 +1,5 @@
-"""Model-aware finite-element mesh-need diagnosis MVP."""
+"""Model-aware finite-element AI analysis MVP."""
 
-from .diagnosis import diagnose_question
+from .diagnosis import build_analysis_packet, validate_ai_analysis
 
-__all__=["diagnose_question"]
+__all__ = ["build_analysis_packet", "validate_ai_analysis"]
