@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Run a real CalculiX mesh study and feed solver results to the diagnosis layer.
+"""Run a real CalculiX mesh study and build an AI analysis packet.
 
-The controlled benchmark is a plane-stress cantilever plate with a concentrated
-load at the upper-right corner. The local stress at the load application point
-is singular, while a displacement measured at a fixed point away from the load
-should approach a stable value. Three independently generated meshes are solved
-by CalculiX; no response values are pre-filled.
+The script performs no physical classification. It creates three meshes, runs
+CalculiX, extracts solver quantities and packages them with the user's question
+for an AI model to interpret.
 """
 
 from __future__ import annotations
@@ -25,7 +23,7 @@ SRC = REPO_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from mesh_need import diagnose_question  # noqa: E402
+from mesh_need import build_analysis_packet  # noqa: E402
 
 
 FLOAT_RE = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[EeDd][-+]?\d+)?")
@@ -36,7 +34,10 @@ def _node_id(i: int, j: int, nx: int) -> int:
 
 
 def _format_ids(ids: list[int], per_line: int = 16) -> list[str]:
-    return [", ".join(str(value) for value in ids[start : start + per_line]) for start in range(0, len(ids), per_line)]
+    return [
+        ", ".join(str(value) for value in ids[start : start + per_line])
+        for start in range(0, len(ids), per_line)
+    ]
 
 
 def write_input(path: Path, nx: int, ny: int) -> dict[str, int | float]:
@@ -49,11 +50,7 @@ def write_input(path: Path, nx: int, ny: int) -> dict[str, int | float]:
 
     dx = length / nx
     dy = height / ny
-    lines = [
-        "*HEADING",
-        f"Real CalculiX point-load singularity study: {nx} x {ny}",
-        "*NODE",
-    ]
+    lines = ["*HEADING", f"CalculiX mesh study: {nx} x {ny}", "*NODE"]
 
     for j in range(ny + 1):
         for i in range(nx + 1):
@@ -147,8 +144,6 @@ def parse_dat(path: Path, probe_node: int) -> tuple[float, float]:
 
         if in_stresses:
             values = _numbers(line)
-            # CalculiX *EL PRINT stress rows contain element, integration point,
-            # followed by six Cartesian stress components.
             if len(values) >= 8:
                 sxx, syy, szz, sxy, syz, szx = values[2:8]
                 vm2 = 0.5 * (
@@ -197,24 +192,13 @@ def solve_mesh(ccx: str, output_dir: Path, nx: int, ny: int) -> dict[str, float 
     )
     (output_dir / f"{job}.stdout.txt").write_text(completed.stdout, encoding="utf-8")
     if completed.returncode != 0:
-        raise RuntimeError(
-            f"CalculiX failed for {job} with code {completed.returncode}:\n{completed.stdout}"
-        )
+        raise RuntimeError(f"CalculiX failed for {job}:\n{completed.stdout}")
 
     dat = output_dir / f"{job}.dat"
     if not dat.exists():
         raise RuntimeError(f"CalculiX did not create {dat.name}")
     peak_stress, probe_u2 = parse_dat(dat, int(metadata["probe_node"]))
-    return {
-        **metadata,
-        "job": job,
-        "peak_stress": peak_stress,
-        "reference_qoi": probe_u2,
-    }
-
-
-def relative_change(previous: float, current: float) -> float:
-    return abs(current - previous) / max(abs(previous), 1.0e-15)
+    return {**metadata, "job": job, "global_peak_stress": peak_stress, "probe_u2": probe_u2}
 
 
 def main() -> int:
@@ -227,54 +211,39 @@ def main() -> int:
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    meshes = [(20, 4), (40, 8), (80, 16)]
-    history = [solve_mesh(ccx, output_dir, nx, ny) for nx, ny in meshes]
-    peaks = [float(row["peak_stress"]) for row in history]
-    references = [float(row["reference_qoi"]) for row in history]
-    peak_monotonic = all(b > a for a, b in zip(peaks, peaks[1:]))
-    reference_last_change = relative_change(references[-2], references[-1])
-
-    case = {
-        "question": (
-            "悬臂板右上角施加集中力。加载点附近最大应力随网格细化升高，"
-            "但我关心的是远离加载点的固定位置位移。是否应该把最大应力热点"
-            "交给PSO继续加密？"
-        ),
-        "intended_use": "判断远离集中力加载点的结构位移响应",
-        "qoi": "板中部固定物理位置的竖向位移",
-        "mesh_history": history,
-        "acceptance": {"reference_relative_change_max": 0.03},
-    }
-    diagnosis = diagnose_question(case)
-    result = {
+    history = [solve_mesh(ccx, output_dir, nx, ny) for nx, ny in [(20, 4), (40, 8), (80, 16)]]
+    evidence = {
         "solver": {
             "executable": ccx,
             "version_output": subprocess.run(
                 [ccx, "-v"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
             ).stdout.strip(),
         },
-        "benchmark": "plane_stress_cantilever_with_corner_point_load",
-        "mesh_history": history,
-        "observed": {
-            "peak_stress_strictly_increases": peak_monotonic,
-            "peak_last_to_first_ratio": peaks[-1] / peaks[0],
-            "reference_qoi_last_relative_change": reference_last_change,
+        "benchmark": "plane_stress_cantilever_with_corner_nodal_load",
+        "model": {
+            "geometry_mm": [100.0, 20.0],
+            "element_type": "CPS4",
+            "left_boundary": "all left-edge nodes constrained in x and y",
+            "load": "-1000 N vertical CLOAD on the upper-right node",
+            "probe": "vertical displacement at fixed point (50 mm, 10 mm)",
         },
-        "diagnosis": diagnosis,
+        "mesh_history": history,
     }
+    case = {
+        "question": "右上角附近结果随网格变化。这个现象说明什么，下一步最有区分力的计算是什么？",
+        "intended_use": "理解载荷引入区与远场响应对网格的敏感性",
+        "qoi": "尚未最终确定；候选包括右上角局部应力和远场固定点位移",
+        "model_context": evidence["model"],
+    }
+    packet = build_analysis_packet(case, evidence)
 
-    result_path = output_dir / "real_calculix_diagnosis.json"
-    result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(result, ensure_ascii=False, indent=2))
-
-    if not peak_monotonic:
-        raise SystemExit("Expected the point-load peak stress to increase monotonically")
-    if reference_last_change > 0.03:
-        raise SystemExit(
-            f"Fixed reference displacement did not stabilize: last change={reference_last_change:.3%}"
-        )
-    if diagnosis.get("recommended_skill") != "qoi_and_singularity_guard":
-        raise SystemExit(f"Unexpected diagnosis: {diagnosis}")
+    (output_dir / "solver_evidence.json").write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    (output_dir / "ai_analysis_packet.json").write_text(
+        json.dumps(packet, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(packet, ensure_ascii=False, indent=2))
     return 0
 
 
