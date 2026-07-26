@@ -2,16 +2,6 @@ name: Mesh Need DeepSeek Analysis Demo
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "src/mesh_need/**"
-      - "scripts/run_mesh_need_demo.py"
-      - "scripts/run_real_calculix_demo.py"
-      - "scripts/run_upper_right_refinement.py"
-      - "scripts/call_deepseek.py"
-      - "examples/mesh_need/**"
-      - "tests/test_mesh_need_diagnosis.py"
-      - ".github/workflows/mesh-need-demo.yml"
   push:
     branches:
       - feat/model-aware-fea-mvp
@@ -21,12 +11,12 @@ on:
       - "scripts/run_real_calculix_demo.py"
       - "scripts/run_upper_right_refinement.py"
       - "scripts/call_deepseek.py"
-      - "examples/mesh_need/**"
+      - "examples/mesh_need/fatigue_weld_hotspot_question.json"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate-evidence-and-run-deepseek:
@@ -74,7 +64,6 @@ jobs:
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
       - name: Confirm DeepSeek secret is available
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
@@ -85,7 +74,6 @@ jobs:
           echo "DeepSeek repository secret is available"
 
       - name: Ask DeepSeek to analyze the focused solver evidence
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_MODEL: deepseek-v4-pro
@@ -96,6 +84,23 @@ jobs:
             > artifacts/upper-right-refinement/deepseek_call_summary.json
           cat artifacts/upper-right-refinement/deepseek_call_summary.json
           test -s artifacts/upper-right-refinement/deepseek_analysis.json
+
+      - name: Publish validated DeepSeek analysis to the branch
+        run: |
+          cp artifacts/upper-right-refinement/deepseek_analysis.json \
+            examples/mesh_need/latest_deepseek_analysis.json
+          cp artifacts/upper-right-refinement/deepseek_call_summary.json \
+            examples/mesh_need/latest_deepseek_call_summary.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/mesh_need/latest_deepseek_analysis.json \
+            examples/mesh_need/latest_deepseek_call_summary.json
+          if git diff --cached --quiet; then
+            echo "Published analysis is unchanged"
+          else
+            git commit -m "Store latest DeepSeek FEA analysis [skip ci]"
+            git push origin HEAD:feat/model-aware-fea-mvp
+          fi
 
       - name: Upload solver evidence, packets, and AI analysis
         if: always()
