@@ -7,6 +7,7 @@ on:
       - "src/mesh_need/**"
       - "scripts/run_mesh_need_demo.py"
       - "scripts/run_real_calculix_demo.py"
+      - "scripts/run_upper_right_refinement.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -17,6 +18,7 @@ on:
       - "src/mesh_need/**"
       - "scripts/run_mesh_need_demo.py"
       - "scripts/run_real_calculix_demo.py"
+      - "scripts/run_upper_right_refinement.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -27,7 +29,7 @@ permissions:
 jobs:
   diagnose-and-test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Check out repository
@@ -51,6 +53,13 @@ jobs:
           python scripts/run_real_calculix_demo.py \
             --output-dir artifacts/real-calculix \
             | tee artifacts/real-calculix/stdout.json
+
+      - name: Run focused upper-right refinement study
+        run: |
+          mkdir -p artifacts/upper-right-refinement
+          python scripts/run_upper_right_refinement.py \
+            --output-dir artifacts/upper-right-refinement \
+            | tee artifacts/upper-right-refinement/stdout.json
 
       - name: Run the static example diagnosis
         run: |
