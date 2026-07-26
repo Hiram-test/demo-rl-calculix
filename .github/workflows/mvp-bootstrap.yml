@@ -1,0 +1,55 @@
+name: Publish model-aware FEA MVP
+
+on:
+  push:
+    branches:
+      - feat/model-aware-fea-evidence-mvp
+    paths:
+      - ".mvp-bootstrap/**"
+      - ".github/workflows/mvp-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/model-aware-fea-evidence-mvp
+          fetch-depth: 0
+
+      - name: Reassemble and verify source archive
+        shell: bash
+        run: |
+          cat .mvp-bootstrap/part*.b64 | base64 --decode > /tmp/model-aware-fea-mvp.tar.gz
+          echo "c28869631950846cb13966dd1b33f40992b86b46c675e0bf45eac2565b1e68cb  /tmp/model-aware-fea-mvp.tar.gz" | sha256sum --check --strict
+          tar -xzf /tmp/model-aware-fea-mvp.tar.gz
+          rm -rf .mvp-bootstrap
+          rm -f .github/workflows/mvp-bootstrap.yml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install contract-test dependency
+        run: python -m pip install -r requirements-mesh-need.txt
+
+      - name: Compile and test MVP
+        shell: bash
+        run: |
+          python -m compileall -q src scripts
+          PYTHONPATH=src python -m unittest discover -s tests -v
+          PYTHONPATH=src python scripts/validate_mesh_need_skills.py
+
+      - name: Replace bootstrap files with verified source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add model-aware FEA mesh-need and evidence MVP"
+          git push origin HEAD:feat/model-aware-fea-evidence-mvp
