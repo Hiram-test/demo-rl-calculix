@@ -1,0 +1,29 @@
+name: Mesh-Need MVP
+
+on:
+  push:
+    branches:
+      - feat/model-aware-fea-evidence-mvp
+  pull_request:
+    paths:
+      - "src/mesh_need/**"
+      - "scripts/mesh_need.py"
+      - "scripts/validate_mesh_need_skills.py"
+      - "schemas/*mesh_need*"
+      - "schemas/evidence_ledger.schema.json"
+      - "tests/test_mesh_need.py"
+      - "examples/mesh_need/**"
+      - "requirements-mesh-need.txt"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-mesh-need.txt
+      - run: PYTHONPATH=src python -m compileall -q src scripts
+      - run: PYTHONPATH=src python -m unittest discover -s tests -v
+      - run: PYTHONPATH=src python scripts/validate_mesh_need_skills.py
