@@ -1,16 +1,10 @@
 name: Publish model-aware FEA MVP
 
 on:
-  push:
-    branches:
-      - feat/model-aware-fea-evidence-mvp
-    paths:
-      - ".mvp-bootstrap/**"
-      - ".github/workflows/mvp-bootstrap.yml"
   pull_request:
     branches:
       - agent/bridge-fea-mesh-requirements-clean
-    types: [opened, synchronize, reopened]
+    types: [opened, reopened]
     paths:
       - ".mvp-bootstrap/**"
       - ".github/workflows/mvp-bootstrap.yml"
@@ -35,7 +29,6 @@ jobs:
           echo "c28869631950846cb13966dd1b33f40992b86b46c675e0bf45eac2565b1e68cb  /tmp/model-aware-fea-mvp.tar.gz" | sha256sum --check --strict
           tar -xzf /tmp/model-aware-fea-mvp.tar.gz
           rm -rf .mvp-bootstrap
-          rm -f .github/workflows/mvp-bootstrap.yml
 
       - name: Set up Python
         uses: actions/setup-python@v5
