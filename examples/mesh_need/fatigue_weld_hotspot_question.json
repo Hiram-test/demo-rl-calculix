@@ -2,11 +2,17 @@
   "case_id": "demo-fatigue-weld-hotspot-001",
   "question": "桥梁横隔板与主梁焊接连接附近的 von Mises 最大应力很高。网格从 30 mm 细化到 10 mm、再到 5 mm 后，最大应力从 310 MPa 增加到 365 MPa 和 412 MPa。我还应该继续按照高应力热点细化吗？我真正关心的是该焊接细节是否满足疲劳要求。",
   "intended_use": "fatigue assessment of a welded bridge detail",
-  "qoi": "structural stress extracted along one fixed fatigue path",
+  "qoi": "the fatigue-relevant quantity is not yet independently confirmed",
   "model_context": {
     "analysis": "linear elastic static",
     "connection": "welded diaphragm-to-girder detail",
-    "reported_field": "von Mises nodal peak stress"
+    "reported_field": "von Mises nodal peak stress",
+    "missing_information": [
+      "weld-detail idealization",
+      "fatigue assessment method",
+      "result extraction definition",
+      "whether all mesh levels use the same physical extraction location"
+    ]
   },
   "mesh_history": [
     {
@@ -25,15 +31,8 @@
       "path_stress": 220.0
     }
   ],
-  "acceptance": {
-    "path_relative_change_max": 0.02
-  },
-  "expected_behavior": {
-    "recommended_skill": "fatigue_qoi_and_singularity_guard",
-    "must_block": [
-      "peak_stress_hotspot_refinement",
-      "hotspot_pso"
-    ],
-    "note": "This expected behavior is a regression-test expectation, not an assertion that the full engineering model has been certified."
+  "acceptance_context": {
+    "reported_path_relative_change_target": 0.02,
+    "status": "user-provided target; not independently justified"
   }
 }
