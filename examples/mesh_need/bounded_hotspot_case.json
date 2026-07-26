@@ -1,0 +1,20 @@
+{
+  "case_id": "bounded-hotspot-demo",
+  "question": "有限圆角附近存在局部高应力，怎样生成局部尺寸场？",
+  "intended_use": "比较两种圆角设计的固定路径应力",
+  "current_claim": "该有限热点可通过受控局部细化降低离散误差",
+  "qoi": {
+    "name": "fixed-path stress",
+    "location": "same physical path around finite radius",
+    "extraction_method": "integration-point path average",
+    "tolerance": 0.02
+  },
+  "mesh_series": [
+    {"h": 4.0, "peak": 88.0, "qoi": 80.0},
+    {"h": 2.0, "peak": 91.0, "qoi": 82.0},
+    {"h": 1.0, "peak": 92.0, "qoi": 82.6}
+  ],
+  "hotspots": [
+    {"shape": "box", "xmin": 80, "xmax": 120, "ymin": -20, "ymax": 20, "zmin": -5, "zmax": 5, "size_inside": 0.5, "size_outside": 3.0}
+  ]
+}

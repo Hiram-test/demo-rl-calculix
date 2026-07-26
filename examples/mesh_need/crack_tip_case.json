@@ -1,0 +1,24 @@
+{
+  "case_id": "crack-tip-demo",
+  "question": "裂纹尖端应力随着网格细化越来越大，我还应该继续按热点加密吗？",
+  "context": "线弹性裂纹模型；原始峰值位于裂尖节点",
+  "intended_use": "比较固定路径上的结构应力趋势",
+  "current_claim": "当前网格足以支持固定路径结果的比较",
+  "qoi": {
+    "name": "fixed-path structural stress",
+    "location": "same path away from crack tip",
+    "extraction_method": "fixed path and fixed extrapolation",
+    "tolerance": 0.02
+  },
+  "mesh_series": [
+    {"h": 4.0, "peak": 100.0, "qoi": 82.0},
+    {"h": 2.0, "peak": 145.0, "qoi": 83.0},
+    {"h": 1.0, "peak": 210.0, "qoi": 83.4},
+    {"h": 0.5, "peak": 305.0, "qoi": 83.6}
+  ],
+  "force_relative_residual": 0.005,
+  "moment_relative_residual": 0.006,
+  "energy_history": [
+    {"external_work": 100.0, "internal_energy": 98.9, "artificial_energy": 0.1}
+  ]
+}
