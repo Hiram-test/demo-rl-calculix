@@ -6,6 +6,7 @@ on:
     paths:
       - "src/mesh_need/**"
       - "scripts/run_mesh_need_demo.py"
+      - "scripts/run_real_calculix_demo.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -15,6 +16,7 @@ on:
     paths:
       - "src/mesh_need/**"
       - "scripts/run_mesh_need_demo.py"
+      - "scripts/run_real_calculix_demo.py"
       - "examples/mesh_need/**"
       - "tests/test_mesh_need_diagnosis.py"
       - ".github/workflows/mesh-need-demo.yml"
@@ -24,8 +26,8 @@ permissions:
 
 jobs:
   diagnose-and-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -36,18 +38,32 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run the example diagnosis
+      - name: Install CalculiX solver
         run: |
-          mkdir -p artifacts
-          python scripts/run_mesh_need_demo.py | tee artifacts/fatigue_weld_diagnosis.json
+          sudo apt-get update
+          sudo apt-get install -y calculix-ccx
+          command -v ccx
+          dpkg-query -W calculix-ccx
+
+      - name: Run real CalculiX mesh study
+        run: |
+          mkdir -p artifacts/real-calculix
+          python scripts/run_real_calculix_demo.py \
+            --output-dir artifacts/real-calculix \
+            | tee artifacts/real-calculix/stdout.json
+
+      - name: Run the static example diagnosis
+        run: |
+          python scripts/run_mesh_need_demo.py \
+            | tee artifacts/fatigue_weld_diagnosis.json
 
       - name: Run regression tests
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
-      - name: Upload diagnosis artifact
+      - name: Upload solver files and diagnoses
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mesh-need-demo-diagnosis
-          path: artifacts/fatigue_weld_diagnosis.json
-          if-no-files-found: warn
+          name: mesh-need-real-calculix-results
+          path: artifacts/
+          if-no-files-found: error
