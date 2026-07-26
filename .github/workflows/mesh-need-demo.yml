@@ -1,4 +1,4 @@
-name: Mesh Need Demo
+name: Mesh Need AI Evidence Demo
 
 on:
   workflow_dispatch:
@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  diagnose-and-test:
+  generate-evidence-and-test-contract:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -47,32 +47,32 @@ jobs:
           command -v ccx
           dpkg-query -W calculix-ccx
 
-      - name: Run real CalculiX mesh study
+      - name: Generate CalculiX solver evidence
         run: |
           mkdir -p artifacts/real-calculix
           python scripts/run_real_calculix_demo.py \
             --output-dir artifacts/real-calculix \
-            | tee artifacts/real-calculix/stdout.json
+            | tee artifacts/real-calculix/ai_analysis_packet_stdout.json
 
-      - name: Run focused upper-right refinement study
+      - name: Generate focused upper-right evidence
         run: |
           mkdir -p artifacts/upper-right-refinement
           python scripts/run_upper_right_refinement.py \
             --output-dir artifacts/upper-right-refinement \
-            | tee artifacts/upper-right-refinement/stdout.json
+            | tee artifacts/upper-right-refinement/ai_analysis_packet_stdout.json
 
-      - name: Run the static example diagnosis
+      - name: Build static-question AI packet
         run: |
           python scripts/run_mesh_need_demo.py \
-            | tee artifacts/fatigue_weld_diagnosis.json
+            | tee artifacts/fatigue_weld_ai_analysis_packet.json
 
-      - name: Run regression tests
+      - name: Test the AI contract
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
-      - name: Upload solver files and diagnoses
+      - name: Upload solver evidence and AI packets
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mesh-need-real-calculix-results
+          name: mesh-need-ai-evidence-packets
           path: artifacts/
           if-no-files-found: error
