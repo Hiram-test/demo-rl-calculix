@@ -1,8 +1,10 @@
-"""Deterministic first-pass mesh-need diagnosis.
+"""AI analysis contract for finite-element modeling evidence.
 
-This module does not certify a finite-element model. It turns a user question
-and mesh-history evidence into a transparent initial routing decision that
-later numerical checks can challenge.
+This module deliberately contains no physical classification rules. Numerical
+code may collect and summarize solver evidence, but a language model must form
+and compare physical hypotheses from the question, model description and raw
+evidence. The deterministic layer only packages inputs and validates the shape
+of the model response.
 """
 
 from __future__ import annotations
@@ -10,159 +12,74 @@ from __future__ import annotations
 from typing import Any
 
 
-def _relative_change(previous: float, current: float) -> float:
-    scale = max(abs(previous), 1.0e-12)
-    return abs(current - previous) / scale
+AI_REQUIRED_FIELDS = (
+    "problem_restatement",
+    "competing_hypotheses",
+    "evidence_assessment",
+    "recommended_next_action",
+    "uncertainties",
+)
 
 
-def _is_strictly_increasing(values: list[float]) -> bool:
-    return len(values) >= 2 and all(b > a for a, b in zip(values, values[1:]))
+def build_analysis_packet(
+    case: dict[str, Any],
+    evidence: dict[str, Any] | list[Any] | None = None,
+) -> dict[str, Any]:
+    """Build the complete evidence packet that an AI model must interpret.
 
-
-def diagnose_question(case: dict[str, Any]) -> dict[str, Any]:
-    """Return a transparent, non-final diagnosis for one engineering case.
-
-    Expected optional fields:
-      - question: natural-language problem statement
-      - intended_use: decision supported by the model
-      - qoi: quantity of interest description
-      - mesh_history: rows with mesh_size, peak_stress and either
-        reference_qoi or the legacy path_stress field
-      - acceptance.reference_relative_change_max or the legacy
-        path_relative_change_max field
+    No need class, hotspot class, physical mechanism or skill is inferred here.
+    The packet preserves the user's intent and the solver-derived observations,
+    and asks the model to make an explicit, evidence-linked argument.
     """
 
-    question = str(case.get("question", "")).lower()
-    intended_use = str(case.get("intended_use", "")).lower()
-    qoi = str(case.get("qoi", "")).lower()
-    combined = " ".join((question, intended_use, qoi))
-
-    history = list(case.get("mesh_history", []))
-    peak_values = [float(row["peak_stress"]) for row in history if "peak_stress" in row]
-    reference_values = [
-        float(row.get("reference_qoi", row.get("path_stress")))
-        for row in history
-        if "reference_qoi" in row or "path_stress" in row
-    ]
-
-    peak_increases = _is_strictly_increasing(peak_values)
-    reference_last_change = None
-    if len(reference_values) >= 2:
-        reference_last_change = _relative_change(reference_values[-2], reference_values[-1])
-
-    acceptance = case.get("acceptance", {})
-    tolerance = float(
-        acceptance.get(
-            "reference_relative_change_max",
-            acceptance.get("path_relative_change_max", 0.03),
-        )
-    )
-    reference_is_stable = (
-        reference_last_change is not None and reference_last_change <= tolerance
-    )
-
-    fatigue_context = any(token in combined for token in ("fatigue", "疲劳", "焊", "weld"))
-    singularity_context = any(
-        token in combined
-        for token in (
-            "crack",
-            "裂纹",
-            "裂尖",
-            "point load",
-            "concentrated load",
-            "集中力",
-            "点载荷",
-            "point support",
-            "点支承",
-            "sharp corner",
-            "尖角",
-        )
-    )
-    topology_context = any(
-        token in combined
-        for token in ("断开", "不连接", "悬空", "共同节点", "接触", "interface", "contact")
-    )
-
-    evidence: list[dict[str, Any]] = []
-    if peak_values:
-        evidence.append(
-            {
-                "observation": "peak_stress_history",
-                "values": peak_values,
-                "interpretation": (
-                    "peak increases as the mesh is refined"
-                    if peak_increases
-                    else "peak does not show monotonic growth"
-                ),
-            }
-        )
-    if reference_values:
-        evidence.append(
-            {
-                "observation": "fixed_reference_qoi_history",
-                "values": reference_values,
-                "last_relative_change": reference_last_change,
-                "interpretation": (
-                    "fixed reference quantity is stable under the stated tolerance"
-                    if reference_is_stable
-                    else "fixed reference quantity is not yet stable"
-                ),
-            }
-        )
-
-    if topology_context:
-        return {
-            "status": "non_final_hypothesis",
-            "need_class": "topology_interface_and_load_transfer",
-            "hotspot_class": "topology_or_geometry_event",
-            "recommended_skill": "topology_alignment",
-            "blocked_skills": ["hotspot_pso"],
-            "reason": "Connectivity or interface integrity must be examined before size optimization.",
-            "evidence": evidence,
-            "open_questions": ["Does the intended load path cross the detected interface?"],
-        }
-
-    if (singularity_context or fatigue_context) and peak_increases and reference_is_stable:
-        return {
-            "status": "non_final_hypothesis",
-            "need_class": "result_validity_and_extraction",
-            "hotspot_class": "singular_or_non_actionable_peak",
-            "recommended_skill": "qoi_and_singularity_guard",
-            "blocked_skills": ["peak_stress_hotspot_refinement", "hotspot_pso"],
-            "reason": (
-                "The solver-derived raw peak grows under refinement while a fixed, "
-                "physically separate reference quantity stabilizes. The peak is not "
-                "currently a valid optimization target."
-            ),
-            "evidence": evidence,
-            "open_questions": [
-                "Is the selected reference quantity the quantity required by the engineering decision?",
-                "Is its physical location and extraction method identical across mesh levels?",
-            ],
-        }
-
-    if peak_values and not peak_increases:
-        return {
-            "status": "non_final_hypothesis",
-            "need_class": "resolution_convergence_and_budget",
-            "hotspot_class": "bounded_response_hotspot",
-            "recommended_skill": "bounded_hotspot_refinement",
-            "blocked_skills": [],
-            "reason": "The available peak history does not show persistent divergence.",
-            "evidence": evidence,
-            "open_questions": ["What engineering quantity and tolerance define completion?"],
-        }
-
     return {
-        "status": "insufficient_evidence",
-        "need_class": "problem_formulation_required",
-        "hotspot_class": "unknown",
-        "recommended_skill": "clarify_qoi_and_collect_mesh_history",
-        "blocked_skills": ["hotspot_pso"],
-        "reason": "The question does not yet contain enough evidence to define a valid refinement target.",
-        "evidence": evidence,
-        "open_questions": [
-            "What decision will this analysis support?",
-            "Which quantity, location, extraction method and tolerance are fixed?",
+        "status": "awaiting_ai_analysis",
+        "question": case.get("question", ""),
+        "intended_use": case.get("intended_use", ""),
+        "qoi": case.get("qoi", ""),
+        "model_context": case.get("model_context", case.get("model", {})),
+        "acceptance_context": case.get("acceptance", {}),
+        "solver_evidence": evidence if evidence is not None else case.get("mesh_history", []),
+        "analysis_instructions": [
+            "Restate the engineering decision before discussing mesh size.",
+            "Form at least two plausible physical or numerical hypotheses when evidence permits.",
+            "Distinguish observations from interpretation and cite the supplied evidence fields.",
+            "Explain what evidence supports, contradicts, or fails to distinguish each hypothesis.",
+            "Propose the smallest next calculation or model change that best separates the hypotheses.",
+            "Do not certify the model and do not claim a unique final answer when evidence is incomplete.",
         ],
+        "required_ai_output": {
+            "problem_restatement": "string",
+            "competing_hypotheses": "non-empty list of hypotheses with evidence links",
+            "evidence_assessment": "list separating support, contradiction and unknowns",
+            "recommended_next_action": "one evidence-generating action, not an unsupported verdict",
+            "uncertainties": "non-empty list",
+            "optional_skill": "a tool or workflow selected by the AI, with justification",
+        },
     }
+
+
+def validate_ai_analysis(analysis: dict[str, Any]) -> list[str]:
+    """Return structural validation errors for an AI response.
+
+    Validation is intentionally limited to completeness and traceability. It
+    does not decide whether the model's physics is correct.
+    """
+
+    errors: list[str] = []
+    if not isinstance(analysis, dict):
+        return ["AI analysis must be a JSON object"]
+
+    for field in AI_REQUIRED_FIELDS:
+        if field not in analysis:
+            errors.append(f"missing required field: {field}")
+
+    hypotheses = analysis.get("competing_hypotheses")
+    if not isinstance(hypotheses, list) or not hypotheses:
+        errors.append("competing_hypotheses must be a non-empty list")
+
+    uncertainties = analysis.get("uncertainties")
+    if not isinstance(uncertainties, list) or not uncertainties:
+        errors.append("uncertainties must be a non-empty list")
+
+    return errors
