@@ -21,6 +21,7 @@ permissions:
 jobs:
   generate-evidence-and-run-deepseek:
     runs-on: ubuntu-24.04
+    environment: ds
     timeout-minutes: 30
 
     steps:
@@ -99,7 +100,7 @@ jobs:
       - name: Test the AI contract
         run: python -m unittest tests/test_mesh_need_diagnosis.py -v
 
-      - name: Record whether the DeepSeek repository secret is available
+      - name: Confirm DeepSeek secret is available from ds
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
@@ -108,17 +109,17 @@ jobs:
           else
             AVAILABLE=false
           fi
-          printf '{\n  "available": %s,\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
+          printf '{\n  "available": %s,\n  "environment": "ds",\n  "event": "%s",\n  "workflow_sha": "%s"\n}\n' \
             "$AVAILABLE" "$GITHUB_EVENT_NAME" "$GITHUB_SHA" \
             > examples/mesh_need/deepseek_secret_status.json
           git add examples/mesh_need/deepseek_secret_status.json
           git commit -m "Record DeepSeek secret availability [skip ci]"
           git push origin HEAD:feat/model-aware-fea-mvp
           if [ "$AVAILABLE" != true ]; then
-            echo "DEEPSEEK_API_KEY repository secret is missing"
+            echo "DEEPSEEK_API_KEY is missing from environment ds"
             exit 1
           fi
-          echo "DeepSeek repository secret is available"
+          echo "DeepSeek secret from environment ds is available"
 
       - name: Ask DeepSeek to analyze the focused solver evidence
         env:
