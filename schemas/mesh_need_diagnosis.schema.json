@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/mesh_need_diagnosis.schema.json",
+  "title": "Mesh-Need Diagnosis Hypothesis",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["contract_version", "need_family", "hotspot_class", "selected_skill", "action", "confidence", "hypothesis_source", "reasons", "blocked_skills", "missing_evidence", "final_verdict"],
+  "properties": {
+    "contract_version": {"type": "string"},
+    "need_family": {"enum": ["resolution_convergence_budget", "result_validity_and_extraction", "topology_interface_load_transfer", "geometry_layout_and_generation", "global_local_and_model_fidelity", "automation_and_repeatability"]},
+    "hotspot_class": {"enum": ["bounded_response_hotspot", "qoi_sensitivity_or_error_hotspot", "singular_or_artifact_hotspot", "topology_or_geometry_event", "none_or_unknown"]},
+    "selected_skill": {"enum": ["bounded_hotspot_refinement", "qoi_guided_refinement", "singularity_guard", "topology_alignment", "geometry_mesh_repair", "model_fidelity_switch", "mesh_replay_guard", "convergence_verifier"]},
+    "action": {"type": "string", "minLength": 1},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "hypothesis_source": {"type": "string", "minLength": 1},
+    "reasons": {"type": "array", "items": {"type": "string"}},
+    "blocked_skills": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "missing_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "final_verdict": {"type": "null"}
+  }
+}

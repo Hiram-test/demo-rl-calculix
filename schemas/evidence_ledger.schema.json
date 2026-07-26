@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/evidence_ledger.schema.json",
+  "title": "Non-final FEA Evidence Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "case_id", "intended_use", "current_claim", "principle", "generated_at", "state_counts", "items", "final_verdict"],
+  "properties": {
+    "contract_version": {"type": "string"},
+    "case_id": {"type": "string", "minLength": 1},
+    "intended_use": {"type": "string"},
+    "current_claim": {"type": "string"},
+    "principle": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "state_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supports_current_claim", "challenges_current_claim", "unresolved", "not_observed"],
+      "properties": {
+        "supports_current_claim": {"type": "integer", "minimum": 0},
+        "challenges_current_claim": {"type": "integer", "minimum": 0},
+        "unresolved": {"type": "integer", "minimum": 0},
+        "not_observed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "question", "state", "observations", "limitations", "next_checks", "source", "metrics"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1},
+          "question": {"type": "string", "minLength": 1},
+          "state": {"enum": ["supports_current_claim", "challenges_current_claim", "unresolved", "not_observed"]},
+          "observations": {"type": "array", "items": {"type": "string"}},
+          "limitations": {"type": "array", "items": {"type": "string"}},
+          "next_checks": {"type": "array", "items": {"type": "string"}},
+          "source": {"type": "string", "minLength": 1},
+          "metrics": {"type": "object"}
+        }
+      }
+    },
+    "final_verdict": {"type": "null"}
+  }
+}

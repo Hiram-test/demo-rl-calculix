@@ -1,0 +1,25 @@
+{
+  "case_id": "multi-hotspot-pso-demo",
+  "question": "多个有限热点竞争单元预算，且区域耦合已经测得很强，怎样分配细化等级？",
+  "intended_use": "在求解预算内满足固定疲劳路径应力容差",
+  "current_claim": "多个已验证热点需要联合预算分配",
+  "qoi": {
+    "name": "fixed-path structural stress range",
+    "location": "same physical fatigue path on every mesh",
+    "extraction_method": "fixed path and fixed extrapolation protocol",
+    "tolerance": 0.02
+  },
+  "mesh_series": [
+    {"h": 4, "peak": 100, "qoi": 90},
+    {"h": 2, "peak": 103, "qoi": 91},
+    {"h": 1, "peak": 104, "qoi": 91.4}
+  ],
+  "hotspots": [
+    {"shape": "box", "xmin": 80, "xmax": 120, "ymin": -20, "ymax": 20, "zmin": -5, "zmax": 5},
+    {"shape": "box", "xmin": 180, "xmax": 220, "ymin": -20, "ymax": 20, "zmin": -5, "zmax": 5}
+  ],
+  "budget_conflict": true,
+  "region_interaction": "measured_strong",
+  "mesh_levels": [0, 1, 2, 3],
+  "budget": {"max_elements": 220000, "max_solver_runs": 32}
+}

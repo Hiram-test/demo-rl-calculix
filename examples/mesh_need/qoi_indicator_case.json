@@ -1,0 +1,20 @@
+{
+  "case_id": "qoi-indicator-demo",
+  "question": "如何按固定 QoI 指标做目标导向细化？",
+  "intended_use": "控制固定截面位移误差",
+  "current_claim": "当前指标点能定义下一轮细化区域",
+  "qoi": {
+    "name": "midspan displacement",
+    "location": "fixed midspan section",
+    "extraction_method": "section average",
+    "tolerance": 0.01
+  },
+  "mesh_series": [
+    {"h": 4, "peak": 1.0, "qoi": 10.0},
+    {"h": 2, "peak": 1.1, "qoi": 10.4}
+  ],
+  "qoi_indicator_points": [
+    {"x": 0, "y": 0, "z": 0, "indicator": 4.0, "target_size": 0.5},
+    {"x": 1, "y": 0, "z": 0, "indicator": 1.0, "target_size": 1.0}
+  ]
+}
