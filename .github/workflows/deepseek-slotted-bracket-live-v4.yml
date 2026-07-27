@@ -1,0 +1,222 @@
+name: DeepSeek Slotted-Bracket Live Skill Validation v4
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/model-aware-fea-mvp
+    paths:
+      - ".github/workflows/deepseek-slotted-bracket-live-v4.yml"
+      - ".github/agent_payload/deepseek_slotted_payload_*.b64"
+      - ".github/agent_payload/provider_live_override.py"
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  live-agent:
+    runs-on: ubuntu-24.04
+    environment: ds
+    timeout-minutes: 45
+    env:
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+      DEEPSEEK_MODEL: deepseek-v4-pro
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Materialize audited Agent package
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/deepseek-slotted-agent"
+          mkdir -p "$RUNNER_TEMP/deepseek-slotted-agent"
+          cat .github/agent_payload/deepseek_slotted_payload_*.b64 \
+            | tr -d '\n' \
+            | base64 --decode > "$RUNNER_TEMP/agent_payload.tar.gz"
+          tar -xzf "$RUNNER_TEMP/agent_payload.tar.gz" \
+            -C "$RUNNER_TEMP/deepseek-slotted-agent"
+          cp .github/agent_payload/provider_live_override.py \
+            "$RUNNER_TEMP/deepseek-slotted-agent/src/mesh_need/agent/provider.py"
+          python -m py_compile \
+            "$RUNNER_TEMP/deepseek-slotted-agent/src/mesh_need/agent/provider.py"
+
+      - name: Install runtime dependencies
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "openai>=1.61,<3" \
+            "jsonschema>=4.22,<5" \
+            "numpy>=2,<3" \
+            "scipy>=1.14,<2" \
+            "shapely>=2,<3" \
+            "matplotlib>=3.9,<4"
+
+      - name: Test contracts and alias adapter
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          python -m unittest discover -s tests -p "test_agent_*.py" -v
+          python - <<'PY'
+          from mesh_need.agent.contracts import require_valid_agent_decision
+          from mesh_need.agent.provider import normalize_agent_payload
+          raw = {
+              "decision": {
+                  "type": "call_skill",
+                  "skill_name": "inspect_slotted_plate_model",
+                  "input": {},
+              }
+          }
+          packet = {
+              "artifact_index": [{"artifact_id": "case:1"}],
+              "skill_catalog": [{
+                  "name": "inspect_slotted_plate_model",
+                  "produces_artifact_kinds": ["model_ir"],
+              }],
+          }
+          normalized, notes = normalize_agent_payload(raw, packet)
+          require_valid_agent_decision(normalized)
+          assert normalized["decision"]["skill"] == "inspect_slotted_plate_model"
+          assert notes
+          print("Alias normalization passed")
+          PY
+
+      - name: Confirm DeepSeek credential
+        run: |
+          test -n "$DEEPSEEK_API_KEY"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          echo "DeepSeek credential available from environment ds"
+
+      - name: Run live DeepSeek-controlled Skill loop
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          set -o pipefail
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          rm -rf artifacts/deepseek-slotted-live
+          mkdir -p artifacts/deepseek-slotted-live
+          python scripts/run_fea_agent.py \
+            examples/agent/slotted_bracket_geometry_case.json \
+            --manifest-dir skills/slotted_validation \
+            --provider deepseek \
+            --model deepseek-v4-pro \
+            --output-dir artifacts/deepseek-slotted-live \
+            --max-iterations 10 \
+            --require-finished \
+            | tee artifacts/deepseek-slotted-live/command_summary.json
+
+      - name: Validate live DeepSeek trace
+        if: always()
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/deepseek-slotted-live
+          if [ -f artifacts/deepseek-slotted-live/agent_trace.json ]; then
+            python scripts/validate_live_deepseek_trace.py \
+              artifacts/deepseek-slotted-live/agent_trace.json \
+              | tee artifacts/deepseek-slotted-live/live_validation_receipt.json
+          else
+            printf '%s\n' '{"valid":false,"errors":["agent_trace.json was not produced"]}' \
+              > artifacts/deepseek-slotted-live/live_validation_receipt.json
+            exit 1
+          fi
+
+      - name: Build chronological report
+        if: always()
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          set -euo pipefail
+          if [ -f artifacts/deepseek-slotted-live/agent_trace.json ]; then
+            python scripts/summarize_deepseek_validation.py \
+              artifacts/deepseek-slotted-live \
+              --output artifacts/deepseek-slotted-live/DEEPSEEK_VALIDATION_REPORT.md
+            cat artifacts/deepseek-slotted-live/DEEPSEEK_VALIDATION_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path("artifacts/deepseek-slotted-live/github_actions_receipt.json")
+          p.parent.mkdir(parents=True, exist_ok=True)
+          p.write_text(json.dumps({
+              "workflow": os.environ.get("GITHUB_WORKFLOW"),
+              "run_id": os.environ.get("GITHUB_RUN_ID"),
+              "head_sha": os.environ.get("GITHUB_SHA"),
+              "run_url": f"{os.environ.get('GITHUB_SERVER_URL')}/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+              "environment": "ds",
+              "provider": "deepseek",
+              "requested_model": "deepseek-v4-pro",
+              "adapter": "auditable JSON alias normalizer; raw response retained",
+          }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Update repository audit Issue
+        if: always()
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title='DeepSeek slotted-bracket live validation'
+          body="$RUNNER_TEMP/deepseek-live-v4.md"
+          {
+            echo '<!-- deepseek-slotted-bracket-live-validation -->'
+            echo '# DeepSeek slotted-bracket live validation'
+            echo
+            echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            for file in github_actions_receipt.json live_validation_receipt.json; do
+              if [ -f "artifacts/deepseek-slotted-live/$file" ]; then
+                echo "## $file"
+                echo '```json'
+                cat "artifacts/deepseek-slotted-live/$file"
+                echo '```'
+              fi
+            done
+            if [ -f artifacts/deepseek-slotted-live/DEEPSEEK_VALIDATION_REPORT.md ]; then
+              echo
+              cat artifacts/deepseek-slotted-live/DEEPSEEK_VALIDATION_REPORT.md
+            fi
+          } > "$body"
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
+            --search "$title in:title" --json number,title \
+            --jq '.[] | select(.title == "DeepSeek slotted-bracket live validation") | .number' | head -n1)"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
+          fi
+
+      - name: Upload full raw and normalized record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-slotted-bracket-live-validation-v4
+          path: ${{ runner.temp }}/deepseek-slotted-agent/artifacts/deepseek-slotted-live
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce final gate
+        if: always()
+        working-directory: ${{ runner.temp }}/deepseek-slotted-agent
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("artifacts/deepseek-slotted-live/live_validation_receipt.json")
+          if not p.exists():
+              raise SystemExit("validation receipt missing")
+          receipt = json.loads(p.read_text(encoding="utf-8"))
+          if receipt.get("valid") is not True:
+              raise SystemExit("; ".join(receipt.get("errors", ["live validation failed"])))
+          print("Live DeepSeek validation passed")
+          PY
