@@ -12,6 +12,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: deepseek-slotted-bracket-live-v2
+  cancel-in-progress: true
+
 jobs:
   validate-live-deepseek-agent:
     runs-on: ubuntu-24.04
@@ -24,6 +28,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Announce exact live run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > "$RUNNER_TEMP/live-start.md" <<EOF
+          <!-- deepseek-slotted-bracket-live-validation -->
+          # DeepSeek slotted-bracket live validation
+
+          Status: **running**
+
+          Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Head SHA: \`$GITHUB_SHA\`
+          EOF
+          gh issue edit 12 --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/live-start.md"
 
       - uses: actions/setup-python@v5
         with:
@@ -168,10 +188,7 @@ jobs:
               cat artifacts/deepseek-slotted-live/DEEPSEEK_VALIDATION_REPORT.md
             fi
           } > "$body"
-          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
-            --search "$title in:title" --json number,title \
-            --jq '.[] | select(.title == "DeepSeek slotted-bracket live validation") | .number' | head -n1)"
-          gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          gh issue edit 12 --repo "$GITHUB_REPOSITORY" --body-file "$body"
 
       - name: Upload full raw and normalized record
         if: always()
