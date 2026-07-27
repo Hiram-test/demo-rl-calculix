@@ -1,0 +1,84 @@
+{
+  "name": "compare_evidence",
+  "category": "extract_or_compare_evidence",
+  "description": "Compare requested numeric JSON paths between two evidence artifacts. Supports dotted JSON keys, list indices, wildcards, and separate left/right paths. Outputs differences or ratios but no physical verdict.",
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "left_artifact",
+      "right_artifact",
+      "comparison_purpose",
+      "metric_queries"
+    ],
+    "properties": {
+      "left_artifact": {
+        "type": "string",
+        "minLength": 1
+      },
+      "right_artifact": {
+        "type": "string",
+        "minLength": 1
+      },
+      "comparison_purpose": {
+        "type": "string",
+        "minLength": 1
+      },
+      "metric_queries": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "left_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "right_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operation": {
+              "enum": [
+                "series",
+                "difference",
+                "ratio",
+                "relative_difference"
+              ]
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "path"
+              ]
+            },
+            {
+              "required": [
+                "left_path",
+                "right_path"
+              ]
+            }
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "produces_artifact_kinds": [
+    "comparison"
+  ],
+  "risk": "low",
+  "executor": "mesh_need.agent.compare_evidence_live:compare_evidence"
+}
