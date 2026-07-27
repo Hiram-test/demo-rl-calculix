@@ -7,6 +7,7 @@ on:
       - feat/model-aware-fea-mvp
     paths:
       - ".github/workflows/deepseek-bridge-component-agent-v2-live.yml"
+      - ".github/agent_payload/bridge_agent_v2_part_*.b64"
 
 permissions:
   contents: read
@@ -32,28 +33,25 @@ jobs:
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/bridge-agent-v2"
-          rm -rf "$root"
+          archive="$RUNNER_TEMP/bridge-agent-v2-source.zip"
+          rm -rf "$root" "$archive"
           mkdir -p "$root"
-          cat .github/agent_payload/bridge_agent_v2_00.b64 \
-              .github/agent_payload/bridge_agent_v2_01.b64 \
-              .github/agent_payload/bridge_agent_v2_02.b64 \
-              .github/agent_payload/bridge_agent_v2_03.b64 \
-              .github/agent_payload/bridge_agent_v2_04.b64 \
-              .github/agent_payload/bridge_agent_v2_05.b64 \
-              .github/agent_payload/bridge_agent_v2_06.b64 \
-              .github/agent_payload/bridge_agent_v2_07.b64 \
-              .github/agent_payload/bridge_agent_v2_08.b64 \
-              .github/agent_payload/bridge_agent_v2_09.b64 \
-              .github/agent_payload/bridge_agent_v2_10.b64 \
-              .github/agent_payload/bridge_agent_v2_11.b64 \
-              .github/agent_payload/bridge_agent_v2_12.b64 \
-              .github/agent_payload/bridge_agent_v2_13.b64 \
-              .github/agent_payload/bridge_agent_v2_14.b64 \
-              .github/agent_payload/bridge_agent_v2_15.b64 \
-              .github/agent_payload/bridge_agent_v2_16.b64 \
+          cat .github/agent_payload/bridge_agent_v2_part_00.b64 \
+              .github/agent_payload/bridge_agent_v2_part_01.b64 \
+              .github/agent_payload/bridge_agent_v2_part_02.b64 \
+              .github/agent_payload/bridge_agent_v2_part_03.b64 \
+              .github/agent_payload/bridge_agent_v2_part_04.b64 \
+              .github/agent_payload/bridge_agent_v2_part_05.b64 \
+              .github/agent_payload/bridge_agent_v2_part_06.b64 \
+              .github/agent_payload/bridge_agent_v2_part_07.b64 \
             | tr -d '[:space:]' \
-            | base64 --decode > "$RUNNER_TEMP/bridge-agent-v2-source.zip"
-          unzip -q "$RUNNER_TEMP/bridge-agent-v2-source.zip" -d "$root"
+            | base64 --decode > "$archive"
+          expected='0bcbcdbd4ed40d68c0f433729f0df2cd02535dec679afa2402599290f806c3aa'
+          actual="$(sha256sum "$archive" | awk '{print $1}')"
+          echo "source archive sha256=$actual"
+          test "$actual" = "$expected"
+          unzip -t "$archive"
+          unzip -q "$archive" -d "$root"
           test -s "$root/scripts/run_bridge_agent_suite.py"
           test -s "$root/bridge_agent/skills.py"
 
