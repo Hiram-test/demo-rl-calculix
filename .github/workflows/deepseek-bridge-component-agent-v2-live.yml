@@ -8,6 +8,7 @@ on:
     paths:
       - ".github/workflows/deepseek-bridge-component-agent-v2-live.yml"
       - ".github/agent_payload/bridge_agent_v2_part_*.b64"
+      - ".github/agent_payload/apply_bridge_agent_v2_live_patches.py"
 
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Materialize bridge-agent v2 source
+      - name: Materialize and patch bridge-agent v2 source
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/bridge-agent-v2"
@@ -59,6 +60,7 @@ jobs:
           test "$actual" = "$expected"
           unzip -t "$archive"
           unzip -q "$archive" -d "$root"
+          python .github/agent_payload/apply_bridge_agent_v2_live_patches.py "$root"
           test -s "$root/scripts/run_bridge_agent_suite.py"
           test -s "$root/bridge_agent/skills.py"
 
@@ -138,6 +140,7 @@ jobs:
             'environment': 'ds',
             'provider': 'deepseek',
             'requested_model': os.environ.get('DEEPSEEK_MODEL'),
+            'live_patch': 'mesh-level shorthand normalization',
           },ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           PY
 
@@ -172,7 +175,7 @@ jobs:
               echo
             done
             if [ -s "$out/report/BRIDGE_AGENT_V2_REPORT.md" ]; then
-              sed -n '1,320p' "$out/report/BRIDGE_AGENT_V2_REPORT.md"
+              sed -n '1,360p' "$out/report/BRIDGE_AGENT_V2_REPORT.md"
             fi
           } > "$body"
           number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
