@@ -9,20 +9,45 @@ on:
       - ".github/workflows/v4-payload-diagnostic.yml"
       - ".github/agent_v4_payload/**"
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   diagnose:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Print payload blob hashes and reconstructed digest
+      - name: Build diagnostic record
         run: |
           set -euo pipefail
-          find .github/agent_v4_payload -maxdepth 1 -type f -name 'source_*.b64' -print0 \
-            | sort -z \
-            | while IFS= read -r -d '' f; do
-                printf '%s  %s\n' "$(git hash-object "$f")" "$f"
-              done
-          cat .github/agent_v4_payload/source_*.b64 | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz"
-          printf 'archive_sha256=%s\n' "$(sha256sum "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" | awk '{print $1}')"
-          printf 'archive_size=%s\n' "$(stat -c %s "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz")"
-          xz -t "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" || true
+          record="$RUNNER_TEMP/v4-payload-diagnostic.txt"
+          {
+            find .github/agent_v4_payload -maxdepth 1 -type f -name 'source_*.b64' -print0 \
+              | sort -z \
+              | while IFS= read -r -d '' f; do
+                  printf '%s  %s\n' "$(git hash-object "$f")" "$f"
+                done
+            cat .github/agent_v4_payload/source_*.b64 | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz"
+            printf 'archive_sha256=%s\n' "$(sha256sum "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" | awk '{print $1}')"
+            printf 'archive_size=%s\n' "$(stat -c %s "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz")"
+            xz -t "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" && echo 'xz_test=success' || echo 'xz_test=failure'
+          } | tee "$record"
+      - name: Publish diagnostic issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title='V4 payload diagnostic'
+          body="$RUNNER_TEMP/v4-payload-issue.md"
+          {
+            echo '# V4 payload diagnostic'
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo '```text'
+            cat "$RUNNER_TEMP/v4-payload-diagnostic.txt" 2>/dev/null || true
+            echo '```'
+          } > "$body"
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all --search "$title in:title" --json number,title --jq '.[] | select(.title == "V4 payload diagnostic") | .number' | head -n1)"
+          if [ -n "$number" ]; then gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"; fi
