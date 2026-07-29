@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   issues: write
 
 jobs:
@@ -19,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build diagnostic record
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           record="$RUNNER_TEMP/v4-payload-diagnostic.txt"
@@ -32,6 +35,8 @@ jobs:
             printf 'archive_sha256=%s\n' "$(sha256sum "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" | awk '{print $1}')"
             printf 'archive_size=%s\n' "$(stat -c %s "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz")"
             xz -t "$RUNNER_TEMP/bridge-agent-v4-source.tar.xz" && echo 'xz_test=success' || echo 'xz_test=failure'
+            echo 'main_workflow_runs:'
+            gh run list --repo "$GITHUB_REPOSITORY" --workflow deepseek-ai-region-mesh-paper-v4.yml --branch feat/ai-dynamic-region-mesh-paper --limit 12 --json databaseId,status,conclusion,headSha,createdAt,url --jq '.[] | [.databaseId,.status,(.conclusion // ""),.headSha,.createdAt,.url] | @tsv'
           } | tee "$record"
       - name: Publish diagnostic issue
         if: always()
