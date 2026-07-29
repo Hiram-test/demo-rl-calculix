@@ -1,0 +1,198 @@
+name: DeepSeek AI-Defined Regional Mesh Agent v4 - Full Paper Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/ai-dynamic-region-mesh-paper
+    paths:
+      - ".github/workflows/deepseek-ai-region-mesh-paper-v4.yml"
+      - ".github/agent_v4_payload/**"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  full-live-paper:
+    runs-on: ubuntu-24.04
+    environment: ds
+    timeout-minutes: 180
+    env:
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.DS || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.DS || vars.DS_API_KEY }}
+      DEEPSEEK_MODEL: deepseek-v4-pro
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Materialize hash-verified v4 source
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/bridge-agent-v4"
+          archive="$RUNNER_TEMP/bridge-agent-v4-source.tar.xz"
+          rm -rf "$root" "$archive"
+          mkdir -p "$root"
+          cat .github/agent_v4_payload/source_*.b64 | tr -d '[:space:]' | base64 --decode > "$archive"
+          echo '9d23b4d488986f8136babc0d9be00c37aa9a06b6c4ffab0efcfa5338344e3215  '"$archive" | sha256sum -c -
+          tar -xJf "$archive" -C "$root"
+          test -s "$root/bridge_agent/region_skills.py"
+          test -s "$root/scripts/build_elsevier_paper.py"
+
+      - name: Install solver, scientific, and paper toolchain
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y calculix-ccx fonts-noto-cjk poppler-utils latexmk texlive-xetex texlive-latex-extra texlive-publishers texlive-science
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          command -v ccx || command -v ccx_2.21 || command -v ccx_2.20 || command -v ccx_2.19
+          command -v xelatex
+          kpsewhich elsarticle.cls
+
+      - name: Run regional mesh contracts
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          set -euo pipefail
+          python -m compileall -q bridge_agent scripts tests
+          python -m unittest discover -s tests -p 'test_bridge_agent.py' -v
+
+      - name: Confirm DeepSeek credential
+        run: |
+          set -euo pipefail
+          test -n "$DEEPSEEK_API_KEY"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+
+      - name: Run four live DeepSeek-controlled regional optimization loops
+        id: live_suite
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          set -euo pipefail
+          out=artifacts/ai-region-mesh-agent-v4-live
+          rm -rf "$out"
+          python scripts/run_bridge_agent_suite.py \
+            --provider deepseek \
+            --model "$DEEPSEEK_MODEL" \
+            --output-dir "$out" \
+            | tee "$RUNNER_TEMP/v4-suite-summary.json"
+          cp "$RUNNER_TEMP/v4-suite-summary.json" "$out/command_summary.json"
+
+      - name: Build Elsevier paper from live artifacts
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          set -euo pipefail
+          out=artifacts/ai-region-mesh-agent-v4-live
+          python scripts/build_elsevier_paper.py \
+            --suite-dir "$out" \
+            --output-dir "$out/paper" \
+            --compile
+          test -s "$out/paper/paper.tex"
+          test -s "$out/paper/paper.pdf"
+          pdfinfo "$out/paper/paper.pdf" | tee "$out/paper/pdfinfo.txt"
+          mkdir -p "$out/paper/render_check"
+          pdftoppm -png -r 130 -f 1 -singlefile "$out/paper/paper.pdf" "$out/paper/render_check/first-page"
+          test -s "$out/paper/render_check/first-page.png"
+
+      - name: Enforce AI-region, PSO, physics, plasticity, and paper gates
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out=Path('artifacts/ai-region-mesh-agent-v4-live')
+          receipt=json.loads((out/'validation_receipt.json').read_text(encoding='utf-8'))
+          assert receipt['valid'] is True, receipt
+          assert receipt['provider']=='deepseek', receipt
+          assert receipt['scenario_count']==4, receipt
+          assert receipt['totals']['optimizer_calls']==4, receipt
+          assert receipt['totals']['solver_calls']>=85, receipt
+          assert receipt['positive_same_budget_cases']>=2, receipt
+          for row in receipt['scenarios']:
+              rd=out/'runs'/row['case_id']
+              trace=json.loads((rd/'agent_trace.json').read_text(encoding='utf-8'))
+              arts={}
+              for a in trace['artifacts']:
+                  arts.setdefault(a['kind'],[]).append(a)
+              part=json.loads((rd/arts['region_partition'][-1]['path']).read_text(encoding='utf-8'))
+              assert part['not_fixed_template'] is True
+              assert len(part['regions'])>=2
+              assert any(r.get('role')=='coarsenable' for r in part['regions'])
+              pso=json.loads((rd/arts['region_pso'][-1]['path']).read_text(encoding='utf-8'))
+              assert pso['actual_solver_evaluations']>=18, pso
+              assert pso['executed_iterations']>=3, pso
+              assert pso['allows_refine_and_coarsen'] is True
+              val=json.loads((rd/arts['region_validation'][-1]['path']).read_text(encoding='utf-8'))
+              ne=val['optimized']['elements']; nu=val['uniform_same_budget']['elements']
+              assert abs(ne-nu)/max(ne,1)<=0.08, (row['case_id'],ne,nu)
+              assert val['optimized']['quality']['invalid_count']==0
+          crack=out/'runs'/'bridge_web_crack'
+          tr=json.loads((crack/'agent_trace.json').read_text(encoding='utf-8'))
+          ep_art=[a for a in tr['artifacts'] if a['kind']=='elastoplastic_evidence'][-1]
+          ep=json.loads((crack/ep_art['path']).read_text(encoding='utf-8'))
+          assert ep['levels'][-1]['max_peeq']>0
+          assert ep['levels'][-1]['yielded_element_count']>0
+          for name in ['paper/paper.pdf','paper/paper.tex','paper/figures/method_architecture.pdf','paper/figures/summary.pdf']:
+              p=out/name; assert p.exists() and p.stat().st_size>0, name
+          print('All v4 live paper gates passed')
+          PY
+
+      - name: Write GitHub Actions receipt
+        if: always()
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path('artifacts/ai-region-mesh-agent-v4-live'); out.mkdir(parents=True,exist_ok=True)
+          (out/'github_actions_receipt.json').write_text(json.dumps({
+            'workflow':os.environ.get('GITHUB_WORKFLOW'),
+            'run_id':os.environ.get('GITHUB_RUN_ID'),
+            'run_attempt':os.environ.get('GITHUB_RUN_ATTEMPT'),
+            'head_sha':os.environ.get('GITHUB_SHA'),
+            'ref':os.environ.get('GITHUB_REF'),
+            'run_url':f"{os.environ.get('GITHUB_SERVER_URL')}/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+            'environment':'ds','provider':'deepseek','model':os.environ.get('DEEPSEEK_MODEL'),
+            'method':'AI-defined arbitrary regions + QoI-conditioned indicators + joint refine/coarsen PSO + same-budget validation + Elsevier paper'
+          },ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+      - name: Update audit issue
+        if: always()
+        working-directory: ${{ runner.temp }}/bridge-agent-v4
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          out=artifacts/ai-region-mesh-agent-v4-live
+          body="$RUNNER_TEMP/v4-issue.md"
+          {
+            echo '<!-- deepseek-ai-region-mesh-agent-v4 -->'
+            echo '# DeepSeek AI-defined regional mesh Agent v4'
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo "Job status: \`$OUTCOME\`"
+            echo
+            for f in github_actions_receipt.json validation_receipt.json; do
+              echo "## $f"
+              if [ -s "$out/$f" ]; then echo '```json'; cat "$out/$f"; echo '```'; else echo 'missing'; fi
+            done
+            if [ -s "$out/RUN_SUMMARY.md" ]; then cat "$out/RUN_SUMMARY.md"; fi
+          } > "$body"
+          title='DeepSeek AI-defined regional mesh Agent v4 paper validation'
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all --search "$title in:title" --json number,title --jq '.[] | select(.title == "DeepSeek AI-defined regional mesh Agent v4 paper validation") | .number' | head -n1)"
+          if [ -n "$number" ]; then gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"; fi
+
+      - name: Upload complete live calculation and paper
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-ai-region-mesh-agent-v4-paper
+          path: ${{ runner.temp }}/bridge-agent-v4/artifacts/ai-region-mesh-agent-v4-live
+          if-no-files-found: error
+          retention-days: 90
