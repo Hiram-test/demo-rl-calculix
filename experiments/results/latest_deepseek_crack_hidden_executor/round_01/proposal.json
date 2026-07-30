@@ -1,38 +1,32 @@
 {
   "competing_hypotheses": [
-    "The current mesh (h=2.5 mm at crack tip) has already converged in terms of energy release rate (or stress intensity factor K_I); the difference between the computed G (via virtual crack extension of 0.5 mm) and the theoretical solution is within 2%, so the model is suitable for fracture assessment without further mesh refinement.",
-    "The current mesh is still insufficiently refined for fracture mechanics quantities; the energy release rate computed from a 0.5 mm crack extension deviates from the theoretical value by more than 2%, indicating that the stress and strain fields near the tip are not yet accurate enough for reliable K_I or G prediction, requiring additional mesh refinement."
+    "H1: The stress intensity factor (KI) has not converged and further mesh refinement near the crack tip is required to obtain a reliable fracture mechanics parameter.",
+    "H2: The stress intensity factor (or energy release rate) has already converged despite the rising peak stress, and additional refinement is unnecessary."
   ],
   "evidence_refs": [
-    "Strain energy and remote opening displacement show signs of convergence (changes < 1% from 3.33 mm to 2.5 mm)",
-    "Peak stress continues to rise with refinement, as expected in LEFM (no convergence expected)",
-    "Energy balance is excellent in all runs (relative error near machine zero)"
+    "Peak sigma_y increases from 210.9 MPa (h=5mm) to 289.0 MPa (h=2.5mm), while remote opening displacement and total strain energy change only slightly (<0.5% and <0.4% respectively)."
   ],
   "uncertainties": [
-    "No fracture-mechanics-specific output (e.g., J-integral or K_I) is available from the reported simulations.",
-    "The theoretical K_I for a finite-width plate is an approximation; the exact analytical solution for a central crack in a finite plate under uniform tension may require more complex boundary correction factors.",
-    "A 0.5 mm crack increment may introduce systematic error in the computed G if the mesh is not identical between the two crack lengths; using the same mesh topology but different crack lengths is an approximation."
+    "Whether the stress singularity is adequately captured and whether a fracture mechanics parameter (e.g., KI or J-integral) converges with mesh refinement.",
+    "The current output does not include any fracture parameter, so the influence of mesh size on KI is unknown."
   ],
   "proposal_type": "experiment",
   "experiment": {
-    "purpose": "Determine whether the current 2.5 mm mesh yields a sufficiently accurate energy release rate (and thus K_I) for fracture assessment, by comparing a finite-difference energy release rate from a small virtual crack extension against a theoretical reference.",
-    "change": "Increase the half-crack length from 20.0 mm to 20.5 mm, keeping all other parameters identical, and perform a new linear elastic plane stress analysis with the same mesh topology as the last 2.5 mm run (nx=80, elements=6400).",
+    "purpose": "Assess convergence of the stress intensity factor KI with mesh refinement to decide if further refinement is needed.",
+    "change": "Refine the crack-tip local mesh from current h_local = 2.5 mm to 1.25 mm.",
     "hold_fixed": [
-      "Plate outer dimensions (200×200 mm)",
-      "Thickness (10 mm)",
-      "Material properties (E=210000 MPa, ν=0.3)",
-      "Loading (top and bottom edges uniform tensile stress 100 MPa)",
-      "Analysis type (2D plane stress linear elastic)",
-      "Mesh design strategy (same structured pattern with local refinement near tip, same minimum element size h_local=2.5 mm)",
-      "Boundary conditions (symmetry if used, otherwise full model)"
+      "Overall plate geometry (200×200 mm, thickness 10 mm)",
+      "Crack length (half-crack = 20 mm)",
+      "Material properties (E=210000 MPa, ν=0.3, linear elastic)",
+      "Loading (100 MPa uniform tension on top and bottom edges)",
+      "Analysis type (2D plane stress)"
     ],
     "measure": [
-      "Total strain energy U_20.5 for the half-crack 20.5 mm model",
-      "Remote crack opening displacement for the 20.5 mm model",
-      "Finite-difference energy release rate G = (U_20.5 - U_20.0) / 0.5, where U_20.0 is the strain energy from the last 2.5 mm run (half-crack 20.0 mm)",
-      "Stress intensity factor K_I computed from G via K_I = sqrt(G * E) (plane stress)"
+      "Nodal σy along the crack line at several distances r from the crack tip in both the current and refined meshes",
+      "Compute KI by extrapolating σy·√(2πr) to r→0 for each mesh, and record the relative change between meshes"
     ],
-    "decision_rule": "Compute the theoretical K_I for a central crack of half-length a=20.0 mm in a finite plate of width 2W=200 mm under remote tension σ=100 MPa: K_theory = σ √(π a) * F(a/W), where a/W=0.2 and F(a/W) ≈ sqrt(sec(π a / (2W))) (Feddersen approximation). Evaluate the relative error |K_I - K_theory|/K_theory. If the error is ≤ 2%, accept the current mesh as adequate for fracture assessment (no further refinement). If the error is > 2%, the mesh is deemed insufficient; further refinement (e.g., h=1.25 mm) will be needed in a subsequent step.",
-    "stop_condition": "The experiment is completed once the two models (20.0 mm and 20.5 mm) have been run and the error computed. No further steps are taken within this single experiment; the outcome directly informs whether to stop or continue refinement."
-  }
+    "decision_rule": "If the relative difference in extrapolated KI between h=2.5 mm and h=1.25 mm meshes is less than 5%, stop refinement and accept the current modeling approach; otherwise, continue refining.",
+    "stop_condition": "Stop when the relative change in KI between two successive mesh refinements falls below 5%, or when the local mesh size reaches 0.1 mm."
+  },
+  "provisional_answer": "The current model cannot be used directly for crack assessment by monitoring peak stress because it will not converge. However, if a fracture parameter like KI is monitored, convergence may be achieved with moderate refinement. The proposed experiment will determine if further mesh refinement is needed."
 }
