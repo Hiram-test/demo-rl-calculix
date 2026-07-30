@@ -18,6 +18,10 @@ on:  # 定义工作流触发条件。
 permissions:  # 设置工作流权限。
   contents: write  # 允许 push 事件把冻结轨迹与脱敏日志提交回独立实验分支。
 
+concurrency:  # 避免同一实验的旧运行继续消耗模型调用预算。
+  group: deepseek-crack-open-discovery-${{ github.ref }}  # 按事件引用隔离并发组。
+  cancel-in-progress: true  # 新提交到来时取消仍在运行的旧实验。
+
 jobs:  # 定义实验作业集合。
   live-open-discovery:  # 定义静态审计与真实模型实验作业。
     runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
@@ -42,7 +46,7 @@ jobs:  # 定义实验作业集合。
       - name: Confirm DeepSeek credential  # 在真实调用前确认 Environment 凭据已注入。
         if: github.event_name == 'push'  # PR 静态检查不接触 Secret。
         run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出凭据内容。
-      - name: Run guided and bare live discovery  # 使用相同证据与工具运行两组真实 DeepSeek 轨迹。
+      - name: Run guided live discovery  # 首轮只运行工程师高层指南组以观察单条自主路线。
         if: github.event_name == 'push'  # 仅在可信分支 push 中读取 Secret 并调用模型。
         continue-on-error: true  # 允许后续步骤在失败时冻结脱敏诊断信息。
         shell: bash  # 使用 Bash 捕获管道真实退出码。
@@ -50,7 +54,7 @@ jobs:  # 定义实验作业集合。
           set -uo pipefail  # 保留未定义变量与管道失败检查但允许手动记录退出码。
           mkdir -p artifacts  # 确保日志和轨迹目录存在。
           set +e  # 暂时关闭立即退出以记录真实返回码。
-          python scripts/run_deepseek_crack_open_discovery_aligned.py --mode both --max-rounds 6 --output artifacts/deepseek_crack_open_discovery.json 2>&1 | tee artifacts/live.log  # 通过参数吸附层执行完整开放发现对照。
+          python scripts/run_deepseek_crack_open_discovery_aligned.py --mode guided --max-rounds 4 --output artifacts/deepseek_crack_open_discovery.json 2>&1 | tee artifacts/live.log  # 通过参数吸附层运行单场景四轮开放发现。
           code=${PIPESTATUS[0]}  # 读取 Python 进程而非 tee 的退出码。
           set -e  # 恢复立即退出行为。
           printf '%s\n' "$code" > artifacts/live_exit_code.txt  # 把真实退出码写入诊断文件。
