@@ -1,0 +1,71 @@
+name: DeepSeek Routing Counterfactual Pair  # 标识与论文主流程和既有多轮发现相互独立的反事实实验。
+
+on:  # 定义唯一允许的付费实验触发方式。
+  push:  # 通过本分支首次加入一次性标记的提交直接触发实验。
+    branches:  # 限制只有 PR17 对应的独立实验分支能够运行。
+      - exp/deepseek-crack-open-discovery  # 固定目标分支以避免其他分支产生费用。
+    paths:  # 只监听本实验永不修改的一次性触发标记。
+      - experiments/triggers/DEEPSEEK_ROUTING_COUNTERFACTUAL_PAIR_ONCE.md  # 首次新增标记时运行一次且后续源码提交不再触发。
+
+permissions:  # 限制工作流可使用的仓库权限。
+  contents: read  # 只允许读取代码并禁止把结果提交回分支。
+
+concurrency:  # 防止同一分支上的意外重复触发并行消耗额度。
+  group: deepseek-routing-counterfactual-pair-${{ github.ref }}  # 按分支引用隔离同类实验。
+  cancel-in-progress: false  # 不用新运行替换已经产生调用的旧运行以保留完整审计结果。
+
+jobs:  # 定义独立双样本反事实实验作业。
+  live-counterfactual-pair:  # 执行静态合同、真实有限元求解和两次 DeepSeek 分类。
+    if: ${{ github.run_attempt == 1 }}  # 阻止 GitHub 界面的 rerun 按钮再次产生模型费用。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 版本获得稳定 Python 与数值库环境。
+    environment: ds  # 从仓库长期化 ds Environment 读取 DeepSeek 凭据。
+    timeout-minutes: 30  # 限制依赖安装、真实求解和两次 API 请求的总时长。
+    env:  # 定义不敏感且可由所有步骤读取的固定模型配置。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定使用当前 ds Environment 已验证的 DeepSeek 模型。
+    steps:  # 定义从检出到上传审计产物的顺序步骤。
+      - uses: actions/checkout@v4  # 检出本次一次性标记 push 对应的精确代码版本。
+        with:  # 配置检出动作不保留可写仓库凭据。
+          persist-credentials: false  # 从运行环境移除 push 凭据以落实 artifact-only 边界。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 解释器。
+        with:  # 提供 Python 版本配置。
+          python-version: "3.11"  # 与仓库现有有限元和测试环境保持一致。
+      - name: Install numerical and API dependencies  # 安装真实有限元求解与 DeepSeek 客户端依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装脚本实际使用的第三方包且不引入训练依赖。
+      - name: Compile independent counterfactual files  # 在付费调用前检查新脚本与测试语法。
+        run: python -m py_compile scripts/run_deepseek_routing_counterfactual_pair.py tests/test_deepseek_routing_counterfactual_pair.py  # 编译两个新 Python 文件并阻止语法错误进入 API 步骤。
+      - name: Validate two-request and no-loop contract  # 在付费调用前验证硬上限、盲化、缓存与 artifact-only 合同。
+        run: python tests/test_deepseek_routing_counterfactual_pair.py -v  # 只执行离线合同测试且不运行有限元场景或 DeepSeek。
+      - name: Confirm ds Environment credential  # 在真实求解前确认长期化凭据已成功注入。
+        env:  # 只向凭据检查步骤暴露 ds Environment Secret。
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 选择 ds Environment 中第一个可用的 DeepSeek 凭据。
+        shell: bash  # 使用 Bash 的非空字符串检查。
+        run: test -n "$DEEPSEEK_API_KEY"  # 只检查凭据存在而不输出任何凭据内容。
+      - name: Run two independent DeepSeek decisions  # 执行两个真实求解样本且每例只请求一次模型。
+        continue-on-error: true  # 即使传输失败也继续上传首个回答或诊断记录。
+        env:  # 只向真实模型调用步骤暴露 ds Environment Secret。
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 选择 ds Environment 中第一个可用的 DeepSeek 凭据。
+        shell: bash  # 使用 Bash 捕获 Python 进程的真实退出码。
+        run: |  # 运行独立反事实脚本并保存脱敏日志与退出码。
+          set -uo pipefail  # 检查未定义变量和管道错误但允许手动冻结退出码。
+          mkdir -p artifacts  # 创建只用于本次 Actions artifact 的输出目录。
+          set +e  # 暂时关闭立即退出以确保失败信息能够上传。
+          python scripts/run_deepseek_routing_counterfactual_pair.py --output artifacts/deepseek_routing_counterfactual_pair.json 2>&1 | tee artifacts/live.log  # 运行严格两次请求并保存公开日志。
+          code=${PIPESTATUS[0]}  # 读取 Python 进程而不是 tee 的退出码。
+          set -e  # 恢复后续步骤的立即失败行为。
+          printf '%s\n' "$code" > artifacts/live_exit_code.txt  # 冻结脚本真实退出码供上传后的最终检查。
+          exit 0  # 保证 artifact 上传步骤无论实验结果如何都会执行。
+      - name: Upload frozen counterfactual artifact  # 上传模型输入、原始回答、事后评分与缓存记录。
+        if: always()  # 即使脚本或前置步骤失败也尽可能保存已有诊断。
+        uses: actions/upload-artifact@v4  # 使用官方 artifact 动作保存结果而不回写仓库。
+        with:  # 配置独立反事实实验 artifact。
+          name: deepseek-routing-counterfactual-pair  # 使用唯一名称便于命令行下载和审计。
+          path: artifacts/  # 上传 JSON、公开日志与真实退出码。
+          if-no-files-found: warn  # 在前置环境失败且没有文件时给出明确警告。
+          retention-days: 14  # 保留两周以便 PR 审查和论文方法核对。
+      - name: Preserve live experiment exit status  # 在 artifact 上传后恢复真实传输层状态。
+        if: always()  # 无论上传是否成功都执行最终状态判断。
+        shell: bash  # 使用 Bash 读取先前冻结的退出码。
+        run: |  # 只把传输层错误反映为工作流失败而不因分类错误自动重跑。
+          test -f artifacts/live_exit_code.txt  # 确认真实运行步骤已写出状态文件。
+          code=$(cat artifacts/live_exit_code.txt)  # 读取独立反事实脚本的真实退出码。
+          exit "$code"  # 原样返回状态且不触发任何修复或重试调用。
