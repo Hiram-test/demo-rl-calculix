@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]  # 定位仓库根目录。
 sys.path.insert(0, str(ROOT))  # 确保脚本直接执行时可以导入仓库内模块。
 
 import scripts.run_deepseek_crack_hidden_executor as runner  # 导入已经通过静态合同的主运行器组件。
-from experiments.hidden_executor import executor_adapter  # 导入语序无关映射和中性公开状态适配层。
+from experiments.hidden_executor import executor_adapter_v2 as executor_adapter  # 导入支持联合网格细化与断裂量复算的隐藏执行器适配层。
 
 runner.SYSTEM_PROMPT = runner.SYSTEM_PROMPT.replace("experiment、information_request、provisional_answer。", "experiment、information_request；provisional_answer 为可选字段。")  # 取消与实验执行无关的暂定答复硬门且不改变物理任务。
 
