@@ -18,11 +18,22 @@ def sha256_text(text: str) -> str:  # 计算 UTF-8 文本的 SHA256。
     return hashlib.sha256(text.encode("utf-8")).hexdigest()  # 返回十六进制摘要用于审计。
 
 
+def _valid_hypothesis(item: Any) -> bool:  # 判断一个模型生成的竞争假设是否具有可审计内容。
+    if isinstance(item, str):  # 允许模型直接返回自然语言字符串。
+        return bool(item.strip())  # 只接受非空字符串。
+    if isinstance(item, dict):  # 允许模型返回带假设、证据或假定条件的结构化对象。
+        for key in ("hypothesis", "statement", "claim"):  # 检查常见但不暗示物理路线的文本字段。
+            value = item.get(key)  # 读取当前候选字段。
+            if isinstance(value, str) and value.strip():  # 检查候选字段是否包含非空文本。
+                return True  # 接受包含明确假设陈述的结构化对象。
+    return False  # 拒绝空值、纯数字或缺少假设陈述的对象。
+
+
 def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在看不到工具时提出的实验方案。
     errors: list[str] = []  # 初始化错误列表以一次返回全部合同问题。
     hypotheses = proposal.get("competing_hypotheses")  # 读取竞争假设数组。
-    if not isinstance(hypotheses, list) or len(hypotheses) < 2 or not all(isinstance(item, str) and item.strip() for item in hypotheses):  # 检查至少两个非空假设。
-        errors.append("competing_hypotheses must contain at least two non-empty strings")  # 记录假设合同错误。
+    if not isinstance(hypotheses, list) or len(hypotheses) < 2 or not all(_valid_hypothesis(item) for item in hypotheses):  # 检查至少两个可审计假设。
+        errors.append("competing_hypotheses must contain at least two non-empty hypotheses")  # 记录假设合同错误。
     evidence_refs = proposal.get("evidence_refs")  # 读取证据引用数组。
     if not isinstance(evidence_refs, list) or not evidence_refs or not all(isinstance(item, str) and item.strip() for item in evidence_refs):  # 检查引用必须存在且非空。
         errors.append("evidence_refs must contain non-empty strings")  # 记录证据引用错误。
@@ -48,9 +59,9 @@ def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在
         request = proposal.get("information_request")  # 读取请求对象。
         if not isinstance(request, dict) or not isinstance(request.get("question"), str) or not request.get("question", "").strip():  # 检查问题文本。
             errors.append("information_request.question must be a non-empty string")  # 记录信息请求错误。
-    provisional_answer = proposal.get("provisional_answer")  # 读取当前暂定答复。
-    if not isinstance(provisional_answer, str) or not provisional_answer.strip():  # 检查暂定答复必须存在。
-        errors.append("provisional_answer must be a non-empty string")  # 记录答复合同错误。
+    provisional_answer = proposal.get("provisional_answer")  # 读取可选的当前暂定答复。
+    if provisional_answer is not None and (not isinstance(provisional_answer, str) or not provisional_answer.strip()):  # 仅在模型实际返回该字段时检查内容。
+        errors.append("provisional_answer must be a non-empty string when supplied")  # 记录可选答复字段的内容错误。
     return errors  # 返回全部校验错误供调用方决定是否重试。
 
 
