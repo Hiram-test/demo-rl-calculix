@@ -8,8 +8,8 @@ from pathlib import Path  # 管理临时实验目录和仓库文件路径。
 
 from experiments.hidden_executor.contracts import canonical_json  # 生成稳定提案文本用于完整性比较。
 from experiments.hidden_executor.contracts import freeze_proposal  # 测试先冻结后映射合同。
-from experiments.hidden_executor.executor_adapter_v3 import execute_mapping  # 测试目标尺寸忠实执行和统一公开反馈净化。
-from experiments.hidden_executor.executor_adapter_v3 import map_frozen_proposal  # 测试最终多层隐藏映射。
+from experiments.hidden_executor.executor_adapter_v4 import execute_mapping  # 测试禁止部分执行和统一公开反馈净化。
+from experiments.hidden_executor.executor_adapter_v4 import map_frozen_proposal  # 测试最终隐藏映射忠实性门。
 from scripts.run_deepseek_crack_hidden_executor import SYSTEM_PROMPT  # 检查系统提示没有工具目录。
 from scripts.run_deepseek_crack_hidden_executor import USER_INSTRUCTION  # 检查每轮指令没有工具暗示。
 
@@ -56,6 +56,13 @@ class HiddenExecutorContractTests(unittest.TestCase):  # 汇总隔离提示、�
             frozen = freeze_proposal(proposal, Path(directory), 1, "0" * 64)  # 冻结联合实验提案。
             mapping = map_frozen_proposal(Path(frozen["round_dir"]), str(frozen["seal"]["proposal_sha256"]))  # 调用模型不可见联合映射。
             self.assertEqual(mapping["operation"], "refine_and_fracture_parameter")  # 断言加密和K复算保持为同一个实验目的。
+
+    def test_refinement_with_unavailable_contour_j_is_not_partially_executed(self) -> None:  # 检查执行器不会只完成联合实验中的网格加密部分。
+        proposal = experiment_proposal("Refine the crack-tip mesh from 2.5 mm to 1.25 mm.", ["J-integral values on multiple contours", "Consistency of J across contours"])  # 构造当前后端缺少多围道J能力的联合实验。
+        with tempfile.TemporaryDirectory() as directory:  # 创建独立临时目录。
+            frozen = freeze_proposal(proposal, Path(directory), 1, "0" * 64)  # 在映射前冻结完整联合实验目的。
+            mapping = map_frozen_proposal(Path(frozen["round_dir"]), str(frozen["seal"]["proposal_sha256"]))  # 调用最终忠实性映射门。
+            self.assertEqual(mapping["operation"], "unsupported")  # 断言执行器整项拒绝且不会降格为普通网格加密。
 
     def test_explicit_target_size_is_not_replaced_by_default_grid(self) -> None:  # 检查普通加密严格保留模型给出的目标尺寸。
         proposal = experiment_proposal("将裂尖附近网格目标尺寸从2.5 mm减小到1.25 mm。", ["远程开口位移", "总应变能", "裂尖最大应力"])  # 构造真实轨迹中的显式目标尺寸实验。
