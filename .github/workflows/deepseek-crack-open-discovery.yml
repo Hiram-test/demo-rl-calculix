@@ -6,6 +6,7 @@ on:  # 定义工作流触发条件。
       - exp/deepseek-crack-open-discovery  # 只运行独立实验分支。
     paths:  # 限制与实验相关的源文件变更。
       - scripts/run_deepseek_crack_open_discovery.py  # 监听开放发现运行脚本。
+      - scripts/run_deepseek_crack_open_discovery_aligned.py  # 监听网格参数吸附修复层。
       - tests/test_deepseek_crack_open_discovery.py  # 监听开放发现合同测试。
       - docs/DEEPSEEK_CRACK_OPEN_DISCOVERY.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-open-discovery.yml  # 监听工作流自身。
@@ -35,7 +36,7 @@ jobs:  # 定义实验作业集合。
       - name: Install numerical and API dependencies  # 安装有限元与 DeepSeek 客户端依赖。
         run: python -m pip install --quiet numpy scipy openai  # 安装脚本实际使用的第三方包。
       - name: Compile open-discovery experiment  # 在真实调用前检查 Python 语法。
-        run: python -m py_compile scripts/run_deepseek_crack_open_discovery.py tests/test_deepseek_crack_open_discovery.py  # 编译运行脚本与测试文件。
+        run: python -m py_compile scripts/run_deepseek_crack_open_discovery.py scripts/run_deepseek_crack_open_discovery_aligned.py tests/test_deepseek_crack_open_discovery.py  # 编译主体、修复层与测试文件。
       - name: Validate no-route contract  # 检查提示词、工具目录和注释要求。
         run: python -m unittest tests/test_deepseek_crack_open_discovery.py -v  # 执行独立静态合同测试。
       - name: Confirm DeepSeek credential  # 在真实调用前确认 Environment 凭据已注入。
@@ -49,7 +50,7 @@ jobs:  # 定义实验作业集合。
           set -uo pipefail  # 保留未定义变量与管道失败检查但允许手动记录退出码。
           mkdir -p artifacts  # 确保日志和轨迹目录存在。
           set +e  # 暂时关闭立即退出以记录真实返回码。
-          python scripts/run_deepseek_crack_open_discovery.py --mode both --max-rounds 6 --output artifacts/deepseek_crack_open_discovery.json 2>&1 | tee artifacts/live.log  # 执行完整开放发现对照并保存不含密钥的日志。
+          python scripts/run_deepseek_crack_open_discovery_aligned.py --mode both --max-rounds 6 --output artifacts/deepseek_crack_open_discovery.json 2>&1 | tee artifacts/live.log  # 通过参数吸附层执行完整开放发现对照。
           code=${PIPESTATUS[0]}  # 读取 Python 进程而非 tee 的退出码。
           set -e  # 恢复立即退出行为。
           printf '%s\n' "$code" > artifacts/live_exit_code.txt  # 把真实退出码写入诊断文件。
