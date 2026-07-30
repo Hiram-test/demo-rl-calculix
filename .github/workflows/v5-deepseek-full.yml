@@ -1,0 +1,255 @@
+name: V5 DeepSeek engineering agent - full validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/ai-dynamic-region-mesh-paper
+    paths:
+      - "docs/v5/**"
+      - "schemas/problem_manifest.schema.json"
+      - "schemas/engineering_skill.schema.json"
+      - "src/engineering_agent/**"
+      - "skills/engineering/**"
+      - "scripts/v5_decide_once.py"
+      - "tests/test_problem_manifest.py"
+      - "tests/test_decision_loop.py"
+      - ".github/workflows/v5-deepseek-full.yml"
+
+jobs:
+  v5-full-validation:
+    runs-on: ubuntu-24.04
+    environment: ds
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      PYTHONPATH: src
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+      DEEPSEEK_MODEL: deepseek-v4-pro
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile the complete V5 source set
+        run: |
+          set -euo pipefail
+          python -m compileall -q src/engineering_agent scripts/v5_decide_once.py
+
+      - name: Validate schemas and every engineering skill
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from engineering_agent.skill_contract import SkillLibrary
+
+          schema_paths = [
+              Path("schemas/problem_manifest.schema.json"),
+              Path("schemas/engineering_skill.schema.json"),
+          ]
+          for path in schema_paths:
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              assert isinstance(payload, dict) and payload, path
+
+          skill_paths = sorted(Path("skills/engineering").glob("*.json"))
+          assert skill_paths, "no engineering skills found"
+          library = SkillLibrary.load_json_directory("skills/engineering")
+          assert len(library.skills) == len(skill_paths), (
+              len(library.skills), len(skill_paths), library.observations
+          )
+          assert not library.observations, library.observations
+          print(f"validated {len(schema_paths)} schemas and {len(skill_paths)} skills")
+          PY
+
+      - name: Run the complete V5 unit suite
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_problem_manifest.py" -v
+          python -m unittest discover -s tests -p "test_decision_loop.py" -v
+
+      - name: Confirm explicit DeepSeek configuration
+        run: |
+          set -euo pipefail
+          test -n "$DEEPSEEK_API_KEY"
+          test -n "$DEEPSEEK_MODEL"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          echo "model=$DEEPSEEK_MODEL"
+
+      - name: Build a sourced, non-empty V5 problem manifest
+        run: |
+          set -euo pipefail
+          mkdir -p run-input artifacts/v5-full-validation
+          cat > run-input/problem_manifest.json <<'JSON'
+          {
+            "manifest_version": "1.0",
+            "task_id": "v5-full-validation",
+            "user_goal": "Audit the currently available evidence for a regional finite-element mesh optimisation study and choose the next engineering action without inventing missing model facts.",
+            "input_files": [
+              {
+                "path": "docs/v5/SLICE_01_PROBLEM_MANIFEST.md",
+                "role": "problem-manifest design contract",
+                "source": "current repository checkout"
+              },
+              {
+                "path": "docs/v5/SLICE_02_SKILLS_AND_DECISION_LOOP.md",
+                "role": "skill and decision-loop design contract",
+                "source": "current repository checkout"
+              }
+            ],
+            "facts": {
+              "workflow.current_scope": {
+                "value": [
+                  "problem manifest with provenance",
+                  "engineering skill library",
+                  "DeepSeek JSON decision client",
+                  "bounded decision loop",
+                  "complete request-response-decision trace"
+                ],
+                "provenance": "parsed_from_user_model",
+                "source_ref": "current V5 repository files"
+              }
+            },
+            "missing_facts": [
+              {
+                "path": "model.geometry_source",
+                "reason": "No current-case geometry or finite-element model is included in this validation input.",
+                "question": "Provide the current geometry or model file and identify its authoritative source.",
+                "acceptable_sources": ["CAD", "drawing", "solver input deck", "user-supplied model"]
+              },
+              {
+                "path": "loads.current_definition",
+                "reason": "No current-case load magnitude, direction, distribution or source is established.",
+                "question": "Provide the current load definition and its source.",
+                "acceptable_sources": ["design specification", "drawing", "measurement", "user instruction"]
+              },
+              {
+                "path": "boundary_conditions.current_definition",
+                "reason": "No current-case supports or constraints are established.",
+                "question": "Provide the current boundary conditions and their source.",
+                "acceptable_sources": ["design specification", "drawing", "user instruction"]
+              }
+            ],
+            "algorithm_configuration": {},
+            "observations": [
+              "This is the full V5 integration validation, not an empty smoke input.",
+              "The agent must preserve missing physical facts rather than substitute values from earlier examples."
+            ]
+          }
+          JSON
+
+      - name: Run a real V5 DeepSeek decision
+        run: |
+          set -euo pipefail
+          python scripts/v5_decide_once.py \
+            --manifest run-input/problem_manifest.json \
+            --skills skills/engineering \
+            --trace-dir artifacts/v5-full-validation \
+            | tee artifacts/v5-full-validation/decision_stdout.json
+
+      - name: Verify the real response and complete trace
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("artifacts/v5-full-validation")
+          request = json.loads(
+              (root / "model_io/iteration_0001_request.json").read_text(encoding="utf-8")
+          )
+          response = json.loads(
+              (root / "model_io/iteration_0001_response.json").read_text(encoding="utf-8")
+          )
+          trace = json.loads((root / "agent_trace.json").read_text(encoding="utf-8"))
+
+          assert "error" not in response, response
+          assert response.get("provider") == "deepseek", response
+          assert response.get("model"), response
+          assert isinstance(response.get("parsed_payload"), dict), response
+          assert len(request.get("engineering_skills", [])) >= 3, request
+          assert request.get("problem_manifest", {}).get("facts"), request
+          assert request.get("problem_manifest", {}).get("missing_facts"), request
+          assert len(trace) == 1 and trace[0].get("type") == "decision", trace
+          action = trace[0]["decision"].get("action")
+          allowed = {
+              "ask_user", "propose_assumption", "write_code", "run_command",
+              "inspect_result", "revise_code", "record_finding", "finish"
+          }
+          assert action in allowed, action
+          print(f"verified live DeepSeek response with action={action}")
+          PY
+
+      - name: Generate complete V5 submission manifest
+        if: always()
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          roots = [
+              Path("docs/v5"),
+              Path("schemas/problem_manifest.schema.json"),
+              Path("schemas/engineering_skill.schema.json"),
+              Path("src/engineering_agent"),
+              Path("skills/engineering"),
+              Path("scripts/v5_decide_once.py"),
+              Path("tests/test_problem_manifest.py"),
+              Path("tests/test_decision_loop.py"),
+              Path(".github/workflows/v5-deepseek-full.yml"),
+          ]
+          files = []
+          for root in roots:
+              candidates = [root] if root.is_file() else sorted(root.rglob("*"))
+              for path in candidates:
+                  if not path.is_file() or "__pycache__" in path.parts:
+                      continue
+                  raw = path.read_bytes()
+                  files.append({
+                      "path": path.as_posix(),
+                      "size_bytes": len(raw),
+                      "sha256": hashlib.sha256(raw).hexdigest(),
+                  })
+          out = Path("artifacts/v5-full-validation/submission_manifest.json")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(
+              json.dumps({"version": "V5", "file_count": len(files), "files": files}, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(f"recorded {len(files)} V5 files")
+          PY
+
+      - name: Publish V5 run summary
+        if: always()
+        run: |
+          {
+            echo "# V5 DeepSeek full validation"
+            echo
+            echo "- Branch: \`$GITHUB_REF_NAME\`"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Model: \`$DEEPSEEK_MODEL\`"
+            echo "- Scope: complete current V5 Manifest + Skills + Decision Loop + live trace"
+            echo
+            if [ -s artifacts/v5-full-validation/decision_stdout.json ]; then
+              echo "## Decision"
+              echo '```json'
+              cat artifacts/v5-full-validation/decision_stdout.json
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload complete V5 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v5-deepseek-full-validation
+          path: |
+            run-input
+            artifacts/v5-full-validation
+          if-no-files-found: error
+          retention-days: 90
