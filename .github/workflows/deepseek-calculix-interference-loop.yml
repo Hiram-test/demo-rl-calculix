@@ -1,0 +1,101 @@
+name: DeepSeek CalculiX Interference Diagnosis  # 标识原帖 2747 的有限调用真实求解诊断实验。
+
+on:  # 定义唯一允许的自动触发方式。
+  push:  # 通过 PR17 实验分支新增一次性标记直接触发。
+    branches:  # 限制付费运行所在分支。
+      - exp/deepseek-crack-open-discovery  # 复用 PR17 当前远端头分支且不新建 PR。
+    paths:  # 只监听本实验永不修改的一次性触发标记。
+      - experiments/triggers/DEEPSEEK_CALCULIX_INTERFERENCE_2747_ONCE.md  # 首次新增时运行一次，后续源码或论文提交不再匹配。
+
+permissions:  # 限制工作流可用仓库权限。
+  contents: read  # 只读取当前提交并禁止工作流回写分支。
+
+concurrency:  # 防止相同分支上的重复事件并行消耗额度。
+  group: deepseek-calculix-interference-2747-${{ github.ref }}  # 按完整 Git 引用隔离并发组。
+  cancel-in-progress: false  # 不用新事件取消已产生模型调用的运行，以保留完整审计链。
+
+jobs:  # 定义唯一真实诊断作业。
+  live-contact-diagnosis:  # 执行环境准备、CalculiX 求解、DeepSeek loop 和论文生成。
+    if: ${{ github.run_attempt == 1 }}  # 阻止 GitHub rerun 按钮再次产生 DeepSeek 费用。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 版本获得稳定的 CalculiX 和 Python 环境。
+    environment: ds  # 只从长期化 ds Environment 读取 DeepSeek 凭据。
+    timeout-minutes: 30  # 限制依赖安装、微型求解、三次模型调用和论文渲染总时长。
+    env:  # 定义不敏感且全作业一致的运行配置。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定使用 ds Environment 已验证的 DeepSeek 模型。
+      PAPER_CJK_FONT: /usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc  # 使用 Noto CJK 字体渲染中文论文。
+    steps:  # 定义从只读检出到 artifact 上传的顺序步骤。
+      - uses: actions/checkout@v4  # 检出一次性标记 push 对应的精确源代码。
+        with:  # 配置只读检出边界。
+          persist-credentials: false  # 不保留可写 GitHub 凭据，保证 artifact-only。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 解释器。
+        with:  # 提供解释器版本。
+          python-version: "3.11"  # 与仓库 runner 和类型注解保持一致。
+      - name: Prepare persistent FEA and paper runtime  # 安装长期化 Python、CalculiX 和 PDF 运行依赖。
+        shell: bash  # 使用 Ubuntu Bash 执行包管理命令。
+        run: |  # 安装求解器、字体、PDF 工具和 Python 库。
+          set -euo pipefail  # 在环境安装发生真实错误时停止当前步骤。
+          # 更新 Ubuntu 软件包索引以获得 calculix-ccx 和字体包。
+          sudo apt-get update
+          # 安装 CalculiX、Poppler 和中文字体；不安装训练或优化框架。
+          sudo apt-get install -y calculix-ccx poppler-utils fonts-noto-cjk
+          # 安装 DeepSeek 兼容客户端和可复现 PDF 生成/读取依赖。
+          python -m pip install --quiet openai reportlab pypdf pdfplumber
+      - name: Run bounded DeepSeek and CalculiX loop  # 执行真实求解、最多三次模型决策和零额外调用论文生成。
+        continue-on-error: true  # 即使 API 或渲染失败也继续上传已经冻结的求解与回答。
+        shell: bash  # 使用 Bash 捕获 Python 进程而不是 tee 的真实退出码。
+        env:  # 只向实际模型调用步骤暴露 ds Environment 凭据。
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 选择 ds Environment 中第一个可用凭据且不输出其内容。
+        run: |  # 运行单一增长历史诊断并冻结真实退出状态。
+          set -uo pipefail  # 保留未定义变量和管道状态检查，但允许手动捕获 Python 退出码。
+          # 创建只用于本次 Actions artifact 的输出目录。
+          mkdir -p artifacts/deepseek_calculix_interference
+          # 暂时关闭立即退出，以便失败后仍能执行 PDF 检查和 artifact 上传。
+          set +e
+          # 执行三次请求硬上限的真实诊断；脚本内部 SDK max_retries=0。
+          python scripts/run_deepseek_calculix_interference_loop.py --output-dir artifacts/deepseek_calculix_interference 2>&1 | tee artifacts/live.log
+          # 读取 Python 进程而不是 tee 的退出码。
+          code=${PIPESTATUS[0]}
+          # 恢复后续 shell 的立即失败行为。
+          set -e
+          # 保存真实退出码，供 artifact 上传后的最终状态恢复。
+          printf '%s\n' "$code" > artifacts/live_exit_code.txt
+          # 保证下一步始终有机会检查和上传已有产物。
+          exit 0
+      - name: Render and inspect paper pages  # 把最终 PDF 渲染为 PNG 并保存文本/元数据以便人工核对。
+        if: always()  # 无论模型结论或传输状态如何都尝试保存现有论文证据。
+        shell: bash  # 使用 Ubuntu Poppler 工具生成页面预览。
+        run: |  # 只在 PDF 存在时渲染，不因论文缺失删除其它 trace。
+          set -uo pipefail  # 检查未定义变量，同时允许单个检查工具失败后保留记录。
+          # 定位稳定 PDF 输出。
+          pdf="artifacts/deepseek_calculix_interference/output/pdf/deepseek_calculix_interference_diagnosis.pdf"
+          # 仅当 PDF 已生成时执行视觉与文本检查。
+          if [ -f "$pdf" ]; then
+            # 创建页面预览目录。
+            mkdir -p artifacts/deepseek_calculix_interference/output/pdf-preview
+            # 以 144 DPI 渲染全部页面，供下载后逐页人工检查。
+            pdftoppm -png -r 144 "$pdf" artifacts/deepseek_calculix_interference/output/pdf-preview/page
+            # 保存 PDF 页数、尺寸和字体等元数据。
+            pdfinfo "$pdf" > artifacts/deepseek_calculix_interference/output/pdf_info.txt
+            # 保存布局文本，辅助检查乱码和缺失章节。
+            pdftotext -layout "$pdf" artifacts/deepseek_calculix_interference/output/pdf_text.txt
+          # 结束 PDF 存在性分支。
+          fi
+      - name: Upload frozen diagnosis and paper  # 上传原始 deck、求解日志、决策链、Markdown、PDF 和来源收据。
+        if: always()  # 即使环境、API、求解或 PDF 失败也上传能够取得的证据。
+        uses: actions/upload-artifact@v4  # 使用 GitHub 官方 artifact 动作且不回写仓库。
+        with:  # 配置唯一诊断 artifact。
+          name: deepseek-calculix-interference-2747  # 使用稳定名称便于 CLI 下载和论文审计。
+          path: artifacts/  # 上传完整求解、模型输入输出、论文和退出码目录。
+          if-no-files-found: warn  # 环境在产物生成前失败时给出明确警告。
+          retention-days: 14  # 保留两周用于 PR 审查和论文交付。
+      - name: Preserve live runner exit status  # 在 artifact 上传后恢复真实 API/执行层状态。
+        if: always()  # 无论前面步骤状态如何都尝试读取冻结退出码。
+        shell: bash  # 使用 Bash 返回原始 Python 状态。
+        run: |  # 不因工程结论为 unresolved 而失败，只反映 runner 的真实非零状态。
+          set -euo pipefail  # 严格读取退出码文件。
+          # 确认真实运行步骤已经写入退出码。
+          test -f artifacts/live_exit_code.txt
+          # 读取冻结退出码。
+          code=$(cat artifacts/live_exit_code.txt)
+          # 原样返回 runner 状态且不触发任何自动重试。
+          exit "$code"

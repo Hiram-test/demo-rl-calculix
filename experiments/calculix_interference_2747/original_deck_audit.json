@@ -1,0 +1,68 @@
+{
+  "audit_version": "calculix-forum-2747-source-audit/1.0",
+  "forum": {
+    "title": "Interference Contact and mesh refinement",
+    "url": "https://calculix.discourse.group/t/interference-contact-and-mesh-refinement/2747",
+    "attachment_share_url": "https://drive.proton.me/urls/2YKDRXYGJG#fwmEJFkaCbui",
+    "post_count": 6,
+    "last_posted_at": "2025-11-28T14:05:55.757Z",
+    "confirmed_forum_solution": false
+  },
+  "download": {
+    "archive_name": "Shear_setups.zip",
+    "archive_size_bytes": 116272555,
+    "archive_sha1": "2CEEC9B5C55EF274EA41ABD4D1C314E1AF78D2AF",
+    "archive_sha256": "9AF9CE2F677384BF3AB2E44C188E92E71B47841D9C6C3C67C066DCF5AD8BDB9C"
+  },
+  "entries": [
+    {
+      "name": "Shear_setup-INTER01-COARSE_PIN.inp",
+      "size_bytes": 267223015,
+      "sha256": "F142404CD1B2E94E8F68EB3128FFDF15E4E4C68D45C2EE01640F8B897A3EE4AA",
+      "node_count": 3836377,
+      "c3d20r_element_count": 184896,
+      "pin2_c3d20r_element_count": 21120,
+      "step_count": 2,
+      "pin2_contact_face_count": 1728,
+      "hole2_contact_face_count": 3600,
+      "removes_then_readds_pin2_contact": false
+    },
+    {
+      "name": "Shear_setup-INTER01-deactivate1thenreactivate.inp",
+      "size_bytes": 277391649,
+      "sha256": "1160DB03946AA67B8A955F130647F6531C5B4035220A314C6CBB9B57925CEDAE",
+      "node_count": 3863869,
+      "c3d20r_element_count": 232416,
+      "pin2_c3d20r_element_count": 68640,
+      "step_count": 3,
+      "pin2_contact_face_count": 3344,
+      "hole2_contact_face_count": 3600,
+      "removes_then_readds_pin2_contact": true
+    }
+  ],
+  "shared_deck_facts": {
+    "element_family": "C3D20R",
+    "unit_system": "MM_TON_S_C",
+    "contact_formulation": "surface-to-surface",
+    "pressure_overclosure": "linear",
+    "linear_penalty_first_value": 69000.0,
+    "requested_linear_solver": "Pardiso",
+    "step_increment_limit": 100,
+    "materials": [
+      "S355",
+      "6061_Alloy"
+    ]
+  },
+  "author_observations": [
+    "当干涉小于约半个单元宽度时模型可以运行；细化后边中间节点也进入干涉，求解在增量中循环后放弃。",
+    "失败模型出现接触反力但没有预期位移。",
+    "作者尝试过增量设置、NLGEOM 开关、主从面互换和 node-to-surface，均未确认解决。",
+    "在后续最小模型中，停用细销接触可以启动；重新激活后报告残差力近零且位移修正约为 1e-30。"
+  ],
+  "audit_limitations": [
+    "两个附件同时改变网格规模、PIN2 接触面离散和接触激活步骤，因此不是单因素因果对照。",
+    "原始附件总规模约为一千一百六十万自由度，未在标准 GitHub Actions 或当前低空闲内存工作站上执行。",
+    "代表模型使用同类二次减缩积分实体和真实 CalculiX 接触求解，但不复刻圆柱孔几何、Pardiso 后端或原模型全部边界。",
+    "论坛截至冻结时没有被作者确认的最终修复。"
+  ]
+}
