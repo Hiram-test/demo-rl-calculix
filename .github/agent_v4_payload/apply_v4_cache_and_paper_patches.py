@@ -64,6 +64,8 @@ def main() -> int:
     _install("cache_aware_provider.py", root / "bridge_agent" / "cache_aware_provider.py")
     # 安装把最终 DeepSeek 决策写入论文的确定性后处理器。
     _install("decision_paper.py", root / "bridge_agent" / "decision_paper.py")
+    # 安装只补算两个截断场景的续跑入口，保留上一轮已完成的多孔和裂纹产物。
+    _install("resume_v4_suite.py", root / "scripts" / "resume_v4_suite.py")
     # 安装不联网的缓存、重试和区域合同测试。
     _install("test_cache_aware_provider.py", root / "tests" / "test_cache_aware_provider.py")
     # 定位隔离执行单个 case 的入口脚本。
