@@ -1,0 +1,51 @@
+{
+  "skill_id": "problem-definition-source-audit",
+  "title": "Problem definition and parameter source audit",
+  "purpose": "Establish what the current engineering problem actually is, which facts are supported by current evidence, and which facts must be requested or explicitly treated as assumptions.",
+  "engineering_questions": [
+    "What physical object and response are being studied?",
+    "Which geometry, material, load and boundary-condition facts are established by current inputs?",
+    "Which values are missing, ambiguous, conflicting or inherited from another version?"
+  ],
+  "evidence_requirements": [
+    {
+      "name": "current problem evidence",
+      "purpose": "Support the physical model facts used in this run.",
+      "acceptable_sources": [
+        "current user statement",
+        "current drawing",
+        "current CAD or mesh",
+        "current data file",
+        "current measurement"
+      ]
+    }
+  ],
+  "procedure": [
+    "Inventory current input files and user statements without importing facts from earlier cases.",
+    "Separate physical model facts from algorithm and runtime configuration.",
+    "Attach a source reference to each established fact.",
+    "Turn unresolved necessary facts into concise user questions.",
+    "Label any temporary engineering assumption and state how it affects interpretation."
+  ],
+  "tool_guidance": [
+    "Use parsers or inspection code generated for the current input format.",
+    "Prefer direct extraction from the current source over manual transcription."
+  ],
+  "output_records": [
+    "problem manifest",
+    "parameter provenance report",
+    "questions for user",
+    "assumptions pending confirmation"
+  ],
+  "non_goals": [
+    "Choosing values from old benchmarks",
+    "Creating a case-specific geometry builder",
+    "Declaring success from file counts"
+  ],
+  "tags": [
+    "problem-definition",
+    "provenance",
+    "input-audit"
+  ],
+  "version": "1.0"
+}
