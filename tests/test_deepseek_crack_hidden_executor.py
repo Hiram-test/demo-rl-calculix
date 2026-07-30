@@ -8,8 +8,8 @@ from pathlib import Path  # 管理临时实验目录和仓库文件路径。
 
 from experiments.hidden_executor.contracts import canonical_json  # 生成稳定提案文本用于完整性比较。
 from experiments.hidden_executor.contracts import freeze_proposal  # 测试先冻结后映射合同。
-from experiments.hidden_executor.executor import execute_mapping  # 测试模型可见反馈不泄露内部操作。
-from experiments.hidden_executor.executor import map_frozen_proposal  # 测试隐藏执行器忠实映射。
+from experiments.hidden_executor.executor_adapter import execute_mapping  # 测试中性公开反馈和真实执行适配层。
+from experiments.hidden_executor.executor_adapter import map_frozen_proposal  # 测试语序无关且隐藏的忠实映射。
 from scripts.run_deepseek_crack_hidden_executor import SYSTEM_PROMPT  # 检查系统提示没有工具目录。
 from scripts.run_deepseek_crack_hidden_executor import USER_INSTRUCTION  # 检查每轮指令没有工具暗示。
 
@@ -65,7 +65,7 @@ class HiddenExecutorContractTests(unittest.TestCase):  # 汇总隔离提示、�
             mapping = map_frozen_proposal(round_dir, str(frozen["seal"]["proposal_sha256"]))  # 生成模型不可见映射收据。
             feedback = execute_mapping(round_dir, str(frozen["seal"]["proposal_sha256"]), mapping)  # 执行停止操作并生成公开反馈。
             visible_text = json.dumps(feedback, ensure_ascii=False)  # 序列化下一轮模型可见反馈。
-            self.assertEqual(feedback["status"], "finished")  # 断言自主停止状态被保留。
+            self.assertEqual(feedback["status"], "analysis_complete")  # 断言自主停止被转换为中性公开状态。
             self.assertNotIn("internal_operation", visible_text)  # 断言反馈没有内部操作字段。
             self.assertNotIn("finish", visible_text)  # 断言反馈没有内部英文操作名称。
             self.assertTrue((round_dir / "execution_audit.json").is_file())  # 断言完整内部审计仍单独保存。
