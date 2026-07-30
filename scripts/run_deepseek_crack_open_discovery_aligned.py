@@ -1,10 +1,9 @@
 #!/usr/bin/env python3  # 使用参数吸附修复层启动开放发现实验。
 from __future__ import annotations  # 允许现代类型注解。
 
-import sys  # 把底层主函数退出码传回操作系统。
 from typing import Any  # 表示模型提供的动态 JSON 参数。
 
-import scripts.run_deepseek_crack_open_discovery as experiment  # 复用已经通过静态合同测试的开放发现主体。
+import run_deepseek_crack_open_discovery as experiment  # 从同一 scripts 目录导入已经通过静态合同测试的开放发现主体。
 
 
 def _aligned_geometry_energy(arguments: dict[str, Any]) -> dict[str, Any]:  # 把模型提出的连续裂纹延长量吸附到结构网格步长。
