@@ -22,7 +22,7 @@ jobs:  # 定义唯一真实诊断作业。
     timeout-minutes: 30  # 限制依赖安装、微型求解、三次模型调用和论文渲染总时长。
     env:  # 定义不敏感且全作业一致的运行配置。
       DEEPSEEK_MODEL: deepseek-v4-pro  # 固定使用 ds Environment 已验证的 DeepSeek 模型。
-      PAPER_CJK_FONT: /usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc  # 使用 Noto CJK 字体渲染中文论文。
+      PAPER_CJK_FONT: /usr/share/fonts/truetype/wqy/wqy-zenhei.ttc  # 使用 ReportLab 可嵌入的文泉驿 TrueType 字体渲染中文论文。
     steps:  # 定义从只读检出到 artifact 上传的顺序步骤。
       - uses: actions/checkout@v4  # 检出一次性标记 push 对应的精确源代码。
         with:  # 配置只读检出边界。
@@ -36,8 +36,8 @@ jobs:  # 定义唯一真实诊断作业。
           set -euo pipefail  # 在环境安装发生真实错误时停止当前步骤。
           # 更新 Ubuntu 软件包索引以获得 calculix-ccx 和字体包。
           sudo apt-get update
-          # 安装 CalculiX、Poppler 和中文字体；不安装训练或优化框架。
-          sudo apt-get install -y calculix-ccx poppler-utils fonts-noto-cjk
+          # 安装 CalculiX、Poppler 和可由 ReportLab 嵌入的中文字体；不安装训练或优化框架。
+          sudo apt-get install -y calculix-ccx poppler-utils fonts-noto-cjk fonts-wqy-zenhei
           # 安装 DeepSeek 兼容客户端和可复现 PDF 生成/读取依赖。
           python -m pip install --quiet openai reportlab pypdf pdfplumber
       - name: Run bounded DeepSeek and CalculiX loop  # 执行真实求解、最多三次模型决策和零额外调用论文生成。

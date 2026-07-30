@@ -1060,6 +1060,8 @@ def _render_markdown(trace: dict[str, Any], source_audit: dict[str, Any], skill_
 def _register_pdf_font() -> str:
     # 延迟导入 ReportLab 字体注册器，使离线求解仍可在缺少 PDF 依赖时记录错误。
     from reportlab.pdfbase import pdfmetrics
+    # 延迟导入 ReportLab 内置中文 CID 字体类型，为系统字体不兼容时提供可读后备。
+    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
     # 延迟导入 TrueType 字体类型。
     from reportlab.pdfbase.ttfonts import TTFont
     # 读取可选的显式字体路径。
@@ -1093,8 +1095,16 @@ def _register_pdf_font() -> str:
         except Exception:
             # 跳过不兼容字体。
             continue
-    # 没有 CJK 字体时退回 Helvetica；论文来源收据会记录字体限制。
-    return "Helvetica"
+    # 系统字体均不可用时尝试注册 ReportLab 标准简体中文 CID 字体，避免静默输出方块字。
+    try:
+        # 注册无需本地字体文件路径的标准简体中文 CID 字体。
+        pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
+        # 返回已注册的中文 CID 字体名。
+        return "STSong-Light"
+    # 连标准 CID 字体也不可用时把问题升级为显式渲染错误。
+    except Exception as exception:
+        # 抛出清晰异常，禁止用 Helvetica 冒充成功的中文论文。
+        raise RuntimeError("没有可用的中文 PDF 字体，已拒绝生成方块字论文。") from exception
 
 
 # 定义 PDF 页眉页脚绘制函数。
@@ -1105,8 +1115,10 @@ def _draw_page_number(canvas: Any, document: Any, font_name: str) -> None:
     canvas.setFont(font_name, 8)
     # 在左下角写入短标题。
     canvas.drawString(document.leftMargin, 18, "DeepSeek - CalculiX contact diagnosis")
-    # 在右下角写入页码。
-    canvas.drawRightString(document.pagesize[0] - document.rightMargin, 18, f"Page {document.page}")
+    # 把十八毫米的页码预留宽度换算为 PDF 点；一英寸为七十二点且为二十五点四毫米。
+    page_number_width_points = 18.0 * 72.0 / 25.4
+    # 在右下角使用固定起点绘制中文短页码，规避集合字体宽度度量造成的首字裁切。
+    canvas.drawString(document.pagesize[0] - document.rightMargin - page_number_width_points, 18, f"第 {document.page} 页")
     # 恢复绘图状态。
     canvas.restoreState()
 
@@ -1151,14 +1163,16 @@ def _render_pdf(path: Path, trace: dict[str, Any], source_audit: dict[str, Any])
     body_style = ParagraphStyle("PaperBody", parent=styles["BodyText"], fontName=font_name, fontSize=9.2, leading=14, textColor=colors.HexColor("#263238"), spaceAfter=6)
     # 定义小号来源文字。
     small_style = ParagraphStyle("PaperSmall", parent=body_style, fontSize=7.8, leading=11, textColor=colors.HexColor("#546E7A"))
-    # 创建 A4 文档和稳定页边距。
-    document = SimpleDocTemplate(str(path), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=18 * mm, bottomMargin=16 * mm, title="DeepSeek CalculiX Interference Contact Diagnosis", author="Decision-derived engineering experiment")
+    # 创建 A4 文档和稳定页边距；底边保留二十二毫米以隔离正文与页脚。
+    document = SimpleDocTemplate(str(path), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=18 * mm, bottomMargin=22 * mm, title="DeepSeek CalculiX Interference Contact Diagnosis", author="Decision-derived engineering experiment")
     # 初始化 PDF flowable 列表。
     story: list[Any] = []
     # 定义安全段落辅助函数。
     def add_paragraph(text_value: Any, style: Any = body_style) -> None:
+        # 把模型常用但当前嵌入字体缺字的非换行连字符统一为普通连字符。
+        normalized_text = str(text_value if text_value is not None else "").replace("\u2010", "-").replace("\u2011", "-")
         # 转义模型文本中的 XML 特殊字符并保留换行。
-        safe_text = html.escape(str(text_value if text_value is not None else "")).replace("\n", "<br/>")
+        safe_text = html.escape(normalized_text).replace("\n", "<br/>")
         # 追加安全段落。
         story.append(Paragraph(safe_text, style))
     # 写入论文标题。
@@ -1251,14 +1265,10 @@ def _render_pdf(path: Path, trace: dict[str, Any], source_audit: dict[str, Any])
     add_paragraph("代表模型不是原始圆柱孔几何，也没有使用原 deck 请求的 Pardiso。代表模型上的 penalty 或增量结果只能作为机制证据或候选 workaround。原模型必须再次验证位移、反力、接触压力和穿透后，才能称为确认修复。")
     # 写入调用和缓存统计。
     add_paragraph(f"DeepSeek 请求 {trace.get('http_requests_attempted')} 次；API client {trace.get('api_client_count')} 个；SDK retries={trace.get('sdk_max_retries')}；cache hit tokens={trace.get('cache_audit', {}).get('prompt_cache_hit_tokens')}；cache miss tokens={trace.get('cache_audit', {}).get('prompt_cache_miss_tokens')}；论文额外模型调用=0。", small_style)
-    # 写入参考资料。
-    add_paragraph("参考资料", heading_style)
-    # 写入原帖链接。
-    add_paragraph(f"1. {source_audit.get('forum', {}).get('url')}", small_style)
-    # 写入官方 contact4 链接。
-    add_paragraph("2. https://github.com/Dhondtguido/CalculiX/blob/master/test/contact4.inp", small_style)
-    # 写入官方接触文档。
-    add_paragraph("3. https://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node307.html", small_style)
+    # 以紧凑二级标题写入参考资料，避免少量引用单独溢出到空白页。
+    add_paragraph("参考资料", subheading_style)
+    # 在一个紧凑段落中列出三个来源短标签；完整可点击 URL 保留在同目录 PAPER.md。
+    add_paragraph("1）CalculiX Discourse topic 2747；2）CalculiX official test/contact4.inp；3）CalculiX 2.7 Contact internals（node307.html）。", small_style)
     # 构造页脚回调并生成 PDF。
     document.build(story, onFirstPage=lambda canvas, doc: _draw_page_number(canvas, doc, font_name), onLaterPages=lambda canvas, doc: _draw_page_number(canvas, doc, font_name))
     # 返回 PDF 渲染元数据。

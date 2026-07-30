@@ -1,0 +1,56 @@
+{
+  "schema_version": "deepseek-calculix-paper-provenance/1.0",
+  "additional_deepseek_calls_for_paper": 0,
+  "source_runs": [
+    {
+      "run_id": 30587437626,
+      "url": "https://github.com/Hiram-test/demo-rl-calculix/actions/runs/30587437626",
+      "role": "first_attempt_truncated_at_2400_tokens",
+      "trace_path": "experiments/results/calculix_interference_2747/agent_trace_first_attempt_truncated.json",
+      "trace_sha256": "4D11A8ADECFCB17401B3C598878CC3C6B73F44FFC3971F34017350A5D8ABC6E5"
+    },
+    {
+      "run_id": 30587593587,
+      "url": "https://github.com/Hiram-test/demo-rl-calculix/actions/runs/30587593587",
+      "role": "final_three_turn_decision_run",
+      "trace_path": "experiments/results/calculix_interference_2747/agent_trace.json",
+      "trace_sha256": "B41AE78F1D550A450EE1E38E3EE1EE2B5504ABC7050E2DA2D62A0778C1F845A9"
+    }
+  ],
+  "agent_trace": {
+    "path": "experiments/results/calculix_interference_2747/agent_trace.json",
+    "sha256": "B41AE78F1D550A450EE1E38E3EE1EE2B5504ABC7050E2DA2D62A0778C1F845A9"
+  },
+  "source_audit": {
+    "path": "experiments/calculix_interference_2747/original_deck_audit.json",
+    "sha256": "76CD0E3544447A597B129D274718E55BEF9D2836317A19C49FE07371675C7AB5"
+  },
+  "engineering_skill": {
+    "path": "skills/engineering/nonlinear-contact-diagnosis.json",
+    "sha256": "8E59BF60334F8CA14429F0DEB6F605177E86441715EA52215CA56C3DB986853B"
+  },
+  "problem_manifest": {
+    "path": "experiments/results/calculix_interference_2747/problem_manifest.json",
+    "sha256": "A91EE3DB1714DF3FC816F31950F5EEF9F96F12DE440202FA377826B7AC5E9F3C"
+  },
+  "paper_markdown": {
+    "path": "experiments/results/calculix_interference_2747/PAPER.md",
+    "sha256": "9C6A2FFCB9F23CAA061E4E36A1ABD88C968F9CD349F4407299809FBFA4FE3854",
+    "size_bytes": 15134
+  },
+  "paper_pdf": {
+    "path": "experiments/results/calculix_interference_2747/output/pdf/deepseek_calculix_interference_diagnosis.pdf",
+    "font_name": "PaperCJK",
+    "size_bytes": 146828,
+    "sha256": "8F78E473F057734F3F9581DBF4E1787C2303C2C17E2FA311F32F9B52A690DAC0"
+  },
+  "delivery_render": {
+    "reason": "GitHub runner used an incompatible Noto TTC and produced square glyphs; the PDF was re-rendered from the unchanged frozen trace with an embeddable CJK font.",
+    "additional_deepseek_calls": 0,
+    "pages_visually_inspected": 3,
+    "pages_total": 3
+  },
+  "pdf_error": null,
+  "decision_source": "agent_trace.json#/final_decision",
+  "model_decision_count": 3
+}
