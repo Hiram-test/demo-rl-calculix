@@ -1,0 +1,52 @@
+{
+  "skill_id": "optimization-readiness",
+  "title": "Engineering optimisation readiness",
+  "purpose": "Decide whether optimisation is meaningful for the current problem and, when it is, define variables, objectives, constraints and evaluation evidence from the current engineering model.",
+  "engineering_questions": [
+    "What engineering decision is the optimisation intended to improve?",
+    "Are the design variables controllable and supported by the current model?",
+    "Is the objective stable enough that optimisation will not merely exploit numerical noise?",
+    "What computational budget and stopping rationale are appropriate for this run?"
+  ],
+  "evidence_requirements": [
+    {
+      "name": "baseline evaluation",
+      "purpose": "Establish a reproducible current-model response before searching alternatives.",
+      "acceptable_sources": [
+        "current solver run",
+        "current experiment",
+        "current analytical evaluation"
+      ]
+    }
+  ],
+  "procedure": [
+    "State the engineering decision, objective, constraints and design variables.",
+    "Check that the baseline evaluation is reproducible and the response is interpretable.",
+    "Choose an optimisation method only after considering variable type, noise, cost and available evidence.",
+    "Treat search size and iteration count as runtime configuration, not proof of quality.",
+    "Compare candidates under consistent evaluation conditions and record uncertainty."
+  ],
+  "tool_guidance": [
+    "Generate the evaluator and optimiser for the current model rather than calling a case-specific optimiser.",
+    "Preserve candidate inputs, solver outputs and failure reasons."
+  ],
+  "output_records": [
+    "optimisation rationale",
+    "variable and objective definitions",
+    "candidate history",
+    "comparison with baseline",
+    "uncertainty and limitations"
+  ],
+  "non_goals": [
+    "Running PSO solely to create an artifact",
+    "Using particle or iteration counts as a quality gate",
+    "Optimising an undefined or singular response"
+  ],
+  "tags": [
+    "optimisation",
+    "pso",
+    "decision-making",
+    "verification"
+  ],
+  "version": "1.0"
+}
