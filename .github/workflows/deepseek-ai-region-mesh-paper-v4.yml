@@ -1,13 +1,8 @@
 name: DeepSeek AI-Defined Regional Mesh Agent v4 - Full Paper Validation
 
 on:
+  # 续跑工作流只允许显式触发，避免后续维护 payload 时再次产生 DeepSeek 费用。
   workflow_dispatch:
-  push:
-    branches:
-      - feat/ai-dynamic-region-mesh-paper
-    paths:
-      - ".github/workflows/deepseek-ai-region-mesh-paper-v4.yml"
-      - ".github/agent_v4_payload/**"
 
 permissions:
   # 允许续跑读取上一轮 artifact，以复用同一 DeepSeek 消息历史和已完成求解结果。
@@ -64,7 +59,8 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y calculix-ccx fonts-noto-cjk poppler-utils latexmk texlive-xetex texlive-latex-extra texlive-publishers texlive-science
+          # texlive-lang-chinese 提供 xeCJK.sty，修复本轮仅在论文编译阶段暴露的缺失依赖。
+          sudo apt-get install -y calculix-ccx fonts-noto-cjk poppler-utils latexmk texlive-xetex texlive-latex-extra texlive-lang-chinese texlive-publishers texlive-science
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           command -v ccx || command -v ccx_2.21 || command -v ccx_2.20 || command -v ccx_2.19
