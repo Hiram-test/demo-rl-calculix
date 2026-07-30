@@ -21,8 +21,8 @@ on:  # 定义工作流触发条件。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
   workflow_dispatch:  # 允许在 GitHub 界面手动复跑隔离实验。
 
-permissions:  # 设置最小仓库权限。
-  contents: read  # 工作流只读取代码并上传 Artifact。
+permissions:  # 设置默认最小仓库权限。
+  contents: read  # 默认只读取代码和上传 Artifact。
 
 jobs:  # 定义静态和真实实验作业。
   static-contracts:  # 运行不需要 DeepSeek 凭据的隔离合同测试。
@@ -46,11 +46,15 @@ jobs:  # 定义静态和真实实验作业。
     runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
     environment: ds  # 复用既有成功工作流的受保护 DeepSeek 凭据环境。
     timeout-minutes: 90  # 限制模型和有限元循环总时间。
+    permissions:  # 只为真实 push 结果冻结授予写权限。
+      contents: write  # 允许把成功轨迹提交到当前隔离分支。
     env:  # 配置模型凭据和模型名称。
       DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 兼容仓库现有凭据名称但不打印值。
       DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次验证模型。
     steps:  # 定义真实实验步骤。
-      - uses: actions/checkout@v4  # 检出隔离分支代码。
+      - uses: actions/checkout@v4  # 检出隔离分支代码并保留推送凭据。
+        with:  # 提供明确分支设置。
+          ref: exp/deepseek-crack-hidden-executor  # 始终在新隔离分支上冻结结果。
       - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
         with:  # 提供 Python 设置。
           python-version: "3.11"  # 与静态作业保持一致。
@@ -70,6 +74,20 @@ jobs:  # 定义静态和真实实验作业。
           status="${PIPESTATUS[0]}"  # 读取 Python 进程退出码。
           printf '%s\n' "$status" > artifacts/deepseek_crack_hidden_executor/live_exit_code.txt  # 保存退出码供审计。
           exit "$status"  # 把真实运行状态交给 Actions。
+      - name: Freeze successful trace on isolated branch  # 把成功结果提交到新分支便于直接审计。
+        if: github.event_name == 'push' && steps.live_run.outcome == 'success'  # 只在隔离分支真实 push 成功后提交。
+        shell: bash  # 使用 Bash 执行受控文件复制和提交。
+        run: |  # 开始结果冻结命令。
+          set -euo pipefail  # 在复制或提交失败时立即停止。
+          target=experiments/results/latest_deepseek_crack_hidden_executor  # 定义不会覆盖旧实验的独立结果目录。
+          rm -rf "$target"  # 清除该隔离结果目录的上一版本。
+          mkdir -p "$target"  # 创建结果冻结目录。
+          cp -R artifacts/deepseek_crack_hidden_executor/. "$target"/  # 复制提案、封条、映射收据和数值反馈。
+          rm -f "$target/live.log"  # 不把运行日志提交到仓库以减少噪声和潜在敏感输出。
+          git config user.name github-actions[bot]  # 设置自动提交用户名。
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com  # 设置自动提交邮箱。
+          git add "$target"  # 只暂存新实验结果目录。
+          if ! git diff --cached --quiet; then git commit -m "Freeze hidden executor trace [skip ci]"; git push origin HEAD:exp/deepseek-crack-hidden-executor; fi  # 仅在结果变化时提交且跳过递归 CI。
       - name: Upload isolated trace and audit chain  # 上传冻结提案、映射收据和脱敏反馈。
         if: always()  # 无论成功或失败都保留证据。
         uses: actions/upload-artifact@v4  # 使用官方 Artifact 上传动作。
