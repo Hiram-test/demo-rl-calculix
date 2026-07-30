@@ -20,7 +20,11 @@ permissions:  # 设置工作流权限。
 jobs:  # 定义实验作业集合。
   live-open-discovery:  # 定义静态审计与真实模型实验作业。
     runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
+    environment: ds  # 复用仓库现有 DeepSeek 凭据 Environment。
     timeout-minutes: 90  # 限制 API 与有限元实验总时长。
+    env:  # 兼容仓库历史上使用过的 Secret 与 Variable 名称。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 选择首个可用 DeepSeek 凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次实验模型名称。
     steps:  # 定义顺序执行步骤。
       - uses: actions/checkout@v4  # 检出当前事件对应代码。
         with:  # 提供检出配置。
@@ -34,12 +38,12 @@ jobs:  # 定义实验作业集合。
         run: python -m py_compile scripts/run_deepseek_crack_open_discovery.py tests/test_deepseek_crack_open_discovery.py  # 编译运行脚本与测试文件。
       - name: Validate no-route contract  # 检查提示词、工具目录和注释要求。
         run: python -m unittest tests/test_deepseek_crack_open_discovery.py -v  # 执行独立静态合同测试。
+      - name: Confirm DeepSeek credential  # 在真实调用前确认 Environment 凭据已注入。
+        if: github.event_name == 'push'  # PR 静态检查不接触 Secret。
+        run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出凭据内容。
       - name: Run guided and bare live discovery  # 使用相同证据与工具运行两组真实 DeepSeek 轨迹。
         if: github.event_name == 'push'  # 仅在可信分支 push 中读取 Secret 并调用模型。
         continue-on-error: true  # 允许后续步骤在失败时冻结脱敏诊断信息。
-        env:  # 注入模型调用所需环境变量。
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}  # 从仓库 Secret 安全读取 API 密钥。
-          DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次实验模型名称。
         shell: bash  # 使用 Bash 捕获管道真实退出码。
         run: |  # 执行模型实验并保存脱敏标准输出。
           set -uo pipefail  # 保留未定义变量与管道失败检查但允许手动记录退出码。
