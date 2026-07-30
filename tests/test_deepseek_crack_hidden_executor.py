@@ -8,8 +8,8 @@ from pathlib import Path  # 管理临时实验目录和仓库文件路径。
 
 from experiments.hidden_executor.contracts import canonical_json  # 生成稳定提案文本用于完整性比较。
 from experiments.hidden_executor.contracts import freeze_proposal  # 测试先冻结后映射合同。
-from experiments.hidden_executor.executor_adapter_v2 import execute_mapping  # 测试组合实验适配层的中性公开反馈。
-from experiments.hidden_executor.executor_adapter_v2 import map_frozen_proposal  # 测试多语言联合实验隐藏映射。
+from experiments.hidden_executor.executor_adapter_v3 import execute_mapping  # 测试目标尺寸忠实执行和统一公开反馈净化。
+from experiments.hidden_executor.executor_adapter_v3 import map_frozen_proposal  # 测试最终多层隐藏映射。
 from scripts.run_deepseek_crack_hidden_executor import SYSTEM_PROMPT  # 检查系统提示没有工具目录。
 from scripts.run_deepseek_crack_hidden_executor import USER_INSTRUCTION  # 检查每轮指令没有工具暗示。
 
@@ -57,6 +57,14 @@ class HiddenExecutorContractTests(unittest.TestCase):  # 汇总隔离提示、�
             mapping = map_frozen_proposal(Path(frozen["round_dir"]), str(frozen["seal"]["proposal_sha256"]))  # 调用模型不可见联合映射。
             self.assertEqual(mapping["operation"], "refine_and_fracture_parameter")  # 断言加密和K复算保持为同一个实验目的。
 
+    def test_explicit_target_size_is_not_replaced_by_default_grid(self) -> None:  # 检查普通加密严格保留模型给出的目标尺寸。
+        proposal = experiment_proposal("将裂尖附近网格目标尺寸从2.5 mm减小到1.25 mm。", ["远程开口位移", "总应变能", "裂尖最大应力"])  # 构造真实轨迹中的显式目标尺寸实验。
+        with tempfile.TemporaryDirectory() as directory:  # 创建独立临时目录。
+            frozen = freeze_proposal(proposal, Path(directory), 1, "0" * 64)  # 冻结目标尺寸提案。
+            mapping = map_frozen_proposal(Path(frozen["round_dir"]), str(frozen["seal"]["proposal_sha256"]))  # 调用最终隐藏映射。
+            self.assertEqual(mapping["operation"], "refine_to_explicit_target_size")  # 断言执行器不会回退到默认网格级别。
+            self.assertAlmostEqual(float(mapping["target_size_mm"]), 1.25)  # 断言目标尺寸按提案原值保存。
+
     def test_ambiguous_proposal_is_not_replaced_with_a_known_route(self) -> None:  # 检查执行器不会把未知实验偷偷换成预设方法。
         proposal = experiment_proposal("改变观测时间窗", ["比较频域响应中的相位差"])  # 构造当前裂纹后端无法执行的实验。
         with tempfile.TemporaryDirectory() as directory:  # 创建独立临时目录。
@@ -77,6 +85,15 @@ class HiddenExecutorContractTests(unittest.TestCase):  # 汇总隔离提示、�
             self.assertNotIn("finish", visible_text)  # 断言反馈没有内部英文操作名称。
             self.assertTrue((round_dir / "execution_audit.json").is_file())  # 断言完整内部审计仍单独保存。
             self.assertTrue((round_dir / "public_feedback.json").is_file())  # 断言脱敏反馈单独保存。
+
+    def test_closed_form_feedback_removes_internal_tool_field(self) -> None:  # 检查理论参照反馈不向模型泄露内部函数标记。
+        proposal = experiment_proposal("不改变模型，计算当前理想化中心裂纹的解析参照。", ["理论应力强度因子", "理论能量释放率"])  # 构造理论校核实验。
+        with tempfile.TemporaryDirectory() as directory:  # 创建独立临时目录。
+            frozen = freeze_proposal(proposal, Path(directory), 1, "0" * 64)  # 冻结理论参照提案。
+            round_dir = Path(frozen["round_dir"])  # 读取冻结目录。
+            mapping = map_frozen_proposal(round_dir, str(frozen["seal"]["proposal_sha256"]))  # 生成隐藏理论参照映射。
+            feedback = execute_mapping(round_dir, str(frozen["seal"]["proposal_sha256"]), mapping)  # 执行理论参照并净化公开反馈。
+            self.assertNotIn("tool", json.dumps(feedback, ensure_ascii=False))  # 断言公开反馈没有内部工具字段。
 
     def test_new_runner_only_writes_to_explicit_output_directory(self) -> None:  # 检查隔离运行器没有生产目录写入常量。
         source = (Path(__file__).resolve().parents[1] / "scripts" / "run_deepseek_crack_hidden_executor.py").read_text(encoding="utf-8")  # 读取新运行器源码。
