@@ -1,0 +1,44 @@
+name: DeepSeek Crack Open Discovery  # 标识独立的裂纹开放发现实验。
+
+on:  # 定义工作流触发条件。
+  push:  # 在实验分支代码更新后自动运行。
+    branches:  # 限制自动触发分支。
+      - exp/deepseek-crack-open-discovery  # 只运行独立实验分支。
+    paths:  # 限制与实验相关的文件变更。
+      - scripts/run_deepseek_crack_open_discovery.py  # 监听开放发现运行脚本。
+      - tests/test_deepseek_crack_open_discovery.py  # 监听开放发现合同测试。
+      - docs/DEEPSEEK_CRACK_OPEN_DISCOVERY.md  # 监听实验协议文档。
+      - .github/workflows/deepseek-crack-open-discovery.yml  # 监听工作流自身。
+  workflow_dispatch:  # 允许从 GitHub 界面手动复跑。
+
+permissions:  # 设置最小 GitHub 权限。
+  contents: read  # 只读取仓库内容。
+
+jobs:  # 定义实验作业集合。
+  live-open-discovery:  # 定义真实模型与真实有限元实验作业。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
+    timeout-minutes: 90  # 限制 API 与有限元实验总时长。
+    steps:  # 定义顺序执行步骤。
+      - uses: actions/checkout@v4  # 检出当前实验分支。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
+        with:  # 提供 Python 配置参数。
+          python-version: "3.11"  # 与仓库现有测试环境保持一致。
+      - name: Install numerical and API dependencies  # 安装有限元与 DeepSeek 客户端依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装脚本实际使用的第三方包。
+      - name: Compile open-discovery experiment  # 在真实调用前检查 Python 语法。
+        run: python -m py_compile scripts/run_deepseek_crack_open_discovery.py tests/test_deepseek_crack_open_discovery.py  # 编译运行脚本与测试文件。
+      - name: Validate no-route contract  # 检查提示词、工具目录和注释要求。
+        run: python -m unittest tests/test_deepseek_crack_open_discovery.py -v  # 执行独立静态合同测试。
+      - name: Run guided and bare live discovery  # 使用相同证据与工具运行两组真实 DeepSeek 轨迹。
+        env:  # 注入模型调用所需环境变量。
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}  # 从仓库 Secret 安全读取 API 密钥。
+          DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次实验模型名称。
+        run: python scripts/run_deepseek_crack_open_discovery.py --mode both --max-rounds 6 --output artifacts/deepseek_crack_open_discovery.json  # 执行完整开放发现对照实验。
+      - name: Upload frozen discovery trace  # 保存逐轮动作、证据反馈与公开工程理由。
+        uses: actions/upload-artifact@v4  # 使用官方 Artifact 上传动作。
+        if: always()  # 即使模型调用失败也保留已有日志和输出。
+        with:  # 配置 Artifact 参数。
+          name: deepseek-crack-open-discovery  # 设置可识别的 Artifact 名称。
+          path: artifacts/  # 上传实验生成的审计轨迹目录。
+          if-no-files-found: warn  # 在调用失败且无输出时给出警告。
+          retention-days: 14  # 保留两周用于复核与对照。
