@@ -1,0 +1,50 @@
+{
+  "skill_id": "mesh-convergence-and-singularity",
+  "title": "Mesh convergence and singularity discrimination",
+  "purpose": "Determine whether a changing finite-element result reflects converging physical response, discretisation error, a geometric or loading singularity, or an unsuitable reported quantity.",
+  "engineering_questions": [
+    "Which response quantity should converge for the stated engineering objective?",
+    "Is the observation point tied to a singular boundary, point load, sharp re-entrant corner, crack tip or incompatible constraint?",
+    "Do global energy and reaction quantities behave differently from local peaks?"
+  ],
+  "evidence_requirements": [
+    {
+      "name": "mesh sequence",
+      "purpose": "Compare the same model and response definition across controlled refinements.",
+      "acceptable_sources": [
+        "current solver inputs",
+        "generated mesh metadata",
+        "current result files"
+      ]
+    }
+  ],
+  "procedure": [
+    "Define the engineering response and reporting location before refining the mesh.",
+    "Refine in a controlled manner while preserving geometry, loads, constraints and output definitions.",
+    "Track local peaks, path or averaged quantities, reactions and energy measures separately.",
+    "Diagnose singular behaviour from trends rather than forcing a convergence declaration.",
+    "Record what can and cannot be interpreted from the current model."
+  ],
+  "tool_guidance": [
+    "Generate the current mesh study code from the current geometry and solver model.",
+    "Retain all mesh and result metadata needed to reproduce each point."
+  ],
+  "output_records": [
+    "mesh sequence",
+    "response trend",
+    "singularity assessment",
+    "interpretation limits"
+  ],
+  "non_goals": [
+    "Forcing a fixed number of mesh levels",
+    "Using a universal percentage threshold",
+    "Hiding divergent local peaks"
+  ],
+  "tags": [
+    "finite-element",
+    "mesh",
+    "singularity",
+    "verification"
+  ],
+  "version": "1.0"
+}
