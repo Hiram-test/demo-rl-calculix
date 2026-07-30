@@ -5,15 +5,17 @@ on:  # 定义工作流触发条件。
     branches:  # 限制自动运行分支。
       - exp/deepseek-crack-hidden-executor  # 只允许新建隔离分支触发。
     paths:  # 限制与本实验相关的文件变更。
-      - experiments/hidden_executor/**  # 监听隐藏执行器包。
-      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离运行器。
+      - experiments/hidden_executor/**  # 监听隐藏执行器包和适配层。
+      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离主运行器。
+      - scripts/run_deepseek_crack_hidden_executor_adapter.py  # 监听运行时适配入口。
       - tests/test_deepseek_crack_hidden_executor.py  # 监听合同测试。
       - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
   pull_request:  # 在堆叠 PR 上只执行无凭据静态测试。
     paths:  # 限制 PR 检查范围。
-      - experiments/hidden_executor/**  # 监听隐藏执行器包。
-      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离运行器。
+      - experiments/hidden_executor/**  # 监听隐藏执行器包和适配层。
+      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离主运行器。
+      - scripts/run_deepseek_crack_hidden_executor_adapter.py  # 监听运行时适配入口。
       - tests/test_deepseek_crack_hidden_executor.py  # 监听合同测试。
       - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
@@ -34,7 +36,7 @@ jobs:  # 定义静态和真实实验作业。
       - name: Install isolated test dependencies  # 安装运行合同测试所需依赖。
         run: python -m pip install --quiet numpy scipy openai  # 安装数值库和 API 客户端。
       - name: Compile isolated hidden-executor files  # 在执行测试前检查语法。
-        run: python -m py_compile experiments/hidden_executor/contracts.py experiments/hidden_executor/executor.py scripts/run_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor.py  # 编译全部新文件。
+        run: python -m py_compile experiments/hidden_executor/contracts.py experiments/hidden_executor/executor.py experiments/hidden_executor/executor_adapter.py scripts/run_deepseek_crack_hidden_executor.py scripts/run_deepseek_crack_hidden_executor_adapter.py tests/test_deepseek_crack_hidden_executor.py  # 编译全部新文件和兼容层。
       - name: Validate isolation and no-tool contracts  # 执行冻结、映射和提示隔离测试。
         run: python -m unittest tests/test_deepseek_crack_hidden_executor.py -v  # 运行新实验专属测试文件。
 
@@ -64,7 +66,7 @@ jobs:  # 定义静态和真实实验作业。
           set -o pipefail  # 确保 Python 失败能够传递到退出码文件。
           rm -rf artifacts/deepseek_crack_hidden_executor  # 清理当前 runner 上的旧隔离结果。
           mkdir -p artifacts/deepseek_crack_hidden_executor  # 创建本次实验目录。
-          python scripts/run_deepseek_crack_hidden_executor.py --model "$DEEPSEEK_MODEL" --max-rounds 5 --output artifacts/deepseek_crack_hidden_executor 2>&1 | tee artifacts/deepseek_crack_hidden_executor/live.log  # 运行真实闭环并保存日志。
+          python scripts/run_deepseek_crack_hidden_executor_adapter.py --model "$DEEPSEEK_MODEL" --max-rounds 5 --output artifacts/deepseek_crack_hidden_executor 2>&1 | tee artifacts/deepseek_crack_hidden_executor/live.log  # 通过适配入口运行真实闭环并保存日志。
           status="${PIPESTATUS[0]}"  # 读取 Python 进程退出码。
           printf '%s\n' "$status" > artifacts/deepseek_crack_hidden_executor/live_exit_code.txt  # 保存退出码供审计。
           exit "$status"  # 把真实运行状态交给 Actions。
