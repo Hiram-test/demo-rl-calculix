@@ -1,5 +1,24 @@
-Traceback (most recent call last):
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery_aligned.py", line 7, in <module>
-    import scripts.run_deepseek_crack_open_discovery as experiment  # 复用已经通过静态合同测试的开放发现主体。
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ModuleNotFoundError: No module named 'scripts'
+{
+  "status": "completed",
+  "output": "artifacts/deepseek_crack_open_discovery.json",
+  "modes": [
+    "guided",
+    "bare"
+  ],
+  "actions": {
+    "guided": [
+      "crosscheck_with_closed_form",
+      "compare_nearby_geometry_energy",
+      "probe_fixed_physical_locations",
+      "refine_current_model",
+      "probe_fixed_physical_locations",
+      "refine_current_model"
+    ],
+    "bare": [
+      "crosscheck_with_closed_form",
+      "probe_fixed_physical_locations",
+      "compare_nearby_geometry_energy",
+      "finish"
+    ]
+  }
+}
