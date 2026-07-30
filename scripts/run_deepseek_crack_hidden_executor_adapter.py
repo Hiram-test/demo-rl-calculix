@@ -3,7 +3,11 @@ from __future__ import annotations  # 启用现代类型注解。
 
 import json  # 保存适配后的完整实验结果。
 import os  # 读取受保护 DeepSeek 凭据。
-from pathlib import Path  # 管理隔离输出目录。
+import sys  # 把仓库根目录加入模块搜索路径。
+from pathlib import Path  # 管理隔离输出目录和仓库根目录。
+
+ROOT = Path(__file__).resolve().parents[1]  # 定位仓库根目录。
+sys.path.insert(0, str(ROOT))  # 确保脚本直接执行时可以导入仓库内模块。
 
 import scripts.run_deepseek_crack_hidden_executor as runner  # 导入已经通过静态合同的主运行器组件。
 from experiments.hidden_executor import executor_adapter  # 导入语序无关映射和中性公开状态适配层。
