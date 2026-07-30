@@ -21,6 +21,10 @@ on:  # 定义工作流触发条件。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
   workflow_dispatch:  # 允许在 GitHub 界面手动复跑隔离实验。
 
+concurrency:  # 防止连续修改产生多个真实模型循环同时写入结果。
+  group: deepseek-crack-hidden-executor-${{ github.ref }}  # 按当前分支建立唯一并发组。
+  cancel-in-progress: true  # 新运行启动时取消同分支旧运行。
+
 permissions:  # 设置默认最小仓库权限。
   contents: read  # 默认只读取代码和上传 Artifact。
 
@@ -46,8 +50,8 @@ jobs:  # 定义静态和真实实验作业。
     runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
     environment: ds  # 复用既有成功工作流的受保护 DeepSeek 凭据环境。
     timeout-minutes: 90  # 限制模型和有限元循环总时间。
-    permissions:  # 只为真实 push 结果冻结授予写权限。
-      contents: write  # 允许把成功轨迹提交到当前隔离分支。
+    permissions:  # 只为真实运行审计结果授予写权限。
+      contents: write  # 允许把脱敏轨迹提交到当前隔离分支。
     env:  # 配置模型凭据和模型名称。
       DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 兼容仓库现有凭据名称但不打印值。
       DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次验证模型。
@@ -60,29 +64,58 @@ jobs:  # 定义静态和真实实验作业。
           python-version: "3.11"  # 与静态作业保持一致。
       - name: Install live experiment dependencies  # 安装真实求解和模型调用依赖。
         run: python -m pip install --quiet numpy scipy openai  # 安装数值库和 API 客户端。
+      - name: Prepare isolated run receipt  # 在模型调用前保存当前运行身份。
+        shell: bash  # 使用 Bash 创建审计目录。
+        run: |  # 开始运行收据命令。
+          set -euo pipefail  # 在目录或收据写入失败时立即停止。
+          rm -rf artifacts/deepseek_crack_hidden_executor  # 清理当前 runner 上的旧隔离结果。
+          mkdir -p artifacts/deepseek_crack_hidden_executor  # 创建本次实验目录。
+          python - <<'PY'  # 使用标准库生成不含密钥的运行收据。
+          import json, os  # 读取 Actions 环境并写入 JSON。
+          from pathlib import Path  # 管理收据输出路径。
+          receipt = {"workflow": os.environ.get("GITHUB_WORKFLOW"), "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"), "head_sha": os.environ.get("GITHUB_SHA"), "ref": os.environ.get("GITHUB_REF"), "event": os.environ.get("GITHUB_EVENT_NAME"), "model": os.environ.get("DEEPSEEK_MODEL")}  # 组织脱敏运行身份。
+          Path("artifacts/deepseek_crack_hidden_executor/run_receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存运行收据。
+          PY
       - name: Confirm DeepSeek credential without disclosure  # 检查受保护凭据确实存在。
+        id: credential_check  # 保存凭据检查结果供最终审计。
+        continue-on-error: true  # 即使凭据缺失也继续冻结诊断文件。
         run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出密钥。
       - name: Run proposal freeze and hidden execution loop  # 执行无工具提案、冻结、隐藏映射和真实反馈循环。
         id: live_run  # 为最终状态门保存步骤结果。
+        if: steps.credential_check.outcome == 'success'  # 只有凭据存在时才调用模型。
         continue-on-error: true  # 即使失败也先保留脱敏日志和部分轨迹。
         shell: bash  # 使用 Bash 捕获退出码。
         run: |  # 开始多行真实实验命令。
           set -o pipefail  # 确保 Python 失败能够传递到退出码文件。
-          rm -rf artifacts/deepseek_crack_hidden_executor  # 清理当前 runner 上的旧隔离结果。
-          mkdir -p artifacts/deepseek_crack_hidden_executor  # 创建本次实验目录。
           python scripts/run_deepseek_crack_hidden_executor_adapter.py --model "$DEEPSEEK_MODEL" --max-rounds 5 --output artifacts/deepseek_crack_hidden_executor 2>&1 | tee artifacts/deepseek_crack_hidden_executor/live.log  # 通过适配入口运行真实闭环并保存日志。
           status="${PIPESTATUS[0]}"  # 读取 Python 进程退出码。
           printf '%s\n' "$status" > artifacts/deepseek_crack_hidden_executor/live_exit_code.txt  # 保存退出码供审计。
           exit "$status"  # 把真实运行状态交给 Actions。
-      - name: Freeze successful trace on isolated branch  # 把成功结果提交到新分支便于直接审计。
-        if: github.event_name == 'push' && steps.live_run.outcome == 'success'  # 只在隔离分支真实 push 成功后提交。
+      - name: Write final run status  # 无论模型执行结果如何都生成脱敏状态文件。
+        if: always()  # 始终执行状态记录。
+        env:  # 读取前序步骤结果。
+          CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 保存凭据检查状态。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实模型循环状态。
+        shell: bash  # 使用 Bash 和 Python 写入状态。
+        run: |  # 开始状态写入命令。
+          python - <<'PY'  # 使用标准库生成状态 JSON。
+          import json, os  # 读取步骤结果环境变量。
+          from pathlib import Path  # 管理状态文件路径。
+          path = Path("artifacts/deepseek_crack_hidden_executor/final_status.json")  # 定位隔离状态文件。
+          path.parent.mkdir(parents=True, exist_ok=True)  # 确保目录存在。
+          path.write_text(json.dumps({"credential_outcome": os.environ.get("CREDENTIAL_OUTCOME"), "live_outcome": os.environ.get("LIVE_OUTCOME")}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存脱敏最终状态。
+          PY
+      - name: Freeze trace and diagnostics on isolated branch  # 把成功或失败诊断提交到新分支便于直接审计。
+        if: always() && github.event_name == 'push'  # 只在隔离分支 push 运行时提交结果。
         shell: bash  # 使用 Bash 执行受控文件复制和提交。
         run: |  # 开始结果冻结命令。
           set -euo pipefail  # 在复制或提交失败时立即停止。
+          git fetch origin exp/deepseek-crack-hidden-executor  # 获取当前隔离分支最新状态。
+          git rebase origin/exp/deepseek-crack-hidden-executor  # 避免与较早审计提交发生冲突。
           target=experiments/results/latest_deepseek_crack_hidden_executor  # 定义不会覆盖旧实验的独立结果目录。
           rm -rf "$target"  # 清除该隔离结果目录的上一版本。
           mkdir -p "$target"  # 创建结果冻结目录。
-          cp -R artifacts/deepseek_crack_hidden_executor/. "$target"/  # 复制提案、封条、映射收据和数值反馈。
+          cp -R artifacts/deepseek_crack_hidden_executor/. "$target"/  # 复制提案、封条、映射收据和诊断状态。
           rm -f "$target/live.log"  # 不把运行日志提交到仓库以减少噪声和潜在敏感输出。
           git config user.name github-actions[bot]  # 设置自动提交用户名。
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com  # 设置自动提交邮箱。
@@ -94,10 +127,11 @@ jobs:  # 定义静态和真实实验作业。
         with:  # 配置 Artifact 参数。
           name: deepseek-crack-hidden-executor  # 设置可识别的 Artifact 名称。
           path: artifacts/deepseek_crack_hidden_executor  # 只上传隔离结果目录。
-          if-no-files-found: error  # 在连日志都没有时明确失败。
+          if-no-files-found: error  # 在连收据都没有时明确失败。
           retention-days: 30  # 保留一个月用于论文审计。
-      - name: Enforce successful live experiment  # 在 Artifact 上传后恢复严格失败语义。
-        if: always()  # 始终检查真实运行结果。
-        env:  # 读取前一步 Actions 结果。
-          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实运行步骤状态。
-        run: test "$LIVE_OUTCOME" = "success"  # 只有完整闭环成功时工作流才通过。
+      - name: Enforce successful live experiment  # 在审计提交和 Artifact 上传后恢复严格失败语义。
+        if: always()  # 始终检查凭据和真实运行结果。
+        env:  # 读取前序步骤结果。
+          CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 保存凭据检查状态。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实模型循环状态。
+        run: test "$CREDENTIAL_OUTCOME" = "success" && test "$LIVE_OUTCOME" = "success"  # 只有凭据和完整闭环都成功时工作流才通过。
