@@ -1,12 +1,19 @@
 {
-  "status": "information_required",
-  "executed_change": "未运行新模型，等待补充载荷、边界或几何事实",
-  "actual_parameters": {},
+  "status": "completed",
+  "executed_change": "保持几何、材料、载荷和边界不变，把全局网格划分调整为 80×80",
+  "actual_parameters": {
+    "nx": 80
+  },
   "observations": {
-    "requested_information": [
-      "对于已完成的三个网格（h_local=5.0mm、3.33mm、2.5mm），请分别报告裂尖应力强度因子K（可用J积分转换或裂纹面位移外推得到），并给出相对于最密网格的变化百分比。同时报告所采用的计算方法。"
-    ]
+    "nx": 80,
+    "elements": 6400,
+    "h_local_mm": 2.5,
+    "half_crack_mm": 20.0,
+    "tip_peak_sigma_y_mpa": 288.99772286520124,
+    "remote_opening_mm": 0.10107985508701903,
+    "strain_energy_n_mm": 10116.033985340357,
+    "energy_balance_relative": 3.09277507235817e-14
   },
   "limitations": [],
-  "proposal_sha256": "c365450a4baa5f7fcdf6d409f5d8a1fb16a132eb1442ba337e27536e5ed89f6f"
+  "proposal_sha256": "d1739a644f03fd8c0fa3659135981b57f0855ca8cc262466ef64ec3b30b65fcd"
 }

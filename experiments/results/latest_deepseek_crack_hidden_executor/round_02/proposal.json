@@ -1,0 +1,36 @@
+{
+  "competing_hypotheses": [
+    "Further refining the crack-tip mesh from 2.5 mm to 1.25 mm will result in strain energy and remote opening displacement changes below 0.5%, indicating numerical convergence, so the current model is adequate for linear elastic fracture assessment without additional mesh refinement.",
+    "Further refining to 1.25 mm will reveal changes in strain energy or remote opening displacement exceeding 0.5%, showing that the mesh is still insufficient, requiring even finer meshes (e.g., 0.625 mm) for reliable fracture evaluation."
+  ],
+  "evidence_refs": [
+    "Strain energy increased from 10076 N·mm (h=5 mm) to 10102 N·mm (h≈3.33 mm) to 10116 N·mm (h=2.5 mm), with relative increments of ~0.26% and ~0.14%, suggesting convergence.",
+    "Remote crack opening displacement changed from 0.1006 mm to 0.1009 mm to 0.1011 mm, also showing diminishing increments.",
+    "Energy balance relative error remains near machine zero in all runs, indicating a well‑conditioned solution."
+  ],
+  "uncertainties": [
+    "No direct fracture mechanics quantity (K_I, J‑integral) has been reported; convergence of global strain energy does not guarantee convergence of stress intensity factor.",
+    "The 0.5% tolerance is a heuristic choice; there is no universal standard for mesh convergence in fracture problems.",
+    "The crack-tip stress singularity is not explicitly captured by the current mesh strategy; a topological or adaptive refinement near the tip might be required for full confidence."
+  ],
+  "proposal_type": "experiment",
+  "experiment": {
+    "purpose": "Assess whether a further mesh refinement step to h=1.25 mm at the crack tip yields stable global energy and displacement values, thereby deciding if the mesh is sufficiently converged for fracture analysis.",
+    "change": "Reduce the local element size at the crack tip from 2.5 mm to 1.25 mm, keeping the same structured refinement pattern; this will increase the global element count (e.g., nx=160 while maintaining the same distribution).",
+    "hold_fixed": [
+      "Plate outer dimensions (200 mm × 200 mm) and thickness (10 mm)",
+      "Material properties (Young’s modulus 210 000 MPa, Poisson’s ratio 0.3)",
+      "Uniform tensile loading of 100 MPa on top and bottom edges",
+      "Analysis type (2D plane stress linear elastic)",
+      "Half‑crack length (20.0 mm)",
+      "Mesh design strategy (structured pattern with local refinement near the crack tip; only the minimum element size is altered)"
+    ],
+    "measure": [
+      "Total strain energy",
+      "Remote crack opening displacement",
+      "Crack‑tip peak σ_y (for reference, though not used in the decision)"
+    ],
+    "decision_rule": "Compute the relative change in strain energy and remote opening displacement between the current 2.5 mm mesh and the new 1.25 mm mesh. If both changes are ≤ 0.5 %, accept the mesh as converged and suitable for linear elastic fracture evaluation (no further refinement). Otherwise, flag the mesh as insufficient, signalling that an additional refinement to 0.625 mm would be necessary.",
+    "stop_condition": "The experiment ends once the analysis with the 1.25 mm mesh is completed and the relative changes are calculated."
+  }
+}

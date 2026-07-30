@@ -1,19 +1,38 @@
 {
   "competing_hypotheses": [
-    "裂尖应力强度因子K已随网格细化收敛，峰值应力升高是弹性应力奇异性理论所致，无需进一步加密网格。",
-    "K仍随网格细化显著变化，表明网格仍不足以解析裂尖渐近场，需要继续加密直到K收敛。"
+    "The current mesh (h=2.5 mm at crack tip) has already converged in terms of energy release rate (or stress intensity factor K_I); the difference between the computed G (via virtual crack extension of 0.5 mm) and the theoretical solution is within 2%, so the model is suitable for fracture assessment without further mesh refinement.",
+    "The current mesh is still insufficiently refined for fracture mechanics quantities; the energy release rate computed from a 0.5 mm crack extension deviates from the theoretical value by more than 2%, indicating that the stress and strain fields near the tip are not yet accurate enough for reliable K_I or G prediction, requiring additional mesh refinement."
   ],
   "evidence_refs": [
-    "模型是线弹性平面应力，裂尖应力理论上是奇异场，网格细化必然导致峰值应力单调增加。",
-    "三个网格的远程张开位移和应变能变化微小，能量平衡误差极小，说明整体响应在网格细化下已经稳定。"
+    "Strain energy and remote opening displacement show signs of convergence (changes < 1% from 3.33 mm to 2.5 mm)",
+    "Peak stress continues to rise with refinement, as expected in LEFM (no convergence expected)",
+    "Energy balance is excellent in all runs (relative error near machine zero)"
   ],
   "uncertainties": [
-    "缺少任何网格的裂尖断裂参量（如K或J积分），无法判断裂尖特征值是否收敛。",
-    "是否只需均匀细化还是需要裂尖特殊单元配置未知。",
-    "峰值应力的升高不代表网格质量不足，可能是正确物理现象的数值表现。"
+    "No fracture-mechanics-specific output (e.g., J-integral or K_I) is available from the reported simulations.",
+    "The theoretical K_I for a finite-width plate is an approximation; the exact analytical solution for a central crack in a finite plate under uniform tension may require more complex boundary correction factors.",
+    "A 0.5 mm crack increment may introduce systematic error in the computed G if the mesh is not identical between the two crack lengths; using the same mesh topology but different crack lengths is an approximation."
   ],
-  "proposal_type": "request_information",
-  "information_request": {
-    "question": "对于已完成的三个网格（h_local=5.0mm、3.33mm、2.5mm），请分别报告裂尖应力强度因子K（可用J积分转换或裂纹面位移外推得到），并给出相对于最密网格的变化百分比。同时报告所采用的计算方法。"
+  "proposal_type": "experiment",
+  "experiment": {
+    "purpose": "Determine whether the current 2.5 mm mesh yields a sufficiently accurate energy release rate (and thus K_I) for fracture assessment, by comparing a finite-difference energy release rate from a small virtual crack extension against a theoretical reference.",
+    "change": "Increase the half-crack length from 20.0 mm to 20.5 mm, keeping all other parameters identical, and perform a new linear elastic plane stress analysis with the same mesh topology as the last 2.5 mm run (nx=80, elements=6400).",
+    "hold_fixed": [
+      "Plate outer dimensions (200×200 mm)",
+      "Thickness (10 mm)",
+      "Material properties (E=210000 MPa, ν=0.3)",
+      "Loading (top and bottom edges uniform tensile stress 100 MPa)",
+      "Analysis type (2D plane stress linear elastic)",
+      "Mesh design strategy (same structured pattern with local refinement near tip, same minimum element size h_local=2.5 mm)",
+      "Boundary conditions (symmetry if used, otherwise full model)"
+    ],
+    "measure": [
+      "Total strain energy U_20.5 for the half-crack 20.5 mm model",
+      "Remote crack opening displacement for the 20.5 mm model",
+      "Finite-difference energy release rate G = (U_20.5 - U_20.0) / 0.5, where U_20.0 is the strain energy from the last 2.5 mm run (half-crack 20.0 mm)",
+      "Stress intensity factor K_I computed from G via K_I = sqrt(G * E) (plane stress)"
+    ],
+    "decision_rule": "Compute the theoretical K_I for a central crack of half-length a=20.0 mm in a finite plate of width 2W=200 mm under remote tension σ=100 MPa: K_theory = σ √(π a) * F(a/W), where a/W=0.2 and F(a/W) ≈ sqrt(sec(π a / (2W))) (Feddersen approximation). Evaluate the relative error |K_I - K_theory|/K_theory. If the error is ≤ 2%, accept the current mesh as adequate for fracture assessment (no further refinement). If the error is > 2%, the mesh is deemed insufficient; further refinement (e.g., h=1.25 mm) will be needed in a subsequent step.",
+    "stop_condition": "The experiment is completed once the two models (20.0 mm and 20.5 mm) have been run and the error computed. No further steps are taken within this single experiment; the outcome directly informs whether to stop or continue refinement."
   }
 }
