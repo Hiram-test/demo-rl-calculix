@@ -9,6 +9,9 @@ on:  # 定义工作流触发条件。
       - tests/test_deepseek_crack_open_discovery.py  # 监听开放发现合同测试。
       - docs/DEEPSEEK_CRACK_OPEN_DISCOVERY.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-open-discovery.yml  # 监听工作流自身。
+  pull_request:  # 通过独立草稿 PR 生成可查询的检查记录。
+    branches:  # 限制实验 PR 的目标分支。
+      - feat/model-aware-fea-mvp  # 只对照当前模型感知 MVP 分支。
   workflow_dispatch:  # 允许从 GitHub 界面手动复跑。
 
 permissions:  # 设置最小 GitHub 权限。
