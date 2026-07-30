@@ -1,25 +1,5 @@
 Traceback (most recent call last):
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 309, in <module>
-    raise SystemExit(main())  # 把主函数返回值交给操作系统。
-                     ^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 300, in main
-    results = [_run_mode(mode, client, args.model, args.max_rounds) for mode in modes]  # 顺序运行两组以共享相同求解缓存。
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 300, in <listcomp>
-    results = [_run_mode(mode, client, args.model, args.max_rounds) for mode in modes]  # 顺序运行两组以共享相同求解缓存。
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 275, in _run_mode
-    tool_result = _execute_action(decision["action"])  # 执行模型自主选择的动作。
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 209, in _execute_action
-    return _geometry_energy(arguments)  # 返回能量变化证据。
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 181, in _geometry_energy
-    extended = _solve(nx, HALF_CRACK + extension)  # 求解延长后的裂纹模型。
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery.py", line 107, in _solve
-    mesh = central_crack_mesh(WIDTH, HEIGHT, half_crack, nx, nx)  # 生成裂纹与网格边对齐的结构网格。
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/bridge_mesh_suite/meshes.py", line 236, in central_crack_mesh
-    raise ValueError("crack tips must align with x grid")
-ValueError: crack tips must align with x grid
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/scripts/run_deepseek_crack_open_discovery_aligned.py", line 7, in <module>
+    import scripts.run_deepseek_crack_open_discovery as experiment  # 复用已经通过静态合同测试的开放发现主体。
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'scripts'
