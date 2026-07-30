@@ -5,7 +5,7 @@ on:  # 定义唯一允许的自动触发方式。
     branches:  # 限制付费运行所在分支。
       - exp/deepseek-crack-open-discovery  # 复用 PR17 当前远端头分支且不新建 PR。
     paths:  # 只监听本实验永不修改的一次性触发标记。
-      - experiments/triggers/DEEPSEEK_CALCULIX_INTERFERENCE_2747_ONCE.md  # 首次新增时运行一次，后续源码或论文提交不再匹配。
+      - experiments/triggers/DEEPSEEK_CALCULIX_INTERFERENCE_2747_JSON_RETRY_ONCE.md  # 首轮 JSON 在 2400 tokens 处截断后，仅允许这次预算修正重跑。
 
 permissions:  # 限制工作流可用仓库权限。
   contents: read  # 只读取当前提交并禁止工作流回写分支。

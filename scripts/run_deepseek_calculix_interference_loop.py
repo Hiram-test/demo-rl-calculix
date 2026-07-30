@@ -39,8 +39,8 @@ SOURCE_AUDIT_PATH = ROOT / "experiments" / "calculix_interference_2747" / "origi
 SKILL_PATH = ROOT / "skills" / "engineering" / "nonlinear-contact-diagnosis.json"
 # 固定最多三次 DeepSeek HTTP 请求，以控制费用并避免开放循环。
 MAX_HTTP_REQUESTS = 3
-# 固定 DeepSeek 单次公开响应和推理的最大 token 预算。
-MAX_COMPLETION_TOKENS = 2400
+# 固定 DeepSeek 单次公开响应和推理的最大 token 预算；4000 来自首次运行在 2400 处截断 JSON 的实测修正。
+MAX_COMPLETION_TOKENS = 4000
 # 固定单次 DeepSeek 请求的最长等待时间为三分钟。
 API_TIMEOUT_SECONDS = 180.0
 # 固定微型 CalculiX 求解的最长等待时间为三十秒。
