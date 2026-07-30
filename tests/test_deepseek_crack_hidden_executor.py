@@ -8,8 +8,8 @@ from pathlib import Path  # 管理临时实验目录和仓库文件路径。
 
 from experiments.hidden_executor.contracts import canonical_json  # 生成稳定提案文本用于完整性比较。
 from experiments.hidden_executor.contracts import freeze_proposal  # 测试先冻结后映射合同。
-from experiments.hidden_executor.executor_adapter import execute_mapping  # 测试中性公开反馈和真实执行适配层。
-from experiments.hidden_executor.executor_adapter import map_frozen_proposal  # 测试语序无关且隐藏的忠实映射。
+from experiments.hidden_executor.executor_adapter_v2 import execute_mapping  # 测试组合实验适配层的中性公开反馈。
+from experiments.hidden_executor.executor_adapter_v2 import map_frozen_proposal  # 测试多语言联合实验隐藏映射。
 from scripts.run_deepseek_crack_hidden_executor import SYSTEM_PROMPT  # 检查系统提示没有工具目录。
 from scripts.run_deepseek_crack_hidden_executor import USER_INSTRUCTION  # 检查每轮指令没有工具暗示。
 
@@ -49,6 +49,13 @@ class HiddenExecutorContractTests(unittest.TestCase):  # 汇总隔离提示、�
             self.assertEqual(canonical_json(proposal), canonical_json(original))  # 断言映射没有改写内存中的提案。
             saved = json.loads((round_dir / "proposal.json").read_text(encoding="utf-8"))  # 重新读取磁盘冻结内容。
             self.assertEqual(canonical_json(saved), canonical_json(original))  # 断言磁盘提案也保持原样。
+
+    def test_refinement_with_energy_based_k_maps_as_one_experiment(self) -> None:  # 检查执行器不会把模型要求的联合实验拆成普通加密。
+        proposal = experiment_proposal("Refine the crack-tip local element size from 2.5 mm to 1.25 mm.", ["Total strain energy before and after a one-element crack extension", "Energy release rate G", "Stress intensity factor K = sqrt(EG)"])  # 构造真实轨迹中出现的英文联合实验。
+        with tempfile.TemporaryDirectory() as directory:  # 创建独立临时目录。
+            frozen = freeze_proposal(proposal, Path(directory), 1, "0" * 64)  # 冻结联合实验提案。
+            mapping = map_frozen_proposal(Path(frozen["round_dir"]), str(frozen["seal"]["proposal_sha256"]))  # 调用模型不可见联合映射。
+            self.assertEqual(mapping["operation"], "refine_and_fracture_parameter")  # 断言加密和K复算保持为同一个实验目的。
 
     def test_ambiguous_proposal_is_not_replaced_with_a_known_route(self) -> None:  # 检查执行器不会把未知实验偷偷换成预设方法。
         proposal = experiment_proposal("改变观测时间窗", ["比较频域响应中的相位差"])  # 构造当前裂纹后端无法执行的实验。
