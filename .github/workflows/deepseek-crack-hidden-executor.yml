@@ -1,0 +1,83 @@
+name: DeepSeek Crack Hidden Executor  # 标识完全隔离的无工具可见实验工作流。
+
+on:  # 定义工作流触发条件。
+  push:  # 在隔离分支更新后运行静态测试和真实模型实验。
+    branches:  # 限制自动运行分支。
+      - exp/deepseek-crack-hidden-executor  # 只允许新建隔离分支触发。
+    paths:  # 限制与本实验相关的文件变更。
+      - experiments/hidden_executor/**  # 监听隐藏执行器包。
+      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离运行器。
+      - tests/test_deepseek_crack_hidden_executor.py  # 监听合同测试。
+      - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
+      - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
+  pull_request:  # 在堆叠 PR 上只执行无凭据静态测试。
+    paths:  # 限制 PR 检查范围。
+      - experiments/hidden_executor/**  # 监听隐藏执行器包。
+      - scripts/run_deepseek_crack_hidden_executor.py  # 监听隔离运行器。
+      - tests/test_deepseek_crack_hidden_executor.py  # 监听合同测试。
+      - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
+      - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
+  workflow_dispatch:  # 允许在 GitHub 界面手动复跑隔离实验。
+
+permissions:  # 设置最小仓库权限。
+  contents: read  # 工作流只读取代码并上传 Artifact。
+
+jobs:  # 定义静态和真实实验作业。
+  static-contracts:  # 运行不需要 DeepSeek 凭据的隔离合同测试。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
+    timeout-minutes: 20  # 限制静态检查最长时间。
+    steps:  # 定义静态作业步骤。
+      - uses: actions/checkout@v4  # 检出当前提交且不修改任何分支。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
+        with:  # 提供 Python 设置。
+          python-version: "3.11"  # 与现有有限元实验保持一致。
+      - name: Install isolated test dependencies  # 安装运行合同测试所需依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装数值库和 API 客户端。
+      - name: Compile isolated hidden-executor files  # 在执行测试前检查语法。
+        run: python -m py_compile experiments/hidden_executor/contracts.py experiments/hidden_executor/executor.py scripts/run_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor.py  # 编译全部新文件。
+      - name: Validate isolation and no-tool contracts  # 执行冻结、映射和提示隔离测试。
+        run: python -m unittest tests/test_deepseek_crack_hidden_executor.py -v  # 运行新实验专属测试文件。
+
+  live-hidden-executor:  # 运行真实 DeepSeek 无工具可见闭环。
+    if: github.event_name != 'pull_request'  # 禁止在 PR 事件读取 Environment Secret。
+    needs: static-contracts  # 只有静态合同通过后才允许真实调用。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
+    environment: ds  # 复用既有成功工作流的受保护 DeepSeek 凭据环境。
+    timeout-minutes: 90  # 限制模型和有限元循环总时间。
+    env:  # 配置模型凭据和模型名称。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 兼容仓库现有凭据名称但不打印值。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次验证模型。
+    steps:  # 定义真实实验步骤。
+      - uses: actions/checkout@v4  # 检出隔离分支代码。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
+        with:  # 提供 Python 设置。
+          python-version: "3.11"  # 与静态作业保持一致。
+      - name: Install live experiment dependencies  # 安装真实求解和模型调用依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装数值库和 API 客户端。
+      - name: Confirm DeepSeek credential without disclosure  # 检查受保护凭据确实存在。
+        run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出密钥。
+      - name: Run proposal freeze and hidden execution loop  # 执行无工具提案、冻结、隐藏映射和真实反馈循环。
+        id: live_run  # 为最终状态门保存步骤结果。
+        continue-on-error: true  # 即使失败也先保留脱敏日志和部分轨迹。
+        shell: bash  # 使用 Bash 捕获退出码。
+        run: |  # 开始多行真实实验命令。
+          set -o pipefail  # 确保 Python 失败能够传递到退出码文件。
+          rm -rf artifacts/deepseek_crack_hidden_executor  # 清理当前 runner 上的旧隔离结果。
+          mkdir -p artifacts/deepseek_crack_hidden_executor  # 创建本次实验目录。
+          python scripts/run_deepseek_crack_hidden_executor.py --model "$DEEPSEEK_MODEL" --max-rounds 5 --output artifacts/deepseek_crack_hidden_executor 2>&1 | tee artifacts/deepseek_crack_hidden_executor/live.log  # 运行真实闭环并保存日志。
+          status="${PIPESTATUS[0]}"  # 读取 Python 进程退出码。
+          printf '%s\n' "$status" > artifacts/deepseek_crack_hidden_executor/live_exit_code.txt  # 保存退出码供审计。
+          exit "$status"  # 把真实运行状态交给 Actions。
+      - name: Upload isolated trace and audit chain  # 上传冻结提案、映射收据和脱敏反馈。
+        if: always()  # 无论成功或失败都保留证据。
+        uses: actions/upload-artifact@v4  # 使用官方 Artifact 上传动作。
+        with:  # 配置 Artifact 参数。
+          name: deepseek-crack-hidden-executor  # 设置可识别的 Artifact 名称。
+          path: artifacts/deepseek_crack_hidden_executor  # 只上传隔离结果目录。
+          if-no-files-found: error  # 在连日志都没有时明确失败。
+          retention-days: 30  # 保留一个月用于论文审计。
+      - name: Enforce successful live experiment  # 在 Artifact 上传后恢复严格失败语义。
+        if: always()  # 始终检查真实运行结果。
+        env:  # 读取前一步 Actions 结果。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实运行步骤状态。
+        run: test "$LIVE_OUTCOME" = "success"  # 只有完整闭环成功时工作流才通过。
