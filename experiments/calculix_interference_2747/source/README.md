@@ -37,4 +37,4 @@
 - `assets`：每个主要发布资产的名称、角色、大小、摘要与字节保持方式。
 - `execution_boundary`：是否执行过原始大型模型，以及不能把缩减模型结果升级为原模型结论的原因。
 
-第三方文件的权利边界见 [`SOURCE_AND_REDISTRIBUTION_NOTICE.md`](SOURCE_AND_REDISTRIBUTION_NOTICE.md)，本轮“为什么这样发布”的可审计路径见 [`RELEASE_DECISION.md`](RELEASE_DECISION.md)。
+第三方文件的权利边界见 [`SOURCE_AND_REDISTRIBUTION_NOTICE.md`](SOURCE_AND_REDISTRIBUTION_NOTICE.md)，本轮“为什么这样发布”的可审计路径见 [`RELEASE_DECISION.md`](RELEASE_DECISION.md)，实际发布说明见 [`RELEASE_NOTES.md`](RELEASE_NOTES.md)。
