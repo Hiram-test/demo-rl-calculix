@@ -1,0 +1,83 @@
+{
+  "experiment_spec": {
+    "objective": "通过将网格细化至裂尖特征尺寸约1.25 mm（nx=160）并提取模式I应力强度因子K_I、J积分以及裂尖最大主应力、裂尖张开位移和总应变能，评估线弹性断裂力学参数的收敛性，为是否继续加密网格提供定量依据。",
+    "scope": "experiment",
+    "interventions": [
+      "将整体网格细化一倍，使裂尖附近特征尺寸从2.5 mm降至约1.25 mm，将nx从80增加到160，同时保持裂尖单元类型不变（常规单元），不引入奇异单元。",
+      "对基准网格（nx=80）和细化网格（nx=160）执行节点对齐的裂纹微增能量差计算，以提取能量释放率（J积分）和应力强度因子。"
+    ],
+    "invariants": [
+      "几何：200 mm × 200 mm中心裂纹钢板，半裂纹长20 mm，厚度10 mm",
+      "材料：线弹性，E=210000 MPa，ν=0.3，无塑性",
+      "载荷：上下边缘100 MPa对称均布拉应力",
+      "分析类型：二维平面应力线弹性",
+      "网格生成策略：采用逐步加密裂尖区域的结构化网格，不改变远场网格策略"
+    ],
+    "observables": [
+      {
+        "id": "sigma_yy_max",
+        "description": "裂尖最大主应力σ_y,max在新的细化网格上的值"
+      },
+      {
+        "id": "CMOD",
+        "description": "裂尖张开位移（CMOD）在细化网格上的值"
+      },
+      {
+        "id": "strain_energy",
+        "description": "总应变能在细化网格上的值"
+      },
+      {
+        "id": "K_I",
+        "description": "模式I应力强度因子K_I，通过能量释放率换算得到，用于评价收敛"
+      },
+      {
+        "id": "J_integral",
+        "description": "J积分（线弹性条件下等于能量释放率G），通过裂纹微增能量差计算得到"
+      }
+    ],
+    "derivations": [],
+    "external_dependencies": [],
+    "acceptance_rule": "若由能量释放率导出的K_I在h=2.5 mm（nx=80）与h=1.25 mm（nx=160）两级网格间的相对变化小于1%，且观察σ_y,max和总能量平衡作为辅助指标支持收敛趋势，则可判为收敛；否则需继续细化并重复该评价准则。",
+    "completion_scope": "current_step"
+  },
+  "plan_type": "execute",
+  "calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "mesh.refine",
+      "arguments": {
+        "nx": 160
+      },
+      "argument_sources": {
+        "nx": "proposal"
+      },
+      "covers": [
+        "sigma_yy_max",
+        "CMOD",
+        "strain_energy"
+      ],
+      "depends_on": []
+    },
+    {
+      "call_id": "call_2",
+      "skill_id": "fracture.energy_sequence",
+      "arguments": {
+        "mesh_levels": [
+          80,
+          160
+        ]
+      },
+      "argument_sources": {
+        "mesh_levels": "proposal"
+      },
+      "covers": [
+        "K_I",
+        "J_integral"
+      ],
+      "depends_on": []
+    }
+  ],
+  "uncovered_requirements": [],
+  "proposal_fully_preserved": true,
+  "unsupported_reason": null
+}
