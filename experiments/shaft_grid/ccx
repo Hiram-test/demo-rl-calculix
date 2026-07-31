@@ -1,0 +1,50 @@
+#!/usr/bin/env python3  # 使用 Python 在调用真实 CalculiX 前规范边界输入。
+from __future__ import annotations  # 启用现代类型注解并保持脚本兼容。
+
+import os  # 使用进程替换调用系统安装的真实 CalculiX。
+import sys  # 读取 CalculiX 命令行参数。
+from pathlib import Path  # 管理当前求解目录中的输入文件。
+
+
+def _normalize_boundary_values(input_path: Path) -> None:  # 把理论零位移的浮点残差改写为明确零值。
+    lines = input_path.read_text(encoding="utf-8").splitlines()  # 读取完整 CalculiX 输入文件。
+    normalized: list[str] = []  # 初始化规范化后的输入文本。
+    inside_boundary = False  # 记录当前是否处于边界条件数据段。
+    for line in lines:  # 逐行检查输入文件。
+        stripped = line.strip()  # 去除首尾空白便于识别关键字。
+        if stripped.upper().startswith("*BOUNDARY"):  # 检查是否进入边界条件段。
+            inside_boundary = True  # 标记后续数据行为边界条件。
+            normalized.append(line)  # 保留边界关键字原文。
+            continue  # 进入下一行处理。
+        if inside_boundary and stripped.startswith("*"):  # 检查是否离开边界条件段。
+            inside_boundary = False  # 关闭边界数据规范化状态。
+        if inside_boundary and stripped and not stripped.startswith("**"):  # 只处理非空边界数据行。
+            fields = [field.strip() for field in line.split(",")]  # 按 CalculiX 逗号字段拆分当前边界卡。
+            if len(fields) >= 4:  # 检查当前行包含节点、自由度范围和值。
+                try:  # 尝试把第四字段解析为浮点数。
+                    value = float(fields[3])  # 读取边界位移数值。
+                except ValueError:  # 保留任何非数值字段供真实求解器诊断。
+                    value = None  # 标记当前字段无法安全规范化。
+                if value is not None and abs(value) < 1.0e-15:  # 识别理论上为零的机器舍入残差。
+                    fields[3] = "0.0"  # 改写为 CalculiX 可稳定读取的明确零值。
+                    line = ",".join(fields)  # 重新组装当前边界卡。
+        normalized.append(line)  # 保存当前原始或规范化后的输入行。
+    input_path.write_text("\n".join(normalized) + "\n", encoding="utf-8")  # 覆盖写回规范化后的完整输入文件。
+
+
+def main() -> int:  # 定义兼容 ccx 命令行的包装入口。
+    arguments = sys.argv[1:]  # 保存传递给真实 CalculiX 的全部参数。
+    job_name = "shaft"  # 使用后端当前固定的默认作业名。
+    for index, argument in enumerate(arguments):  # 遍历真实 CalculiX 命令行参数。
+        if argument == "-i" and index + 1 < len(arguments):  # 检查是否显式提供输入作业名。
+            job_name = arguments[index + 1]  # 读取 -i 后面的作业名。
+            break  # 找到作业名后停止扫描参数。
+    input_path = Path.cwd() / f"{job_name}.inp"  # 定位当前求解目录中的输入文件。
+    if input_path.exists():  # 只在输入文件存在时执行安全规范化。
+        _normalize_boundary_values(input_path)  # 清除理论零位移的浮点残差。
+    os.execv("/usr/bin/ccx", ["/usr/bin/ccx", *arguments])  # 用系统安装的真实 CalculiX 替换当前包装进程。
+    return 0  # 为静态分析保留不可达的成功退出码。
+
+
+if __name__ == "__main__":  # 仅在被后端作为 ccx 命令调用时启动包装器。
+    raise SystemExit(main())  # 把包装入口的退出状态传给操作系统。
