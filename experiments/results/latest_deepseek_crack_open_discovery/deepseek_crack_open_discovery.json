@@ -1,0 +1,383 @@
+{
+  "experiment": "deepseek_crack_open_discovery",
+  "runtime_route_requirements": [],
+  "results": [
+    {
+      "mode": "guided",
+      "model": "deepseek-v4-pro",
+      "system_prompt": "你是有限元与结构工程证据分析代理。先固定用户要作出的工程决策、评价位置和可接受误差，再区分直接观测、物理解释和未知。点值、尖角、裂尖、点载荷和约束附近的量可能不随网格收敛，因此应同时检查固定物理位置或区域的响应、位移、能量、平衡、路径或积分量以及模型假设的适用性。每轮形成至少两个竞争假设，只选择一个控制变量清楚且最能区分假设的最小下一步计算。工具目录只是工作台，任何工具都不是必选项；你可以继续加密、改变评价协议、请求缺失信息或直接停止。只输出一个合法 JSON 对象，字段必须为：competing_hypotheses 数组且至少两个；evidence_refs 数组，元素必须引用证据包中的字段；uncertainties 数组；controlled_variables 数组；engineering_reason 字符串，只写可公开的简短工程理由；action 对象，包含 name 和 arguments；provisional_answer 字符串。",
+      "system_prompt_sha256": "6a667c231fc0ec3b3736efd321f02c4d0e54b482fa1035b2cbd317e5c45debc0",
+      "initial_evidence": {
+        "user_question": "钢板有一条约40 mm贯穿裂纹，裂尖附近网格从5 mm细化到2.5 mm后最大应力一直升高。我还要继续加密吗？当前模型能不能用于判断裂纹问题，下一步网格具体怎么处理？",
+        "model_facts": {
+          "geometry": "200 mm × 200 mm中心裂纹钢板",
+          "half_crack_mm": 20.0,
+          "thickness_mm": 10.0,
+          "material": {
+            "young_mpa": 210000.0,
+            "poisson": 0.3,
+            "plastic_curve": null
+          },
+          "loading": "上下边缘100 MPa对称均布拉应力",
+          "analysis": "二维平面应力线弹性"
+        },
+        "initial_mesh_history": [
+          {
+            "nx": 40,
+            "elements": 1600,
+            "h_local_mm": 5.0,
+            "half_crack_mm": 20.0,
+            "tip_peak_sigma_y_mpa": 210.9058375793728,
+            "remote_opening_mm": 0.10061340501871262,
+            "strain_energy_n_mm": 10076.200507456884,
+            "energy_balance_relative": 3.6104668663544653e-16
+          },
+          {
+            "nx": 60,
+            "elements": 3600,
+            "h_local_mm": 3.3333333333333335,
+            "half_crack_mm": 20.0,
+            "tip_peak_sigma_y_mpa": 252.9953532805052,
+            "remote_opening_mm": 0.10092275848321922,
+            "strain_energy_n_mm": 10102.729908239144,
+            "energy_balance_relative": 1.9805422515241598e-15
+          },
+          {
+            "nx": 80,
+            "elements": 6400,
+            "h_local_mm": 2.5,
+            "half_crack_mm": 20.0,
+            "tip_peak_sigma_y_mpa": 288.99772286520124,
+            "remote_opening_mm": 0.10107985508701903,
+            "strain_energy_n_mm": 10116.033985340357,
+            "energy_balance_relative": 3.09277507235817e-14
+          }
+        ]
+      },
+      "trace": [
+        {
+          "round": 1,
+          "decision": {
+            "competing_hypotheses": [
+              "当前线弹性模型假设成立，全局量（能量、远场位移）已收敛，应力奇异是预期的，无需继续加密，但需验证能量释放率等断裂参数与解析解一致。",
+              "裂尖应力不收敛可能预示线弹性断裂力学假设不满足（如大范围屈服），需先通过解析解检查小范围屈服条件，否则当前模型不能直接用于断裂评估。"
+            ],
+            "evidence_refs": [
+              "initial_mesh_history 中各网格的 tip_peak_sigma_y_mpa 随细化持续升高",
+              "remote_opening_mm 和 strain_energy_n_mm 变化微小，趋于稳定",
+              "energy_balance_relative 均极小，表明数值解满足平衡"
+            ],
+            "uncertainties": [
+              "未提供材料屈服强度，无法直接判断塑性区是否显著",
+              "网格未引入裂尖奇异单元，峰值应力本身不是收敛量",
+              "加载为均布拉应力，但实际边界约束细节未知"
+            ],
+            "controlled_variables": [
+              "不运行新网格，仅引入解析解参照来检验线弹性假设的适用性"
+            ],
+            "engineering_reason": "在继续细化网格之前，应先通过解析解验证线弹性断裂力学对该问题的适用性（如小范围屈服、有限宽修正），从而确定当前模型框架是否可用于断裂判断。",
+            "action": {
+              "name": "crosscheck_with_closed_form",
+              "arguments": {}
+            },
+            "provisional_answer": "裂尖峰值应力随网格细化而升高是弹性应力奇异的正常表现，不应作为收敛判据。全局量（应变能、远场开口位移）已趋于稳定，能量平衡误差极小，表明数值解可信。然而，能否用于裂纹问题取决于线弹性假设的成立，下一步将通过解析解检查应力强度因子及塑性区限制，以指导是否需要改用弹塑性分析或其他网格策略。"
+          },
+          "tool_result": {
+            "tool": "crosscheck_with_closed_form",
+            "stress_intensity_reference_mpa_sqrt_mm": 812.805757754474,
+            "energy_reference_n_per_mm": 3.1459676182801175,
+            "assumptions": [
+              "中心贯穿裂纹",
+              "线弹性",
+              "均匀远场拉应力",
+              "二维平面应力",
+              "不含塑性区修正"
+            ],
+            "warning": "该参照只能检查理想化模型量级，不能认证真实构件或替代材料非线性分析"
+          },
+          "metadata": {
+            "requested_model": "deepseek-v4-pro",
+            "response_model": "deepseek-v4-pro",
+            "finish_reason": "stop",
+            "usage": {
+              "completion_tokens": 3130,
+              "prompt_tokens": 1252,
+              "total_tokens": 4382,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 2702,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cache_write_tokens": null,
+                "cached_tokens": 256
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 996
+            }
+          }
+        },
+        {
+          "round": 2,
+          "decision": {
+            "competing_hypotheses": [
+              "当前最细网格 (h=2.5 mm) 对于能量释放率 G 已收敛，可可靠计算 K，无需进一步加密，模型适用于线弹性裂纹判断。",
+              "即使对于能量释放率 G，当前网格仍不足，需要进一步加密（如 h=1.25 mm）才能获得收敛的 G 值。"
+            ],
+            "evidence_refs": [
+              "initial_mesh_history.tip_peak_sigma_y_mpa",
+              "initial_mesh_history.remote_opening_mm",
+              "initial_mesh_history.strain_energy_n_mm",
+              "crosscheck_with_closed_form.stress_intensity_reference_mpa_sqrt_mm",
+              "crosscheck_with_closed_form.energy_reference_n_per_mm"
+            ],
+            "uncertainties": [
+              "线弹性假设是否适用于裂尖塑性区尚不确定，缺少材料塑性数据。",
+              "网格细化过程中可能引入数值污染（如单元畸变、沙漏等），能量释放率计算可能受裂纹扩展长度影响。",
+              "当前模型为二维平面应力，真实板厚效应可能影响精度。"
+            ],
+            "controlled_variables": [
+              "nx = 80",
+              "extension_mm = 0.5",
+              "保持几何、材料、载荷、边界条件不变"
+            ],
+            "engineering_reason": "由于线弹性裂尖应力奇异，峰值应力不收敛，应以能量释放率 G 作为网格收敛判据。计算当前网格小幅裂纹扩展的能量变化，可评估 G 的收敛性，并与解析参考比较。",
+            "action": {
+              "name": "compare_nearby_geometry_energy",
+              "arguments": {
+                "nx": 80,
+                "extension_mm": 0.5
+              }
+            },
+            "provisional_answer": "待计算能量释放率后确认，初步推断当前网格可能适用于以能量释放率或应力强度因子评价裂纹，而不应继续加密观察峰值应力。"
+          },
+          "tool_result": {
+            "tool": "compare_nearby_geometry_energy",
+            "nx": 80,
+            "requested_extension_mm": 0.5,
+            "used_extension_mm": 2.5,
+            "parameter_repair": "snapped_to_integer_mesh_steps",
+            "grid_step_mm": 2.5,
+            "base_energy_n_mm": 10116.033985340357,
+            "extended_energy_n_mm": 10289.286304844136,
+            "energy_change_n_mm": 173.2523195037793,
+            "added_crack_surface_mm2": 50.0,
+            "energy_change_per_added_surface_n_per_mm": 3.4650463900755857,
+            "controlled_variables": [
+              "外形尺寸",
+              "材料参数",
+              "远场应力",
+              "边界约束",
+              "网格划分数"
+            ]
+          },
+          "metadata": {
+            "requested_model": "deepseek-v4-pro",
+            "response_model": "deepseek-v4-pro",
+            "finish_reason": "stop",
+            "usage": {
+              "completion_tokens": 2516,
+              "prompt_tokens": 1378,
+              "total_tokens": 3894,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 2072,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cache_write_tokens": null,
+                "cached_tokens": 256
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 1122
+            }
+          }
+        },
+        {
+          "round": 3,
+          "decision": {
+            "competing_hypotheses": [
+              "裂尖峰值应力不随网格收敛是线弹性裂纹尖端应力奇异性的预期表现，需改用断裂力学参量（如能量释放率或应力强度因子）评价收敛性。当前模型的总能量和远程位移已趋于稳定，裂纹扩展能量变化与解析解接近，可能已可用于线弹性断裂判断。",
+              "当前最大应力已接近常见钢材屈服强度，线弹性假设可能因塑性区较大而失效，必须获取材料塑性曲线以评估非线性影响，否则模型不能直接用于裂纹问题判断。"
+            ],
+            "evidence_refs": [
+              "initial_mesh_history.tip_peak_sigma_y_mpa",
+              "previous_tool_results[0].stress_intensity_reference_mpa_sqrt_mm",
+              "previous_tool_results[1].energy_change_per_added_surface_n_per_mm",
+              "initial_mesh_history.remote_opening_mm",
+              "initial_mesh_history.strain_energy_n_mm"
+            ],
+            "uncertainties": [
+              "尚未检验固定物理位置处应力的网格收敛性，无法判断当前网格密度是否已充分捕捉裂尖附近非奇异区域的应力场。",
+              "缺少材料屈服强度及塑性行为数据，无法评估线弹性断裂力学的小范围屈服适用条件。"
+            ],
+            "controlled_variables": [
+              "评价点到裂尖的固定物理距离"
+            ],
+            "engineering_reason": "在远离裂尖奇异点的固定物理位置采样应力，可直接考察网格无关解的区域范围，为停止加密或继续细化提供量化依据。",
+            "action": {
+              "name": "probe_fixed_physical_locations",
+              "arguments": {
+                "distances_mm": [
+                  0.5,
+                  1.0,
+                  2.0,
+                  5.0
+                ]
+              }
+            },
+            "provisional_answer": "裂尖峰值应力不收敛是线弹性裂纹尖端场内禀特性，不能作为网格收敛判据。现有模型能量、位移及裂纹扩展能量变化已接近解析参照，提示整体响应收敛。建议进一步观察裂尖前方固定物理位置（0.5–5.0 mm）的应力是否随网格稳定，若收敛即可停止加密；同时需校核材料屈服强度确保小范围屈服条件，否则需引入弹塑性分析。"
+          },
+          "tool_result": {
+            "tool": "probe_fixed_physical_locations",
+            "rows": [
+              {
+                "nx": 40,
+                "h_local_mm": 5.0,
+                "samples": {
+                  "distance_0.5_mm_mean_sigma_y_mpa": 210.905837579372,
+                  "distance_1_mm_mean_sigma_y_mpa": 210.905837579372,
+                  "distance_2_mm_mean_sigma_y_mpa": 210.905837579372,
+                  "distance_5_mm_mean_sigma_y_mpa": 177.8011099209453
+                }
+              },
+              {
+                "nx": 60,
+                "h_local_mm": 3.3333333333333335,
+                "samples": {
+                  "distance_0.5_mm_mean_sigma_y_mpa": 252.9953532805045,
+                  "distance_1_mm_mean_sigma_y_mpa": 252.9953532805045,
+                  "distance_2_mm_mean_sigma_y_mpa": 252.9953532805045,
+                  "distance_5_mm_mean_sigma_y_mpa": 165.96283712775175
+                }
+              },
+              {
+                "nx": 80,
+                "h_local_mm": 2.5,
+                "samples": {
+                  "distance_0.5_mm_mean_sigma_y_mpa": 288.99772286519806,
+                  "distance_1_mm_mean_sigma_y_mpa": 288.99772286519806,
+                  "distance_2_mm_mean_sigma_y_mpa": 288.99772286519806,
+                  "distance_5_mm_mean_sigma_y_mpa": 171.0507655825134
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "requested_model": "deepseek-v4-pro",
+            "response_model": "deepseek-v4-pro",
+            "finish_reason": "stop",
+            "usage": {
+              "completion_tokens": 2911,
+              "prompt_tokens": 1590,
+              "total_tokens": 4501,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 2405,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cache_write_tokens": null,
+                "cached_tokens": 256
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 1334
+            }
+          }
+        },
+        {
+          "round": 4,
+          "decision": {
+            "competing_hypotheses": [
+              "能量释放率随网格加密已接近收敛，当前应力强度因子在工程精度内有效，无需进一步加密。",
+              "能量释放率仍随网格加密明显变化，当前模型未能给出可靠断裂参数，必须继续加密。",
+              "线弹性假设本身不再适用，裂尖塑性区过大，需引入材料非线性才能评价。"
+            ],
+            "evidence_refs": [
+              "evidence.model_facts",
+              "evidence.initial_mesh_history",
+              "previous_tool_results[0].stress_intensity_reference_mpa_sqrt_mm",
+              "previous_tool_results[0].energy_reference_n_per_mm",
+              "previous_tool_results[1].energy_change_per_added_surface_n_per_mm",
+              "previous_tool_results[2].rows"
+            ],
+            "uncertainties": [
+              "当前能量释放率3.465 N/mm与解析值3.146 N/mm的偏差可能来自有限宽效应、网格离散或数值误差。",
+              "缺少材料塑性数据，无法判断小范围屈服条件是否满足。",
+              "远场边界加载细节未知（如是否含端部约束）。"
+            ],
+            "controlled_variables": [
+              "网格密度（nx）"
+            ],
+            "engineering_reason": "继续加密网格可直接观察能量释放率及固定位置应力的变化趋势，是区分收敛性与模型适用性最透明的下一步。",
+            "action": {
+              "name": "refine_current_model",
+              "arguments": {
+                "nx": 120
+              }
+            },
+            "provisional_answer": "当前线弹性模型可用于初步估算应力强度因子，但裂尖峰值应力不会收敛。建议通过进一步加密验证能量释放率是否稳定，再决定是否引入非线性。"
+          },
+          "tool_result": {
+            "tool": "refine_current_model",
+            "result": {
+              "nx": 120,
+              "elements": 14400,
+              "h_local_mm": 1.6666666666666667,
+              "half_crack_mm": 20.0,
+              "tip_peak_sigma_y_mpa": 350.04527162402155,
+              "remote_opening_mm": 0.10123854822277613,
+              "strain_energy_n_mm": 10129.360249657808,
+              "energy_balance_relative": 1.2157291239021202e-13
+            }
+          },
+          "metadata": {
+            "requested_model": "deepseek-v4-pro",
+            "response_model": "deepseek-v4-pro",
+            "finish_reason": "stop",
+            "usage": {
+              "completion_tokens": 2596,
+              "prompt_tokens": 2004,
+              "total_tokens": 4600,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 2201,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cache_write_tokens": null,
+                "cached_tokens": 256
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 1748
+            }
+          }
+        }
+      ],
+      "audit": {
+        "rounds": 4,
+        "action_sequence": [
+          "crosscheck_with_closed_form",
+          "compare_nearby_geometry_energy",
+          "probe_fixed_physical_locations",
+          "refine_current_model"
+        ],
+        "used_multiple_hypotheses_every_round": true,
+        "cited_evidence_every_round": true,
+        "retained_uncertainty_every_round": true,
+        "declared_controlled_variables_every_round": true,
+        "stopped_voluntarily": false,
+        "route_specific_requirement_used": false
+      },
+      "final_provisional_answer": "当前线弹性模型可用于初步估算应力强度因子，但裂尖峰值应力不会收敛。建议通过进一步加密验证能量释放率是否稳定，再决定是否引入非线性。"
+    }
+  ]
+}

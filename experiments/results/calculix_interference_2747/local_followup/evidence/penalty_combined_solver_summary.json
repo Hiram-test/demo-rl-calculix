@@ -1,0 +1,598 @@
+{
+  "deepseek_calls": 0,
+  "solver": {
+    "command": [
+      "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+      "-v"
+    ],
+    "return_code": 201,
+    "version": "2.22",
+    "stdout": "This is Version 2.22",
+    "executable_path": "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+    "executable_sha256": "612144A1441D2A32C33325AA9562C2FF79F60F466E306F7F2680AB76EEEA3961"
+  },
+  "fixed_fields": {
+    "element_type": "C3D20R",
+    "initial_increment": 0.5,
+    "contact_type": "NODE TO SURFACE"
+  },
+  "changed_field": "surface_behavior.linear_penalty_stiffness",
+  "runs": [
+    {
+      "solve_id": "SOLVE-DDCAEE99F171",
+      "label": "search-default",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.5,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\contact_case.inp",
+        "size_bytes": 3468,
+        "sha256": "ED3FACE4466691B81F7394DB958D89B8012C0641C04C3A6EB0CD13F7352236E0"
+      },
+      "return_code": 201,
+      "timed_out": false,
+      "wall_seconds": 0.4529999999795109,
+      "job_finished": false,
+      "too_many_cutbacks": true,
+      "completed": false,
+      "no_convergence_count": 68,
+      "increment_attempt_count": 6,
+      "max_residual_force": 5.003942510032724e+25,
+      "max_absolute_displacement_correction": 183725600000.0,
+      "min_positive_displacement_correction": 0.03663398,
+      "contact_spring_count_min": 0,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 0,
+        "force_row_count": 0,
+        "max_absolute_displacement": null,
+        "max_absolute_force_component": null,
+        "mean_upper_contact_uz": null,
+        "bottom_reaction_z_sum": null,
+        "all_force_z_sum": null,
+        "contains_displacements": false,
+        "contains_forces": false
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "A36E87FC2149589F3E857D8B16F52CCCF35587EC8432F6F8E476CF998F42C55F"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\contact_case.cvg",
+          "size_bytes": 6420,
+          "sha256": "E014A8B98071754F3F3B3F90601FB844C385B9CB61A99B3A4C4CC06C603B96A1"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "6A6BBA5DC14637F3CCEF88B0126B6AD8292439006067C0D5AF4E05440980F0D2"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-default-ddcaee99f1\\console.log",
+        "size_bytes": 62044,
+        "sha256": "44441C49D957222F9BA3A4301ECD00B7FB77FE81DAA5E497FBC9E17940097E14"
+      }
+    },
+    {
+      "solve_id": "SOLVE-C534AD4EF3AF",
+      "label": "search-1e5",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 100000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\contact_case.inp",
+        "size_bytes": 3478,
+        "sha256": "9F8964314126E728FA1B89C394F8E969B5D9447D22DD9F1202C15283644E645E"
+      },
+      "return_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.1869999999180436,
+      "job_finished": true,
+      "too_many_cutbacks": false,
+      "completed": true,
+      "no_convergence_count": 3,
+      "increment_attempt_count": 2,
+      "max_residual_force": 6.620687,
+      "max_absolute_displacement_correction": 0.02397056,
+      "min_positive_displacement_correction": 3.287216e-07,
+      "contact_spring_count_min": 4,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 40,
+        "force_row_count": 40,
+        "max_absolute_displacement": 0.04896069,
+        "max_absolute_force_component": 8.333333,
+        "mean_upper_contact_uz": 0.04890942,
+        "bottom_reaction_z_sum": 24.999999199999998,
+        "all_force_z_sum": -8.000001660320104e-07,
+        "contains_displacements": true,
+        "contains_forces": true
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\contact_case.sta",
+          "size_bytes": 246,
+          "sha256": "519445C3B2C6CAA98BAB26AD0DF2D8250E95F9A450479038AB0C8D633A70F492"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\contact_case.cvg",
+          "size_bytes": 693,
+          "sha256": "A6336FB9F03037524D4E2F0764C7621CADF240DE7651C076F6BDF9296405D123"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\contact_case.dat",
+          "size_bytes": 4547,
+          "sha256": "2C173A02B9E95D52C1C5A5378E03DF5DFA0558D827DD0E9AEED7A63E623FA468"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\contact_case.frd",
+          "size_bytes": 3442,
+          "sha256": "6530E5F9B67638147D5FAD6C32EA6E30A464817933E1D18E427FF0551C0E8474"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e5-c534ad4ef3\\console.log",
+        "size_bytes": 7055,
+        "sha256": "9BE3B0BE8171B22D78B20EDDAC063F88D3ABAE252914AE67DCB05EB271C86B23"
+      }
+    },
+    {
+      "solve_id": "SOLVE-BD438D78DF3B",
+      "label": "search-1e6",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 1000000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\contact_case.inp",
+        "size_bytes": 3479,
+        "sha256": "CB8A012B1F505EDE930D38BA2B2987F71FD4B2031FC274D89F42A27B90708646"
+      },
+      "return_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.21799999999348074,
+      "job_finished": true,
+      "too_many_cutbacks": false,
+      "completed": true,
+      "no_convergence_count": 5,
+      "increment_attempt_count": 2,
+      "max_residual_force": 66.721335,
+      "max_absolute_displacement_correction": 0.02642961,
+      "min_positive_displacement_correction": 3.287253e-08,
+      "contact_spring_count_min": 4,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 40,
+        "force_row_count": 40,
+        "max_absolute_displacement": 0.04986027,
+        "max_absolute_force_component": 8.333333,
+        "mean_upper_contact_uz": 0.049809,
+        "bottom_reaction_z_sum": 24.999997999999998,
+        "all_force_z_sum": -1.9999979789273444e-06,
+        "contains_displacements": true,
+        "contains_forces": true
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\contact_case.sta",
+          "size_bytes": 246,
+          "sha256": "B7F56294231B2C30A1F90EEC86DC852D529A47E0447130D9CB8183414BBBFD94"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\contact_case.cvg",
+          "size_bytes": 859,
+          "sha256": "1D79D2D67A0CCD5703B797A9103D75DA1CF3D00FB02BFF380BCCF371E1010B96"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\contact_case.dat",
+          "size_bytes": 4547,
+          "sha256": "45C2A63D607217BD97DEB9454F783D68EB237A4A2E69A15BBCEF948865B6CF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\contact_case.frd",
+          "size_bytes": 3442,
+          "sha256": "6530E5F9B67638147D5FAD6C32EA6E30A464817933E1D18E427FF0551C0E8474"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-1e6-bd438d78df\\console.log",
+        "size_bytes": 8551,
+        "sha256": "ABC682391957F626E40C9337AE06F74D16EEE38A4D9F404DA7D5F1B0A6F336CE"
+      }
+    },
+    {
+      "solve_id": "SOLVE-847F780B753C",
+      "label": "holdout-default",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.5,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\contact_case.inp",
+        "size_bytes": 3468,
+        "sha256": "FD4E62C23CC49933F670A37284F52DE3DBEEC8872D66110AEF31D4C7C591E791"
+      },
+      "return_code": 201,
+      "timed_out": false,
+      "wall_seconds": 0.26599999994505197,
+      "job_finished": false,
+      "too_many_cutbacks": true,
+      "completed": false,
+      "no_convergence_count": 15,
+      "increment_attempt_count": 6,
+      "max_residual_force": 1.478946986467369e+28,
+      "max_absolute_displacement_correction": 582522700000.0,
+      "min_positive_displacement_correction": 2.395619,
+      "contact_spring_count_min": 0,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 0,
+        "force_row_count": 0,
+        "max_absolute_displacement": null,
+        "max_absolute_force_component": null,
+        "mean_upper_contact_uz": null,
+        "bottom_reaction_z_sum": null,
+        "all_force_z_sum": null,
+        "contains_displacements": false,
+        "contains_forces": false
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "9E4760AD5653F516DA7FDE17EBAB9FCF3F0904FA301E4E05E5EAADEDC9819626"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\contact_case.cvg",
+          "size_bytes": 2021,
+          "sha256": "980DA4280EFF45FAE9DF5452AF93BB256D40824930B31DE8AC90C230CECEB128"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "9504FBA16140E019AF7A4467EB1B2118193A3E3923F13D6F33C7A265229DACAA"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-default-847f780b75\\console.log",
+        "size_bytes": 21999,
+        "sha256": "98521BD03EE64FBD1403AEEA58026DC105E6F3FECC9C0626A5107F9AC5F4D7EF"
+      }
+    },
+    {
+      "solve_id": "SOLVE-1B5D6CAA602B",
+      "label": "holdout-1e5",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 100000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\contact_case.inp",
+        "size_bytes": 3478,
+        "sha256": "7CC482FAFBB1C7272F0CA73027B337A945D975F3E1692953708D4CE055AFCCEE"
+      },
+      "return_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.23499999998603016,
+      "job_finished": true,
+      "too_many_cutbacks": false,
+      "completed": true,
+      "no_convergence_count": 7,
+      "increment_attempt_count": 2,
+      "max_residual_force": 309.364312,
+      "max_absolute_displacement_correction": 0.1260347,
+      "min_positive_displacement_correction": 1.322726e-08,
+      "contact_spring_count_min": 4,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 40,
+        "force_row_count": 40,
+        "max_absolute_displacement": 0.2493037,
+        "max_absolute_force_component": 8.333333,
+        "mean_upper_contact_uz": 0.2492818,
+        "bottom_reaction_z_sum": 24.999998,
+        "all_force_z_sum": -2.0000018855111487e-06,
+        "contains_displacements": true,
+        "contains_forces": true
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\contact_case.sta",
+          "size_bytes": 246,
+          "sha256": "1B57DC63C721AB3FB2430325CA4DB1748705859521A028DBC4957364CA844C35"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\contact_case.cvg",
+          "size_bytes": 1025,
+          "sha256": "3479F991E0546D068263480FD89A40DE911BCB90B64D8E4CFADC8735619AAA37"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\contact_case.dat",
+          "size_bytes": 4547,
+          "sha256": "C3E66D92F4A6AA7D4CDD3A501297CB0A95F39C16721ED3B6B5B21CD348E18886"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\contact_case.frd",
+          "size_bytes": 3442,
+          "sha256": "07A15EE1AFDF455A741008AEE9B233F9D6A8E4E9D0E1613901E4E64F1DECB1F4"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e5-1b5d6caa60\\console.log",
+        "size_bytes": 10100,
+        "sha256": "9AE59133E666A87A5EBA21389A9583D536887F330CA9831119BE83B57DBAF962"
+      }
+    },
+    {
+      "solve_id": "SOLVE-8563A910EE08",
+      "label": "holdout-1e6",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 1000000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\contact_case.inp",
+        "size_bytes": 3479,
+        "sha256": "7E1D2EB3CE8D24ED5368190949179101767BF651460FA3BF65B16CE797FF251E"
+      },
+      "return_code": 201,
+      "timed_out": false,
+      "wall_seconds": 0.25,
+      "job_finished": false,
+      "too_many_cutbacks": true,
+      "completed": false,
+      "no_convergence_count": 14,
+      "increment_attempt_count": 6,
+      "max_residual_force": 2.7028841474805547e+37,
+      "max_absolute_displacement_correction": 106541800000.0,
+      "min_positive_displacement_correction": 0.1612915,
+      "contact_spring_count_min": 0,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 0,
+        "force_row_count": 0,
+        "max_absolute_displacement": null,
+        "max_absolute_force_component": null,
+        "mean_upper_contact_uz": null,
+        "bottom_reaction_z_sum": null,
+        "all_force_z_sum": null,
+        "contains_displacements": false,
+        "contains_forces": false
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "E9D12311AD13395B1CCECD7ECF041FB74AB337D53CAC6EFE80678D905F3A915C"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\contact_case.cvg",
+          "size_bytes": 1938,
+          "sha256": "B1898920C58BFC5CDB1F9327A6DF2671F6FA661EE72689988970793EFF5BE47B"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "866997AC942AEFDA35D7623E110FE32E70D6051A9DDE7DA8EE0AD070E9467447"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-1e6-8563a910ee\\console.log",
+        "size_bytes": 20967,
+        "sha256": "FBE70CB081E397B6683D7D119E7C4250C5ECB54C8FE8B9D5C2FD4DC291321591"
+      }
+    },
+    {
+      "solve_id": "SOLVE-2B6021325778",
+      "label": "search-69000",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 69000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\contact_case.inp",
+        "size_bytes": 3477,
+        "sha256": "E739A89311C530E119744AF0A9882434C3B1F5BFBEAD37AECC7B5294D9B8CB03"
+      },
+      "return_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.1720000000204891,
+      "job_finished": true,
+      "too_many_cutbacks": false,
+      "completed": true,
+      "no_convergence_count": 3,
+      "increment_attempt_count": 2,
+      "max_residual_force": 4.527833,
+      "max_absolute_displacement_correction": 0.02373304,
+      "min_positive_displacement_correction": 4.764068e-07,
+      "contact_spring_count_min": 4,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 40,
+        "force_row_count": 40,
+        "max_absolute_displacement": 0.04851163,
+        "max_absolute_force_component": 8.333333,
+        "mean_upper_contact_uz": 0.04846036,
+        "bottom_reaction_z_sum": 25.000002,
+        "all_force_z_sum": 2.000000331858793e-06,
+        "contains_displacements": true,
+        "contains_forces": true
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\contact_case.sta",
+          "size_bytes": 246,
+          "sha256": "519445C3B2C6CAA98BAB26AD0DF2D8250E95F9A450479038AB0C8D633A70F492"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\contact_case.cvg",
+          "size_bytes": 693,
+          "sha256": "A51B70709484B8851C8DC9783B4C922E8D6AFB5B3114FF47F4DB59775050E240"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\contact_case.dat",
+          "size_bytes": 4547,
+          "sha256": "E7F722D5A91D879B8D2275908A709C34CB795702ACEBE531462E44E72F55D2C4"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\contact_case.frd",
+          "size_bytes": 3442,
+          "sha256": "E7A5144FB4B5571B902627951E2EA4756DE6283CC84808442028604861E21793"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\search-69000-2b60213257\\console.log",
+        "size_bytes": 7056,
+        "sha256": "B699054341CA00C20C3FAF0F507CA737CE359AEB9AD00F29D5D629550C326356"
+      }
+    },
+    {
+      "solve_id": "SOLVE-D761175D118C",
+      "label": "holdout-69000",
+      "reused": false,
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.5,
+        "penalty_stiffness": 69000.0,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "command": [
+        "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+        "contact_case"
+      ],
+      "run_dir": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11",
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\contact_case.inp",
+        "size_bytes": 3477,
+        "sha256": "77B060092CB535277F1E4E4084BDCB7B0AA8DF9479699901F43474168591718F"
+      },
+      "return_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.18799999996554106,
+      "job_finished": true,
+      "too_many_cutbacks": false,
+      "completed": true,
+      "no_convergence_count": 6,
+      "increment_attempt_count": 2,
+      "max_residual_force": 212.764947,
+      "max_absolute_displacement_correction": 0.1246607,
+      "min_positive_displacement_correction": 1.916838e-08,
+      "contact_spring_count_min": 4,
+      "contact_spring_count_max": 8,
+      "dat_summary": {
+        "displacement_row_count": 40,
+        "force_row_count": 40,
+        "max_absolute_displacement": 0.2490548,
+        "max_absolute_force_component": 8.333333,
+        "mean_upper_contact_uz": 0.2490329,
+        "bottom_reaction_z_sum": 24.999999600000002,
+        "all_force_z_sum": -3.999981196477854e-07,
+        "contains_displacements": true,
+        "contains_forces": true
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\contact_case.sta",
+          "size_bytes": 246,
+          "sha256": "114CFD4AD8E94543FC20FAB3C1B201F946FD1F2D9194830B122226F785752489"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\contact_case.cvg",
+          "size_bytes": 942,
+          "sha256": "1B931CD4922D0EF748230AF68ECE76CF3A6A94983DA5997786ED9D3DE87F1AC3"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\contact_case.dat",
+          "size_bytes": 4547,
+          "sha256": "DB60E78546D1376DE6E4F6414925969DB62F24C8521B820D07392DCA2AA00E76"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\contact_case.frd",
+          "size_bytes": 3442,
+          "sha256": "EF9B6979D461CD59AF49FABCDD5FEE878458E39D2035892A6B6ED4E68F551842"
+        }
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\penalty\\solver_runs\\holdout-69000-d761175d11\\console.log",
+        "size_bytes": 9326,
+        "sha256": "DFF1FA9308DEA7F24C558B6CE2ED8D7708BE55495AD7E4F361091D5A7923CE39"
+      }
+    }
+  ]
+}

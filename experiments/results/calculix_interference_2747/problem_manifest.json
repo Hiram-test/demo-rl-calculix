@@ -1,0 +1,162 @@
+{
+  "manifest_version": "engineering-problem-manifest/1.0",
+  "task_id": "calculix-forum-2747-contact-diagnosis",
+  "user_goal": "根据原始 CalculiX 论坛问题、附件事实和真实受控求解，诊断网格细化后过盈接触不收敛的机制并给出有适用边界的答复。",
+  "input_files": [
+    {
+      "name": "Shear_setup-INTER01-COARSE_PIN.inp",
+      "size_bytes": 267223015,
+      "sha256": "F142404CD1B2E94E8F68EB3128FFDF15E4E4C68D45C2EE01640F8B897A3EE4AA",
+      "node_count": 3836377,
+      "c3d20r_element_count": 184896,
+      "pin2_c3d20r_element_count": 21120,
+      "step_count": 2,
+      "pin2_contact_face_count": 1728,
+      "hole2_contact_face_count": 3600,
+      "removes_then_readds_pin2_contact": false
+    },
+    {
+      "name": "Shear_setup-INTER01-deactivate1thenreactivate.inp",
+      "size_bytes": 277391649,
+      "sha256": "1160DB03946AA67B8A955F130647F6531C5B4035220A314C6CBB9B57925CEDAE",
+      "node_count": 3863869,
+      "c3d20r_element_count": 232416,
+      "pin2_c3d20r_element_count": 68640,
+      "step_count": 3,
+      "pin2_contact_face_count": 3344,
+      "hole2_contact_face_count": 3600,
+      "removes_then_readds_pin2_contact": true
+    }
+  ],
+  "facts": {
+    "original_element_family": {
+      "value": "C3D20R",
+      "provenance": "parsed_from_user_model",
+      "source_ref": "original_deck_audit.json#/shared_deck_facts/element_family",
+      "derivation": null,
+      "user_confirmed": true,
+      "notes": null
+    },
+    "original_contact_formulation": {
+      "value": "surface-to-surface",
+      "provenance": "parsed_from_user_model",
+      "source_ref": "original_deck_audit.json#/shared_deck_facts/contact_formulation",
+      "derivation": null,
+      "user_confirmed": true,
+      "notes": null
+    },
+    "original_linear_penalty": {
+      "value": 69000.0,
+      "provenance": "parsed_from_user_model",
+      "source_ref": "original_deck_audit.json#/shared_deck_facts/linear_penalty_first_value",
+      "derivation": null,
+      "user_confirmed": true,
+      "notes": null
+    },
+    "source_pair_is_confounded": {
+      "value": true,
+      "provenance": "derived_by_agent",
+      "source_ref": "original_deck_audit.json#/audit_limitations/0",
+      "derivation": "两个附件同时改变网格、接触面数量和 MODEL CHANGE 路径。",
+      "user_confirmed": false,
+      "notes": null
+    },
+    "representative_solver_version": {
+      "value": {
+        "command": [
+          "/usr/bin/ccx",
+          "-v"
+        ],
+        "return_code": 201,
+        "version": "2.21",
+        "stdout": "This is Version 2.21",
+        "executable_path": "/usr/bin/ccx",
+        "executable_sha256": "6ADAABF5BF0382FC2BFD692B984320ED375DBA777F7DC8297562F818043FAA1B"
+      },
+      "provenance": "derived_by_agent",
+      "source_ref": "solver_version_stdout",
+      "derivation": null,
+      "user_confirmed": false,
+      "notes": null
+    },
+    "representative_initial_evidence": {
+      "value": {
+        "control_solve_id": "SOLVE-F58C31B530EA",
+        "target_solve_id": "SOLVE-DDCAEE99F171"
+      },
+      "provenance": "derived_by_agent",
+      "source_ref": "agent_trace.json#/initial_solver_evidence",
+      "derivation": null,
+      "user_confirmed": false,
+      "notes": null
+    }
+  },
+  "missing_facts": [
+    {
+      "path": "original_large_model.independent_run",
+      "reason": "原模型约一千一百六十万自由度，当前标准 runner 未证明具有足够内存和 Pardiso 后端。",
+      "question": "候选修复能否在原始圆柱孔模型和批准后端上保持位移、反力、接触传力与穿透合理？",
+      "acceptable_sources": [
+        "大内存 Pardiso CalculiX 运行",
+        "作者原环境复验",
+        "批准的第二求解器复核"
+      ]
+    },
+    {
+      "path": "forum.confirmed_solution",
+      "reason": "冻结时论坛没有作者确认的后续修复。",
+      "question": "作者是否能在原模型上确认候选修改？",
+      "acceptable_sources": [
+        "论坛作者复验",
+        "原始 deck 修订与求解日志"
+      ]
+    }
+  ],
+  "algorithm_configuration": {
+    "deepseek_model": {
+      "value": "deepseek-v4-pro",
+      "provenance": "algorithm_configuration",
+      "source_ref": "cli_or_ds_environment",
+      "derivation": null,
+      "user_confirmed": false,
+      "notes": "模型名称影响推理行为和费用。"
+    },
+    "max_http_requests": {
+      "value": 3,
+      "provenance": "algorithm_configuration",
+      "source_ref": "runner_constant",
+      "derivation": null,
+      "user_confirmed": false,
+      "notes": "三次是硬费用上限，不是工程完成门禁。"
+    },
+    "representative_search_midside_z": {
+      "value": 0.95,
+      "provenance": "algorithm_configuration",
+      "source_ref": "runner_constant",
+      "derivation": "相对主面 z=1.0 形成 0.05 长度单位初始过闭合。",
+      "user_confirmed": false,
+      "notes": null
+    },
+    "representative_holdout_midside_z": {
+      "value": 0.75,
+      "provenance": "algorithm_configuration",
+      "source_ref": "runner_constant",
+      "derivation": "相对主面 z=1.0 形成 0.25 长度单位初始过闭合。",
+      "user_confirmed": false,
+      "notes": null
+    },
+    "representative_contact_formulation": {
+      "value": "NODE TO SURFACE",
+      "provenance": "algorithm_configuration",
+      "source_ref": "runner_constant",
+      "derivation": null,
+      "user_confirmed": false,
+      "notes": "这是机制实验设置，不是原帖的预设修复。"
+    }
+  },
+  "observations": [
+    "原始粗/细附件同时改变网格规模、PIN2 接触面数量和接触激活历史。",
+    "代表模型中仅改变四个接触边中间节点高度，即可形成健康对照与 cutback 失败目标。",
+    "代表模型提供机制判别证据，但不构成原始大型模型已解决的证明。"
+  ]
+}

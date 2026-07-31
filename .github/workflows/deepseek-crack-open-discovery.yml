@@ -1,0 +1,83 @@
+name: DeepSeek Crack Open Discovery  # 标识独立的裂纹开放发现实验。
+
+on:  # 定义工作流触发条件。
+  push:  # 在实验分支代码更新后运行真实模型实验。
+    branches:  # 限制自动触发分支。
+      - exp/deepseek-crack-open-discovery  # 只运行独立实验分支。
+    paths:  # 限制与实验相关的源文件变更。
+      - scripts/run_deepseek_crack_open_discovery.py  # 监听开放发现运行脚本。
+      - scripts/run_deepseek_crack_open_discovery_aligned.py  # 监听网格参数吸附修复层。
+      - tests/test_deepseek_crack_open_discovery.py  # 监听开放发现合同测试。
+      - docs/DEEPSEEK_CRACK_OPEN_DISCOVERY.md  # 监听实验协议文档。
+      - .github/workflows/deepseek-crack-open-discovery.yml  # 监听工作流自身。
+  pull_request:  # 通过独立草稿 PR 生成不接触 Secret 的静态检查记录。
+    branches:  # 限制实验 PR 的目标分支。
+      - feat/model-aware-fea-mvp  # 只对照当前模型感知 MVP 分支。
+  workflow_dispatch:  # 允许从 GitHub 界面手动复跑。
+
+permissions:  # 设置工作流权限。
+  contents: write  # 允许 push 事件把冻结轨迹与脱敏日志提交回独立实验分支。
+
+concurrency:  # 避免同一实验的旧运行继续消耗模型调用预算。
+  group: deepseek-crack-open-discovery-${{ github.ref }}  # 按事件引用隔离并发组。
+  cancel-in-progress: true  # 新提交到来时取消仍在运行的旧实验。
+
+jobs:  # 定义实验作业集合。
+  live-open-discovery:  # 定义静态审计与真实模型实验作业。
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
+    environment: ds  # 复用仓库现有 DeepSeek 凭据 Environment。
+    timeout-minutes: 90  # 限制 API 与有限元实验总时长。
+    env:  # 兼容仓库历史上使用过的 Secret 与 Variable 名称。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 选择首个可用 DeepSeek 凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次实验模型名称。
+    steps:  # 定义顺序执行步骤。
+      - uses: actions/checkout@v4  # 检出当前事件对应代码。
+        with:  # 提供检出配置。
+          ref: ${{ github.event_name == 'push' && github.ref_name || github.event.pull_request.head.ref }}  # push 时检出实验分支，PR 时检出头分支。
+      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
+        with:  # 提供 Python 配置参数。
+          python-version: "3.11"  # 与仓库现有测试环境保持一致。
+      - name: Install numerical and API dependencies  # 安装有限元与 DeepSeek 客户端依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装脚本实际使用的第三方包。
+      - name: Compile open-discovery experiment  # 在真实调用前检查 Python 语法。
+        run: python -m py_compile scripts/run_deepseek_crack_open_discovery.py scripts/run_deepseek_crack_open_discovery_aligned.py tests/test_deepseek_crack_open_discovery.py  # 编译主体、修复层与测试文件。
+      - name: Validate no-route contract  # 检查提示词、工具目录和注释要求。
+        run: python -m unittest tests/test_deepseek_crack_open_discovery.py -v  # 执行独立静态合同测试。
+      - name: Confirm DeepSeek credential  # 在真实调用前确认 Environment 凭据已注入。
+        if: github.event_name == 'push'  # PR 静态检查不接触 Secret。
+        run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出凭据内容。
+      - name: Run guided live discovery  # 首轮只运行工程师高层指南组以观察单条自主路线。
+        if: github.event_name == 'push'  # 仅在可信分支 push 中读取 Secret 并调用模型。
+        continue-on-error: true  # 允许后续步骤在失败时冻结脱敏诊断信息。
+        shell: bash  # 使用 Bash 捕获管道真实退出码。
+        run: |  # 执行模型实验并保存脱敏标准输出。
+          set -uo pipefail  # 保留未定义变量与管道失败检查但允许手动记录退出码。
+          mkdir -p artifacts  # 确保日志和轨迹目录存在。
+          set +e  # 暂时关闭立即退出以记录真实返回码。
+          python scripts/run_deepseek_crack_open_discovery_aligned.py --mode guided --max-rounds 4 --output artifacts/deepseek_crack_open_discovery.json 2>&1 | tee artifacts/live.log  # 通过参数吸附层运行单场景四轮开放发现。
+          code=${PIPESTATUS[0]}  # 读取 Python 进程而非 tee 的退出码。
+          set -e  # 恢复立即退出行为。
+          printf '%s\n' "$code" > artifacts/live_exit_code.txt  # 把真实退出码写入诊断文件。
+          exit 0  # 始终允许冻结步骤执行。
+      - name: Freeze discovery trace and diagnostics  # 把真实轨迹或失败诊断写回独立分支。
+        if: github.event_name == 'push' && always()  # 每次可信 push 均冻结可审计结果。
+        shell: bash  # 使用 Bash 执行版本控制步骤。
+        run: |  # 顺序执行结果冻结命令。
+          set -euo pipefail  # 在冻结过程失败时立即终止。
+          mkdir -p experiments/results  # 创建独立实验结果目录。
+          rm -rf experiments/results/latest_deepseek_crack_open_discovery  # 清理上一轮冻结目录。
+          mkdir -p experiments/results/latest_deepseek_crack_open_discovery  # 创建本轮冻结目录。
+          cp -a artifacts/. experiments/results/latest_deepseek_crack_open_discovery/  # 复制轨迹、退出码和脱敏日志。
+          git config user.name "github-actions[bot]"  # 设置自动提交用户名。
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"  # 设置自动提交邮箱。
+          git add experiments/results/latest_deepseek_crack_open_discovery  # 暂存独立实验结果目录。
+          git diff --cached --quiet || git commit -m "Record DeepSeek crack open-discovery diagnostics"  # 仅在结果变化时创建提交。
+          git push origin HEAD:exp/deepseek-crack-open-discovery  # 把冻结结果推回独立实验分支。
+      - name: Upload frozen discovery trace  # 保存逐轮动作、证据反馈与公开工程理由。
+        uses: actions/upload-artifact@v4  # 使用官方 Artifact 上传动作。
+        if: always()  # 即使模型调用失败也保留已有日志和输出。
+        with:  # 配置 Artifact 参数。
+          name: deepseek-crack-open-discovery  # 设置可识别的 Artifact 名称。
+          path: artifacts/  # 上传实验生成的审计轨迹目录。
+          if-no-files-found: warn  # 在 PR 静态检查且无输出时给出警告。
+          retention-days: 14  # 保留两周用于复核与对照。

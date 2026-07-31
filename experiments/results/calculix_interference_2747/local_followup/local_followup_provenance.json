@@ -1,0 +1,100 @@
+{
+  "schema_version": "local-calculix-followup-provenance/1.0",
+  "record_date": "2026-07-31",
+  "execution": {
+    "mode": "local",
+    "deepseek_calls": 0,
+    "training_runs": 0,
+    "optimization_runs": 0,
+    "valid_solver_cases": 15,
+    "solver": "CalculiX 2.22 / SPOOLES",
+    "solver_executable_sha256": "612144A1441D2A32C33325AA9562C2FF79F60F466E306F7F2680AB76EEEA3961"
+  },
+  "artifacts": {
+    "decision_trace": {
+      "path": "local_engineer_trace.json",
+      "bytes": 18059,
+      "sha256": "3636166D3C4985D369DF9B56D013574976385727E1100EE3A2CCE649DC10079C"
+    },
+    "decision_log": {
+      "path": "LOCAL_ENGINEER_DECISIONS.md",
+      "bytes": 7389,
+      "sha256": "AF7EC7F4D98523ABC7F00A0B791999D8CA8E28FF02DF8B28AB09D8FCB26A06AF"
+    },
+    "markdown_paper": {
+      "path": "LOCAL_FOLLOWUP.md",
+      "bytes": 6998,
+      "sha256": "58A792CF6F4F43538CFDA15A1F8CDDC21C7A2FFA5C9ECA7622A6FF38BF430680"
+    },
+    "pdf_paper": {
+      "path": "output/pdf/local_calculix_counterfactual_followup.pdf",
+      "bytes": 143011,
+      "sha256": "87852999C29DE7728E49DD8BBF1936BB673AECDC64F2AAB2B859A1F157EC4E0B"
+    },
+    "pdf_renderer": {
+      "path": "../../../../scripts/render_local_calculix_followup_pdf.py",
+      "bytes": 31053,
+      "sha256": "54BBBCDA04815351ECE693A84E29636F95A88CB3A6F1A61F2DE39E8149772959"
+    }
+  },
+  "primary_evidence": {
+    "increment_summary": {
+      "path": "evidence/increment_summary.json",
+      "sha256": "1A19A71B42F536ACD8813C4E0F6BB3FD73CD960B1F23968AAEF47AF7BE66E7DC"
+    },
+    "penalty_summary": {
+      "path": "evidence/penalty_summary.json",
+      "sha256": "6E37CCDB16736568F0B33A806D3E373FF53D5CEF435F514B4BDE1A9E36493C0E"
+    },
+    "penalty_combined_solver_summary": {
+      "path": "evidence/penalty_combined_solver_summary.json",
+      "sha256": "CEDA6E1E67B6F610D940EF036B6CEC8E65F64E3525085713BB41000A27E71B50"
+    },
+    "activation_summary": {
+      "path": "evidence/activation_summary.json",
+      "sha256": "7FEC645DF90A23F734405CB5525398E900A2A6D2E1057CA63493602525024D6E"
+    }
+  },
+  "raw_evidence_inventory": [
+    {
+      "path": "raw/increment/solver_runs/",
+      "file_count": 36,
+      "bytes": 245895
+    },
+    {
+      "path": "raw/penalty/solver_runs/",
+      "file_count": 72,
+      "bytes": 280874
+    },
+    {
+      "path": "raw/activation/",
+      "file_count": 24,
+      "bytes": 342305
+    },
+    {
+      "path": "evidence/",
+      "file_count": 7,
+      "bytes": 125269
+    }
+  ],
+  "excluded_attempt": {
+    "description": "An early penalty invocation used an invalid hyphenated contact-type spelling.",
+    "included_in_valid_cases": false,
+    "included_in_raw_evidence": false,
+    "disclosed_in_decision_log": true
+  },
+  "pdf_verification": {
+    "renderer": "ReportLab",
+    "inspection_renderer": "Poppler pdftoppm",
+    "page_count": 3,
+    "page_size": "A4",
+    "render_dpi": 150,
+    "inspected_pages": [
+      1,
+      2,
+      3
+    ],
+    "layout_defects_found": [],
+    "inspection_result": "accepted"
+  }
+}

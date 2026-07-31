@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/problem_manifest.schema.json",
+  "title": "Engineering problem manifest",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "task_id",
+    "user_goal",
+    "input_files",
+    "facts",
+    "missing_facts",
+    "algorithm_configuration",
+    "observations"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "user_goal": {
+      "type": "string"
+    },
+    "input_files": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/fact"
+      }
+    },
+    "missing_facts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/missingFact"
+      }
+    },
+    "algorithm_configuration": {
+      "type": "object",
+      "additionalProperties": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/fact"
+          },
+          {
+            "properties": {
+              "provenance": {
+                "const": "algorithm_configuration"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "fact": {
+      "type": "object",
+      "required": [
+        "value",
+        "provenance",
+        "user_confirmed"
+      ],
+      "properties": {
+        "value": {},
+        "provenance": {
+          "enum": [
+            "parsed_from_user_model",
+            "provided_by_user",
+            "derived_by_agent",
+            "assumption_pending_confirmation",
+            "algorithm_configuration",
+            "legacy_fixture"
+          ]
+        },
+        "source_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "derivation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_confirmed": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "missingFact": {
+      "type": "object",
+      "required": [
+        "path",
+        "reason",
+        "question",
+        "acceptable_sources"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "acceptable_sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
