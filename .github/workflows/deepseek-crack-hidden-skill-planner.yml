@@ -1,0 +1,138 @@
+name: DeepSeek Crack Hidden Skill Planner  # 标识双API隐藏Skill规划实验工作流。
+
+on:  # 定义工作流触发条件。
+  push:  # 在独立实验分支更新后运行静态合同和真实双API闭环。
+    branches:  # 限制自动运行分支。
+      - exp/deepseek-crack-hidden-skill-planner-v3  # 只允许双API Skill实验分支触发。
+    paths:  # 限制相关文件变更。
+      - experiments/skill_planner/**  # 监听Skill注册表、第二API规划和执行器。
+      - scripts/run_deepseek_crack_hidden_skill_planner.py  # 监听双API运行入口。
+      - tests/test_deepseek_crack_hidden_skill_planner.py  # 监听专属合同测试。
+      - docs/DEEPSEEK_CRACK_HIDDEN_SKILL_PLANNER.md  # 监听实验协议文档。
+      - .github/workflows/deepseek-crack-hidden-skill-planner.yml  # 监听工作流自身。
+  pull_request:  # 在堆叠PR上只运行无凭据静态检查。
+    paths:  # 限制PR检查范围。
+      - experiments/skill_planner/**  # 监听Skill规划器实现。
+      - scripts/run_deepseek_crack_hidden_skill_planner.py  # 监听运行入口。
+      - tests/test_deepseek_crack_hidden_skill_planner.py  # 监听合同测试。
+      - docs/DEEPSEEK_CRACK_HIDDEN_SKILL_PLANNER.md  # 监听协议文档。
+      - .github/workflows/deepseek-crack-hidden-skill-planner.yml  # 监听工作流自身。
+  workflow_dispatch:  # 允许从GitHub界面手动复跑独立实验。
+
+concurrency:  # 防止多个双API循环同时写入同一结果目录。
+  group: deepseek-crack-hidden-skill-planner-${{ github.ref }}  # 按当前分支建立唯一并发组。
+  cancel-in-progress: true  # 新运行启动时取消旧运行。
+
+permissions:  # 设置默认最小仓库权限。
+  contents: read  # 静态作业只读取代码。
+
+jobs:  # 定义静态合同和真实双API作业。
+  static-contracts:  # 运行不需要API凭据的隔离合同测试。
+    runs-on: ubuntu-24.04  # 使用固定Ubuntu运行环境。
+    timeout-minutes: 30  # 为真实有限元Skill烟测保留充足时间。
+    steps:  # 定义静态作业步骤。
+      - uses: actions/checkout@v4  # 检出当前提交。
+      - uses: actions/setup-python@v5  # 配置稳定Python环境。
+        with:  # 提供Python版本。
+          python-version: "3.11"  # 与既有有限元实验保持一致。
+      - name: Install isolated dependencies  # 安装合同测试和有限元Skill所需依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装数值库、优化器和API客户端。
+      - name: Compile dual-API Skill stack  # 在测试前检查全部新增文件语法。
+        run: python -m py_compile experiments/skill_planner/__init__.py experiments/skill_planner/contracts.py experiments/skill_planner/registry.py experiments/skill_planner/skills.py experiments/skill_planner/planner_api.py experiments/skill_planner/executor.py scripts/run_deepseek_crack_hidden_skill_planner.py tests/test_deepseek_crack_hidden_skill_planner.py  # 编译独立Skill规划栈。
+      - name: Validate planner isolation and Skill contracts  # 执行目录隔离、计划冻结、参数来源和Skill烟测。
+        run: python -m unittest tests/test_deepseek_crack_hidden_skill_planner.py -v  # 运行专属双API合同测试。
+
+  live-hidden-skill-planner:  # 运行真实第一API决策、第二API规划和Skill执行闭环。
+    if: github.event_name != 'pull_request'  # 禁止PR事件读取Environment Secret。
+    needs: static-contracts  # 只有静态合同通过后才允许真实调用。
+    runs-on: ubuntu-24.04  # 使用固定Ubuntu运行环境。
+    environment: ds  # 复用既有受保护API凭据环境。
+    timeout-minutes: 150  # 为双API多轮调用和有限元Skill保留充足时间。
+    permissions:  # 只为结果冻结授予写权限。
+      contents: write  # 允许把脱敏双API轨迹提交到当前隔离分支。
+    env:  # 配置第一API和独立第二API。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 读取第一API凭据且不打印值。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定第一API决策模型。
+      SKILL_PLANNER_API_KEY: ${{ secrets.SKILL_PLANNER_API_KEY || secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.SKILL_PLANNER_API_KEY || vars.D || vars.DEEPSEEK_API_KEY }}  # 优先读取独立第二API凭据并允许显式回退。
+      SKILL_PLANNER_BASE_URL: ${{ vars.SKILL_PLANNER_BASE_URL || 'https://api.deepseek.com' }}  # 允许把第二API路由到独立兼容端点。
+      SKILL_PLANNER_MODEL: ${{ vars.SKILL_PLANNER_MODEL || 'deepseek-v4-pro' }}  # 允许独立配置Skill规划模型。
+    steps:  # 定义真实双API实验步骤。
+      - uses: actions/checkout@v4  # 检出独立分支并保留推送凭据。
+        with:  # 提供明确分支设置。
+          ref: exp/deepseek-crack-hidden-skill-planner-v3  # 始终在双API实验分支上运行和冻结结果。
+      - uses: actions/setup-python@v5  # 配置稳定Python环境。
+        with:  # 提供Python版本。
+          python-version: "3.11"  # 与静态作业保持一致。
+      - name: Install live dependencies  # 安装真实模型和有限元Skill所需依赖。
+        run: python -m pip install --quiet numpy scipy openai  # 安装数值库、优化器和API客户端。
+      - name: Prepare dual-API run receipt  # 在任何API调用前保存本次运行身份。
+        shell: bash  # 使用Bash创建独立审计目录。
+        run: |  # 开始收据生成命令。
+          set -euo pipefail  # 在目录或收据写入失败时立即停止。
+          rm -rf artifacts/deepseek_crack_hidden_skill_planner  # 清理当前runner上的旧双API结果。
+          mkdir -p artifacts/deepseek_crack_hidden_skill_planner  # 创建本次实验目录。
+          python - <<'PY'  # 使用标准库生成不含密钥的运行收据。
+          import json, os  # 读取Actions环境并写入JSON。
+          from pathlib import Path  # 管理收据输出路径。
+          receipt = {"workflow": os.environ.get("GITHUB_WORKFLOW"), "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"), "head_sha": os.environ.get("GITHUB_SHA"), "ref": os.environ.get("GITHUB_REF"), "event": os.environ.get("GITHUB_EVENT_NAME"), "decision_model": os.environ.get("DEEPSEEK_MODEL"), "planner_model": os.environ.get("SKILL_PLANNER_MODEL"), "planner_base_url": os.environ.get("SKILL_PLANNER_BASE_URL")}  # 组织脱敏双API运行身份。
+          Path("artifacts/deepseek_crack_hidden_skill_planner/run_receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存运行收据。
+          PY
+      - name: Confirm both API credentials without disclosure  # 检查两个API凭据均可用。
+        id: credential_check  # 保存凭据检查状态供最终审计。
+        continue-on-error: true  # 即使缺失也继续冻结诊断文件。
+        run: test -n "$DEEPSEEK_API_KEY" && test -n "$SKILL_PLANNER_API_KEY"  # 只检查非空且不输出密钥。
+      - name: Run dual-API hidden Skill loop  # 执行提案冻结、第二API规划、计划冻结、Skill DAG和任务控制器。
+        id: live_run  # 保存真实运行结果供最终状态检查。
+        if: steps.credential_check.outcome == 'success'  # 只有两个凭据存在时才调用API。
+        continue-on-error: true  # 即使失败也先保留部分轨迹和诊断。
+        shell: bash  # 使用Bash捕获Python退出码。
+        run: |  # 开始真实双API命令。
+          set -o pipefail  # 确保Python失败能够传递到退出码文件。
+          python scripts/run_deepseek_crack_hidden_skill_planner.py --decision-model "$DEEPSEEK_MODEL" --planner-model "$SKILL_PLANNER_MODEL" --max-rounds 8 --output artifacts/deepseek_crack_hidden_skill_planner 2>&1 | tee artifacts/deepseek_crack_hidden_skill_planner/live.log  # 运行完整双API闭环并保存日志。
+          status="${PIPESTATUS[0]}"  # 读取Python进程退出码。
+          printf '%s\n' "$status" > artifacts/deepseek_crack_hidden_skill_planner/live_exit_code.txt  # 保存真实退出码。
+          exit "$status"  # 把运行状态交给Actions。
+      - name: Write final dual-API status  # 无论结果如何都生成脱敏状态文件。
+        if: always()  # 始终执行状态记录。
+        env:  # 读取前序步骤状态。
+          CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 保存凭据检查结果。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实双API运行结果。
+        shell: bash  # 使用Bash和Python写入JSON。
+        run: |  # 开始状态写入命令。
+          python - <<'PY'  # 使用标准库生成状态文件。
+          import json, os  # 读取步骤结果环境变量。
+          from pathlib import Path  # 管理状态文件路径。
+          path = Path("artifacts/deepseek_crack_hidden_skill_planner/final_status.json")  # 定位独立状态文件。
+          path.parent.mkdir(parents=True, exist_ok=True)  # 确保目录存在。
+          path.write_text(json.dumps({"credential_outcome": os.environ.get("CREDENTIAL_OUTCOME"), "live_outcome": os.environ.get("LIVE_OUTCOME")}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存脱敏最终状态。
+          PY
+      - name: Freeze dual-API trace on isolated branch  # 把成功或失败轨迹提交到独立结果目录。
+        if: always() && github.event_name == 'push'  # 只在独立分支push运行时提交结果。
+        shell: bash  # 使用Bash执行受控复制和提交。
+        run: |  # 开始结果冻结命令。
+          set -euo pipefail  # 在复制或提交失败时立即停止。
+          git fetch origin exp/deepseek-crack-hidden-skill-planner-v3  # 获取独立分支最新状态。
+          git rebase origin/exp/deepseek-crack-hidden-skill-planner-v3  # 避免和较早审计提交冲突。
+          target=experiments/results/latest_deepseek_crack_hidden_skill_planner  # 定义不会覆盖旧实验的独立目录。
+          rm -rf "$target"  # 清除该双API结果目录上一版本。
+          mkdir -p "$target"  # 创建结果冻结目录。
+          cp -R artifacts/deepseek_crack_hidden_skill_planner/. "$target"/  # 复制提案、Skill计划、封条和诊断状态。
+          rm -f "$target/live.log"  # 不把运行日志提交到仓库以减少噪声和潜在敏感输出。
+          git config user.name github-actions[bot]  # 设置自动提交用户名。
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com  # 设置自动提交邮箱。
+          git add "$target"  # 只暂存独立双API结果目录。
+          if ! git diff --cached --quiet; then git commit -m "Freeze hidden Skill planner trace [skip ci]"; git push origin HEAD:exp/deepseek-crack-hidden-skill-planner-v3; fi  # 仅在结果变化时提交且跳过递归CI。
+      - name: Upload dual-API trace and Skill audit  # 上传完整双API审计Artifact。
+        if: always()  # 无论成功或失败都保留证据。
+        uses: actions/upload-artifact@v4  # 使用官方Artifact上传动作。
+        with:  # 配置Artifact参数。
+          name: deepseek-crack-hidden-skill-planner  # 设置可识别的Artifact名称。
+          path: artifacts/deepseek_crack_hidden_skill_planner  # 只上传独立双API结果目录。
+          if-no-files-found: error  # 在连收据都没有时明确失败。
+          retention-days: 30  # 保留一个月用于论文审计。
+      - name: Enforce successful dual-API experiment  # 在审计提交和Artifact上传后恢复严格失败语义。
+        if: always()  # 始终检查凭据和真实运行结果。
+        env:  # 读取前序步骤状态。
+          CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 保存凭据检查状态。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实双API运行状态。
+        run: test "$CREDENTIAL_OUTCOME" = "success" && test "$LIVE_OUTCOME" = "success"  # 只有凭据和完整闭环成功时工作流才通过。
