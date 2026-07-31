@@ -1,0 +1,37 @@
+{
+  "status": "completed",
+  "executed_change": "有限元网格和位移场完全不变，只改变标线两端位移的读取方法",
+  "observations": [
+    {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "nearest_node",
+      "recommended_angle_deg": 0.0,
+      "predicted_angle_change_deg": 0.01411019,
+      "evaluated_directions": 121,
+      "backend": "analytical surface-grid smoke backend",
+      "description": "把标线两端吸附到最近表面节点"
+    },
+    {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "surface_interpolation",
+      "recommended_angle_deg": 0.0,
+      "predicted_angle_change_deg": 0.01411019,
+      "evaluated_directions": 121,
+      "backend": "analytical surface-grid smoke backend",
+      "description": "保持标线真实位置，在所在表面单元内插值两端位移"
+    }
+  ],
+  "limitations": [
+    "该对照能够识别节点吸附误差，但仍需要通过旋转网格或继续细化检查插值结果是否稳定"
+  ]
+}

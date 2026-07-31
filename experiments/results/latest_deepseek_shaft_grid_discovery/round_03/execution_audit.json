@@ -1,0 +1,64 @@
+{
+  "proposal_sha256": "65bd9c9684d040dbc9517647daf42aa41edd66d21f76eb95ab43bcfeba916fc8",
+  "operation": "information",
+  "executed_change": "补充现有几何、材料、载荷和标线事实",
+  "observations": [
+    {
+      "requested_information": "在有限元设置：网格密度周向32、径向5、轴向16，网格线轴向倾角为0°，位移提取方法为surface_interpolation的条件下，请提供初始标线角度为0°、5°、10°、15°、20°、21°、22°、25°、30°时，加载前后绝对角度变化的精确数值（单位：度，至少保留6位小数）。",
+      "available_facts": {
+        "geometry": "均匀实心圆轴，直径80 mm；只计算中部100 mm观测段",
+        "material": "线弹性钢，E=210 GPa，泊松比0.30",
+        "load": "轴向拉力180 kN，扭矩2.0 kN·m，加载方向固定",
+        "mark": "表面短直线长度30 mm；标线不改变结构刚度",
+        "result_definition": "报告加载前后标线方向的角度变化幅值"
+      }
+    }
+  ],
+  "limitations": [],
+  "internal_raw": {},
+  "state_after": {
+    "active_mesh": {
+      "circumferential": 32,
+      "radial": 5,
+      "axial": 16,
+      "helix_angle_deg": 0.0
+    },
+    "active_extraction": "surface_interpolation",
+    "completed_operations": [
+      "extraction_compare",
+      "extraction_compare"
+    ],
+    "finite_element_cases": [
+      {
+        "mesh": {
+          "circumferential": 16,
+          "radial": 3,
+          "axial": 8,
+          "helix_angle_deg": 0.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      },
+      {
+        "mesh": {
+          "circumferential": 32,
+          "radial": 5,
+          "axial": 16,
+          "helix_angle_deg": 0.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      },
+      {
+        "mesh": {
+          "circumferential": 32,
+          "radial": 5,
+          "axial": 16,
+          "helix_angle_deg": 20.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      }
+    ]
+  }
+}
