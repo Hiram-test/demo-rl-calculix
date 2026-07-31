@@ -7,6 +7,10 @@ This public repository publishes two archived versions of the demo reinforcement
 
 The archives are distributed as assets of the [`v1.0.0` release](../../releases/tag/v1.0.0), rather than as ordinary Git objects.
 
+## Finite-element deployment research
+
+The repository now includes an initial [Finite Element Deployment Case Library](docs/deployment-case-library/README.md). It records real CalculiX and FEniCS forum cases in which an apparent mesh, contact, convergence, NaN, or solver problem exposes a broader unresolved simulation-design problem. The first version contains 30 source-linked cases and a reusable annotation schema.
+
 ## Package integrity
 
 | Archive | Size (bytes) | SHA-256 |
