@@ -10,6 +10,7 @@ on:  # 定义工作流触发条件。
       - scripts/run_deepseek_crack_hidden_executor_adapter.py  # 监听任务级编排入口。
       - tests/test_deepseek_crack_hidden_executor.py  # 监听基础合同测试。
       - tests/test_deepseek_crack_hidden_executor_v6.py  # 监听位移和纯后处理忠实性测试。
+      - tests/test_deepseek_crack_hidden_executor_v8.py  # 监听材料阻塞忠实性测试。
       - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
   pull_request:  # 在堆叠PR上只执行无凭据静态检查。
@@ -19,6 +20,7 @@ on:  # 定义工作流触发条件。
       - scripts/run_deepseek_crack_hidden_executor_adapter.py  # 监听任务级编排入口。
       - tests/test_deepseek_crack_hidden_executor.py  # 监听基础合同测试。
       - tests/test_deepseek_crack_hidden_executor_v6.py  # 监听位移和纯后处理忠实性测试。
+      - tests/test_deepseek_crack_hidden_executor_v8.py  # 监听材料阻塞忠实性测试。
       - docs/DEEPSEEK_CRACK_HIDDEN_EXECUTOR.md  # 监听实验协议文档。
       - .github/workflows/deepseek-crack-hidden-executor.yml  # 监听工作流自身。
   workflow_dispatch:  # 允许从GitHub界面手动复跑。
@@ -42,9 +44,9 @@ jobs:  # 定义静态和真实实验作业。
       - name: Install isolated test dependencies  # 安装合同测试所需依赖。
         run: python -m pip install --quiet numpy scipy openai  # 安装数值库和API客户端。
       - name: Compile hidden-executor task stack  # 编译全部隔离任务控制和执行层文件。
-        run: python -m py_compile experiments/hidden_executor/contracts.py experiments/hidden_executor/executor.py experiments/hidden_executor/executor_adapter.py experiments/hidden_executor/executor_adapter_v2.py experiments/hidden_executor/executor_adapter_v3.py experiments/hidden_executor/executor_adapter_v4.py experiments/hidden_executor/executor_adapter_v5.py experiments/hidden_executor/executor_adapter_v6.py experiments/hidden_executor/task_controller.py scripts/run_deepseek_crack_hidden_executor.py scripts/run_deepseek_crack_hidden_executor_adapter.py tests/test_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor_v6.py  # 在真实调用前捕获语法错误。
-      - name: Validate isolation and task-completion contracts  # 执行冻结、任务完成门和忠实隐藏映射测试。
-        run: python -m unittest tests/test_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor_v6.py -v  # 运行全部隔离合同测试。
+        run: python -m py_compile experiments/hidden_executor/contracts.py experiments/hidden_executor/executor.py experiments/hidden_executor/executor_adapter.py experiments/hidden_executor/executor_adapter_v2.py experiments/hidden_executor/executor_adapter_v3.py experiments/hidden_executor/executor_adapter_v4.py experiments/hidden_executor/executor_adapter_v5.py experiments/hidden_executor/executor_adapter_v6.py experiments/hidden_executor/executor_adapter_v7.py experiments/hidden_executor/executor_adapter_v8.py experiments/hidden_executor/task_controller.py scripts/run_deepseek_crack_hidden_executor.py scripts/run_deepseek_crack_hidden_executor_adapter.py tests/test_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor_v6.py tests/test_deepseek_crack_hidden_executor_v8.py  # 在真实调用前捕获语法错误。
+      - name: Validate isolation and task-completion contracts  # 执行冻结、任务完成门和全部忠实隐藏映射测试。
+        run: python -m unittest tests/test_deepseek_crack_hidden_executor.py tests/test_deepseek_crack_hidden_executor_v6.py tests/test_deepseek_crack_hidden_executor_v8.py -v  # 运行全部隔离合同测试。
 
   live-hidden-executor:  # 运行真实DeepSeek无工具可见闭环。
     if: github.event_name != 'pull_request'  # 禁止PR事件读取Environment Secret。
