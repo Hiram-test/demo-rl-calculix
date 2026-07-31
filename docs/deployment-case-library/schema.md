@@ -75,3 +75,21 @@ A future model should be evaluated on more than whether it predicts the final fo
 5. defining physical and numerical acceptance criteria before execution;
 6. revising the model at the correct level after evidence is returned;
 7. preserving unresolved uncertainty when the forum thread does not establish a validated solution.
+
+## Research-user triad extension
+
+The machine-readable [`research-user-triad.json`](research-user-triad.json) adds a deliberately small challenge layer above the source-case annotations:
+
+| Field | Meaning |
+|---|---|
+| `pack_schema` | Version of the three-case challenge contract. |
+| `selection_purpose` | The bounded generalization capability being evaluated. |
+| `cases` | Exactly three primary cases; source supplements are not silently promoted into this set. |
+| `case_id` | Stable reference to the corresponding `FEN-*` source record. |
+| `archetype` | Phase-field physics, classic-to-nonclassic transfer, or multi-method composition. |
+| `decision_focus` | The subtle modeling distinction an agent must identify before choosing an action. |
+| `minimum_discriminating_evidence` | Evidence that must be generated or inspected before a conclusion is accepted. |
+| `delivery_status` | Whether the record is only a source definition or has a complete runnable model and results. |
+| `environment_boundary` | Persistent infrastructure that can be reused and research-model capabilities that remain unimplemented. |
+
+This extension does not change the 30-case source corpus. It prevents a source pointer, a runnable reproducer, and a verified solution from being represented as the same maturity level.

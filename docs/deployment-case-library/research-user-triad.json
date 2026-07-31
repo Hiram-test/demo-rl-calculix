@@ -1,0 +1,65 @@
+{
+  "pack_schema": "fea-research-user-triad/1.0",
+  "selection_purpose": "Evaluate bounded engineering generalization through subtle model differences instead of keyword-to-rule routing.",
+  "cases": [
+    {
+      "case_id": "FEN-009",
+      "archetype": "phase_field_fracture_physics_and_adaptivity",
+      "source_url": "https://fenicsproject.discourse.group/t/challenges-in-reproducing-phase-field-fracture-benchmark-unphysical-crack-trajectory-and-mesh-refinement-behavior/19720",
+      "decision_focus": "Distinguish boundary-tag, loading-symmetry, mesh-bias, length-scale and AMR causes when a converged crack path is physically wrong.",
+      "minimum_discriminating_evidence": [
+        "boundary_tag_visualization",
+        "reaction_symmetry_check",
+        "mesh_size_to_regularization_length_ratio",
+        "non_adaptive_baseline",
+        "structured_vs_unstructured_crack_path",
+        "fracture_energy_history"
+      ],
+      "delivery_status": "source_defined_not_yet_packaged_as_runnable_model"
+    },
+    {
+      "case_id": "FEN-001",
+      "archetype": "classic_to_nonclassic_dimensional_transfer",
+      "source_url": "https://fenicsproject.discourse.group/t/contact-mechanics-2d-problem/4445",
+      "decision_focus": "Reformulate plane assumption, gap, contact measure, load units and validation target instead of mechanically translating a three-dimensional Hertz example.",
+      "minimum_discriminating_evidence": [
+        "two_dimensional_physics_contract",
+        "gap_function_visualization",
+        "contact_boundary_tag_visualization",
+        "dimensional_unit_audit",
+        "contact_width_pressure_and_reaction_benchmark"
+      ],
+      "delivery_status": "source_defined_not_yet_validated_as_two_dimensional_hertz_model"
+    },
+    {
+      "case_id": "FEN-012",
+      "archetype": "composition_of_individually_working_methods",
+      "source_url": "https://fenicsproject.discourse.group/t/why-is-my-program-not-converging-for-this-system-of-coupled-pdes/2284",
+      "decision_focus": "Validate trace operators, weak-form signs, spaces, nullspaces and block assembly when bulk and surface subproblems work separately but fail when coupled.",
+      "minimum_discriminating_evidence": [
+        "manufactured_solution_block_residuals",
+        "discrete_trace_validation",
+        "coupling_sign_audit",
+        "zero_to_full_coupling_continuation",
+        "coupled_conservation_check",
+        "mesh_convergence_order"
+      ],
+      "delivery_status": "source_defined_but_original_mesh_dependencies_are_missing"
+    }
+  ],
+  "environment_boundary": {
+    "reusable": [
+      "Python",
+      "FEniCSx 0.11",
+      "PETSc",
+      "persistent local and container entry points",
+      "artifact and verification scaffolding"
+    ],
+    "not_yet_implemented": [
+      "phase_field_fracture_state_and_irreversibility",
+      "validated_two_dimensional_hertz_reformulation",
+      "mixed_dimensional_bulk_surface_coupling",
+      "redistributable_clean_room_reproducers"
+    ]
+  }
+}

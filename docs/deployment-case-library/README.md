@@ -7,6 +7,9 @@ This directory records real forum cases in which a user presents a complex physi
 - `calculix-cases.md`: 15 cases from the CalculiX Discourse forum.
 - `fenics-cases.md`: 15 cases from the FEniCS Project Discourse forum.
 - `schema.md`: annotation schema and preliminary deployment taxonomy.
+- `research-user-triad.md`: three bounded research-user challenges covering phase-field fracture, classic-to-nonclassic transfer, and composition of established methods.
+- `research-user-triad.json`: machine-readable contract for those three challenge definitions and their current delivery boundaries.
+- `physics-forums-supplement.md`: three bridge/structural source pointers kept separate from the FEniCS research triad.
 
 The initial corpus contains 30 cases collected on 2026-07-31. Each record preserves the original source URL and separates what the user observed from the project's deployment-level interpretation.
 
