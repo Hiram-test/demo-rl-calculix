@@ -1,0 +1,52 @@
+{
+  "manifest_schema": "calculix-interference-2747-release-source/1.0",
+  "source": {
+    "title": "Interference Contact and mesh refinement",
+    "forum_url": "https://calculix.discourse.group/t/interference-contact-and-mesh-refinement/2747",
+    "attachment_share_url": "https://drive.proton.me/urls/2YKDRXYGJG#fwmEJFkaCbui",
+    "confirmed_forum_solution_at_freeze": false
+  },
+  "release": {
+    "tag": "calculix-interference-2747-evidence-v1",
+    "url": "https://github.com/Hiram-test/demo-rl-calculix/releases/tag/calculix-interference-2747-evidence-v1",
+    "publication_type": "prerelease",
+    "root_cause_status": "narrowed_unresolved"
+  },
+  "assets": [
+    {
+      "name": "Shear_setups.zip",
+      "role": "author_published_original_archive",
+      "size_bytes": 116272555,
+      "sha1": "2CEEC9B5C55EF274EA41ABD4D1C314E1AF78D2AF",
+      "sha256": "9AF9CE2F677384BF3AB2E44C188E92E71B47841D9C6C3C67C066DCF5AD8BDB9C",
+      "preservation": "exact_downloaded_bytes"
+    },
+    {
+      "name": "Shear_setup-INTER01-COARSE_PIN.inp",
+      "role": "original_large_coarse_pin_input",
+      "size_bytes": 267223015,
+      "sha256": "F142404CD1B2E94E8F68EB3128FFDF15E4E4C68D45C2EE01640F8B897A3EE4AA",
+      "preservation": "exact_archive_entry_bytes"
+    },
+    {
+      "name": "Shear_setup-INTER01-deactivate1thenreactivate.inp",
+      "role": "original_large_refined_pin_remove_add_input",
+      "size_bytes": 277391649,
+      "sha256": "1160DB03946AA67B8A955F130647F6531C5B4035220A314C6CBB9B57925CEDAE",
+      "preservation": "exact_archive_entry_bytes"
+    },
+    {
+      "name": "local_calculix_counterfactual_followup.pdf",
+      "role": "reduced_model_local_counterfactual_report",
+      "size_bytes": 143011,
+      "sha256": "87852999C29DE7728E49DD8BBF1936BB673AECDC64F2AAB2B859A1F157EC4E0B",
+      "preservation": "repository_delivery_copy"
+    }
+  ],
+  "execution_boundary": {
+    "original_large_models_executed_in_this_repository": false,
+    "requested_original_backend": "Pardiso",
+    "representative_solver": "CalculiX 2.22 with SPOOLES",
+    "conclusion_limit": "Reduced-model results narrow mechanisms but do not establish a fix for either original large input."
+  }
+}

@@ -11,6 +11,7 @@
 原帖公开 Proton 附件已经取得并解密。归档和两个 `.inp` 的文件名、大小、SHA-256、节点数、C3D20R 单元数、接触面规模、步骤差异及作者观测冻结在：
 
 - [`experiments/calculix_interference_2747/original_deck_audit.json`](../experiments/calculix_interference_2747/original_deck_audit.json)
+- [`experiments/calculix_interference_2747/source/`](../experiments/calculix_interference_2747/source/)：原始大型输入的 Release 链接、文件清单、校验值、第三方权利边界与发布决策记录。
 
 两个附件不是单因素对照。除网格规模和 PIN2 接触面数量不同外，细模型还在 Step 1 移除该接触、Step 2 重新加入；因此不能把“细网格失败”直接解释成单一网格效应。
 

@@ -55,6 +55,8 @@ DeepSeek以 `narrowed_unresolved` 停止。它把非均匀初始过闭合、圆�
 
 ## 交付文件
 
+- [原始大型输入 Release](https://github.com/Hiram-test/demo-rl-calculix/releases/tag/calculix-interference-2747-evidence-v1)
+- [原始输入来源清单、哈希、权利边界与发布决策](../../calculix_interference_2747/source/README.md)
 - [论文 Markdown](PAPER.md)
 - [论文 PDF](output/pdf/deepseek_calculix_interference_diagnosis.pdf)
 - [最终完整决策 trace](agent_trace.json)
