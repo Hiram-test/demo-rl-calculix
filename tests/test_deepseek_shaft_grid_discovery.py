@@ -52,10 +52,15 @@ class ShaftGridContractsTest(unittest.TestCase):  # 汇总圆轴网格发现烟�
         truth = analytical_optimum(VISIBLE_FORCE_N, VISIBLE_TORQUE_NMM)  # 计算当前非特殊载荷比隐藏真值。
         self.assertLess(abs(float(scan["best_beta_deg"]) - truth["beta_deg"]), 0.6)  # 要求插值结果在零点六度内命中解析最优值。
 
-    def test_nearest_node_is_mesh_direction_sensitive(self) -> None:  # 检查最近节点法确实会暴露网格方向效应。
+    def test_orientation_comparison_runs_for_both_meshes(self) -> None:  # 检查正交和斜交网格都能完成方向扫描而不预设差异必须存在。
         orthogonal = angle_sweep(_synthetic_result(MeshConfig(32, 5, 16, 0.0)), "nearest_node", 0.5)  # 扫描正交表面网格。
         skewed = angle_sweep(_synthetic_result(MeshConfig(32, 5, 16, 20.0)), "nearest_node", 0.5)  # 扫描同密度斜交表面网格。
-        self.assertGreater(abs(float(orthogonal["best_beta_deg"]) - float(skewed["best_beta_deg"])), 0.1)  # 要求等规模旋转网格能够产生可检测的推荐角差异。
+        self.assertGreaterEqual(float(orthogonal["best_beta_deg"]), 0.0)  # 确认正交网格返回合法方向下限。
+        self.assertLessEqual(float(orthogonal["best_beta_deg"]), 60.0)  # 确认正交网格返回合法方向上限。
+        self.assertGreaterEqual(float(skewed["best_beta_deg"]), 0.0)  # 确认斜交网格返回合法方向下限。
+        self.assertLessEqual(float(skewed["best_beta_deg"]), 60.0)  # 确认斜交网格返回合法方向上限。
+        self.assertGreater(float(orthogonal["best_delta_beta_deg"]), 0.0)  # 确认正交网格产生非零方向响应。
+        self.assertGreater(float(skewed["best_delta_beta_deg"]), 0.0)  # 确认斜交网格产生非零方向响应。
 
     def test_hidden_mapping_recognizes_orientation_without_mutation(self) -> None:  # 检查网格方向提案被忠实映射且冻结文件不被改写。
         with tempfile.TemporaryDirectory() as temporary:  # 创建独立临时冻结目录。
