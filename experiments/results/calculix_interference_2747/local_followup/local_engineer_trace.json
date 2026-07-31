@@ -1,0 +1,386 @@
+{
+  "schema_version": "local-calculix-engineer-trace/1.0",
+  "record_date": "2026-07-31",
+  "record_scope": {
+    "description": "可审计的工程决策路径：记录输入证据、竞争解释、实验选择、单因素约束、判读规则、真实求解结果与结论更新；不声称记录模型内部隐藏推理。",
+    "execution_mode": "local_representative_model",
+    "deepseek_calls": 0,
+    "training_runs": 0,
+    "optimization_runs": 0,
+    "original_forum_url": "https://calculix.discourse.group/t/interference-contact-and-mesh-refinement/2747",
+    "original_attachment_sha256": "9AF9CE2F677384BF3AB2E44C188E92E71B47841D9C6C3C67C066DCF5AD8BDB9C"
+  },
+  "solver": {
+    "name": "CalculiX CrunchiX",
+    "version": "2.22",
+    "linear_solver_backend": "SPOOLES",
+    "executable": "C:/Users/asus/.local/bin/ccx.exe",
+    "executable_sha256": "612144A1441D2A32C33325AA9562C2FF79F60F466E306F7F2680AB76EEEA3961",
+    "version_probe_note": "ccx -v prints the version but uses a non-zero process code; completion was judged from each job marker, return code, cutback marker and result artifacts rather than from the version probe."
+  },
+  "decision_protocol": {
+    "common_model": "Two C3D20R blocks with a controlled midside-node z offset; representative contact is NODE TO SURFACE.",
+    "search_amplitude_mid_z": 0.95,
+    "holdout_amplitude_mid_z": 0.75,
+    "single_factor_rule": "Within every declared pair, retain element type, topology, material, loading, boundaries and contact form, and change only the named field.",
+    "completion_rule": "A numerical change is not called a fix unless the job finishes and produces the expected final response block; a smaller residual or correction alone is insufficient.",
+    "promotion_rule": "A representative-model success is only mechanism evidence or a candidate workaround until repeated on the original cylindrical geometry, original surface-to-surface contact, original activation/boundary history and approved backend."
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "Can reducing the initial increment from 0.5 to 0.01 independently repair the contact failure?",
+      "evidence_before": [
+        "The representative C3D20R target cases failed through repeated cutbacks.",
+        "A smaller initial increment had been proposed but had not been executed."
+      ],
+      "experiment": {
+        "changed_field": "step.initial_increment",
+        "control_value": 0.5,
+        "variant_value": 0.01,
+        "fixed_fields": [
+          "C3D20R",
+          "NODE TO SURFACE",
+          "automatic penalty",
+          "topology",
+          "material",
+          "load",
+          "boundaries"
+        ],
+        "pair_deck_diff": "Each pair differs only on input line 73: 0.5,1. versus 0.01,1."
+      },
+      "interpretation_rule": {
+        "positive": "Both search and holdout variants complete, supporting a transferable standalone fix.",
+        "negative": "Both variants still terminate through cutbacks, falsifying a standalone fix.",
+        "mixed": "Only one amplitude completes, so the change is downgraded to an amplitude-dependent workaround."
+      },
+      "cases": [
+        {
+          "solve_id": "SOLVE-DDCAEE99F171",
+          "mid_z": 0.95,
+          "initial_increment": 0.5,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 68,
+          "increment_attempt_count": 6,
+          "max_residual_force": 5.003942510032724e+25,
+          "max_absolute_displacement_correction": 1.837256e+11,
+          "final_response_block": false
+        },
+        {
+          "solve_id": "SOLVE-DF3E3150B9A4",
+          "mid_z": 0.95,
+          "initial_increment": 0.01,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 71,
+          "increment_attempt_count": 6,
+          "max_residual_force": 2.657963381789485e+15,
+          "max_absolute_displacement_correction": 2.425839e+9,
+          "final_response_block": false
+        },
+        {
+          "solve_id": "SOLVE-847F780B753C",
+          "mid_z": 0.75,
+          "initial_increment": 0.5,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 15,
+          "increment_attempt_count": 6,
+          "max_residual_force": 1.478946986467369e+28,
+          "max_absolute_displacement_correction": 5.825227e+11,
+          "final_response_block": false
+        },
+        {
+          "solve_id": "SOLVE-2960D1A3BB04",
+          "mid_z": 0.75,
+          "initial_increment": 0.01,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 12,
+          "increment_attempt_count": 6,
+          "max_residual_force": 1.4773182589926912e+28,
+          "max_absolute_displacement_correction": 3.773685e+7,
+          "final_response_block": false
+        }
+      ],
+      "updated_conclusion": {
+        "state": "falsified_as_standalone_fix",
+        "text": "The smaller initial increment changes some numerical magnitudes, but neither amplitude completes. It is not a standalone solution on the representative model.",
+        "text_zh": "较小初始增量会改变部分数值量级，但两个幅度都没有完成，因此它不是代表模型上的独立修复。"
+      }
+    },
+    {
+      "id": "D2",
+      "question": "Does an explicit contact penalty have a stable window, and is larger stiffness always safer?",
+      "evidence_before": [
+        "The representative model failed with CalculiX automatic penalty, reported as K=1.05e7.",
+        "The original attachment already uses explicit linear penalty K=69000."
+      ],
+      "experiment": {
+        "changed_field": "surface_behavior.linear_penalty_stiffness",
+        "values": [
+          "automatic (reported K=1.05e7)",
+          69000,
+          100000,
+          1000000
+        ],
+        "fixed_fields": [
+          "C3D20R",
+          "initial increment 0.5",
+          "NODE TO SURFACE",
+          "topology",
+          "material",
+          "load",
+          "boundaries"
+        ]
+      },
+      "interpretation_rule": {
+        "stable_window": "An explicit value that completes both search and holdout amplitudes is a representative-model candidate regularization.",
+        "non_monotonic": "If a larger value fails again on the holdout amplitude, reject the claim that larger penalty is monotonically safer.",
+        "original_problem_boundary": "Even if K=69000 completes here, it is not a new fix for the original problem because the original deck already contains K=69000 and uses a different contact discretization."
+      },
+      "cases": [
+        {
+          "solve_id": "SOLVE-DDCAEE99F171",
+          "mid_z": 0.95,
+          "penalty": "automatic",
+          "reported_automatic_penalty": 10500000,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 68,
+          "increment_attempt_count": 6,
+          "max_residual_force": 5.003942510032724e+25,
+          "max_absolute_displacement_correction": 1.837256e+11
+        },
+        {
+          "solve_id": "SOLVE-2B6021325778",
+          "mid_z": 0.95,
+          "penalty": 69000,
+          "completed": true,
+          "too_many_cutbacks": false,
+          "no_convergence_count": 3,
+          "increment_attempt_count": 2,
+          "max_residual_force": 4.527833,
+          "max_absolute_displacement_correction": 0.02373304,
+          "max_absolute_displacement": 0.04851163,
+          "mean_upper_contact_uz": 0.04846036,
+          "bottom_reaction_z_sum": 25.000002,
+          "all_force_z_sum": 2e-6
+        },
+        {
+          "solve_id": "SOLVE-C534AD4EF3AF",
+          "mid_z": 0.95,
+          "penalty": 100000,
+          "completed": true,
+          "too_many_cutbacks": false,
+          "no_convergence_count": 3,
+          "increment_attempt_count": 2,
+          "max_residual_force": 6.620687,
+          "max_absolute_displacement_correction": 0.02397056,
+          "max_absolute_displacement": 0.04896069,
+          "mean_upper_contact_uz": 0.04890942,
+          "bottom_reaction_z_sum": 24.9999992,
+          "all_force_z_sum": -8e-7
+        },
+        {
+          "solve_id": "SOLVE-BD438D78DF3B",
+          "mid_z": 0.95,
+          "penalty": 1000000,
+          "completed": true,
+          "too_many_cutbacks": false,
+          "no_convergence_count": 5,
+          "increment_attempt_count": 2,
+          "max_residual_force": 66.721335,
+          "max_absolute_displacement_correction": 0.02642961,
+          "max_absolute_displacement": 0.04986027,
+          "bottom_reaction_z_sum": 24.999998
+        },
+        {
+          "solve_id": "SOLVE-847F780B753C",
+          "mid_z": 0.75,
+          "penalty": "automatic",
+          "reported_automatic_penalty": 10500000,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 15,
+          "increment_attempt_count": 6,
+          "max_residual_force": 1.478946986467369e+28,
+          "max_absolute_displacement_correction": 5.825227e+11
+        },
+        {
+          "solve_id": "SOLVE-D761175D118C",
+          "mid_z": 0.75,
+          "penalty": 69000,
+          "completed": true,
+          "too_many_cutbacks": false,
+          "no_convergence_count": 6,
+          "increment_attempt_count": 2,
+          "max_residual_force": 212.764947,
+          "max_absolute_displacement_correction": 0.1246607,
+          "max_absolute_displacement": 0.2490548,
+          "mean_upper_contact_uz": 0.2490329,
+          "bottom_reaction_z_sum": 24.9999996,
+          "all_force_z_sum": -4e-7
+        },
+        {
+          "solve_id": "SOLVE-1B5D6CAA602B",
+          "mid_z": 0.75,
+          "penalty": 100000,
+          "completed": true,
+          "too_many_cutbacks": false,
+          "no_convergence_count": 7,
+          "increment_attempt_count": 2,
+          "max_residual_force": 309.364312,
+          "max_absolute_displacement_correction": 0.1260347,
+          "max_absolute_displacement": 0.2493037,
+          "mean_upper_contact_uz": 0.2492818,
+          "bottom_reaction_z_sum": 24.999998,
+          "all_force_z_sum": -2e-6
+        },
+        {
+          "solve_id": "SOLVE-8563A910EE08",
+          "mid_z": 0.75,
+          "penalty": 1000000,
+          "completed": false,
+          "too_many_cutbacks": true,
+          "no_convergence_count": 14,
+          "increment_attempt_count": 6,
+          "max_residual_force": 2.702884e+37,
+          "max_absolute_displacement_correction": 1.065418e+11
+        }
+      ],
+      "excluded_attempts": [
+        {
+          "reason": "An early invocation used an invalid hyphenated contact-type spelling and was isolated before the eight valid comparisons.",
+          "included_in_conclusion": false,
+          "raw_files_published": false
+        }
+      ],
+      "updated_conclusion": {
+        "state": "bounded_representative_model_regularization",
+        "text": "K=69000 and K=1e5 complete both amplitudes, while K=1e6 fails on the holdout amplitude. The stability window is non-monotonic. Because the original deck already uses K=69000, penalty alone does not explain the original failure.",
+        "text_zh": "K=69000 与 K=1e5 在两个幅度都完成，而 K=1e6 在留出幅度失败；稳定窗口不是单调的。原 deck 已经使用 K=69000，所以 penalty 不能单独解释原问题。"
+      }
+    },
+    {
+      "id": "D3",
+      "question": "Is contact REMOVE-to-ADD sufficient to create the near-zero non-progress loop, or is a simultaneous constraint-path change required?",
+      "evidence_before": [
+        "The failing original attachment includes contact removal followed by reactivation.",
+        "A state transition can coincide with boundary or rigid-body path changes, so lifecycle and constraints must be separated."
+      ],
+      "experiment": {
+        "model": "40 nodes, two C3D20R elements, NODE TO SURFACE, HARD pressure-overclosure input 69000 and 1.0, two NLGEOM static steps, no external load.",
+        "case_a": "Contact active in both steps; upper U3 fixed.",
+        "case_b": "REMOVE in step 1, ADD in step 2; upper U3 remains fixed.",
+        "case_c": "REMOVE in step 1, ADD in step 2; upper U3 is released in step 2.",
+        "pair_controls": [
+          "A versus B changes only contact lifecycle.",
+          "B versus C changes only the constraint path at contact ADD."
+        ]
+      },
+      "interpretation_rule": {
+        "reactivation_sufficient": "Only B develops a persistent near-1e-30 correction loop without increment progress.",
+        "constraint_coupling_amplifier": "A and B remain healthy while C shows cutbacks and much larger residual/correction activity.",
+        "not_covered": "All three remain equally healthy, implying that the reduced geometry omitted the original trigger."
+      },
+      "cases": [
+        {
+          "case_id": "A",
+          "job": "A_active_all_steps",
+          "completed": true,
+          "increment_attempts_total": 12,
+          "accepted_increments": 12,
+          "unsuccessful_attempts": 0,
+          "no_convergence_events": 14,
+          "max_residual_force": 5.43194,
+          "max_displacement_correction": 0.004352692,
+          "min_positive_displacement_correction": 2.289686e-12,
+          "one_e_minus_30_idle_loop": false
+        },
+        {
+          "case_id": "B",
+          "job": "B_remove_add_same_constraints",
+          "completed": true,
+          "increment_attempts_total": 12,
+          "accepted_increments": 12,
+          "unsuccessful_attempts": 0,
+          "no_convergence_events": 13,
+          "max_residual_force": 3.438078,
+          "max_displacement_correction": 0.003216122,
+          "min_positive_displacement_correction": 6.256568e-13,
+          "zero_correction_events": 12,
+          "zero_state_interpretation": "Step 1 is a trivial zero-load equilibrium; each increment converges on the second iteration and advances.",
+          "one_e_minus_30_idle_loop": false
+        },
+        {
+          "case_id": "C",
+          "job": "C_remove_add_release_upper_z",
+          "completed": true,
+          "increment_attempts_total": 33,
+          "accepted_increments": 29,
+          "unsuccessful_attempts": 4,
+          "no_convergence_events": 81,
+          "max_residual_force": 782777216.539383,
+          "max_displacement_correction": 90457.86,
+          "min_positive_displacement_correction": 2.413874e-8,
+          "corrections_at_or_below_1e_minus_25": 0,
+          "one_e_minus_30_idle_loop": false
+        }
+      ],
+      "updated_conclusion": {
+        "state": "constraint_path_amplifier_supported_exact_loop_unreproduced",
+        "text": "REMOVE-to-ADD alone is not sufficient in this model. Re-adding contact while releasing the upper z constraint strongly degrades convergence and triggers cutbacks, but the job ultimately completes and the original near-1e-30 idle loop is not reproduced.",
+        "text_zh": "REMOVE→ADD 本身在该模型中不是充分条件。重新加入接触时释放上部 z 约束会强烈恶化收敛并触发切步，但求解最终完成，原近 1e-30 停滞循环没有复现。"
+      }
+    }
+  ],
+  "integrated_conclusion": {
+    "state": "narrowed_unresolved",
+    "falsified": [
+      "Reducing the initial increment alone is a repair.",
+      "Increasing penalty stiffness monotonically improves stability.",
+      "Contact REMOVE-to-ADD alone is sufficient to reproduce the idle loop in the representative model."
+    ],
+    "supported": [
+      "The representative node-to-surface model has a bounded explicit-penalty stability window.",
+      "A contact state transition synchronized with a constraint-path change is a strong convergence-difficulty amplifier."
+    ],
+    "not_established": [
+      "The root cause of the original cylindrical surface-to-surface model.",
+      "A confirmed fix for the original large Pardiso-requesting decks.",
+      "Reproduction of the persistent near-1e-30 correction loop."
+    ],
+    "highest_value_next_experiment": "Build a locally executable cylindrical C3D20R surface-to-surface reduction that jointly preserves midside curvature, K=69000, REMOVE-to-ADD history and the original boundary OP path, then separate curvature/discretization from state-and-constraint switching through controlled pairs.",
+    "highest_value_next_experiment_zh": "建立一个可本地执行的圆柱曲面 C3D20R surface-to-surface 缩减模型，同时保留 midside 曲率、K=69000、REMOVE→ADD 历史和原边界 OP 路径，再用受控配对把曲率/离散影响与状态/约束切换分离。"
+  },
+  "artifacts": {
+    "increment_summary": {
+      "path": "evidence/increment_summary.json",
+      "sha256": "1A19A71B42F536ACD8813C4E0F6BB3FD73CD960B1F23968AAEF47AF7BE66E7DC"
+    },
+    "penalty_summary": {
+      "path": "evidence/penalty_summary.json",
+      "sha256": "6E37CCDB16736568F0B33A806D3E373FF53D5CEF435F514B4BDE1A9E36493C0E"
+    },
+    "penalty_combined_solver_summary": {
+      "path": "evidence/penalty_combined_solver_summary.json",
+      "sha256": "CEDA6E1E67B6F610D940EF036B6CEC8E65F64E3525085713BB41000A27E71B50"
+    },
+    "activation_summary": {
+      "path": "evidence/activation_summary.json",
+      "sha256": "7FEC645DF90A23F734405CB5525398E900A2A6D2E1057CA63493602525024D6E"
+    },
+    "raw_increment_runs": "raw/increment/solver_runs/",
+    "raw_penalty_runs": "raw/penalty/solver_runs/",
+    "raw_activation_runs": "raw/activation/"
+  },
+  "limitations": [
+    "The representative model uses NODE TO SURFACE, not the original surface-to-surface contact.",
+    "The representative geometry is two blocks, not the original cylindrical interference fit.",
+    "The local backend is SPOOLES, not the original decks' requested Pardiso.",
+    "The original approximately 11.6-million-DOF decks were not presented as locally solved.",
+    "The experiments establish numerical mechanism evidence and eliminate standalone explanations; they do not certify the original engineering model."
+  ]
+}

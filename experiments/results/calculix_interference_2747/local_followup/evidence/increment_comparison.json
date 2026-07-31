@@ -1,0 +1,153 @@
+{
+  "tool_event_id": "TOOL-E43B67BD7381",
+  "tool_id": "run_smaller_initial_increment_pair",
+  "input_hash": "4F5B8DFC41E809A51A690CE3EA20614108C4BFD76B50BCD3B8F2E325098E204D",
+  "changed_fields": [
+    "step.initial_increment"
+  ],
+  "observations": {
+    "search": {
+      "control": {
+        "solve_id": "SOLVE-DDCAEE99F171",
+        "configuration": {
+          "mid_z": 0.95,
+          "initial_increment": 0.5,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 68,
+        "increment_attempt_count": 6,
+        "max_residual_force": 5.003942510032724e+25,
+        "max_absolute_displacement_correction": 183725600000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "ED3FACE4466691B81F7394DB958D89B8012C0641C04C3A6EB0CD13F7352236E0"
+      },
+      "variant": {
+        "solve_id": "SOLVE-DF3E3150B9A4",
+        "configuration": {
+          "mid_z": 0.95,
+          "initial_increment": 0.01,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 71,
+        "increment_attempt_count": 6,
+        "max_residual_force": 2657963381789485.0,
+        "max_absolute_displacement_correction": 2425839000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "45A0C0CC9BAC151DE0ABA9A94C97D3CBA094157B42E80A318DE0C825E799DE07"
+      }
+    },
+    "holdout": {
+      "control": {
+        "solve_id": "SOLVE-847F780B753C",
+        "configuration": {
+          "mid_z": 0.75,
+          "initial_increment": 0.5,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 15,
+        "increment_attempt_count": 6,
+        "max_residual_force": 1.478946986467369e+28,
+        "max_absolute_displacement_correction": 582522700000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "FD4E62C23CC49933F670A37284F52DE3DBEEC8872D66110AEF31D4C7C591E791"
+      },
+      "variant": {
+        "solve_id": "SOLVE-2960D1A3BB04",
+        "configuration": {
+          "mid_z": 0.75,
+          "initial_increment": 0.01,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 12,
+        "increment_attempt_count": 6,
+        "max_residual_force": 1.4773182589926912e+28,
+        "max_absolute_displacement_correction": 37736850.0,
+        "contact_spring_count_range": [
+          2,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "DEF7886CB3A1636AC423A585FE39B46FE1DE81697C48A4E65039FD033C9D0595"
+      }
+    }
+  },
+  "limitations": [
+    "留出幅度是代表模型泛化检查，不等于原始圆柱孔模型验证。"
+  ]
+}

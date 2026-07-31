@@ -1,0 +1,391 @@
+{
+  "issue": "Can reducing the initial increment alone resolve the C3D20R midside-node initial-overclosure contact failure?",
+  "deepseek_calls": 0,
+  "solver": {
+    "command": [
+      "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+      "-v"
+    ],
+    "return_code": 201,
+    "version": "2.22",
+    "stdout": "This is Version 2.22",
+    "executable_path": "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+    "executable_sha256": "612144A1441D2A32C33325AA9562C2FF79F60F466E306F7F2680AB76EEEA3961"
+  },
+  "single_changed_field": "step.initial_increment",
+  "fixed_fields": {
+    "element_type": "C3D20R",
+    "contact_type": "NODE TO SURFACE",
+    "penalty_stiffness": null,
+    "search_mid_z": 0.95,
+    "holdout_mid_z": 0.75,
+    "control_initial_increment": 0.5,
+    "variant_initial_increment": 0.01
+  },
+  "deck_pair_comparison": {
+    "search": {
+      "different_line_count": 1,
+      "differences": [
+        {
+          "line_number": 73,
+          "control": "0.5,1.",
+          "variant": "0.01,1."
+        }
+      ]
+    },
+    "holdout": {
+      "different_line_count": 1,
+      "differences": [
+        {
+          "line_number": 73,
+          "control": "0.5,1.",
+          "variant": "0.01,1."
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "label": "increment-search-control",
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.5,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "solve_summary": {
+        "solve_id": "SOLVE-DDCAEE99F171",
+        "configuration": {
+          "mid_z": 0.95,
+          "initial_increment": 0.5,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 68,
+        "increment_attempt_count": 6,
+        "max_residual_force": 5.003942510032724e+25,
+        "max_absolute_displacement_correction": 183725600000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "ED3FACE4466691B81F7394DB958D89B8012C0641C04C3A6EB0CD13F7352236E0"
+      },
+      "terminal_iteration": {
+        "last_residual_force": 90595896.084943,
+        "last_displacement_correction": 9.018312
+      },
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\contact_case.inp",
+        "size_bytes": 3468,
+        "sha256": "ED3FACE4466691B81F7394DB958D89B8012C0641C04C3A6EB0CD13F7352236E0"
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\console.log",
+        "size_bytes": 62044,
+        "sha256": "44441C49D957222F9BA3A4301ECD00B7FB77FE81DAA5E497FBC9E17940097E14"
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "A36E87FC2149589F3E857D8B16F52CCCF35587EC8432F6F8E476CF998F42C55F"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\contact_case.cvg",
+          "size_bytes": 6420,
+          "sha256": "E014A8B98071754F3F3B3F90601FB844C385B9CB61A99B3A4C4CC06C603B96A1"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-control-ddcaee99f1\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "451A0CE9B4E64F2FAEF46BF85C9F61495853773AC5FEB2EB3D0A794235AC01EF"
+        }
+      },
+      "wall_seconds": 0.46899999992456287,
+      "timed_out": false
+    },
+    {
+      "label": "increment-search-variant",
+      "configuration": {
+        "mid_z": 0.95,
+        "initial_increment": 0.01,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "solve_summary": {
+        "solve_id": "SOLVE-DF3E3150B9A4",
+        "configuration": {
+          "mid_z": 0.95,
+          "initial_increment": 0.01,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 71,
+        "increment_attempt_count": 6,
+        "max_residual_force": 2657963381789485.0,
+        "max_absolute_displacement_correction": 2425839000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "45A0C0CC9BAC151DE0ABA9A94C97D3CBA094157B42E80A318DE0C825E799DE07"
+      },
+      "terminal_iteration": {
+        "last_residual_force": 21127142282.304646,
+        "last_displacement_correction": 55.10877
+      },
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\contact_case.inp",
+        "size_bytes": 3469,
+        "sha256": "45A0C0CC9BAC151DE0ABA9A94C97D3CBA094157B42E80A318DE0C825E799DE07"
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\console.log",
+        "size_bytes": 64347,
+        "sha256": "9C0249790FA671AFCDCD97F1FA0CBB97C2B6BB81816237DE49071DA3D3E766F3"
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "0DDAF9228D5E73B363373FCC00CBF45D800A4E799B7826934325666211AC47E1"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\contact_case.cvg",
+          "size_bytes": 6669,
+          "sha256": "E3138767C6CD87249272CC31E1788E1E06CCE732E36EC1A1D86D5D22792B4A56"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-search-variant-df3e3150b9\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "E20020F65C7170DE3E693CAE9BD8C780C9FDD01C3A0B342611B0D0A2F13D84A8"
+        }
+      },
+      "wall_seconds": 0.48499999998603016,
+      "timed_out": false
+    },
+    {
+      "label": "increment-holdout-control",
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.5,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "solve_summary": {
+        "solve_id": "SOLVE-847F780B753C",
+        "configuration": {
+          "mid_z": 0.75,
+          "initial_increment": 0.5,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 15,
+        "increment_attempt_count": 6,
+        "max_residual_force": 1.478946986467369e+28,
+        "max_absolute_displacement_correction": 582522700000.0,
+        "contact_spring_count_range": [
+          0,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "FD4E62C23CC49933F670A37284F52DE3DBEEC8872D66110AEF31D4C7C591E791"
+      },
+      "terminal_iteration": {
+        "last_residual_force": 4.3772186583985294e+27,
+        "last_displacement_correction": 32767090.0
+      },
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\contact_case.inp",
+        "size_bytes": 3468,
+        "sha256": "FD4E62C23CC49933F670A37284F52DE3DBEEC8872D66110AEF31D4C7C591E791"
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\console.log",
+        "size_bytes": 21999,
+        "sha256": "98521BD03EE64FBD1403AEEA58026DC105E6F3FECC9C0626A5107F9AC5F4D7EF"
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "9E4760AD5653F516DA7FDE17EBAB9FCF3F0904FA301E4E05E5EAADEDC9819626"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\contact_case.cvg",
+          "size_bytes": 2021,
+          "sha256": "980DA4280EFF45FAE9DF5452AF93BB256D40824930B31DE8AC90C230CECEB128"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-control-847f780b75\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "58C9D8621E92FA7788FA662E8C13924272BF6054E99FF43BDBE6FFB53C703E15"
+        }
+      },
+      "wall_seconds": 0.25,
+      "timed_out": false
+    },
+    {
+      "label": "increment-holdout-variant",
+      "configuration": {
+        "mid_z": 0.75,
+        "initial_increment": 0.01,
+        "penalty_stiffness": null,
+        "contact_type": "NODE TO SURFACE"
+      },
+      "solve_summary": {
+        "solve_id": "SOLVE-2960D1A3BB04",
+        "configuration": {
+          "mid_z": 0.75,
+          "initial_increment": 0.01,
+          "penalty_stiffness": null,
+          "contact_type": "NODE TO SURFACE"
+        },
+        "reused": false,
+        "return_code": 201,
+        "job_finished": false,
+        "too_many_cutbacks": true,
+        "completed": false,
+        "no_convergence_count": 12,
+        "increment_attempt_count": 6,
+        "max_residual_force": 1.4773182589926912e+28,
+        "max_absolute_displacement_correction": 37736850.0,
+        "contact_spring_count_range": [
+          2,
+          8
+        ],
+        "dat_summary": {
+          "displacement_row_count": 0,
+          "force_row_count": 0,
+          "max_absolute_displacement": null,
+          "max_absolute_force_component": null,
+          "mean_upper_contact_uz": null,
+          "bottom_reaction_z_sum": null,
+          "all_force_z_sum": null,
+          "contains_displacements": false,
+          "contains_forces": false
+        },
+        "deck_sha256": "DEF7886CB3A1636AC423A585FE39B46FE1DE81697C48A4E65039FD033C9D0595"
+      },
+      "terminal_iteration": {
+        "last_residual_force": 8.563254708086303e+27,
+        "last_displacement_correction": 37736850.0
+      },
+      "deck": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\contact_case.inp",
+        "size_bytes": 3469,
+        "sha256": "DEF7886CB3A1636AC423A585FE39B46FE1DE81697C48A4E65039FD033C9D0595"
+      },
+      "console": {
+        "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\console.log",
+        "size_bytes": 19634,
+        "sha256": "E2533853424001DD4FD3BDAF6E0C860DD00C9E3901C4D4EC4D66563891860B3F"
+      },
+      "artifacts": {
+        "sta": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\contact_case.sta",
+          "size_bytes": 538,
+          "sha256": "1613682C4ACAF64693A8CC2991C04BD080750099A17F469E8180212428A65509"
+        },
+        "cvg": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\contact_case.cvg",
+          "size_bytes": 1772,
+          "sha256": "C1D9F154D05FE24B82E66317AB3B9D4FA86DDB7E81AD5A5820ED1F8ED5B91E49"
+        },
+        "dat": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\contact_case.dat",
+          "size_bytes": 45,
+          "sha256": "D820822FBC8E40E6D2AA84E6666D1BC63D9655817C0BBDF8536CD81CFE9FEF09"
+        },
+        "frd": {
+          "path": "C:\\Users\\asus\\Documents\\Codex\\2026-07-30\\calculix-local-three-issues\\increment\\solver_runs\\increment-holdout-variant-2960d1a3bb\\contact_case.frd",
+          "size_bytes": 8074,
+          "sha256": "1FFF500D898B66A0BD9A9C981D9A54A5E3110F60479248FA5A50D9A2B95B1E9B"
+        }
+      },
+      "wall_seconds": 0.21899999992456287,
+      "timed_out": false
+    }
+  ],
+  "conclusion": {
+    "state": "falsified_as_standalone_fix",
+    "text": "Reducing the initial increment from 0.5 to 0.01 completed neither the mid_z=0.95 search case nor the mid_z=0.75 holdout case. All four cases terminated with too many cutbacks. Therefore, on this representative model, reducing the initial increment is not a standalone solution to the contact failure.",
+    "search_pair_completed": [
+      false,
+      false
+    ],
+    "holdout_pair_completed": [
+      false,
+      false
+    ]
+  },
+  "limitations": [
+    "This is a C3D20R representative model derived from the official CalculiX contact4 example, not the large cylindrical-hole model attached to the forum thread.",
+    "The representative model uses node-to-surface contact; the result only falsifies the proposition that reducing the initial increment alone solves these two representative interference amplitudes.",
+    "None of the four failed cases produced final DAT displacement or reaction-force blocks, so final mechanical responses cannot be compared.",
+    "The solver is the local CalculiX 2.22 executable and does not use the Pardiso backend requested by the original attachment."
+  ]
+}

@@ -49,7 +49,7 @@ DeepSeek以 `narrowed_unresolved` 停止。它把非均匀初始过闭合、圆�
 还需要特别注意：
 
 - surface-to-surface 代表模型虽然最终完成，过程中仍记录 68 条 `no convergence`，最大位移修正约 `0.1837113`；因此模型原文中的 “robustly handles” 应理解为“本代表算例最终完成”，不能解释为干净、普遍稳定；
-- DeepSeek最终建议的 penalty `1e5/1e6`、初始增量 `0.01` 和 `ADJUST=NO` 没有在这条最终决策 trace 中执行，均只是待验证候选；
+- DeepSeek 最终建议的 penalty `1e5/1e6`、初始增量 `0.01` 和 `ADJUST=NO` 没有在这条 DeepSeek 决策 trace 中执行；随后不调用 DeepSeek 的本地反事实已经执行初始增量与 penalty，并把 `ADJUST=NO` 保留为尚未验证项；
 - 代表模型不是原圆柱孔几何，也没有使用原 deck 请求的 Pardiso；
 - 只有在原几何、原 contact pair、批准后端和完整边界上重新检查位移、反力、接触压力与穿透后，候选措施才能升级为确认修复。
 
@@ -62,8 +62,23 @@ DeepSeek以 `narrowed_unresolved` 停止。它把非均匀初始过闭合、圆�
 - [ProblemManifest](problem_manifest.json)
 - [交付来源收据](paper_provenance.json)
 - [云端原始论文来源收据](paper_provenance_cloud.json)
+- [本地三项反事实复核](local_followup/LOCAL_FOLLOWUP.md)
+- [本地工程决策日志](local_followup/LOCAL_ENGINEER_DECISIONS.md)
+- [本地机器决策 trace](local_followup/local_engineer_trace.json)
+- [本地复核 PDF](local_followup/output/pdf/local_calculix_counterfactual_followup.pdf)
+- [本地复核来源收据](local_followup/local_followup_provenance.json)
 
 云端 PDF 使用的 Noto TTC 与 ReportLab 不兼容，中文被渲染成方块。交付 PDF 由同一个冻结 trace 在本地改用可嵌入 CJK 字体重新排版，额外 DeepSeek 调用为 0；三页均已逐页检查。
+
+## 后续本地反事实结论
+
+本地 CalculiX 2.22 / SPOOLES 共形成 15 个有效算例，DeepSeek 调用数为 0：
+
+- 把初始增量从 `0.5` 降至 `0.01`，在 `mid_z=0.95` 和留出幅度 `0.75` 上仍均因过多 cutback 失败，因此它不是独立修复；
+- 自动 penalty（CalculiX 报告 `1.05e7`）在两个幅度失败，显式 `69000` 与 `1e5` 在两个幅度完成，而 `1e6` 在留出幅度重新失败，因此存在非单调的有限稳定窗口；
+- 单独 REMOVE→ADD 且约束不变正常完成；在 ADD 同时释放上块 z 约束会把 12 次增量尝试放大为 33 次，并产生 4 次失败尝试和 81 条 no-convergence，但仍未复现持续约 `1e-30` 的不推进循环。
+
+合并状态仍为 `narrowed_unresolved`。当前最高价值下一步是建立本地可执行的圆柱曲面 C3D20R、surface-to-surface 缩减模型，同时保留 midside 曲率、`69000`、REMOVE→ADD 历史和原边界 `OP` 路径。
 
 ## Skill 与 schema
 

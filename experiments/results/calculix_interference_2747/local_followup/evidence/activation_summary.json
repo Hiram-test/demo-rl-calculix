@@ -1,0 +1,342 @@
+﻿{
+    "schema_version":  "1.0",
+    "issue":  {
+                  "id":  "calculix-contact-remove-add-constraint-path",
+                  "question":  "接触移除后重新激活，以及重新激活时同时改变约束路径，是否足以导致近零残差、约 1e-30 位移修正且不推进的迭代循环？",
+                  "relation_to_forum_problem":  "针对 CalculiX 论坛 interference contact and mesh refinement 问题的受控代表性反事实实验；不是原始大型圆柱模型的直接求解。"
+              },
+    "deepseek_calls":  0,
+    "execution":  {
+                      "mode":  "local_offline_ccx_only",
+                      "frozen_at":  "2026-07-31T10:38:18.5044474+08:00",
+                      "host":  "DESKTOP-OKGOMRB",
+                      "os":  "Microsoft Windows NT 10.0.26200.0",
+                      "cpu":  "AMD Ryzen 7 4800HS with Radeon Graphics",
+                      "physical_memory_bytes":  16556494848
+                  },
+    "solver":  {
+                   "name":  "CalculiX CrunchiX",
+                   "version":  "2.22",
+                   "path":  "C:\\Users\\asus\\.local\\bin\\ccx.exe",
+                   "sha256":  "612144A1441D2A32C33325AA9562C2FF79F60F466E306F7F2680AB76EEEA3961",
+                   "linear_solver":  "SPOOLES",
+                   "processes":  1
+               },
+    "controlled_model":  {
+                             "nodes":  40,
+                             "elements":  2,
+                             "element_type":  "C3D20R",
+                             "geometry":  "两个二次六面体上下接触；上块接触面四个中边节点 z=0.95，角点 z=1.00，对下块平面形成 0.05 的局部初始穿透。",
+                             "contact":  "NODE TO SURFACE；*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD；输入参数 69000,1.0。",
+                             "material":  "线弹性 E=210000，Poisson=0.0。",
+                             "step_control":  "两个 NLGEOM 静力步；每步初始增量 0.1、总步长 1.0、最小增量 1e-6、最大增量 1.0、INC=60。",
+                             "external_load":  "无外载；仅初始几何穿透、接触与边界条件。"
+                         },
+    "single_changed_field":  {
+                                 "design":  "序贯单因素对照：A→B 只改变接触生命周期；B→C 只改变第二步重新激活时的上块 z 约束路径。",
+                                 "comparisons":  [
+                                                     {
+                                                         "comparison":  "A_vs_B",
+                                                         "changed_field":  "contact_lifecycle",
+                                                         "A":  "STEP1 active, STEP2 active",
+                                                         "B":  "STEP1 REMOVE, STEP2 ADD",
+                                                         "held_constant":  "几何、网格、材料、接触类型/参数、上块 z 固定、步长控制。"
+                                                     },
+                                                     {
+                                                         "comparison":  "B_vs_C",
+                                                         "changed_field":  "constraint_path_at_contact_add",
+                                                         "B":  "STEP2 ADD，保持 Nupper U3=0",
+                                                         "C":  "STEP2 ADD，同时以 *BOUNDARY,OP=NEW 仅重施 Nfix 与 Nfix2，释放 Nupper U3",
+                                                         "held_constant":  "几何、网格、材料、接触类型/参数、REMOVE→ADD 历史、步长控制。"
+                                                     }
+                                                 ],
+                                 "path_matrix":  [
+                                                     {
+                                                         "case":  "A",
+                                                         "step1_contact":  "ACTIVE",
+                                                         "step1_upper_z":  "FIXED",
+                                                         "step2_contact":  "ACTIVE",
+                                                         "step2_upper_z":  "FIXED"
+                                                     },
+                                                     {
+                                                         "case":  "B",
+                                                         "step1_contact":  "REMOVED",
+                                                         "step1_upper_z":  "FIXED",
+                                                         "step2_contact":  "ADDED",
+                                                         "step2_upper_z":  "FIXED"
+                                                     },
+                                                     {
+                                                         "case":  "C",
+                                                         "step1_contact":  "REMOVED",
+                                                         "step1_upper_z":  "FIXED",
+                                                         "step2_contact":  "ADDED",
+                                                         "step2_upper_z":  "RELEASED"
+                                                     }
+                                                 ]
+                             },
+    "cases":  [
+                  {
+                      "id":  "A",
+                      "job":  "A_active_all_steps",
+                      "step_path":  [
+                                        "STEP1: 接触自始激活，上块 U3 固定",
+                                        "STEP2: 接触继续激活，上块 U3 固定"
+                                    ],
+                      "finished":  true,
+                      "exit_code":  0,
+                      "job_finished_marker":  true,
+                      "steps":  2,
+                      "increment_attempts_total":  12,
+                      "accepted_increments":  12,
+                      "unsuccessful_attempts":  0,
+                      "newton_iterations":  26,
+                      "no_convergence_events":  14,
+                      "max_residual_force":  5.43194,
+                      "max_displacement_correction":  0.004352692,
+                      "min_positive_displacement_correction":  2.289686E-12,
+                      "zero_correction_events":  0,
+                      "corrections_at_or_below_1e_minus_25":  0,
+                      "one_e_minus_30_idle_loop":  false,
+                      "per_step":  [
+                                       {
+                                           "step":  1,
+                                           "attempts":  6,
+                                           "accepted":  6,
+                                           "unsuccessful":  0,
+                                           "no_convergence_events":  8,
+                                           "max_residual_force":  5.43194,
+                                           "max_correction":  0.004352692,
+                                           "min_positive_correction":  5.857323E-11,
+                                           "zero_correction_events":  0
+                                       },
+                                       {
+                                           "step":  2,
+                                           "attempts":  6,
+                                           "accepted":  6,
+                                           "unsuccessful":  0,
+                                           "no_convergence_events":  6,
+                                           "max_residual_force":  2E-06,
+                                           "max_correction":  2.446622E-10,
+                                           "min_positive_correction":  2.289686E-12,
+                                           "zero_correction_events":  0
+                                       }
+                                   ],
+                      "artifacts":  {
+                                        "A_active_all_steps.inp":  {
+                                                                       "bytes":  3955,
+                                                                       "sha256":  "4CF6C8476F0D86F04641238834D3EA3656FF68D16AF5376D8B68F3081362D83D"
+                                                                   },
+                                        "A_active_all_steps.console.log":  {
+                                                                               "bytes":  52620,
+                                                                               "sha256":  "289E0874CB0D6723FCF0198F27D50F8D5230557F66AD9F3FC63FFEBC729ACE4D"
+                                                                           },
+                                        "A_active_all_steps.sta":  {
+                                                                       "bytes":  976,
+                                                                       "sha256":  "10697FA457EBF65873DEB69088B099688C11737F5B03F39370F06853A362098F"
+                                                                   },
+                                        "A_active_all_steps.cvg":  {
+                                                                       "bytes":  2436,
+                                                                       "sha256":  "9E7FF8B8BDC1246E85408C33D7E2D0861FDA1C35584A08B3402379D1313C87E5"
+                                                                   },
+                                        "A_active_all_steps.frd":  {
+                                                                       "bytes":  3442,
+                                                                       "sha256":  "FBDAD6B527F92792BE64BF0EAFCD46445363950DE32BE4F617CD88CF66D3941B"
+                                                                   },
+                                        "A_active_all_steps.dat":  {
+                                                                       "bytes":  0,
+                                                                       "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                   },
+                                        "A_active_all_steps.12d":  {
+                                                                       "bytes":  0,
+                                                                       "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                   },
+                                        "A_active_all_steps.exitcode.txt":  {
+                                                                                "bytes":  3,
+                                                                                "sha256":  "13BF7B3039C63BF5A50491FA3CFD8EB4E699D1BA1436315AEF9CBE5711530354"
+                                                                            }
+                                    }
+                  },
+                  {
+                      "id":  "B",
+                      "job":  "B_remove_add_same_constraints",
+                      "step_path":  [
+                                        "STEP1: REMOVE 接触，上块 U3 固定",
+                                        "STEP2: ADD 接触，上块 U3 仍固定"
+                                    ],
+                      "finished":  true,
+                      "exit_code":  0,
+                      "job_finished_marker":  true,
+                      "steps":  2,
+                      "increment_attempts_total":  12,
+                      "accepted_increments":  12,
+                      "unsuccessful_attempts":  0,
+                      "newton_iterations":  25,
+                      "no_convergence_events":  13,
+                      "max_residual_force":  3.438078,
+                      "max_displacement_correction":  0.003216122,
+                      "min_positive_displacement_correction":  6.256568E-13,
+                      "zero_correction_events":  12,
+                      "corrections_at_or_below_1e_minus_25":  0,
+                      "one_e_minus_30_idle_loop":  false,
+                      "zero_state_note":  "STEP1 的 12 次打印修正均为精确 0，残差也为 0；但每个增量在第二次迭代收敛并继续推进，因此不是不推进的空转循环。",
+                      "per_step":  [
+                                       {
+                                           "step":  1,
+                                           "attempts":  6,
+                                           "accepted":  6,
+                                           "unsuccessful":  0,
+                                           "no_convergence_events":  6,
+                                           "max_residual_force":  0,
+                                           "max_correction":  0,
+                                           "min_positive_correction":  null,
+                                           "zero_correction_events":  12
+                                       },
+                                       {
+                                           "step":  2,
+                                           "attempts":  6,
+                                           "accepted":  6,
+                                           "unsuccessful":  0,
+                                           "no_convergence_events":  7,
+                                           "max_residual_force":  3.438078,
+                                           "max_correction":  0.003216122,
+                                           "min_positive_correction":  6.256568E-13,
+                                           "zero_correction_events":  0
+                                       }
+                                   ],
+                      "artifacts":  {
+                                        "B_remove_add_same_constraints.inp":  {
+                                                                                  "bytes":  4058,
+                                                                                  "sha256":  "41D76FC707A6292817D7475559F1FB7A464D2913BCF4444682CFD2C244B136A1"
+                                                                              },
+                                        "B_remove_add_same_constraints.console.log":  {
+                                                                                          "bytes":  50488,
+                                                                                          "sha256":  "D12F0A8C4A4A807B395A816D62F1F699D4AB18E6C75BABD4000A7598DD8DFD6E"
+                                                                                      },
+                                        "B_remove_add_same_constraints.sta":  {
+                                                                                  "bytes":  976,
+                                                                                  "sha256":  "5ED7598A93988516FF220819B7A1679BB0D0E9BFD1B83556B1D977AB939FBDD1"
+                                                                              },
+                                        "B_remove_add_same_constraints.cvg":  {
+                                                                                  "bytes":  2353,
+                                                                                  "sha256":  "6F72DD9E1EAF24C807EA7093024464DB8949DF0786562EEBDAB1546ADBE46F7C"
+                                                                              },
+                                        "B_remove_add_same_constraints.frd":  {
+                                                                                  "bytes":  3442,
+                                                                                  "sha256":  "DF269A61748711D19A0AA4FCAE839B2D72A3DF5353C3BDCC4DEE7061D24E8F84"
+                                                                              },
+                                        "B_remove_add_same_constraints.dat":  {
+                                                                                  "bytes":  0,
+                                                                                  "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                              },
+                                        "B_remove_add_same_constraints.12d":  {
+                                                                                  "bytes":  0,
+                                                                                  "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                              },
+                                        "B_remove_add_same_constraints.exitcode.txt":  {
+                                                                                           "bytes":  3,
+                                                                                           "sha256":  "13BF7B3039C63BF5A50491FA3CFD8EB4E699D1BA1436315AEF9CBE5711530354"
+                                                                                       }
+                                    }
+                  },
+                  {
+                      "id":  "C",
+                      "job":  "C_remove_add_release_upper_z",
+                      "step_path":  [
+                                        "STEP1: REMOVE 接触，上块 U3 固定",
+                                        "STEP2: ADD 接触，并同时释放上块 U3"
+                                    ],
+                      "finished":  true,
+                      "exit_code":  0,
+                      "job_finished_marker":  true,
+                      "steps":  2,
+                      "increment_attempts_total":  33,
+                      "accepted_increments":  29,
+                      "unsuccessful_attempts":  4,
+                      "newton_iterations":  110,
+                      "no_convergence_events":  81,
+                      "max_residual_force":  782777216.539383,
+                      "max_displacement_correction":  90457.86,
+                      "min_positive_displacement_correction":  2.413874E-08,
+                      "zero_correction_events":  12,
+                      "corrections_at_or_below_1e_minus_25":  0,
+                      "one_e_minus_30_idle_loop":  false,
+                      "per_step":  [
+                                       {
+                                           "step":  1,
+                                           "attempts":  6,
+                                           "accepted":  6,
+                                           "unsuccessful":  0,
+                                           "no_convergence_events":  6,
+                                           "max_residual_force":  0,
+                                           "max_correction":  0,
+                                           "min_positive_correction":  null,
+                                           "zero_correction_events":  12
+                                       },
+                                       {
+                                           "step":  2,
+                                           "attempts":  27,
+                                           "accepted":  23,
+                                           "unsuccessful":  4,
+                                           "no_convergence_events":  75,
+                                           "max_residual_force":  782777216.539383,
+                                           "max_correction":  90457.86,
+                                           "min_positive_correction":  2.413874E-08,
+                                           "zero_correction_events":  0
+                                       }
+                                   ],
+                      "artifacts":  {
+                                        "C_remove_add_release_upper_z.inp":  {
+                                                                                 "bytes":  4097,
+                                                                                 "sha256":  "6EB0FFE9AD0D0061312366E6D8D8FB9EBEC0D7A0CA4D2C0B2BFED06990C624FD"
+                                                                             },
+                                        "C_remove_add_release_upper_z.console.log":  {
+                                                                                         "bytes":  197762,
+                                                                                         "sha256":  "E23F57A833F9E4F737B4B177073BFABD207C26A671D6C9524A815AFA947FD259"
+                                                                                     },
+                                        "C_remove_add_release_upper_z.sta":  {
+                                                                                 "bytes":  2509,
+                                                                                 "sha256":  "4811852F07AB385147BA2CBF9E5B2615D203C417ED69ECE6B3A1ED7EA21B7332"
+                                                                             },
+                                        "C_remove_add_release_upper_z.cvg":  {
+                                                                                 "bytes":  9740,
+                                                                                 "sha256":  "260AFC8145EB814CCC6F3A67A8E63500DBE78D058F493FAEBAA9677031627EF6"
+                                                                             },
+                                        "C_remove_add_release_upper_z.frd":  {
+                                                                                 "bytes":  3442,
+                                                                                 "sha256":  "DF269A61748711D19A0AA4FCAE839B2D72A3DF5353C3BDCC4DEE7061D24E8F84"
+                                                                             },
+                                        "C_remove_add_release_upper_z.dat":  {
+                                                                                 "bytes":  0,
+                                                                                 "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                             },
+                                        "C_remove_add_release_upper_z.12d":  {
+                                                                                 "bytes":  0,
+                                                                                 "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                                                                             },
+                                        "C_remove_add_release_upper_z.exitcode.txt":  {
+                                                                                          "bytes":  3,
+                                                                                          "sha256":  "13BF7B3039C63BF5A50491FA3CFD8EB4E699D1BA1436315AEF9CBE5711530354"
+                                                                                      }
+                                    }
+                  }
+              ],
+    "conclusion":  {
+                       "status":  "hypothesis_partially_supported_but_1e-30_loop_not_reproduced",
+                       "direct_answer":  "在该受控 C3D20R 代表模型中，单独 REMOVE→ADD 且约束不变不会造成不推进循环；ADD 时同时释放上块 z 约束会显著恶化迭代和触发切步，但最终仍完成，未出现约 1e-30 修正的持续空转。",
+                       "observations":  [
+                                            "A 与 B 均为 12 次增量尝试、0 次失败尝试并正常结束，故接触重新激活本身在此模型中不是充分条件。",
+                                            "B 的无接触第一步出现残差=0、修正=0 的平凡平衡迭代，但每一增量均推进；零量值不等同于求解器卡死。",
+                                            "C 的第二步产生 27 次尝试、4 次失败尝试、75 次 no convergence，最大残差约 7.827772e8、最大修正约 9.045786e4，说明接触状态与约束路径同步变化是强烈的收敛放大器。",
+                                            "三案均无正修正值小于等于 1e-25，也无约 1e-30 的持续非推进序列。"
+                                        ],
+                       "engineering_interpretation":  "原帖近零残差/超小修正循环不能仅由 REMOVE→ADD 解释。应优先审计重新激活同一步内的边界 OP、约束释放、刚体自由度和接触状态跳变；但本实验只把约束路径确认为可显著放大收敛困难的因素，没有确认它就是原模型根因。"
+                   },
+    "limitations":  [
+                        "代表模型只有 40 节点、2 个 C3D20R 单元，未复刻原始约 386 万节点和约 1160 万自由度。",
+                        "代表模型使用 node-to-surface；原附件使用 surface-to-surface。",
+                        "本地 CalculiX 2.22 使用 SPOOLES；原模型指定 Pardiso。",
+                        "几何为两立方体且无圆柱曲率、无原始接触面分片、无实际载荷和完整材料/塑性路径。",
+                        "C 同步释放 U3 后存在接近刚体运动的路径，巨大瞬态值可说明约束路径敏感性，但不可直接外推为原附件中的接触算法缺陷。",
+                        "本实验没有证明原模型修复方案，只排除了一个充分条件并定位了一个值得在缩减原模型中继续复验的放大因素。"
+                    ]
+}
