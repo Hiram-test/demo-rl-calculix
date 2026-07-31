@@ -1,22 +1,20 @@
 {
   "experiment_spec": {
-    "objective": "通过获取材料屈服强度或弹塑性曲线，评估线弹性断裂力学在当前裂纹模型中的适用性，以决定是否可以直接使用KI进行脆断判定。",
+    "objective": "获得钢板材料的屈服强度（或完整弹塑性应力-应变曲线），以评估裂尖塑性区尺寸，判断当前线弹性模型是否可直接用于裂纹问题评估。",
     "scope": "information_request",
-    "interventions": [
-      "向用户请求提供钢板的屈服强度或完整的弹塑性应力-应变曲线"
-    ],
+    "interventions": [],
     "invariants": [
-      "保持当前线弹性模型、几何、载荷、边界条件、网格不变"
+      "几何、网格和载荷保持不变"
     ],
     "observables": [],
     "derivations": [],
     "external_dependencies": [
       {
         "id": "yield_strength_data",
-        "description": "用户提供的钢板屈服强度（MPa）或完整的弹塑性应力-应变曲线数据"
+        "description": "材料的屈服强度数值（MPa）或完整的弹塑性应力-应变曲线数据，用于塑性区尺寸计算和线弹性适用性评估。"
       }
     ],
-    "acceptance_rule": "用户提供了屈服强度数值或应力-应变曲线数据。",
+    "acceptance_rule": "收到屈服强度数据后，可根据给定载荷和KI值估算裂尖塑性区尺寸（如Irwin修正），若塑性区远小于裂纹长度和韧带宽度，则线弹性模型可用于判断裂纹问题；否则需转向非线性分析。",
     "completion_scope": "current_step"
   },
   "plan_type": "execute",

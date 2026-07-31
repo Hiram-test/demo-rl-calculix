@@ -1,25 +1,26 @@
 {
-  "proposal_sha256": "be9e5729decae147403240ab0216793a5ff44428b6f702239d4afa5a810fd68f",
-  "skill_plan_sha256": "1788d49db78acf5851af1b95a8c83b4db637fd3755480815455dbf5c60300fb1",
+  "proposal_sha256": "d9ea9777ccefc7fd85e2c1cf02e0fbf676d7ff334341d7383b7946a7e77f58d9",
+  "skill_plan_sha256": "42ac343388dac7425db7a0f2ec9aca61b89b2e79ef1a59cebdccced59c775fb8",
   "plan_type": "execute",
   "experiment_spec": {
-    "objective": "通过获取材料屈服强度或弹塑性曲线，评估线弹性断裂力学在当前裂纹模型中的适用性，以决定是否可以直接使用KI进行脆断判定。",
+    "objective": "获取钢板屈服强度，以评估裂尖塑性区尺寸和线弹性模型适用性。",
     "scope": "information_request",
-    "interventions": [
-      "向用户请求提供钢板的屈服强度或完整的弹塑性应力-应变曲线"
-    ],
+    "interventions": [],
     "invariants": [
-      "保持当前线弹性模型、几何、载荷、边界条件、网格不变"
+      "几何尺寸：200 mm × 200 mm中心裂纹钢板，裂纹半长20 mm，厚度10 mm",
+      "载荷条件：上下边缘100 MPa对称均布拉应力",
+      "材料弹性属性：E=210000 MPa, ν=0.3",
+      "线弹性KI收敛值：853.03 MPa·sqrt(mm)（最细网格nx=80结果）"
     ],
     "observables": [],
     "derivations": [],
     "external_dependencies": [
       {
         "id": "yield_strength_data",
-        "description": "用户提供的钢板屈服强度（MPa）或完整的弹塑性应力-应变曲线数据"
+        "description": "钢板的屈服强度值或完整的弹塑性应力-应变曲线。若无法提供精确值，可提供材料牌号或允许使用假设值（如235 MPa、345 MPa）进行条件评估。"
       }
     ],
-    "acceptance_rule": "用户提供了屈服强度数值或应力-应变曲线数据。",
+    "acceptance_rule": "当屈服强度数据提供后，可通过Irwin塑性区半径公式 rp = (1/(2π))·(KI/σy)^2 评估裂尖塑性区尺寸，若 rp 远小于裂纹半长和韧带宽度（例如比值<5%），则线弹性KI可直接用于脆断判据；否则需弹塑性分析或塑性区修正。材料牌号或假设值亦可接受进行条件判断。",
     "completion_scope": "current_step"
   },
   "skill_calls": [
@@ -87,6 +88,6 @@
     "limitations": [
       "这些数据不能由当前线弹性有限元结果反推出，必须由用户、材料标准或试验提供"
     ],
-    "proposal_sha256": "be9e5729decae147403240ab0216793a5ff44428b6f702239d4afa5a810fd68f"
+    "proposal_sha256": "d9ea9777ccefc7fd85e2c1cf02e0fbf676d7ff334341d7383b7946a7e77f58d9"
   }
 }

@@ -6,7 +6,7 @@
       {
         "requirements": [
           "ki_values",
-          "relative_change"
+          "ki_relative_change"
         ],
         "actual_parameters": {
           "mesh_levels": [
@@ -26,7 +26,7 @@
       {
         "requirements": [
           "ki_values",
-          "relative_change"
+          "ki_relative_change"
         ],
         "observations": {
           "method": "每档网格将两个裂尖各延长本档一个结构网格步长，以应变能差除以新增裂纹表面积得到G，再用K=sqrt(EG)换算",
@@ -35,30 +35,30 @@
               "nx": 40,
               "h_local_mm": 5.0,
               "crack_extension_mm": 5.0,
-              "base_strain_energy_n_mm": 10076.200507456884,
-              "extended_strain_energy_n_mm": 10436.370674898903,
-              "energy_release_rate_n_per_mm": 3.6017016744201826,
-              "stress_intensity_mpa_sqrt_mm": 869.6880772025327,
-              "difference_from_finest_percent": 1.9528433391716187
+              "base_strain_energy_n_mm": 10076.2005074569,
+              "extended_strain_energy_n_mm": 10436.370674898879,
+              "energy_release_rate_n_per_mm": 3.6017016744197825,
+              "stress_intensity_mpa_sqrt_mm": 869.6880772024844,
+              "difference_from_finest_percent": 1.9528433391456137
             },
             {
               "nx": 60,
               "h_local_mm": 3.3333333333333335,
               "crack_extension_mm": 3.3333333333333335,
-              "base_strain_energy_n_mm": 10102.729908239144,
-              "extended_strain_energy_n_mm": 10336.738531967663,
-              "energy_release_rate_n_per_mm": 3.5101293559277926,
-              "stress_intensity_mpa_sqrt_mm": 858.5611013462212,
-              "difference_from_finest_percent": 0.6484367869209535
+              "base_strain_energy_n_mm": 10102.729908239184,
+              "extended_strain_energy_n_mm": 10336.738531967569,
+              "energy_release_rate_n_per_mm": 3.5101293559257734,
+              "stress_intensity_mpa_sqrt_mm": 858.5611013459743,
+              "difference_from_finest_percent": 0.6484367868719259
             },
             {
               "nx": 80,
               "h_local_mm": 2.5,
               "crack_extension_mm": 2.5,
-              "base_strain_energy_n_mm": 10116.033985340357,
-              "extended_strain_energy_n_mm": 10289.286304844136,
-              "energy_release_rate_n_per_mm": 3.4650463900755857,
-              "stress_intensity_mpa_sqrt_mm": 853.0297426912341,
+              "base_strain_energy_n_mm": 10116.03398534036,
+              "extended_strain_energy_n_mm": 10289.286304844209,
+              "energy_release_rate_n_per_mm": 3.465046390076968,
+              "stress_intensity_mpa_sqrt_mm": 853.0297426914043,
               "difference_from_finest_percent": 0.0
             }
           ]
@@ -72,5 +72,5 @@
     "该方法属于有限裂纹增量能量差，不是轮廓J积分或位移外推",
     "模型保持二维平面应力线弹性，尚未验证真实材料塑性"
   ],
-  "proposal_sha256": "121520f1edd367a726aa3b7d243b7212d63302829315f817fa2b2e348dcb4d86"
+  "proposal_sha256": "c16e2fb2683d2f3b80e585f84261a65991aaf69c70a9f537867d02dd6398e903"
 }
