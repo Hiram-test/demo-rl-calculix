@@ -1,8 +1,14 @@
 #!/usr/bin/env python3  # 使用扩展Skill目录和修正后的任务证据语义运行双API闭环。
 from __future__ import annotations  # 启用现代类型注解。
 
+import sys  # 把仓库根目录加入模块搜索路径。
+from pathlib import Path  # 定位当前脚本所在仓库。
+
+ROOT = Path(__file__).resolve().parents[1]  # 定位仓库根目录。
+sys.path.insert(0, str(ROOT))  # 确保直接执行脚本时可以导入顶层scripts和experiments包。
+
 import scripts.run_deepseek_crack_hidden_skill_planner as runner  # 复用已经通过真实双API验证的主循环。
-from experiments.skill_planner.executor_v2 import execute_frozen_plan  # 导入标准化外部阻塞的执行入口。
+from experiments.skill_planner.executor_v2 import execute_frozen_plan  # 导入标准化外部阻塞和文本数值溯源的执行入口。
 from experiments.skill_planner.skills_v2 import build_registry  # 导入包含Irwin塑性区计算的扩展Skill目录。
 
 runner.build_registry = build_registry  # 让第二API看到扩展后的不可变Skill注册表。
