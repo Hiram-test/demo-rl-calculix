@@ -216,7 +216,7 @@ def particle_search(result: SolveResult, extraction: str, seed: int = 20260731) 
 
 
 def analytical_optimum(force_n: float, torque_nmm: float) -> dict[str, float]:  # 用高分辨率连续体搜索生成隐藏解析参照。
-    reference = solve(MeshConfig(128, 2, 128, 0.0), Path("artifacts") / "shaft_grid_reference", force_n=force_n, torque_nmm=torque_nmm)  # 构造仅供理论参照的连续体场对象。
+    reference = SolveResult(config=MeshConfig(8, 1, 4, 0.0), nodes={}, displacements={}, solver="continuous analytical reference", cache_dir="", force_n=force_n, torque_nmm=torque_nmm)  # 构造无需任何节点和文件的连续体参照对象。
     scan = angle_sweep(reference, "surface_interpolation", 0.01)  # 使用精确端点和高分辨率角度扫描。
     return {"beta_deg": float(scan["best_beta_deg"]), "delta_beta_deg": float(scan["best_delta_beta_deg"])}  # 返回隐藏最优方向和最大转角。
 
