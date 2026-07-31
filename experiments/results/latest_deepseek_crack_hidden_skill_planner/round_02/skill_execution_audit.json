@@ -1,0 +1,92 @@
+{
+  "proposal_sha256": "29fa08832137efd0438206f52e5c3477f6b3e2ccf7dd3c41eb46f8c7ab576983",
+  "skill_plan_sha256": "3e4107d3fc2961863a8487e76786cd283e64e8e06d8f3d3d05dffbbe639ab687",
+  "plan_type": "execute",
+  "experiment_spec": {
+    "objective": "获取该钢板材料的名义屈服强度（MPa），用于评估裂尖塑性区尺寸和线弹性断裂力学模型的适用性。",
+    "scope": "information_request",
+    "interventions": [
+      "请求用户提供钢板材料的屈服强度数值"
+    ],
+    "invariants": [
+      "几何模型（200mm×200mm中心裂纹板，半裂纹长20mm）",
+      "弹性材料属性（E=210000MPa，ν=0.3）",
+      "载荷（上下边缘100MPa均布拉应力）",
+      "线弹性平面应力分析假设"
+    ],
+    "observables": [],
+    "derivations": [],
+    "external_dependencies": [
+      {
+        "id": "yield_strength_data",
+        "description": "用户提供的钢板名义屈服强度（MPa）"
+      }
+    ],
+    "acceptance_rule": "用户提供明确的屈服强度数值（MPa）",
+    "completion_scope": "current_step"
+  },
+  "skill_calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "material.request",
+      "arguments": {
+        "fields": [
+          "yield_strength_mpa"
+        ]
+      },
+      "argument_sources": {
+        "fields": "proposal"
+      },
+      "covers": [
+        "yield_strength_data"
+      ],
+      "depends_on": [],
+      "raw_result": {
+        "status": "information_required",
+        "executed_change": "未运行新的有限元模型，记录完成工程适用性判断所需的外部材料事实",
+        "actual_parameters": {},
+        "observations": {
+          "requested_information": [
+            "yield_strength_mpa"
+          ]
+        },
+        "limitations": [
+          "这些数据不能由当前线弹性有限元结果反推出，必须由用户、材料标准或试验提供"
+        ]
+      }
+    }
+  ],
+  "public_feedback": {
+    "status": "information_required",
+    "executed_change": "未运行新的有限元模型，记录完成工程适用性判断所需的外部材料事实",
+    "actual_parameters": {
+      "result_groups": [
+        {
+          "requirements": [
+            "yield_strength_data"
+          ],
+          "actual_parameters": {}
+        }
+      ]
+    },
+    "observations": {
+      "result_groups": [
+        {
+          "requirements": [
+            "yield_strength_data"
+          ],
+          "observations": {
+            "requested_information": [
+              "yield_strength_mpa"
+            ]
+          },
+          "status": "information_required"
+        }
+      ]
+    },
+    "limitations": [
+      "这些数据不能由当前线弹性有限元结果反推出，必须由用户、材料标准或试验提供"
+    ],
+    "proposal_sha256": "29fa08832137efd0438206f52e5c3477f6b3e2ccf7dd3c41eb46f8c7ab576983"
+  }
+}

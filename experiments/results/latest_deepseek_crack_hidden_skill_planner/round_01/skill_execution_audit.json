@@ -1,0 +1,176 @@
+{
+  "proposal_sha256": "121520f1edd367a726aa3b7d243b7212d63302829315f817fa2b2e348dcb4d86",
+  "skill_plan_sha256": "3c05155054cc99dec494cfb9cd044b7d764c3cf874e2451d4228123faa23b3c7",
+  "plan_type": "execute",
+  "experiment_spec": {
+    "objective": "验证改用应力强度因子K_I作为评价量后，数值随网格细化的收敛性，以决定是否需继续加密网格。",
+    "scope": "experiment",
+    "interventions": [
+      "将评价量由裂尖峰值应力改为应力强度因子K_I，通过围线积分（能量法）计算J积分并转换为K_I。"
+    ],
+    "invariants": [
+      "几何模型（200mm×200mm中心裂纹板，半裂纹长20mm）",
+      "材料属性（E=210000MPa，ν=0.3，线弹性）",
+      "载荷（上下边缘100MPa均布拉应力）",
+      "分析类型（二维平面应力）",
+      "网格划分策略（保持已有网格密度：h=5mm, 3.33mm, 2.5mm）"
+    ],
+    "observables": [
+      {
+        "id": "ki_values",
+        "description": "三个网格密度下计算得到的应力强度因子K_I值 (MPa√mm)"
+      },
+      {
+        "id": "relative_change",
+        "description": "相对于最细网格的K_I差异百分比"
+      }
+    ],
+    "derivations": [],
+    "external_dependencies": [],
+    "acceptance_rule": "若三个网格下K_I值趋于稳定，即relative_change小于2%，则认为K_I收敛，表明当前网格密度足够，无需继续加密；否则需要继续细化。",
+    "completion_scope": "current_step"
+  },
+  "skill_calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "fracture.energy_sequence",
+      "arguments": {},
+      "argument_sources": {},
+      "covers": [
+        "ki_values",
+        "relative_change"
+      ],
+      "depends_on": [],
+      "raw_result": {
+        "status": "completed",
+        "executed_change": "保持几何、材料弹性参数、载荷和边界不变，对多档网格分别计算裂纹微增前后的能量差并换算G与K",
+        "actual_parameters": {
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "extension_rule": "one grid step at each mesh level",
+          "plane_condition": "plane_stress",
+          "young_mpa": 210000.0
+        },
+        "observations": {
+          "method": "每档网格将两个裂尖各延长本档一个结构网格步长，以应变能差除以新增裂纹表面积得到G，再用K=sqrt(EG)换算",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "crack_extension_mm": 5.0,
+              "base_strain_energy_n_mm": 10076.200507456884,
+              "extended_strain_energy_n_mm": 10436.370674898903,
+              "energy_release_rate_n_per_mm": 3.6017016744201826,
+              "stress_intensity_mpa_sqrt_mm": 869.6880772025327,
+              "difference_from_finest_percent": 1.9528433391716187
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "crack_extension_mm": 3.3333333333333335,
+              "base_strain_energy_n_mm": 10102.729908239144,
+              "extended_strain_energy_n_mm": 10336.738531967663,
+              "energy_release_rate_n_per_mm": 3.5101293559277926,
+              "stress_intensity_mpa_sqrt_mm": 858.5611013462212,
+              "difference_from_finest_percent": 0.6484367869209535
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "crack_extension_mm": 2.5,
+              "base_strain_energy_n_mm": 10116.033985340357,
+              "extended_strain_energy_n_mm": 10289.286304844136,
+              "energy_release_rate_n_per_mm": 3.4650463900755857,
+              "stress_intensity_mpa_sqrt_mm": 853.0297426912341,
+              "difference_from_finest_percent": 0.0
+            }
+          ]
+        },
+        "limitations": [
+          "不同网格使用各自一个网格步长作为裂纹增量，因此收敛比较同时包含空间离散和有限差分步长效应",
+          "该方法属于有限裂纹增量能量差，不是轮廓J积分或位移外推",
+          "模型保持二维平面应力线弹性，尚未验证真实材料塑性"
+        ]
+      }
+    }
+  ],
+  "public_feedback": {
+    "status": "completed",
+    "executed_change": "保持几何、材料弹性参数、载荷和边界不变，对多档网格分别计算裂纹微增前后的能量差并换算G与K",
+    "actual_parameters": {
+      "result_groups": [
+        {
+          "requirements": [
+            "ki_values",
+            "relative_change"
+          ],
+          "actual_parameters": {
+            "mesh_levels": [
+              40,
+              60,
+              80
+            ],
+            "extension_rule": "one grid step at each mesh level",
+            "plane_condition": "plane_stress",
+            "young_mpa": 210000.0
+          }
+        }
+      ]
+    },
+    "observations": {
+      "result_groups": [
+        {
+          "requirements": [
+            "ki_values",
+            "relative_change"
+          ],
+          "observations": {
+            "method": "每档网格将两个裂尖各延长本档一个结构网格步长，以应变能差除以新增裂纹表面积得到G，再用K=sqrt(EG)换算",
+            "rows": [
+              {
+                "nx": 40,
+                "h_local_mm": 5.0,
+                "crack_extension_mm": 5.0,
+                "base_strain_energy_n_mm": 10076.200507456884,
+                "extended_strain_energy_n_mm": 10436.370674898903,
+                "energy_release_rate_n_per_mm": 3.6017016744201826,
+                "stress_intensity_mpa_sqrt_mm": 869.6880772025327,
+                "difference_from_finest_percent": 1.9528433391716187
+              },
+              {
+                "nx": 60,
+                "h_local_mm": 3.3333333333333335,
+                "crack_extension_mm": 3.3333333333333335,
+                "base_strain_energy_n_mm": 10102.729908239144,
+                "extended_strain_energy_n_mm": 10336.738531967663,
+                "energy_release_rate_n_per_mm": 3.5101293559277926,
+                "stress_intensity_mpa_sqrt_mm": 858.5611013462212,
+                "difference_from_finest_percent": 0.6484367869209535
+              },
+              {
+                "nx": 80,
+                "h_local_mm": 2.5,
+                "crack_extension_mm": 2.5,
+                "base_strain_energy_n_mm": 10116.033985340357,
+                "extended_strain_energy_n_mm": 10289.286304844136,
+                "energy_release_rate_n_per_mm": 3.4650463900755857,
+                "stress_intensity_mpa_sqrt_mm": 853.0297426912341,
+                "difference_from_finest_percent": 0.0
+              }
+            ]
+          },
+          "status": "completed"
+        }
+      ]
+    },
+    "limitations": [
+      "不同网格使用各自一个网格步长作为裂纹增量，因此收敛比较同时包含空间离散和有限差分步长效应",
+      "该方法属于有限裂纹增量能量差，不是轮廓J积分或位移外推",
+      "模型保持二维平面应力线弹性，尚未验证真实材料塑性"
+    ],
+    "proposal_sha256": "121520f1edd367a726aa3b7d243b7212d63302829315f817fa2b2e348dcb4d86"
+  }
+}

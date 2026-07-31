@@ -1,0 +1,47 @@
+{
+  "experiment_spec": {
+    "objective": "获取该钢板材料的名义屈服强度（MPa），用于评估裂尖塑性区尺寸和线弹性断裂力学模型的适用性。",
+    "scope": "information_request",
+    "interventions": [
+      "请求用户提供钢板材料的屈服强度数值"
+    ],
+    "invariants": [
+      "几何模型（200mm×200mm中心裂纹板，半裂纹长20mm）",
+      "弹性材料属性（E=210000MPa，ν=0.3）",
+      "载荷（上下边缘100MPa均布拉应力）",
+      "线弹性平面应力分析假设"
+    ],
+    "observables": [],
+    "derivations": [],
+    "external_dependencies": [
+      {
+        "id": "yield_strength_data",
+        "description": "用户提供的钢板名义屈服强度（MPa）"
+      }
+    ],
+    "acceptance_rule": "用户提供明确的屈服强度数值（MPa）",
+    "completion_scope": "current_step"
+  },
+  "plan_type": "execute",
+  "calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "material.request",
+      "arguments": {
+        "fields": [
+          "yield_strength_mpa"
+        ]
+      },
+      "argument_sources": {
+        "fields": "proposal"
+      },
+      "covers": [
+        "yield_strength_data"
+      ],
+      "depends_on": []
+    }
+  ],
+  "uncovered_requirements": [],
+  "proposal_fully_preserved": true,
+  "unsupported_reason": null
+}

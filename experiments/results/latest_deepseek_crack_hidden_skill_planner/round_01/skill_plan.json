@@ -1,0 +1,47 @@
+{
+  "experiment_spec": {
+    "objective": "验证改用应力强度因子K_I作为评价量后，数值随网格细化的收敛性，以决定是否需继续加密网格。",
+    "scope": "experiment",
+    "interventions": [
+      "将评价量由裂尖峰值应力改为应力强度因子K_I，通过围线积分（能量法）计算J积分并转换为K_I。"
+    ],
+    "invariants": [
+      "几何模型（200mm×200mm中心裂纹板，半裂纹长20mm）",
+      "材料属性（E=210000MPa，ν=0.3，线弹性）",
+      "载荷（上下边缘100MPa均布拉应力）",
+      "分析类型（二维平面应力）",
+      "网格划分策略（保持已有网格密度：h=5mm, 3.33mm, 2.5mm）"
+    ],
+    "observables": [
+      {
+        "id": "ki_values",
+        "description": "三个网格密度下计算得到的应力强度因子K_I值 (MPa√mm)"
+      },
+      {
+        "id": "relative_change",
+        "description": "相对于最细网格的K_I差异百分比"
+      }
+    ],
+    "derivations": [],
+    "external_dependencies": [],
+    "acceptance_rule": "若三个网格下K_I值趋于稳定，即relative_change小于2%，则认为K_I收敛，表明当前网格密度足够，无需继续加密；否则需要继续细化。",
+    "completion_scope": "current_step"
+  },
+  "plan_type": "execute",
+  "calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "fracture.energy_sequence",
+      "arguments": {},
+      "argument_sources": {},
+      "covers": [
+        "ki_values",
+        "relative_change"
+      ],
+      "depends_on": []
+    }
+  ],
+  "uncovered_requirements": [],
+  "proposal_fully_preserved": true,
+  "unsupported_reason": null
+}
