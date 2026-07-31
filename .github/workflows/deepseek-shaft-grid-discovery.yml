@@ -1,131 +1,137 @@
-name: DeepSeek Shaft Grid Discovery  # 标识圆轴表面标线与网格方向隔离实验。
+name: DeepSeek Shaft Grid Discovery Smoke  # 标识无求解器依赖的圆轴标线与网格方向烟测。
 
-on:  # 定义实验工作流触发条件。
-  push:  # 在隔离实验分支更新时运行静态检查和真实闭环。
+on:  # 定义工作流触发条件。
+  push:  # 在隔离实验分支更新时运行静态检查和真实模型闭环。
     branches:  # 限制自动运行分支。
       - exp/deepseek-shaft-grid-discovery  # 只允许本实验分支触发真实运行。
-    paths:  # 限制与本实验相关的源码变更。
-      - experiments/shaft_grid/**  # 监听圆轴后端和隐藏执行器。
-      - scripts/run_deepseek_shaft_grid_discovery.py  # 监听独立主运行器。
-      - tests/test_deepseek_shaft_grid_discovery.py  # 监听本实验合同测试。
-      - docs/DEEPSEEK_SHAFT_GRID_DISCOVERY.md  # 监听实验协议文档。
+    paths:  # 限制与本实验有关的文件变更。
+      - experiments/shaft_grid/**  # 监听轻量后端和隐藏执行器。
+      - scripts/run_deepseek_shaft_grid_discovery.py  # 监听独立运行器。
+      - tests/test_deepseek_shaft_grid_discovery.py  # 监听合同测试。
+      - docs/DEEPSEEK_SHAFT_GRID_DISCOVERY.md  # 监听实验说明。
       - .github/workflows/deepseek-shaft-grid-discovery.yml  # 监听工作流自身。
-  pull_request:  # 在堆叠 PR 上只执行无凭据静态测试。
-    paths:  # 限制 PR 检查范围。
-      - experiments/shaft_grid/**  # 监听圆轴后端和隐藏执行器。
-      - scripts/run_deepseek_shaft_grid_discovery.py  # 监听独立主运行器。
-      - tests/test_deepseek_shaft_grid_discovery.py  # 监听本实验合同测试。
-      - docs/DEEPSEEK_SHAFT_GRID_DISCOVERY.md  # 监听实验协议文档。
+  pull_request:  # 在拉取请求事件中只运行无凭据静态检查。
+    paths:  # 限制拉取请求检查范围。
+      - experiments/shaft_grid/**  # 监听轻量后端和隐藏执行器。
+      - scripts/run_deepseek_shaft_grid_discovery.py  # 监听独立运行器。
+      - tests/test_deepseek_shaft_grid_discovery.py  # 监听合同测试。
+      - docs/DEEPSEEK_SHAFT_GRID_DISCOVERY.md  # 监听实验说明。
       - .github/workflows/deepseek-shaft-grid-discovery.yml  # 监听工作流自身。
-  workflow_dispatch:  # 允许在 GitHub 界面手动复跑完整实验。
+  workflow_dispatch:  # 允许从GitHub界面手动复跑完整烟测。
 
-concurrency:  # 防止同一分支多个真实 DeepSeek 与 CalculiX 循环并发运行。
-  group: deepseek-shaft-grid-discovery-${{ github.ref }}  # 按当前分支建立唯一并发组。
+concurrency:  # 防止同一分支多个真实模型循环同时写入结果。
+  group: deepseek-shaft-grid-smoke-${{ github.ref }}  # 按当前引用建立独立并发组。
   cancel-in-progress: true  # 新运行启动时取消同分支旧运行。
 
-permissions:  # 设置工作流默认最小权限。
-  contents: read  # 静态作业只需要读取仓库内容。
+permissions:  # 设置默认最小权限。
+  contents: read  # 静态检查只需要读取仓库内容。
 
-jobs:  # 定义静态合同检查和真实实验作业。
-  static-contracts:  # 运行不需要 DeepSeek 凭据和 CalculiX 的快速回归测试。
-    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
-    timeout-minutes: 20  # 限制静态检查最长时间。
-    steps:  # 定义静态作业步骤。
-      - uses: actions/checkout@v4  # 检出当前提交且不修改分支。
-      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
-        with:  # 提供 Python 设置。
-          python-version: "3.11"  # 与现有实验保持一致。
-      - name: Compile isolated shaft-grid files  # 在测试前检查全部新增 Python 文件语法。
-        run: python -m py_compile experiments/shaft_grid/backend.py experiments/shaft_grid/experiment.py scripts/run_deepseek_shaft_grid_discovery.py tests/test_deepseek_shaft_grid_discovery.py  # 编译新增源码和测试。
-      - name: Validate prompt, mapping, orientation, and extraction contracts  # 执行防泄露、冻结映射和数值后处理回归测试。
-        run: python -m unittest tests/test_deepseek_shaft_grid_discovery.py -v  # 运行本实验专属测试文件。
+jobs:  # 定义静态检查和真实烟测作业。
+  static-contracts:  # 运行无需密钥的快速回归测试。
+    runs-on: ubuntu-24.04  # 使用固定Ubuntu运行环境。
+    timeout-minutes: 15  # 限制静态检查最长时间。
+    steps:  # 定义静态检查步骤。
+      - uses: actions/checkout@v4  # 检出当前提交。
+      - uses: actions/setup-python@v5  # 配置Python环境。
+        with:  # 提供Python设置。
+          python-version: "3.11"  # 使用稳定Python版本。
+      - name: Compile shaft-grid smoke files  # 检查新增Python文件语法。
+        run: python -m py_compile experiments/shaft_grid/backend.py experiments/shaft_grid/experiment.py scripts/run_deepseek_shaft_grid_discovery.py tests/test_deepseek_shaft_grid_discovery.py  # 编译全部烟测源码和测试。
+      - name: Run shaft-grid smoke contracts  # 执行提示隔离、映射、网格方向和提取协议测试。
+        run: python -m unittest tests/test_deepseek_shaft_grid_discovery.py -v  # 运行专属回归测试。
 
-  live-discovery:  # 运行真实 DeepSeek 建模闭环和 CalculiX 网格实验。
-    if: github.event_name != 'pull_request'  # 禁止在 PR 事件读取受保护凭据。
-    needs: static-contracts  # 只有静态合同通过后才启动真实实验。
-    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 运行环境。
-    environment: ds  # 复用现有成功工作流的受保护 DeepSeek 环境。
-    timeout-minutes: 120  # 限制模型、多网格求解和盲评的总时间。
-    permissions:  # 为冻结脱敏结果授予最小写权限。
-      contents: write  # 允许把结果提交到当前隔离分支。
-    env:  # 配置真实模型凭据和名称。
-      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 兼容仓库现有凭据名称但不打印值。
-      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次验证模型。
-    steps:  # 定义真实实验步骤。
-      - uses: actions/checkout@v4  # 检出隔离分支代码并保留推送凭据。
+  live-discovery:  # 运行真实DeepSeek工程判断闭环。
+    if: github.event_name != 'pull_request'  # 禁止拉取请求事件读取受保护密钥。
+    needs: static-contracts  # 只有静态测试通过后才运行真实模型。
+    runs-on: ubuntu-24.04  # 使用固定Ubuntu运行环境。
+    environment: ds  # 复用现有DeepSeek受保护环境。
+    timeout-minutes: 60  # 限制完整烟测最长时间。
+    permissions:  # 为冻结结果授予最小写权限。
+      contents: write  # 允许把脱敏结果提交到当前隔离分支。
+    env:  # 配置DeepSeek凭据和模型名称。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}  # 兼容仓库现有凭据名称且不打印值。
+      DEEPSEEK_MODEL: deepseek-v4-pro  # 固定本次烟测模型。
+    steps:  # 定义真实烟测步骤。
+      - uses: actions/checkout@v4  # 检出隔离实验分支并保留推送凭据。
         with:  # 提供明确分支设置。
           ref: exp/deepseek-shaft-grid-discovery  # 始终在本实验分支冻结结果。
-      - uses: actions/setup-python@v5  # 配置稳定 Python 环境。
-        with:  # 提供 Python 设置。
-          python-version: "3.11"  # 与静态作业保持一致。
-      - name: Install CalculiX and Python client  # 安装真实有限元求解器和 DeepSeek API 客户端。
-        run: sudo apt-get update && sudo apt-get install -y calculix-ccx && python -m pip install --quiet openai  # 安装最小运行依赖。
-      - name: Prepare isolated run receipt  # 在模型调用和求解前保存当前运行身份。
-        shell: bash  # 使用 Bash 创建审计目录。
-        run: |  # 开始运行收据命令。
-          set -euo pipefail  # 在目录或收据写入失败时立即停止。
-          rm -rf artifacts/deepseek_shaft_grid_discovery  # 清理当前 runner 上的旧隔离结果。
-          mkdir -p artifacts/deepseek_shaft_grid_discovery  # 创建本次实验目录。
-          python - <<'PY'  # 使用标准库生成不含密钥的运行收据。
-          import json, os  # 读取 Actions 环境并写入 JSON。
+      - uses: actions/setup-python@v5  # 配置Python环境。
+        with:  # 提供Python设置。
+          python-version: "3.11"  # 使用稳定Python版本。
+      - name: Install DeepSeek client only  # 只安装模型调用客户端且不安装任何有限元求解器。
+        run: python -m pip install --quiet openai  # 安装OpenAI兼容客户端。
+      - name: Prepare isolated smoke output  # 创建本次烟测输出目录和运行收据。
+        shell: bash  # 使用Bash执行受控目录操作。
+        run: |  # 开始准备输出目录。
+          set -euo pipefail  # 在任何准备失败时立即停止。
+          rm -rf artifacts/deepseek_shaft_grid_discovery  # 清理当前runner上的旧烟测结果。
+          mkdir -p artifacts/deepseek_shaft_grid_discovery  # 创建本次烟测目录。
+          python - <<'PY'  # 使用标准库写入脱敏运行收据。
+          import json, os  # 读取Actions环境并写入JSON。
           from pathlib import Path  # 管理收据输出路径。
-          receipt = {"workflow": os.environ.get("GITHUB_WORKFLOW"), "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"), "head_sha": os.environ.get("GITHUB_SHA"), "ref": os.environ.get("GITHUB_REF"), "event": os.environ.get("GITHUB_EVENT_NAME"), "model": os.environ.get("DEEPSEEK_MODEL")}  # 组织脱敏运行身份。
+          receipt = {"workflow": os.environ.get("GITHUB_WORKFLOW"), "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"), "head_sha": os.environ.get("GITHUB_SHA"), "ref": os.environ.get("GITHUB_REF"), "event": os.environ.get("GITHUB_EVENT_NAME"), "model": os.environ.get("DEEPSEEK_MODEL"), "backend": "analytical_surface_grid_smoke"}  # 组织脱敏运行身份和轻量后端标记。
           Path("artifacts/deepseek_shaft_grid_discovery/run_receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存运行收据。
           PY
-      - name: Confirm DeepSeek credential without disclosure  # 检查受保护凭据确实存在。
-        id: credential_check  # 保存凭据检查结果供最终审计。
-        continue-on-error: true  # 即使凭据缺失也继续冻结诊断文件。
+      - name: Confirm DeepSeek credential without disclosure  # 检查受保护凭据是否存在。
+        id: credential_check  # 保存凭据检查结果。
+        continue-on-error: true  # 即使缺少凭据也继续冻结失败状态。
         run: test -n "$DEEPSEEK_API_KEY"  # 只检查非空且不输出密钥。
-      - name: Run engineering question, hidden execution, and blind validation  # 执行工程师问题、提案冻结、真实有限元闭环和隐藏盲评。
-        id: live_run  # 为最终状态门保存步骤结果。
+      - name: Run engineering discovery smoke loop  # 执行工程问题、提案冻结、轻量网格实验和隐藏评分。
+        id: live_run  # 保存真实烟测步骤结果。
         if: steps.credential_check.outcome == 'success'  # 只有凭据存在时才调用真实模型。
-        continue-on-error: true  # 即使失败也先保留全部可审计部分结果。
-        shell: bash  # 使用 Bash 捕获退出码。
-        run: |  # 开始真实实验命令。
-          set -o pipefail  # 确保 Python 失败能够传递到退出码文件。
-          python scripts/run_deepseek_shaft_grid_discovery.py --model "$DEEPSEEK_MODEL" --max-rounds 6 --output artifacts/deepseek_shaft_grid_discovery 2>&1 | tee artifacts/deepseek_shaft_grid_discovery/live.log  # 运行完整闭环并保存日志。
-          status="${PIPESTATUS[0]}"  # 读取 Python 进程退出码。
+        continue-on-error: true  # 即使失败也先保留完整诊断输出。
+        shell: bash  # 使用Bash捕获Python退出码。
+        run: |  # 开始真实烟测命令。
+          set -o pipefail  # 确保Python失败能够传递到退出码。
+          python scripts/run_deepseek_shaft_grid_discovery.py --model "$DEEPSEEK_MODEL" --max-rounds 4 --output artifacts/deepseek_shaft_grid_discovery 2>&1 | tee artifacts/deepseek_shaft_grid_discovery/live.log  # 运行四轮以内的完整闭环。
+          status="${PIPESTATUS[0]}"  # 读取Python进程退出码。
           printf '%s\n' "$status" > artifacts/deepseek_shaft_grid_discovery/live_exit_code.txt  # 保存退出码供审计。
-          exit "$status"  # 把真实运行状态交给 Actions。
-      - name: Write final run status  # 无论模型或求解结果如何都生成脱敏状态文件。
-        if: always()  # 始终执行状态记录。
+          exit "$status"  # 把真实运行状态交给Actions。
+      - name: Write final smoke status  # 始终生成脱敏最终状态文件。
+        if: always()  # 无论前序结果如何都执行。
         env:  # 读取前序步骤结果。
           CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 保存凭据检查状态。
-          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实实验状态。
-        shell: bash  # 使用 Bash 和 Python 写入状态。
-        run: |  # 开始状态写入命令。
-          python - <<'PY'  # 使用标准库生成状态 JSON。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 保存真实烟测状态。
+        shell: bash  # 使用Bash和Python写入状态。
+        run: |  # 开始最终状态写入。
+          python - <<'PY'  # 使用标准库生成状态JSON。
           import json, os  # 读取步骤结果环境变量。
           from pathlib import Path  # 管理状态文件路径。
           path = Path("artifacts/deepseek_shaft_grid_discovery/final_status.json")  # 定位隔离状态文件。
           path.parent.mkdir(parents=True, exist_ok=True)  # 确保目录存在。
-          path.write_text(json.dumps({"credential_outcome": os.environ.get("CREDENTIAL_OUTCOME"), "live_outcome": os.environ.get("LIVE_OUTCOME")}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存脱敏最终状态。
+          path.write_text(json.dumps({"credential_outcome": os.environ.get("CREDENTIAL_OUTCOME"), "live_outcome": os.environ.get("LIVE_OUTCOME"), "backend": "analytical_surface_grid_smoke"}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # 保存脱敏最终状态。
           PY
-      - name: Upload complete isolated audit artifact  # 上传提案、求解缓存、粒子轨迹和隐藏评分供完整审计。
+      - name: Upload complete smoke artifact  # 上传提案、反馈、搜索轨迹和隐藏评分。
         if: always()  # 无论成功或失败都上传已有结果。
-        uses: actions/upload-artifact@v4  # 使用官方 Artifact 动作。
-        with:  # 配置独立 Artifact。
-          name: deepseek-shaft-grid-discovery  # 设置不会覆盖其他实验的名称。
-          path: artifacts/deepseek_shaft_grid_discovery  # 上传本实验全部隔离输出。
-          if-no-files-found: warn  # 在早期失败时给出警告而非隐藏状态。
-      - name: Freeze compact results on isolated branch  # 把脱敏轨迹和评分提交到本实验分支便于直接审计。
-        if: always() && github.event_name == 'push'  # 只在隔离分支 push 运行时提交结果。
-        shell: bash  # 使用 Bash 执行受控复制和提交。
+        uses: actions/upload-artifact@v4  # 使用官方Artifact动作。
+        with:  # 配置独立Artifact。
+          name: deepseek-shaft-grid-discovery-smoke  # 设置独立烟测Artifact名称。
+          path: artifacts/deepseek_shaft_grid_discovery  # 上传本实验全部输出。
+          if-no-files-found: warn  # 在早期失败时给出警告。
+      - name: Freeze compact smoke results  # 把脱敏轨迹和评分提交到本实验分支。
+        if: always() && github.event_name == 'push'  # 只在隔离分支push运行时提交结果。
+        shell: bash  # 使用Bash执行受控提交。
         run: |  # 开始结果冻结命令。
           set -euo pipefail  # 在复制或提交失败时立即停止。
-          git fetch origin exp/deepseek-shaft-grid-discovery  # 获取当前隔离分支最新状态。
-          git rebase origin/exp/deepseek-shaft-grid-discovery  # 避免与较早审计提交发生冲突。
+          git fetch origin exp/deepseek-shaft-grid-discovery  # 获取当前实验分支最新状态。
+          git rebase origin/exp/deepseek-shaft-grid-discovery  # 避免与其他审计提交冲突。
           target=experiments/results/latest_deepseek_shaft_grid_discovery  # 定义独立结果目录。
-          rm -rf "$target"  # 清除该结果目录上一版本。
+          rm -rf "$target"  # 清除上一版冻结结果。
           mkdir -p "$target"  # 创建结果冻结目录。
-          if [ -d artifacts/deepseek_shaft_grid_discovery ]; then  # 检查实验是否生成任何输出。
-            rsync -a --exclude solver_cache --exclude live.log artifacts/deepseek_shaft_grid_discovery/ "$target"/  # 复制提案、反馈和评分但不提交大型求解缓存与日志。
+          if [ -d artifacts/deepseek_shaft_grid_discovery ]; then  # 检查烟测是否生成输出。
+            rsync -a --exclude solver_cache --exclude live.log artifacts/deepseek_shaft_grid_discovery/ "$target"/  # 复制紧凑审计结果并排除缓存和日志。
           fi  # 完成输出存在性判断。
           git config user.name github-actions[bot]  # 设置自动提交用户名。
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com  # 设置官方机器人邮箱。
           git add "$target"  # 只暂存本实验结果目录。
-          if git diff --cached --quiet; then  # 检查本次结果是否与仓库已有内容相同。
+          if git diff --cached --quiet; then  # 检查结果是否发生变化。
             exit 0  # 没有变化时避免创建空提交。
           fi  # 完成空提交判断。
-          git commit -m "Record DeepSeek shaft-grid discovery run [skip ci]"  # 创建清晰的实验结果提交并避免重复触发。
-          git push origin HEAD:exp/deepseek-shaft-grid-discovery  # 把结果推送回本实验分支。
+          git commit -m "Record DeepSeek shaft-grid smoke run [skip ci]"  # 创建烟测结果提交。
+          git push origin HEAD:exp/deepseek-shaft-grid-discovery  # 推送冻结结果到隔离分支。
+      - name: Enforce successful smoke run  # 在结果冻结后明确反映真实烟测状态。
+        if: always()  # 始终执行最终状态门。
+        env:  # 读取前序步骤结果。
+          CREDENTIAL_OUTCOME: ${{ steps.credential_check.outcome }}  # 读取凭据状态。
+          LIVE_OUTCOME: ${{ steps.live_run.outcome }}  # 读取真实烟测状态。
+        run: test "$CREDENTIAL_OUTCOME" = "success" && test "$LIVE_OUTCOME" = "success"  # 要求凭据和真实烟测均成功。
