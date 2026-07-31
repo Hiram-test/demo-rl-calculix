@@ -11,8 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]  # 定位仓库根目录。
 sys.path.insert(0, str(ROOT))  # 确保脚本直接执行时可以导入仓库内模块。
 
 import scripts.run_deepseek_crack_hidden_executor as runner  # 导入真实模型调用和初始有限元证据组件。
-from experiments.hidden_executor import executor_adapter_v5 as executor_adapter  # 导入路线级停止和任务级完成分离的隐藏执行器。
+from experiments.hidden_executor import executor_adapter_v6 as executor_adapter  # 导入位移提取、纯后处理和任务级路线控制的最终隐藏执行器。
 from experiments.hidden_executor import task_controller  # 导入不泄露工具能力的总体任务决策门控制器。
+
+task_controller._DECISION_QUANTITY_OPERATIONS.update({executor_adapter.DISPLACEMENT_K_OPERATION, executor_adapter.STRESS_POSTPROCESS_OPERATION})  # 只把真正形成断裂评价量数值的忠实操作计入工程决策证据门。
 
 runner.SYSTEM_PROMPT = (  # 定义隐藏工具实验的任务级系统提示词。
     "你是有限元与结构工程证据分析代理。你的总体目标始终是解决initial_evidence.user_question中的原始工程问题，"  # 固定全局目标而不指定具体技术路线。
