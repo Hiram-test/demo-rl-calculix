@@ -1,19 +1,12 @@
 {
-  "status": "completed",
-  "executed_change": "保持几何、材料、载荷和边界不变，把全局网格划分调整为 100×100",
-  "actual_parameters": {
-    "nx": 100
-  },
+  "status": "route_transition",
+  "executed_change": "未运行新模型；当前方法结束，但原始工程任务继续。",
+  "actual_parameters": {},
   "observations": {
-    "nx": 100,
-    "elements": 10000,
-    "h_local_mm": 2.0,
-    "half_crack_mm": 20.0,
-    "tip_peak_sigma_y_mpa": 320.978445800837,
-    "remote_opening_mm": 0.10117488012092195,
-    "strain_energy_n_mm": 10124.027267475376,
-    "energy_balance_relative": 5.9291276812198596e-15
+    "route_conclusion": "基于裂尖峰值应力的网格收敛性研究在此线弹性条件下无法得到收敛结果，因为理论裂尖应力无穷大。该路线已提供充分证据。",
+    "next_route": "将评价量变更为应力强度因子K_I（可通过裂尖张开位移或J积分获得），在现有网格加密序列上观察K_I的收敛趋势；同时需获取材料屈服强度以评估线弹性断裂力学的适用范围。",
+    "task_continues": true
   },
   "limitations": [],
-  "proposal_sha256": "ad727e90a39a71840ce67bfbbbfe33a6bd2207858412218a019ab9b37d86bafd"
+  "proposal_sha256": "4dee1458afdfef10b3978b244e4d296c257b104b1da8fc4e857a1de3edcc454e"
 }
