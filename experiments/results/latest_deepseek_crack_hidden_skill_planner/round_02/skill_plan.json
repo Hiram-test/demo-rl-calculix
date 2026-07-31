@@ -1,0 +1,133 @@
+{
+  "experiment_spec": {
+    "objective": "评估线弹性断裂力学参数K随裂尖网格细化的收敛性，确定是否需要继续加密网格以及模型能否用于判断裂纹问题。",
+    "scope": "experiment",
+    "interventions": [
+      "进一步细化裂尖附近网格尺寸，从当前h_local=2.5 mm依次减小到1.25 mm、0.625 mm、0.3125 mm、0.15625 mm，对每个网格计算I型应力强度因子K_I。"
+    ],
+    "invariants": [
+      "几何：200 mm × 200 mm中心裂纹钢板，半裂纹长度20 mm，厚度10 mm",
+      "材料：线弹性，E=210000 MPa，ν=0.3",
+      "加载：上下边缘100 MPa对称均布拉应力",
+      "分析类型：二维平面应力",
+      "单元类型：四边形（例如Q4或Q8），不使用奇异单元",
+      "提取方法：通过能量差方法获得K_I"
+    ],
+    "observables": [
+      {
+        "id": "K_at_2p5mm",
+        "description": "当前最细网格(h=2.5 mm)的I型应力强度因子K_I，单位MPa·mm^0.5"
+      },
+      {
+        "id": "K_at_1p25mm",
+        "description": "细化后网格(h=1.25 mm)的I型应力强度因子K_I，单位MPa·mm^0.5"
+      },
+      {
+        "id": "K_at_0p625mm",
+        "description": "细化后网格(h=0.625 mm)的I型应力强度因子K_I，单位MPa·mm^0.5"
+      },
+      {
+        "id": "K_at_0p3125mm",
+        "description": "细化后网格(h=0.3125 mm)的I型应力强度因子K_I，单位MPa·mm^0.5"
+      },
+      {
+        "id": "K_at_0p15625mm",
+        "description": "细化后网格(h=0.15625 mm)的I型应力强度因子K_I，单位MPa·mm^0.5"
+      }
+    ],
+    "derivations": [
+      {
+        "id": "rel_change_1p25_to_2p5",
+        "description": "K在h=1.25 mm与h=2.5 mm之间的相对变化百分比"
+      },
+      {
+        "id": "rel_change_0p625_to_1p25",
+        "description": "K在h=0.625 mm与h=1.25 mm之间的相对变化百分比"
+      },
+      {
+        "id": "rel_change_0p3125_to_0p625",
+        "description": "K在h=0.3125 mm与h=0.625 mm之间的相对变化百分比"
+      },
+      {
+        "id": "rel_change_0p15625_to_0p3125",
+        "description": "K在h=0.15625 mm与h=0.3125 mm之间的相对变化百分比"
+      }
+    ],
+    "external_dependencies": [],
+    "acceptance_rule": "若K_I随网格细化趋于稳定（连续两个细化级别间的相对变化小于1%），则说明K已收敛，可以停止实验；或者当细化次数达到4次时停止，然后根据趋势判断。",
+    "completion_scope": "current_step"
+  },
+  "plan_type": "execute",
+  "calls": [
+    {
+      "call_id": "refine_1p25",
+      "skill_id": "fracture.refine_and_energy",
+      "arguments": {
+        "target_h_mm": 1.25
+      },
+      "argument_sources": {
+        "target_h_mm": "proposal"
+      },
+      "covers": [
+        "K_at_2p5mm",
+        "K_at_1p25mm",
+        "rel_change_1p25_to_2p5"
+      ],
+      "depends_on": []
+    },
+    {
+      "call_id": "refine_0p625",
+      "skill_id": "fracture.refine_and_energy",
+      "arguments": {
+        "target_h_mm": 0.625
+      },
+      "argument_sources": {
+        "target_h_mm": "proposal"
+      },
+      "covers": [
+        "K_at_0p625mm",
+        "rel_change_0p625_to_1p25"
+      ],
+      "depends_on": [
+        "refine_1p25"
+      ]
+    },
+    {
+      "call_id": "refine_0p3125",
+      "skill_id": "fracture.refine_and_energy",
+      "arguments": {
+        "target_h_mm": 0.3125
+      },
+      "argument_sources": {
+        "target_h_mm": "proposal"
+      },
+      "covers": [
+        "K_at_0p3125mm",
+        "rel_change_0p3125_to_0p625"
+      ],
+      "depends_on": [
+        "refine_0p625"
+      ]
+    },
+    {
+      "call_id": "refine_0p15625",
+      "skill_id": "fracture.refine_and_energy",
+      "arguments": {
+        "target_h_mm": 0.15625
+      },
+      "argument_sources": {
+        "target_h_mm": "proposal"
+      },
+      "covers": [
+        "K_at_0p15625mm",
+        "rel_change_0p15625_to_0p3125"
+      ],
+      "depends_on": [
+        "refine_0p3125"
+      ]
+    }
+  ],
+  "uncovered_requirements": [],
+  "proposal_fully_preserved": true,
+  "unsupported_reason": null
+}

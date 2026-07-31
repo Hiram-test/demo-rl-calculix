@@ -1,0 +1,96 @@
+{
+  "proposal_sha256": "13fc1fc6fe6e9597524ddf3d1c542bda6ac9e09364ef03fc009e236c580855fa",
+  "skill_plan_sha256": "19a50e3ae4af6f3d2c2bf617cc59adc1a88c6396edb16b8228681bc54c2c0f99",
+  "plan_type": "execute",
+  "experiment_spec": {
+    "objective": "获取材料的屈服强度（σ_y）或完整的塑性应力-应变曲线，以评估裂尖塑性区尺寸，验证线弹性断裂力学的适用条件（小范围屈服）。",
+    "scope": "information_request",
+    "interventions": [
+      "向用户请求提供材料的屈服强度或塑性曲线数据。"
+    ],
+    "invariants": [
+      "几何、网格、载荷、边界条件和已计算的应力强度因子保持不变。"
+    ],
+    "observables": [],
+    "derivations": [],
+    "external_dependencies": [
+      {
+        "id": "material_yield_data",
+        "description": "板材的屈服强度（σ_y，单位MPa）或完整的塑性应力-应变曲线。"
+      }
+    ],
+    "acceptance_rule": "用户提供了屈服强度或塑性曲线数据，且数据格式可被后续分析使用。",
+    "completion_scope": "current_route"
+  },
+  "skill_calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "material.request",
+      "arguments": {
+        "fields": [
+          "yield_strength",
+          "plastic_curve"
+        ]
+      },
+      "argument_sources": {
+        "fields": "proposal"
+      },
+      "covers": [
+        "material_yield_data"
+      ],
+      "depends_on": [],
+      "raw_result": {
+        "status": "information_required",
+        "executed_change": "未运行新的有限元模型，记录完成工程适用性判断所需的外部材料事实",
+        "actual_parameters": {},
+        "observations": {
+          "requested_information": [
+            "yield_strength",
+            "plastic_curve"
+          ]
+        },
+        "limitations": [
+          "这些数据不能由当前线弹性有限元结果反推出，必须由用户、材料标准或试验提供"
+        ]
+      }
+    }
+  ],
+  "public_feedback": {
+    "status": "information_required",
+    "executed_change": "未运行新的有限元模型，记录完成工程适用性判断所需的外部材料事实",
+    "actual_parameters": {
+      "result_groups": [
+        {
+          "requirements": [
+            "material_yield_data"
+          ],
+          "actual_parameters": {}
+        }
+      ]
+    },
+    "observations": {
+      "result_groups": [
+        {
+          "requirements": [
+            "material_yield_data"
+          ],
+          "observations": {
+            "requested_information": [
+              "yield_strength",
+              "plastic_curve"
+            ]
+          },
+          "status": "information_required"
+        }
+      ],
+      "requested_information": [
+        "yield_strength",
+        "plastic_curve"
+      ]
+    },
+    "limitations": [
+      "这些数据不能由当前线弹性有限元结果反推出，必须由用户、材料标准或试验提供"
+    ],
+    "proposal_sha256": "13fc1fc6fe6e9597524ddf3d1c542bda6ac9e09364ef03fc009e236c580855fa"
+  }
+}

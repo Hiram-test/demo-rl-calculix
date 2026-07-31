@@ -1,0 +1,45 @@
+{
+  "experiment_spec": {
+    "objective": "获取材料的屈服强度（σ_y）或完整的塑性应力-应变曲线，以评估裂尖塑性区尺寸，验证线弹性断裂力学的适用条件（小范围屈服）。",
+    "scope": "information_request",
+    "interventions": [
+      "向用户请求提供材料的屈服强度或塑性曲线数据。"
+    ],
+    "invariants": [
+      "几何、网格、载荷、边界条件和已计算的应力强度因子保持不变。"
+    ],
+    "observables": [],
+    "derivations": [],
+    "external_dependencies": [
+      {
+        "id": "material_yield_data",
+        "description": "板材的屈服强度（σ_y，单位MPa）或完整的塑性应力-应变曲线。"
+      }
+    ],
+    "acceptance_rule": "用户提供了屈服强度或塑性曲线数据，且数据格式可被后续分析使用。",
+    "completion_scope": "current_route"
+  },
+  "plan_type": "execute",
+  "calls": [
+    {
+      "call_id": "call_1",
+      "skill_id": "material.request",
+      "arguments": {
+        "fields": [
+          "yield_strength",
+          "plastic_curve"
+        ]
+      },
+      "argument_sources": {
+        "fields": "proposal"
+      },
+      "covers": [
+        "material_yield_data"
+      ],
+      "depends_on": []
+    }
+  ],
+  "uncovered_requirements": [],
+  "proposal_fully_preserved": true,
+  "unsupported_reason": null
+}

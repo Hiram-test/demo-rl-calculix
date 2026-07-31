@@ -1,0 +1,181 @@
+{
+  "status": "completed",
+  "executed_change": "保持几何、材料、载荷和边界不变，把网格从2.5 mm调整到1.25 mm，并按相同能量差协议复算G和K",
+  "actual_parameters": {
+    "result_groups": [
+      {
+        "requirements": [
+          "K_at_2p5mm",
+          "K_at_1p25mm",
+          "rel_change_1p25_to_2p5"
+        ],
+        "actual_parameters": {
+          "requested_target_h_mm": 1.25,
+          "used_target_h_mm": 1.25,
+          "used_target_nx": 160,
+          "baseline_nx": 80
+        }
+      },
+      {
+        "requirements": [
+          "K_at_0p625mm",
+          "rel_change_0p625_to_1p25"
+        ],
+        "actual_parameters": {
+          "requested_target_h_mm": 0.625,
+          "used_target_h_mm": 1.25,
+          "used_target_nx": 160,
+          "baseline_nx": 80
+        }
+      },
+      {
+        "requirements": [
+          "K_at_0p3125mm",
+          "rel_change_0p3125_to_0p625"
+        ],
+        "actual_parameters": {
+          "requested_target_h_mm": 0.3125,
+          "used_target_h_mm": 1.25,
+          "used_target_nx": 160,
+          "baseline_nx": 80
+        }
+      },
+      {
+        "requirements": [
+          "K_at_0p15625mm",
+          "rel_change_0p15625_to_0p3125"
+        ],
+        "actual_parameters": {
+          "requested_target_h_mm": 0.15625,
+          "used_target_h_mm": 1.25,
+          "used_target_nx": 160,
+          "baseline_nx": 80
+        }
+      }
+    ]
+  },
+  "observations": {
+    "result_groups": [
+      {
+        "requirements": [
+          "K_at_2p5mm",
+          "K_at_1p25mm",
+          "rel_change_1p25_to_2p5"
+        ],
+        "observations": {
+          "baseline": {
+            "nx": 80,
+            "h_local_mm": 2.5,
+            "crack_extension_mm": 2.5,
+            "base_strain_energy_n_mm": 10116.033985340357,
+            "extended_strain_energy_n_mm": 10289.286304844136,
+            "energy_release_rate_n_per_mm": 3.4650463900755857,
+            "stress_intensity_mpa_sqrt_mm": 853.0297426912341
+          },
+          "refined": {
+            "nx": 160,
+            "h_local_mm": 1.25,
+            "crack_extension_mm": 1.25,
+            "base_strain_energy_n_mm": 10136.030801923462,
+            "extended_strain_energy_n_mm": 10220.987957867263,
+            "energy_release_rate_n_per_mm": 3.398286237752036,
+            "stress_intensity_mpa_sqrt_mm": 844.7722236957886
+          },
+          "relative_change_percent": -0.968022400882967
+        },
+        "status": "completed"
+      },
+      {
+        "requirements": [
+          "K_at_0p625mm",
+          "rel_change_0p625_to_1p25"
+        ],
+        "observations": {
+          "baseline": {
+            "nx": 80,
+            "h_local_mm": 2.5,
+            "crack_extension_mm": 2.5,
+            "base_strain_energy_n_mm": 10116.033985340357,
+            "extended_strain_energy_n_mm": 10289.286304844136,
+            "energy_release_rate_n_per_mm": 3.4650463900755857,
+            "stress_intensity_mpa_sqrt_mm": 853.0297426912341
+          },
+          "refined": {
+            "nx": 160,
+            "h_local_mm": 1.25,
+            "crack_extension_mm": 1.25,
+            "base_strain_energy_n_mm": 10136.030801923462,
+            "extended_strain_energy_n_mm": 10220.987957867263,
+            "energy_release_rate_n_per_mm": 3.398286237752036,
+            "stress_intensity_mpa_sqrt_mm": 844.7722236957886
+          },
+          "relative_change_percent": -0.968022400882967
+        },
+        "status": "completed"
+      },
+      {
+        "requirements": [
+          "K_at_0p3125mm",
+          "rel_change_0p3125_to_0p625"
+        ],
+        "observations": {
+          "baseline": {
+            "nx": 80,
+            "h_local_mm": 2.5,
+            "crack_extension_mm": 2.5,
+            "base_strain_energy_n_mm": 10116.033985340357,
+            "extended_strain_energy_n_mm": 10289.286304844136,
+            "energy_release_rate_n_per_mm": 3.4650463900755857,
+            "stress_intensity_mpa_sqrt_mm": 853.0297426912341
+          },
+          "refined": {
+            "nx": 160,
+            "h_local_mm": 1.25,
+            "crack_extension_mm": 1.25,
+            "base_strain_energy_n_mm": 10136.030801923462,
+            "extended_strain_energy_n_mm": 10220.987957867263,
+            "energy_release_rate_n_per_mm": 3.398286237752036,
+            "stress_intensity_mpa_sqrt_mm": 844.7722236957886
+          },
+          "relative_change_percent": -0.968022400882967
+        },
+        "status": "completed"
+      },
+      {
+        "requirements": [
+          "K_at_0p15625mm",
+          "rel_change_0p15625_to_0p3125"
+        ],
+        "observations": {
+          "baseline": {
+            "nx": 80,
+            "h_local_mm": 2.5,
+            "crack_extension_mm": 2.5,
+            "base_strain_energy_n_mm": 10116.033985340357,
+            "extended_strain_energy_n_mm": 10289.286304844136,
+            "energy_release_rate_n_per_mm": 3.4650463900755857,
+            "stress_intensity_mpa_sqrt_mm": 853.0297426912341
+          },
+          "refined": {
+            "nx": 160,
+            "h_local_mm": 1.25,
+            "crack_extension_mm": 1.25,
+            "base_strain_energy_n_mm": 10136.030801923462,
+            "extended_strain_energy_n_mm": 10220.987957867263,
+            "energy_release_rate_n_per_mm": 3.398286237752036,
+            "stress_intensity_mpa_sqrt_mm": 844.7722236957886
+          },
+          "relative_change_percent": -0.968022400882967
+        },
+        "status": "completed"
+      }
+    ]
+  },
+  "limitations": [
+    "两档网格使用各自一个网格步长作为裂纹增量",
+    "该方法使用能量差换算而非轮廓积分",
+    "模型保持二维平面应力线弹性",
+    "请求的目标尺寸已吸附到后端允许的结构网格划分"
+  ],
+  "proposal_sha256": "44a55eac4bfaab816cb847d5e7aa34f679d7245b28e293b53cddaad7e8195069"
+}
