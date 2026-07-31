@@ -1,26 +1,31 @@
 {
   "competing_hypotheses": [
-    {
-      "hypothesis": "应力强度因子K已随网格细化收敛（三档网格变化在2%以内），当前网格已足够，无需进一步加密。线弹性断裂力学是否适用取决于裂尖塑性区相对大小，只要塑性区远小于裂纹长度和韧带尺寸，当前K即可用于工程判断。但未知材料屈服强度，无法定量评估塑性区。",
-      "type": "possible_explanation"
-    },
-    {
-      "hypothesis": "能量差分法获得的K可能未完全收敛，因为不同网格的裂纹增量步长不一致，可能导致系统偏差。若进一步均匀细化（如h=1.25 mm）并维持相同裂纹增量或采用积分方法，K值可能进一步变化并揭示收敛性不足。",
-      "type": "possible_explanation"
-    }
+    "H1: The mode-I stress intensity factor K_I estimated from crack face opening displacements has already converged with the current mesh refinement (5→3.33→2.5 mm), indicating that further mesh refinement is unnecessary and the linear elastic model is sufficient for fracture assessment.",
+    "H2: The estimated K_I continues to change with mesh refinement, requiring either local mesh refinement with singular elements, further global refinement, or a switch to an elastic–plastic analysis to obtain a mesh-independent decision quantity."
   ],
   "evidence_refs": [
-    "initial_mesh_history: 三次网格的裂尖峰值应力、远程开口和应变能",
-    "previous_round feedback: 三次网格通过能量差换算的K值分别为869.7, 858.6, 853.0 MPa·sqrt(mm)，差异逐步缩小，最细两档相差0.65%。",
-    "线弹性断裂力学理论：K=σ√(πa)对于无限板中心裂纹约25.07 MPa·m^0.5，有限宽修正后约25.7，能量法略高约5%"
+    "initial_mesh_history: tip peak stress σ_y_max increases without convergence (210.9, 252.9, 289.0 MPa), while remote opening displacement and strain energy change only slightly, suggesting that singularity-dominated local quantities are mesh sensitive.",
+    "No fracture mechanics decision quantity (e.g., K_I, J) is available in the existing evidence."
   ],
   "uncertainties": [
-    "未知材料屈服强度σ_y或真实塑性曲线，无法计算塑性区尺寸r_p ≈ 1/(2π) (K/σ_y)^2，因此无法判断线弹性断裂力学假设的有效范围。",
-    "能量差分法使用的裂纹增量等于各自网格步长，可能影响不同网格下K的精确度和可比性，但未评估更精确方法（如J积分、位移外推）的结果。",
-    "板厚10 mm，未知是否满足平面应变条件；二维平面应力假设可能不适用于裂尖附近真实的应力状态。"
+    "Whether the execution environment can extract nodal displacements on the crack face from the existing result files.",
+    "Whether the mesh contains sufficient nodes near the crack tip for reliable displacement extrapolation.",
+    "Whether special quarter-point elements were used at the crack tip.",
+    "Whether the linear elastic assumption holds, given possible plasticity at the tip."
   ],
-  "proposal_type": "request_information",
-  "information_request": {
-    "question": "请提供材料的屈服强度（σ_y，MPa）或完整的单轴应力-应变塑性曲线数据，以便评估裂纹尖端塑性区尺寸，判断线弹性断裂力学的适用性。如果无法提供准确数据，请给出典型结构钢的名义屈服强度范围。"
+  "proposal_type": "experiment",
+  "experiment": {
+    "purpose": "Obtain mode-I stress intensity factor K_I estimates from crack face opening displacements for the three existing meshes and assess their convergence to decide whether further mesh refinement is needed.",
+    "change": "No model reruns; only post-process the three existing result data sets to extract crack face nodal displacements near the tip.",
+    "hold_fixed": [
+      "geometry, material, loading, and boundary conditions of the linear elastic plane stress model",
+      "all mesh topologies as previously generated"
+    ],
+    "measure": [
+      "crack face nodal y-displacements at selected distances from the crack tip (e.g., 0.5, 1.0, 2.0 mm) for each mesh",
+      "nodal coordinates corresponding to these displacements to verify distance from the tip"
+    ],
+    "decision_rule": "Compute K_I from the measured displacements using a standard linear elastic plane stress formula (e.g., CTOD-based or displacement extrapolation). If the relative variation of K_I among the three meshes is less than 5%, conclude that K_I has converged and further mesh refinement is unnecessary; otherwise, further refinement or a different mesh strategy (e.g., singular elements) is required.",
+    "stop_condition": "When K_I values for all three meshes are successfully extracted and compared, and the convergence decision is made."
   }
 }

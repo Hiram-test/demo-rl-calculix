@@ -1,28 +1,104 @@
 {
-  "proposal_sha256": "d9d32384905468273318e1b1b6fb070925a0273a8d267f23d7dfd065988a882b",
-  "internal_operation": "request_material",
+  "proposal_sha256": "41abee3442ed7cd0d95e8b5218260c83176519ecdab7019f20f4b267fa78541f",
+  "internal_operation": "fracture_parameter_sequence",
   "raw_result": {
-    "requested_information": [
-      "屈服强度",
-      "真实应力-塑性应变曲线",
-      "硬化模型",
-      "断裂或损伤参数"
+    "method": "对每档网格将两侧裂尖各延长本档一个网格步长，用总应变能差除以新增裂纹表面积得到 G，并在二维平面应力线弹性假设下用 K=sqrt(EG) 换算",
+    "rows": [
+      {
+        "nx": 40,
+        "h_local_mm": 5.0,
+        "crack_extension_mm": 5.0,
+        "base_strain_energy_n_mm": 10076.200507456884,
+        "extended_strain_energy_n_mm": 10436.370674898903,
+        "energy_release_rate_n_per_mm": 3.6017016744201826,
+        "stress_intensity_mpa_sqrt_mm": 869.6880772025327,
+        "difference_from_finest_percent": 1.9528433391716187
+      },
+      {
+        "nx": 60,
+        "h_local_mm": 3.3333333333333335,
+        "crack_extension_mm": 3.3333333333333335,
+        "base_strain_energy_n_mm": 10102.729908239144,
+        "extended_strain_energy_n_mm": 10336.738531967663,
+        "energy_release_rate_n_per_mm": 3.5101293559277926,
+        "stress_intensity_mpa_sqrt_mm": 858.5611013462212,
+        "difference_from_finest_percent": 0.6484367869209535
+      },
+      {
+        "nx": 80,
+        "h_local_mm": 2.5,
+        "crack_extension_mm": 2.5,
+        "base_strain_energy_n_mm": 10116.033985340357,
+        "extended_strain_energy_n_mm": 10289.286304844136,
+        "energy_release_rate_n_per_mm": 3.4650463900755857,
+        "stress_intensity_mpa_sqrt_mm": 853.0297426912341,
+        "difference_from_finest_percent": 0.0
+      }
     ]
   },
-  "actual_parameters": {},
+  "actual_parameters": {
+    "mesh_levels": [
+      40,
+      60,
+      80
+    ],
+    "extension_rule": "one grid step at each mesh level",
+    "plane_condition": "plane_stress",
+    "young_mpa": 210000.0
+  },
   "public_feedback": {
-    "status": "information_required",
-    "executed_change": "未运行新模型，等待补充材料本构和断裂参数",
-    "actual_parameters": {},
+    "status": "completed",
+    "executed_change": "保持外形、材料弹性参数、远场载荷和边界不变，对三档网格分别计算裂纹微增前后的能量差并换算 G 与 K",
+    "actual_parameters": {
+      "mesh_levels": [
+        40,
+        60,
+        80
+      ],
+      "extension_rule": "one grid step at each mesh level",
+      "plane_condition": "plane_stress",
+      "young_mpa": 210000.0
+    },
     "observations": {
-      "requested_information": [
-        "屈服强度",
-        "真实应力-塑性应变曲线",
-        "硬化模型",
-        "断裂或损伤参数"
+      "method": "对每档网格将两侧裂尖各延长本档一个网格步长，用总应变能差除以新增裂纹表面积得到 G，并在二维平面应力线弹性假设下用 K=sqrt(EG) 换算",
+      "rows": [
+        {
+          "nx": 40,
+          "h_local_mm": 5.0,
+          "crack_extension_mm": 5.0,
+          "base_strain_energy_n_mm": 10076.200507456884,
+          "extended_strain_energy_n_mm": 10436.370674898903,
+          "energy_release_rate_n_per_mm": 3.6017016744201826,
+          "stress_intensity_mpa_sqrt_mm": 869.6880772025327,
+          "difference_from_finest_percent": 1.9528433391716187
+        },
+        {
+          "nx": 60,
+          "h_local_mm": 3.3333333333333335,
+          "crack_extension_mm": 3.3333333333333335,
+          "base_strain_energy_n_mm": 10102.729908239144,
+          "extended_strain_energy_n_mm": 10336.738531967663,
+          "energy_release_rate_n_per_mm": 3.5101293559277926,
+          "stress_intensity_mpa_sqrt_mm": 858.5611013462212,
+          "difference_from_finest_percent": 0.6484367869209535
+        },
+        {
+          "nx": 80,
+          "h_local_mm": 2.5,
+          "crack_extension_mm": 2.5,
+          "base_strain_energy_n_mm": 10116.033985340357,
+          "extended_strain_energy_n_mm": 10289.286304844136,
+          "energy_release_rate_n_per_mm": 3.4650463900755857,
+          "stress_intensity_mpa_sqrt_mm": 853.0297426912341,
+          "difference_from_finest_percent": 0.0
+        }
       ]
     },
-    "limitations": [],
-    "proposal_sha256": "d9d32384905468273318e1b1b6fb070925a0273a8d267f23d7dfd065988a882b"
+    "limitations": [
+      "该结果使用有限裂纹增量能量差，并非轮廓积分或裂纹面位移外推",
+      "每档裂纹增量等于该档结构网格步长，因此不同网格的差分步长不同",
+      "换算采用二维平面应力线弹性关系，尚未包含裂尖塑性区或真实材料曲线"
+    ],
+    "proposal_sha256": "41abee3442ed7cd0d95e8b5218260c83176519ecdab7019f20f4b267fa78541f"
   }
 }
