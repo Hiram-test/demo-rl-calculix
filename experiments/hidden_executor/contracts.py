@@ -1,20 +1,22 @@
 from __future__ import annotations  # 启用现代类型注解并避免运行时前向引用问题。
 
 import hashlib  # 为冻结提案和审计链生成稳定哈希。
-import json  # 以规范 JSON 形式保存提案和执行收据。
-from datetime import datetime, timezone  # 记录统一 UTC 冻结时间。
+import json  # 以规范JSON形式保存提案和执行收据。
+from datetime import datetime, timezone  # 记录统一UTC冻结时间。
 from pathlib import Path  # 安全管理隔离实验输出路径。
-from typing import Any  # 表示模型生成的动态 JSON 结构。
+from typing import Any  # 表示模型生成的动态JSON结构。
 
 REQUIRED_EXPERIMENT_FIELDS = ("purpose", "change", "hold_fixed", "measure", "decision_rule", "stop_condition")  # 定义实验提案必须包含的字段。
-ALLOWED_PROPOSAL_TYPES = {"experiment", "request_information", "stop"}  # 限制模型只能提出实验、请求信息或停止。
+REQUIRED_ROUTE_TRANSITION_FIELDS = ("route_conclusion", "next_route", "reason")  # 定义结束当前方法时必须说明的路线级信息。
+REQUIRED_FINAL_ANSWER_FIELDS = ("continue_refinement", "model_usability", "next_action")  # 定义总体任务完成时必须回答的三个工程问题。
+ALLOWED_PROPOSAL_TYPES = {"experiment", "request_information", "switch_route", "resolve_task", "stop"}  # 允许实验、信息请求、路线切换、任务完成和遗留stop兼容输入。
 
 
-def canonical_json(value: Any) -> str:  # 把任意 JSON 值序列化为稳定文本。
+def canonical_json(value: Any) -> str:  # 把任意JSON值序列化为稳定文本。
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))  # 固定键顺序和分隔符以保证哈希可复现。
 
 
-def sha256_text(text: str) -> str:  # 计算 UTF-8 文本的 SHA256。
+def sha256_text(text: str) -> str:  # 计算UTF-8文本的SHA256。
     return hashlib.sha256(text.encode("utf-8")).hexdigest()  # 返回十六进制摘要用于审计。
 
 
@@ -29,7 +31,17 @@ def _valid_hypothesis(item: Any) -> bool:  # 判断一个模型生成的竞争�
     return False  # 拒绝空值、纯数字或缺少假设陈述的对象。
 
 
-def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在看不到工具时提出的实验方案。
+def _validate_non_empty_text_fields(value: Any, fields: tuple[str, ...], prefix: str, errors: list[str]) -> None:  # 校验结构化对象中的必需文本字段。
+    if not isinstance(value, dict):  # 检查目标值必须是JSON对象。
+        errors.append(f"{prefix} must be an object")  # 记录对象缺失错误。
+        return  # 对不存在对象停止字段检查。
+    for field in fields:  # 遍历全部必需文本字段。
+        item = value.get(field)  # 读取当前字段。
+        if not isinstance(item, str) or not item.strip():  # 检查字段必须是非空字符串。
+            errors.append(f"{prefix}.{field} must be a non-empty string")  # 记录具体字段错误。
+
+
+def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在看不到工具时提出的工程方案。
     errors: list[str] = []  # 初始化错误列表以一次返回全部合同问题。
     hypotheses = proposal.get("competing_hypotheses")  # 读取竞争假设数组。
     if not isinstance(hypotheses, list) or len(hypotheses) < 2 or not all(_valid_hypothesis(item) for item in hypotheses):  # 检查至少两个可审计假设。
@@ -41,8 +53,8 @@ def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在
     if not isinstance(uncertainties, list) or not all(isinstance(item, str) and item.strip() for item in uncertainties):  # 检查未知项结构。
         errors.append("uncertainties must be an array of non-empty strings")  # 记录未知项错误。
     proposal_type = proposal.get("proposal_type")  # 读取提案类型。
-    if proposal_type not in ALLOWED_PROPOSAL_TYPES:  # 检查类型是否属于通用合同。
-        errors.append("proposal_type must be experiment, request_information, or stop")  # 记录类型错误。
+    if proposal_type not in ALLOWED_PROPOSAL_TYPES:  # 检查类型是否属于任务合同。
+        errors.append("proposal_type must be experiment, request_information, switch_route, resolve_task, or legacy stop")  # 记录类型错误。
     if proposal_type == "experiment":  # 仅对实验提案执行完整实验设计校验。
         experiment = proposal.get("experiment")  # 读取实验设计对象。
         if not isinstance(experiment, dict):  # 检查实验设计必须是对象。
@@ -59,6 +71,15 @@ def validate_proposal(proposal: dict[str, Any]) -> list[str]:  # 校验模型在
         request = proposal.get("information_request")  # 读取请求对象。
         if not isinstance(request, dict) or not isinstance(request.get("question"), str) or not request.get("question", "").strip():  # 检查问题文本。
             errors.append("information_request.question must be a non-empty string")  # 记录信息请求错误。
+    if proposal_type == "switch_route":  # 对停止当前方法并进入新路线的提案执行作用域校验。
+        _validate_non_empty_text_fields(proposal.get("route_transition"), REQUIRED_ROUTE_TRANSITION_FIELDS, "route_transition", errors)  # 要求明确当前路线结论和下一路线。
+    if proposal_type == "resolve_task":  # 对总体任务完成声明执行最终答复校验。
+        final_answer = proposal.get("final_answer")  # 读取结构化最终工程答复。
+        _validate_non_empty_text_fields(final_answer, REQUIRED_FINAL_ANSWER_FIELDS, "final_answer", errors)  # 要求回答是否细化、模型可用性和下一步行动。
+        if isinstance(final_answer, dict):  # 在最终答复对象存在时检查不确定性数组。
+            remaining = final_answer.get("remaining_uncertainties", [])  # 读取仍需保留的工程不确定性。
+            if not isinstance(remaining, list) or not all(isinstance(item, str) and item.strip() for item in remaining):  # 检查不确定性必须是可审计字符串数组。
+                errors.append("final_answer.remaining_uncertainties must be an array of non-empty strings")  # 记录最终不确定性错误。
     provisional_answer = proposal.get("provisional_answer")  # 读取可选的当前暂定答复。
     if provisional_answer is not None and (not isinstance(provisional_answer, str) or not provisional_answer.strip()):  # 仅在模型实际返回该字段时检查内容。
         errors.append("provisional_answer must be a non-empty string when supplied")  # 记录可选答复字段的内容错误。
