@@ -5,12 +5,12 @@ This prerelease preserves the original large CalculiX inputs shared for the publ
 ## Assets
 
 - `Shear_setups.zip`: exact author-published archive.
-- `Shear_setup-INTER01-COARSE_PIN.inp`: exact coarse-PIN archive entry.
-- `Shear_setup-INTER01-deactivate1thenreactivate.inp`: exact refined-PIN, contact REMOVE→ADD archive entry.
 - `SOURCE_MANIFEST.json`: source, role, size, hash and execution-boundary manifest.
 - `SHA256SUMS.txt`: download verification.
 - `SOURCE_AND_REDISTRIBUTION_NOTICE.md`: third-party source and rights boundary.
 - `local_calculix_counterfactual_followup.pdf`: local reduced-model counterfactual report.
+
+The original ZIP contains exactly two complete, self-contained inputs: `Shear_setup-INTER01-COARSE_PIN.inp` and `Shear_setup-INTER01-deactivate1thenreactivate.inp`. Their independent hashes are included in the manifest and `SHA256SUMS.txt`. They are not duplicated as separate 267 MB and 277 MB assets because extraction preserves the exact entry bytes.
 
 ## Evidence boundary
 

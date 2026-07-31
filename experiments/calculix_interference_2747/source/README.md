@@ -6,16 +6,18 @@
 - 原始论坛问题：[Interference Contact and mesh refinement](https://calculix.discourse.group/t/interference-contact-and-mesh-refinement/2747)
 - 作者公开附件：[Proton Drive share](https://drive.proton.me/urls/2YKDRXYGJG#fwmEJFkaCbui)
 
-## 发布资产
+## 原始文件与发布方式
 
-| 资产 | 字节数 | 用途 |
+| 文件 | 字节数 | 发布方式与用途 |
 |---|---:|---|
-| `Shear_setups.zip` | 116,272,555 | 作者发布的原始压缩包，字节保持不变，内含下面两个 `.inp`。 |
-| `Shear_setup-INTER01-COARSE_PIN.inp` | 267,223,015 | 粗 PIN2 网格的完整原始输入，便于不解压直接下载。 |
-| `Shear_setup-INTER01-deactivate1thenreactivate.inp` | 277,391,649 | 细 PIN2 网格并带 REMOVE→ADD 接触历史的完整原始输入。 |
-| `local_calculix_counterfactual_followup.pdf` | 143,011 | 基于缩减模型的本地三项反事实复核，不是原始大型模型求解结果。 |
+| `Shear_setups.zip` | 116,272,555 | Release 中的作者原始压缩包，字节保持不变。 |
+| `Shear_setup-INTER01-COARSE_PIN.inp` | 267,223,015 | 原始 ZIP 内的粗 PIN2 网格完整输入。 |
+| `Shear_setup-INTER01-deactivate1thenreactivate.inp` | 277,391,649 | 原始 ZIP 内的细 PIN2 网格、REMOVE→ADD 接触历史完整输入。 |
+| `local_calculix_counterfactual_followup.pdf` | 143,011 | Release 中的缩减模型三项反事实复核，不是原始大型模型求解结果。 |
 
 下载后必须用 [`SHA256SUMS.txt`](SHA256SUMS.txt) 校验。归档内恰好包含上述两个 `.inp`，两者都不依赖外部 `*INCLUDE` 文件。
+
+两个裸 `.inp` 不再作为重复 Release assets 上传。作者原 ZIP 已完整包含它们；保留一个规范来源单元可以避免额外复制约 544 MB，同时不损失任何原始输入字节。解压后可用本目录给出的独立 SHA-256 分别校验两个大型输入。
 
 ## 为什么使用 Release
 
@@ -34,7 +36,8 @@
 - `manifest_schema`：清单数据契约的版本。
 - `source`：论坛标题、帖子地址、附件地址及冻结时是否存在作者确认解。
 - `release`：承载大文件的 tag、固定 URL、发布类型和根因状态。
-- `assets`：每个主要发布资产的名称、角色、大小、摘要与字节保持方式。
+- `release_assets`：直接作为 Release assets 提供的原始归档与缩减模型报告。
+- `archive_entries`：原始归档内两个完整 `.inp` 的名称、角色、大小与摘要。
 - `execution_boundary`：是否执行过原始大型模型，以及不能把缩减模型结果升级为原模型结论的原因。
 
 第三方文件的权利边界见 [`SOURCE_AND_REDISTRIBUTION_NOTICE.md`](SOURCE_AND_REDISTRIBUTION_NOTICE.md)，本轮“为什么这样发布”的可审计路径见 [`RELEASE_DECISION.md`](RELEASE_DECISION.md)，实际发布说明见 [`RELEASE_NOTES.md`](RELEASE_NOTES.md)。
