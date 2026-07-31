@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]  # 定位仓库根目录。
 sys.path.insert(0, str(ROOT))  # 确保脚本直接执行时可以导入仓库内模块。
 
 import scripts.run_deepseek_crack_hidden_executor as runner  # 导入真实模型调用和初始有限元证据组件。
-from experiments.hidden_executor import executor_adapter_v7 as executor_adapter  # 导入作用域严格的位移、纯后处理和任务级最终隐藏执行器。
+from experiments.hidden_executor import executor_adapter_v8 as executor_adapter  # 导入材料阻塞、位移、纯后处理和任务控制完整隐藏执行器。
 from experiments.hidden_executor import task_controller  # 导入不泄露工具能力的总体任务决策门控制器。
 
 task_controller._DECISION_QUANTITY_OPERATIONS.update({executor_adapter.DISPLACEMENT_K_OPERATION, executor_adapter.STRESS_POSTPROCESS_OPERATION})  # 只把真正形成断裂评价量数值的忠实操作计入工程决策证据门。
@@ -27,6 +27,7 @@ runner.SYSTEM_PROMPT = (  # 定义隐藏工具实验的任务级系统提示词�
     "你不知道执行环境拥有哪些软件或能力，不得假设存在现成工具，不得使用函数名、工具名或软件命令表达方案；"  # 保持模型对隐藏工具目录完全不可见。
     "请只用工程和物理语言描述改变什么、保持什么不变、测量什么、怎样判断以及何时结束当前实验。"  # 约束自然语言实验设计。
     "证据不足时可以使用request_information请求缺失事实；请求外部事实不会自动关闭其他仍可计算的决策门。"  # 防止一个阻塞项提前结束全部任务。
+    "如果task_contract已经记录同一external_blocker，不要重复请求或自行假定该事实；应先完成其他可计算决策门，再用resolve_task给出条件性结论并保留阻塞项。"  # 防止重复消耗轮次或编造材料数据。
     "只输出一个合法JSON对象，公共字段为competing_hypotheses、evidence_refs、uncertainties、proposal_type；"  # 开始定义输出合同。
     "proposal_type只能是experiment、request_information、switch_route或resolve_task，不要使用stop。"  # 移除无作用域stop。
     "当proposal_type=experiment时，experiment必须包含purpose、change、hold_fixed、measure、decision_rule、stop_condition，"  # 定义控制实验字段。
@@ -36,7 +37,7 @@ runner.SYSTEM_PROMPT = (  # 定义隐藏工具实验的任务级系统提示词�
 runner.USER_INSTRUCTION = (  # 定义每轮固定用户指令。
     "请只根据下面的实时证据和task_contract提出唯一下一步。当前路线结束时使用switch_route，不能把它写成总体任务完成；"  # 强调路线结束后继续。
     "只有unresolved_decision_gates为空时才允许resolve_task。提案会先被冻结，再由独立执行层判断能否忠实执行。"  # 说明冻结顺序和独立完成门。
-    "不要猜测执行器内部能力，不要补造未提供的模型事实。\n\n"  # 保持隐藏工具隔离和事实约束。
+    "不要重复task_contract中已经记录的外部阻塞，不要猜测执行器内部能力，不要补造未提供的模型事实。\n\n"  # 保持隐藏工具隔离、阻塞去重和事实约束。
 )  # 完成每轮用户指令。
 
 
