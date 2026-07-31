@@ -1,20 +1,75 @@
 {
-  "proposal_sha256": "a1cfe73916b7673438b84fc7928a42a83a1007fb7be1303f2c3a08b4b21abc86",
-  "internal_operation": "unsupported",
+  "proposal_sha256": "0afd9c143561e2debc807e50ba5668443ed93e430da12eaca28018f8940bf8a1",
+  "internal_operation": "fixed_probe",
   "raw_result": {
-    "reason": "proposal could not be mapped without changing its stated purpose"
+    "tool": "probe_fixed_physical_locations",
+    "rows": [
+      {
+        "nx": 40,
+        "h_local_mm": 5.0,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 210.905837579372
+        }
+      },
+      {
+        "nx": 60,
+        "h_local_mm": 3.3333333333333335,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 252.9953532805045
+        }
+      },
+      {
+        "nx": 80,
+        "h_local_mm": 2.5,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 236.94281990941732
+        }
+      }
+    ]
   },
-  "actual_parameters": {},
+  "actual_parameters": {
+    "distances_mm": [
+      2.5,
+      2.5,
+      2.5
+    ]
+  },
   "public_feedback": {
-    "status": "unsupported",
-    "executed_change": "当前隔离执行器无法在不改变提案目的的前提下执行该实验",
-    "actual_parameters": {},
-    "observations": {
-      "reason": "proposal could not be mapped without changing its stated purpose"
+    "status": "completed",
+    "executed_change": "不改变模型，在两个裂尖前方的固定物理距离提取法向应力",
+    "actual_parameters": {
+      "distances_mm": [
+        2.5,
+        2.5,
+        2.5
+      ]
     },
-    "limitations": [
-      "执行器没有替换或补写其他实验路线"
-    ],
-    "proposal_sha256": "a1cfe73916b7673438b84fc7928a42a83a1007fb7be1303f2c3a08b4b21abc86"
+    "observations": {
+      "rows": [
+        {
+          "nx": 40,
+          "h_local_mm": 5.0,
+          "samples": {
+            "distance_2.5_mm_mean_sigma_y_mpa": 210.905837579372
+          }
+        },
+        {
+          "nx": 60,
+          "h_local_mm": 3.3333333333333335,
+          "samples": {
+            "distance_2.5_mm_mean_sigma_y_mpa": 252.9953532805045
+          }
+        },
+        {
+          "nx": 80,
+          "h_local_mm": 2.5,
+          "samples": {
+            "distance_2.5_mm_mean_sigma_y_mpa": 236.94281990941732
+          }
+        }
+      ]
+    },
+    "limitations": [],
+    "proposal_sha256": "0afd9c143561e2debc807e50ba5668443ed93e430da12eaca28018f8940bf8a1"
   }
 }

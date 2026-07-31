@@ -1,15 +1,37 @@
 {
-  "status": "information_required",
-  "executed_change": "未运行新模型，等待补充材料本构和断裂参数",
-  "actual_parameters": {},
+  "status": "completed",
+  "executed_change": "不改变模型，在两个裂尖前方的固定物理距离提取法向应力",
+  "actual_parameters": {
+    "distances_mm": [
+      2.5,
+      2.5
+    ]
+  },
   "observations": {
-    "requested_information": [
-      "屈服强度",
-      "真实应力-塑性应变曲线",
-      "硬化模型",
-      "断裂或损伤参数"
+    "rows": [
+      {
+        "nx": 40,
+        "h_local_mm": 5.0,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 210.905837579372
+        }
+      },
+      {
+        "nx": 60,
+        "h_local_mm": 3.3333333333333335,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 252.9953532805045
+        }
+      },
+      {
+        "nx": 80,
+        "h_local_mm": 2.5,
+        "samples": {
+          "distance_2.5_mm_mean_sigma_y_mpa": 236.94281990941732
+        }
+      }
     ]
   },
   "limitations": [],
-  "proposal_sha256": "20b6f6260525d1febeaea3561e106571776dbe9a71175872a9ebe03afc92f819"
+  "proposal_sha256": "d325954dfba424157b9423cbb7686196fda9cf4330e87fc1c0785008a9d85dbc"
 }
