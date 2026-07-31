@@ -1,0 +1,1083 @@
+{
+  "proposal_sha256": "6d91feb2bb9152761d41ef18d65ed8dc495ec18b0277eabe74e612af56c21920",
+  "operation": "extraction_compare",
+  "executed_change": "有限元网格和位移场完全不变，只改变标线两端位移的读取方法",
+  "observations": [
+    {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "nearest_node",
+      "recommended_angle_deg": 0.0,
+      "predicted_angle_change_deg": 0.01411019,
+      "evaluated_directions": 121,
+      "backend": "analytical surface-grid smoke backend",
+      "description": "把标线两端吸附到最近表面节点"
+    },
+    {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "surface_interpolation",
+      "recommended_angle_deg": 0.0,
+      "predicted_angle_change_deg": 0.01411019,
+      "evaluated_directions": 121,
+      "backend": "analytical surface-grid smoke backend",
+      "description": "保持标线真实位置，在所在表面单元内插值两端位移"
+    }
+  ],
+  "limitations": [
+    "该对照能够识别节点吸附误差，但仍需要通过旋转网格或继续细化检查插值结果是否稳定"
+  ],
+  "internal_raw": {
+    "nearest_node": {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "nearest_node",
+      "best_beta_deg": 0.0,
+      "best_delta_beta_deg": 0.014110186382078747,
+      "sample_count": 121,
+      "samples": [
+        {
+          "beta_deg": 0.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 0.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 1.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 1.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 2.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 2.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 3.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 3.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 4.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 4.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 5.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 5.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 6.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 6.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 7.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 7.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 8.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 8.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 9.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 9.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 10.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 10.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 11.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 11.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 12.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 12.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 13.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 13.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 14.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 14.5,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 15.0,
+          "delta_beta_deg": 0.014110186382078747
+        },
+        {
+          "beta_deg": 15.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 16.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 16.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 17.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 17.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 18.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 18.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 19.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 19.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 20.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 20.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 21.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 21.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 22.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 22.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 23.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 23.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 24.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 24.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 25.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 25.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 26.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 26.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 27.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 27.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 28.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 28.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 29.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 29.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 30.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 30.5,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 31.0,
+          "delta_beta_deg": 0.009211847353991942
+        },
+        {
+          "beta_deg": 31.5,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 32.0,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 32.5,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 33.0,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 33.5,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 34.0,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 34.5,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 35.0,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 35.5,
+          "delta_beta_deg": 0.004396795473361692
+        },
+        {
+          "beta_deg": 36.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 36.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 37.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 37.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 38.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 38.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 39.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 39.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 40.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 40.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 41.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 41.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 42.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 42.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 43.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 43.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 44.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 44.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 45.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 45.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 46.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 46.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 47.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 47.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 48.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 48.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 49.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 49.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 50.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 50.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 51.0,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 51.5,
+          "delta_beta_deg": 0.002040929117107737
+        },
+        {
+          "beta_deg": 52.0,
+          "delta_beta_deg": 0.0007153436663429602
+        },
+        {
+          "beta_deg": 52.5,
+          "delta_beta_deg": 0.0007153436663429602
+        },
+        {
+          "beta_deg": 53.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 53.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 54.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 54.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 55.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 55.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 56.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 56.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 57.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 57.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 58.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 58.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 59.0,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 59.5,
+          "delta_beta_deg": 0.0021576447080704497
+        },
+        {
+          "beta_deg": 60.0,
+          "delta_beta_deg": 0.0021576447080704497
+        }
+      ],
+      "solver": "analytical surface-grid smoke backend"
+    },
+    "surface_interpolation": {
+      "mesh": {
+        "circumferential": 32,
+        "radial": 5,
+        "axial": 16,
+        "helix_angle_deg": 0.0
+      },
+      "extraction": "surface_interpolation",
+      "best_beta_deg": 0.0,
+      "best_delta_beta_deg": 0.014110186388213035,
+      "sample_count": 121,
+      "samples": [
+        {
+          "beta_deg": 0.0,
+          "delta_beta_deg": 0.014110186388213035
+        },
+        {
+          "beta_deg": 0.5,
+          "delta_beta_deg": 0.01399829232491634
+        },
+        {
+          "beta_deg": 1.0,
+          "delta_beta_deg": 0.01388428424635535
+        },
+        {
+          "beta_deg": 1.5,
+          "delta_beta_deg": 0.013768196877593564
+        },
+        {
+          "beta_deg": 2.0,
+          "delta_beta_deg": 0.013650065576201742
+        },
+        {
+          "beta_deg": 2.5,
+          "delta_beta_deg": 0.013529926321481422
+        },
+        {
+          "beta_deg": 3.0,
+          "delta_beta_deg": 0.013407815703531334
+        },
+        {
+          "beta_deg": 3.5,
+          "delta_beta_deg": 0.013283770912088766
+        },
+        {
+          "beta_deg": 4.0,
+          "delta_beta_deg": 0.013157829725217951
+        },
+        {
+          "beta_deg": 4.5,
+          "delta_beta_deg": 0.013030030497803047
+        },
+        {
+          "beta_deg": 5.0,
+          "delta_beta_deg": 0.012900412149881468
+        },
+        {
+          "beta_deg": 5.5,
+          "delta_beta_deg": 0.012769014154785374
+        },
+        {
+          "beta_deg": 6.0,
+          "delta_beta_deg": 0.01263587652715703
+        },
+        {
+          "beta_deg": 6.5,
+          "delta_beta_deg": 0.012501039810729253
+        },
+        {
+          "beta_deg": 7.0,
+          "delta_beta_deg": 0.012364545066035681
+        },
+        {
+          "beta_deg": 7.5,
+          "delta_beta_deg": 0.012226433857866148
+        },
+        {
+          "beta_deg": 8.0,
+          "delta_beta_deg": 0.012086748242682077
+        },
+        {
+          "beta_deg": 8.5,
+          "delta_beta_deg": 0.01194553075575655
+        },
+        {
+          "beta_deg": 9.0,
+          "delta_beta_deg": 0.011802824398275291
+        },
+        {
+          "beta_deg": 9.5,
+          "delta_beta_deg": 0.011658672624250244
+        },
+        {
+          "beta_deg": 10.0,
+          "delta_beta_deg": 0.011513119327293708
+        },
+        {
+          "beta_deg": 10.5,
+          "delta_beta_deg": 0.011366208827279678
+        },
+        {
+          "beta_deg": 11.0,
+          "delta_beta_deg": 0.011217985856825763
+        },
+        {
+          "beta_deg": 11.5,
+          "delta_beta_deg": 0.011068495547744917
+        },
+        {
+          "beta_deg": 12.0,
+          "delta_beta_deg": 0.010917783417271565
+        },
+        {
+          "beta_deg": 12.5,
+          "delta_beta_deg": 0.010765895354262867
+        },
+        {
+          "beta_deg": 13.0,
+          "delta_beta_deg": 0.010612877605202797
+        },
+        {
+          "beta_deg": 13.5,
+          "delta_beta_deg": 0.010458776760140509
+        },
+        {
+          "beta_deg": 14.0,
+          "delta_beta_deg": 0.010303639738580728
+        },
+        {
+          "beta_deg": 14.5,
+          "delta_beta_deg": 0.010147513775123684
+        },
+        {
+          "beta_deg": 15.0,
+          "delta_beta_deg": 0.009990446405193865
+        },
+        {
+          "beta_deg": 15.5,
+          "delta_beta_deg": 0.009832485450525397
+        },
+        {
+          "beta_deg": 16.0,
+          "delta_beta_deg": 0.009673679004652769
+        },
+        {
+          "beta_deg": 16.5,
+          "delta_beta_deg": 0.009514075418270096
+        },
+        {
+          "beta_deg": 17.0,
+          "delta_beta_deg": 0.009353723284544202
+        },
+        {
+          "beta_deg": 17.5,
+          "delta_beta_deg": 0.009192671424333554
+        },
+        {
+          "beta_deg": 18.0,
+          "delta_beta_deg": 0.009030968871361011
+        },
+        {
+          "beta_deg": 18.5,
+          "delta_beta_deg": 0.008868664857271114
+        },
+        {
+          "beta_deg": 19.0,
+          "delta_beta_deg": 0.00870580879670868
+        },
+        {
+          "beta_deg": 19.5,
+          "delta_beta_deg": 0.008542450272251756
+        },
+        {
+          "beta_deg": 20.0,
+          "delta_beta_deg": 0.00837863901938718
+        },
+        {
+          "beta_deg": 20.5,
+          "delta_beta_deg": 0.008214424911354712
+        },
+        {
+          "beta_deg": 21.0,
+          "delta_beta_deg": 0.008049857943987604
+        },
+        {
+          "beta_deg": 21.5,
+          "delta_beta_deg": 0.007884988220521194
+        },
+        {
+          "beta_deg": 22.0,
+          "delta_beta_deg": 0.007719865936390846
+        },
+        {
+          "beta_deg": 22.5,
+          "delta_beta_deg": 0.0075545413639055425
+        },
+        {
+          "beta_deg": 23.0,
+          "delta_beta_deg": 0.007389064837031611
+        },
+        {
+          "beta_deg": 23.5,
+          "delta_beta_deg": 0.007223486736045004
+        },
+        {
+          "beta_deg": 24.0,
+          "delta_beta_deg": 0.007057857472268836
+        },
+        {
+          "beta_deg": 24.5,
+          "delta_beta_deg": 0.0068922274726936905
+        },
+        {
+          "beta_deg": 25.0,
+          "delta_beta_deg": 0.0067266471646654225
+        },
+        {
+          "beta_deg": 25.5,
+          "delta_beta_deg": 0.006561166960580067
+        },
+        {
+          "beta_deg": 26.0,
+          "delta_beta_deg": 0.0063958372425005905
+        },
+        {
+          "beta_deg": 26.5,
+          "delta_beta_deg": 0.006230708346912195
+        },
+        {
+          "beta_deg": 27.0,
+          "delta_beta_deg": 0.006065830549399465
+        },
+        {
+          "beta_deg": 27.5,
+          "delta_beta_deg": 0.005901254049298643
+        },
+        {
+          "beta_deg": 28.0,
+          "delta_beta_deg": 0.005737028954513335
+        },
+        {
+          "beta_deg": 28.5,
+          "delta_beta_deg": 0.005573205266259151
+        },
+        {
+          "beta_deg": 29.0,
+          "delta_beta_deg": 0.005409832863847441
+        },
+        {
+          "beta_deg": 29.5,
+          "delta_beta_deg": 0.005246961489515201
+        },
+        {
+          "beta_deg": 30.0,
+          "delta_beta_deg": 0.005084640733333146
+        },
+        {
+          "beta_deg": 30.5,
+          "delta_beta_deg": 0.0049229200180889165
+        },
+        {
+          "beta_deg": 31.0,
+          "delta_beta_deg": 0.00476184858428752
+        },
+        {
+          "beta_deg": 31.5,
+          "delta_beta_deg": 0.004601475475176642
+        },
+        {
+          "beta_deg": 32.0,
+          "delta_beta_deg": 0.004441849521803931
+        },
+        {
+          "beta_deg": 32.5,
+          "delta_beta_deg": 0.004283019328227056
+        },
+        {
+          "beta_deg": 33.0,
+          "delta_beta_deg": 0.004125033256642041
+        },
+        {
+          "beta_deg": 33.5,
+          "delta_beta_deg": 0.003967939412774513
+        },
+        {
+          "beta_deg": 34.0,
+          "delta_beta_deg": 0.0038117856311927767
+        },
+        {
+          "beta_deg": 34.5,
+          "delta_beta_deg": 0.0036566194607488
+        },
+        {
+          "beta_deg": 35.0,
+          "delta_beta_deg": 0.0035024881501541927
+        },
+        {
+          "beta_deg": 35.5,
+          "delta_beta_deg": 0.0033494386336130333
+        },
+        {
+          "beta_deg": 36.0,
+          "delta_beta_deg": 0.0031975175164902225
+        },
+        {
+          "beta_deg": 36.5,
+          "delta_beta_deg": 0.003046771061192999
+        },
+        {
+          "beta_deg": 37.0,
+          "delta_beta_deg": 0.0028972451730311377
+        },
+        {
+          "beta_deg": 37.5,
+          "delta_beta_deg": 0.0027489853863684743
+        },
+        {
+          "beta_deg": 38.0,
+          "delta_beta_deg": 0.0026020368506181057
+        },
+        {
+          "beta_deg": 38.5,
+          "delta_beta_deg": 0.002456444316607076
+        },
+        {
+          "beta_deg": 39.0,
+          "delta_beta_deg": 0.0023122521229481663
+        },
+        {
+          "beta_deg": 39.5,
+          "delta_beta_deg": 0.0021695041825253725
+        },
+        {
+          "beta_deg": 40.0,
+          "delta_beta_deg": 0.002028243969128596
+        },
+        {
+          "beta_deg": 40.5,
+          "delta_beta_deg": 0.0018885145042091267
+        },
+        {
+          "beta_deg": 41.0,
+          "delta_beta_deg": 0.0017503583438909232
+        },
+        {
+          "beta_deg": 41.5,
+          "delta_beta_deg": 0.0016138175658326759
+        },
+        {
+          "beta_deg": 42.0,
+          "delta_beta_deg": 0.0014789337565801475
+        },
+        {
+          "beta_deg": 42.5,
+          "delta_beta_deg": 0.0013457479988261412
+        },
+        {
+          "beta_deg": 43.0,
+          "delta_beta_deg": 0.001214300858926265
+        },
+        {
+          "beta_deg": 43.5,
+          "delta_beta_deg": 0.0010846323745639097
+        },
+        {
+          "beta_deg": 44.0,
+          "delta_beta_deg": 0.0009567820425218088
+        },
+        {
+          "beta_deg": 44.5,
+          "delta_beta_deg": 0.0008307888066454439
+        },
+        {
+          "beta_deg": 45.0,
+          "delta_beta_deg": 0.0007066910460764575
+        },
+        {
+          "beta_deg": 45.5,
+          "delta_beta_deg": 0.0005845265634292218
+        },
+        {
+          "beta_deg": 46.0,
+          "delta_beta_deg": 0.0004643325733795223
+        },
+        {
+          "beta_deg": 46.5,
+          "delta_beta_deg": 0.0003461456912887684
+        },
+        {
+          "beta_deg": 47.0,
+          "delta_beta_deg": 0.0002300019219916294
+        },
+        {
+          "beta_deg": 47.5,
+          "delta_beta_deg": 0.00011593664900289014
+        },
+        {
+          "beta_deg": 48.0,
+          "delta_beta_deg": 3.984623504038609e-06
+        },
+        {
+          "beta_deg": 48.5,
+          "delta_beta_deg": 0.0001058200461159231
+        },
+        {
+          "beta_deg": 49.0,
+          "delta_beta_deg": 0.00021344390458466478
+        },
+        {
+          "beta_deg": 49.5,
+          "delta_beta_deg": 0.00031885416017018997
+        },
+        {
+          "beta_deg": 50.0,
+          "delta_beta_deg": 0.00042201869447922036
+        },
+        {
+          "beta_deg": 50.5,
+          "delta_beta_deg": 0.000522906072305318
+        },
+        {
+          "beta_deg": 51.0,
+          "delta_beta_deg": 0.0006214855512567397
+        },
+        {
+          "beta_deg": 51.5,
+          "delta_beta_deg": 0.0007177270910645461
+        },
+        {
+          "beta_deg": 52.0,
+          "delta_beta_deg": 0.00081160136284808
+        },
+        {
+          "beta_deg": 52.5,
+          "delta_beta_deg": 0.0009030797579328009
+        },
+        {
+          "beta_deg": 53.0,
+          "delta_beta_deg": 0.000992134396675226
+        },
+        {
+          "beta_deg": 53.5,
+          "delta_beta_deg": 0.0010787381369326
+        },
+        {
+          "beta_deg": 54.0,
+          "delta_beta_deg": 0.0011628645823833494
+        },
+        {
+          "beta_deg": 54.5,
+          "delta_beta_deg": 0.0012444880905064792
+        },
+        {
+          "beta_deg": 55.0,
+          "delta_beta_deg": 0.0013235837804970174
+        },
+        {
+          "beta_deg": 55.5,
+          "delta_beta_deg": 0.0014001275408404013
+        },
+        {
+          "beta_deg": 56.0,
+          "delta_beta_deg": 0.0014740960366381728
+        },
+        {
+          "beta_deg": 56.5,
+          "delta_beta_deg": 0.0015454667167915659
+        },
+        {
+          "beta_deg": 57.0,
+          "delta_beta_deg": 0.0016142178208511382
+        },
+        {
+          "beta_deg": 57.5,
+          "delta_beta_deg": 0.001680328385681662
+        },
+        {
+          "beta_deg": 58.0,
+          "delta_beta_deg": 0.0017437782518712197
+        },
+        {
+          "beta_deg": 58.5,
+          "delta_beta_deg": 0.0018045480699200311
+        },
+        {
+          "beta_deg": 59.0,
+          "delta_beta_deg": 0.0018626193061308527
+        },
+        {
+          "beta_deg": 59.5,
+          "delta_beta_deg": 0.001917974248272003
+        },
+        {
+          "beta_deg": 60.0,
+          "delta_beta_deg": 0.001970596010998804
+        }
+      ],
+      "solver": "analytical surface-grid smoke backend"
+    }
+  },
+  "state_after": {
+    "active_mesh": {
+      "circumferential": 32,
+      "radial": 5,
+      "axial": 16,
+      "helix_angle_deg": 0.0
+    },
+    "active_extraction": "surface_interpolation",
+    "completed_operations": [
+      "extraction_compare",
+      "extraction_compare"
+    ],
+    "finite_element_cases": [
+      {
+        "mesh": {
+          "circumferential": 16,
+          "radial": 3,
+          "axial": 8,
+          "helix_angle_deg": 0.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      },
+      {
+        "mesh": {
+          "circumferential": 32,
+          "radial": 5,
+          "axial": 16,
+          "helix_angle_deg": 0.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      },
+      {
+        "mesh": {
+          "circumferential": 32,
+          "radial": 5,
+          "axial": 16,
+          "helix_angle_deg": 20.0
+        },
+        "force_n": 180000.0,
+        "torque_nmm": 2000000.0
+      }
+    ]
+  }
+}
