@@ -13,6 +13,7 @@ DISPLACEMENT_PROBE_OPERATION = previous_adapter.DISPLACEMENT_PROBE_OPERATION  # 
 DISPLACEMENT_K_OPERATION = previous_adapter.DISPLACEMENT_K_OPERATION  # 复用v6位移法K联合操作标识。
 DISPLACEMENT_MATERIAL_OPERATION = previous_adapter.DISPLACEMENT_MATERIAL_OPERATION  # 复用v6位移和材料联合操作标识。
 STRESS_POSTPROCESS_OPERATION = previous_adapter.STRESS_POSTPROCESS_OPERATION  # 复用v6纯应力后处理操作标识。
+_V6_MAP_FROZEN_PROPOSAL = previous_adapter.map_frozen_proposal  # 保存未修补的v6映射入口以避免兼容别名产生递归。
 
 
 def _actionable_text(proposal: dict[str, Any]) -> str:  # 只读取本轮实际要求执行的字段而排除背景不确定性。
@@ -46,8 +47,11 @@ def map_frozen_proposal(round_dir: Path, proposal_hash: str) -> dict[str, Any]: 
         if asks_fracture:  # 检查本轮是否要求位移法断裂评价量。
             return previous_adapter._write_mapping(round_dir, proposal_hash, DISPLACEMENT_K_OPERATION, "actionable fields request crack-face displacement extraction and a displacement-derived fracture quantity")  # 映射为完整位移法K实验。
         return previous_adapter._write_mapping(round_dir, proposal_hash, DISPLACEMENT_PROBE_OPERATION, "actionable fields request raw crack-face or nodal displacement evidence")  # 映射为原始位移数据提取。
-    return previous_adapter.map_frozen_proposal(round_dir, proposal_hash)  # 对其他提案复用v6全部忠实映射合同。
+    return _V6_MAP_FROZEN_PROPOSAL(round_dir, proposal_hash)  # 对其他提案复用原始v6全部忠实映射合同。
 
 
 def execute_mapping(round_dir: Path, proposal_hash: str, mapping: dict[str, Any]) -> dict[str, Any]:  # 复用v6真实执行路径。
     return previous_adapter.execute_mapping(round_dir, proposal_hash, mapping)  # 返回位移、纯后处理、路线控制或其他隐藏实验结果。
+
+
+previous_adapter.map_frozen_proposal = map_frozen_proposal  # 为旧v6测试和兼容导入暴露相同的作用域严格映射入口。
