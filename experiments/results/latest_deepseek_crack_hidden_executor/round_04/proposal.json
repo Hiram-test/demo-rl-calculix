@@ -1,0 +1,22 @@
+{
+  "competing_hypotheses": [
+    {
+      "hypothesis": "材料屈服强度足够高（例如 >500 MPa），小范围屈服条件成立，线弹性断裂力学有效；常规单元无法准确表征裂尖 1/√r 奇异性，即使继续加密也无法得到收敛且准确的 K 值，必须改用四分之一节点奇异单元。"
+    },
+    {
+      "hypothesis": "材料屈服强度较低（例如 <300 MPa），裂纹尖端塑性区显著，线弹性假设不再适用，需要采用弹塑性断裂分析；此时不仅网格策略要改变，物理模型也需要扩展。"
+    }
+  ],
+  "evidence_refs": [
+    "previous_rounds[1].execution_feedback.observations.rows",
+    "initial_evidence.initial_mesh_history"
+  ],
+  "uncertainties": [
+    "材料屈服强度未知，导致无法定量估计塑性区尺寸和线弹性适用范围。",
+    "当前执行环境是否具备生成奇异单元网格并计算其 K 值的能力未知。"
+  ],
+  "proposal_type": "request_information",
+  "information_request": {
+    "question": "请提供以下两项信息：1. 该钢板材料的屈服强度（MPa），若为一组可能的范围也请说明；2. 当前执行环境是否支持生成含有quarter-point奇异单元的网格（例如将裂纹尖端周围八节点四边形单元的边中节点移至1/4位置，或采用其他方法产生1/√r奇异性），并在此类网格上计算和提取应力强度因子K？"
+  }
+}
