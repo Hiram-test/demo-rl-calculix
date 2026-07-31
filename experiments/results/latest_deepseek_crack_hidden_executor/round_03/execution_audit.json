@@ -1,254 +1,28 @@
 {
-  "proposal_sha256": "2f538f0ddfad6707917180e8fd7ea905851660aa7123d9807dc6c853bc131008",
-  "internal_operation": "crack_face_displacement_k_sequence",
+  "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e",
+  "internal_operation": "request_material",
   "raw_result": {
-    "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
-    "rows": [
-      {
-        "nx": 40,
-        "h_local_mm": 5.0,
-        "requested_distance_from_tip_mm": 2.5,
-        "actual_distance_from_tip_mm": 5.0,
-        "mean_half_opening_mm": 0.011767777139183703,
-        "tip_samples": [
-          {
-            "tip": "right",
-            "target_x_mm": 17.5,
-            "actual_x_mm": 15.0,
-            "actual_distance_from_tip_mm": 5.0,
-            "upper_node": 843,
-            "lower_node": 890,
-            "upper_uy_mm": 0.035566924253060954,
-            "lower_uy_mm": 0.05910247853142831,
-            "opening_displacement_mm": -0.023535554278367357,
-            "half_opening_mm": 0.011767777139183679
-          },
-          {
-            "tip": "left",
-            "target_x_mm": -17.5,
-            "actual_x_mm": -15.0,
-            "actual_distance_from_tip_mm": 5.0,
-            "upper_node": 837,
-            "lower_node": 878,
-            "upper_uy_mm": 0.0355669242530597,
-            "lower_uy_mm": 0.05910247853142715,
-            "opening_displacement_mm": -0.023535554278367454,
-            "half_opening_mm": 0.011767777139183727
-          }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
-      },
-      {
-        "nx": 60,
-        "h_local_mm": 3.3333333333333335,
-        "requested_distance_from_tip_mm": 2.5,
-        "actual_distance_from_tip_mm": 3.3333333333333357,
-        "mean_half_opening_mm": 0.009913954465817778,
-        "tip_samples": [
-          {
-            "tip": "right",
-            "target_x_mm": 17.5,
-            "actual_x_mm": 16.66666666666667,
-            "actual_distance_from_tip_mm": 3.3333333333333286,
-            "upper_node": 1865,
-            "lower_node": 1936,
-            "upper_uy_mm": 0.03741120680063296,
-            "lower_uy_mm": 0.057239115732268524,
-            "opening_displacement_mm": -0.019827908931635566,
-            "half_opening_mm": 0.009913954465817783
-          },
-          {
-            "tip": "left",
-            "target_x_mm": -17.5,
-            "actual_x_mm": -16.666666666666657,
-            "actual_distance_from_tip_mm": 3.333333333333343,
-            "upper_node": 1855,
-            "lower_node": 1916,
-            "upper_uy_mm": 0.037411206800633985,
-            "lower_uy_mm": 0.05723911573226953,
-            "opening_displacement_mm": -0.019827908931635545,
-            "half_opening_mm": 0.009913954465817772
-          }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
-      },
-      {
-        "nx": 80,
-        "h_local_mm": 2.5,
-        "requested_distance_from_tip_mm": 2.5,
-        "actual_distance_from_tip_mm": 2.5,
-        "mean_half_opening_mm": 0.008715835232585444,
-        "tip_samples": [
-          {
-            "tip": "right",
-            "target_x_mm": 17.5,
-            "actual_x_mm": 17.5,
-            "actual_distance_from_tip_mm": 2.5,
-            "upper_node": 3287,
-            "lower_node": 3382,
-            "upper_uy_mm": 0.03860470165569212,
-            "lower_uy_mm": 0.056036372120863036,
-            "opening_displacement_mm": -0.01743167046517092,
-            "half_opening_mm": 0.00871583523258546
-          },
-          {
-            "tip": "left",
-            "target_x_mm": -17.5,
-            "actual_x_mm": -17.5,
-            "actual_distance_from_tip_mm": 2.5,
-            "upper_node": 3273,
-            "lower_node": 3354,
-            "upper_uy_mm": 0.03860470165569601,
-            "lower_uy_mm": 0.056036372120866866,
-            "opening_displacement_mm": -0.017431670465170856,
-            "half_opening_mm": 0.008715835232585428
-          }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
-      }
-    ],
-    "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
-    "relative_spread_percent": 4.622007512891694
+    "requested_information": [
+      "屈服强度",
+      "真实应力-塑性应变曲线",
+      "硬化模型",
+      "断裂或损伤参数"
+    ]
   },
-  "actual_parameters": {
-    "requested_distances_mm": [
-      2.5
-    ],
-    "mesh_levels": [
-      40,
-      60,
-      80
-    ],
-    "plane_condition": "plane_stress"
-  },
+  "actual_parameters": {},
   "public_feedback": {
-    "status": "completed",
-    "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
-    "actual_parameters": {
-      "requested_distances_mm": [
-        2.5
-      ],
-      "mesh_levels": [
-        40,
-        60,
-        80
-      ],
-      "plane_condition": "plane_stress"
-    },
+    "status": "information_required",
+    "executed_change": "未运行新模型，等待补充材料本构和断裂参数",
+    "actual_parameters": {},
     "observations": {
-      "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
-      "rows": [
-        {
-          "nx": 40,
-          "h_local_mm": 5.0,
-          "requested_distance_from_tip_mm": 2.5,
-          "actual_distance_from_tip_mm": 5.0,
-          "mean_half_opening_mm": 0.011767777139183703,
-          "tip_samples": [
-            {
-              "tip": "right",
-              "target_x_mm": 17.5,
-              "actual_x_mm": 15.0,
-              "actual_distance_from_tip_mm": 5.0,
-              "upper_node": 843,
-              "lower_node": 890,
-              "upper_uy_mm": 0.035566924253060954,
-              "lower_uy_mm": 0.05910247853142831,
-              "opening_displacement_mm": -0.023535554278367357,
-              "half_opening_mm": 0.011767777139183679
-            },
-            {
-              "tip": "left",
-              "target_x_mm": -17.5,
-              "actual_x_mm": -15.0,
-              "actual_distance_from_tip_mm": 5.0,
-              "upper_node": 837,
-              "lower_node": 878,
-              "upper_uy_mm": 0.0355669242530597,
-              "lower_uy_mm": 0.05910247853142715,
-              "opening_displacement_mm": -0.023535554278367454,
-              "half_opening_mm": 0.011767777139183727
-            }
-          ],
-          "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
-        },
-        {
-          "nx": 60,
-          "h_local_mm": 3.3333333333333335,
-          "requested_distance_from_tip_mm": 2.5,
-          "actual_distance_from_tip_mm": 3.3333333333333357,
-          "mean_half_opening_mm": 0.009913954465817778,
-          "tip_samples": [
-            {
-              "tip": "right",
-              "target_x_mm": 17.5,
-              "actual_x_mm": 16.66666666666667,
-              "actual_distance_from_tip_mm": 3.3333333333333286,
-              "upper_node": 1865,
-              "lower_node": 1936,
-              "upper_uy_mm": 0.03741120680063296,
-              "lower_uy_mm": 0.057239115732268524,
-              "opening_displacement_mm": -0.019827908931635566,
-              "half_opening_mm": 0.009913954465817783
-            },
-            {
-              "tip": "left",
-              "target_x_mm": -17.5,
-              "actual_x_mm": -16.666666666666657,
-              "actual_distance_from_tip_mm": 3.333333333333343,
-              "upper_node": 1855,
-              "lower_node": 1916,
-              "upper_uy_mm": 0.037411206800633985,
-              "lower_uy_mm": 0.05723911573226953,
-              "opening_displacement_mm": -0.019827908931635545,
-              "half_opening_mm": 0.009913954465817772
-            }
-          ],
-          "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
-        },
-        {
-          "nx": 80,
-          "h_local_mm": 2.5,
-          "requested_distance_from_tip_mm": 2.5,
-          "actual_distance_from_tip_mm": 2.5,
-          "mean_half_opening_mm": 0.008715835232585444,
-          "tip_samples": [
-            {
-              "tip": "right",
-              "target_x_mm": 17.5,
-              "actual_x_mm": 17.5,
-              "actual_distance_from_tip_mm": 2.5,
-              "upper_node": 3287,
-              "lower_node": 3382,
-              "upper_uy_mm": 0.03860470165569212,
-              "lower_uy_mm": 0.056036372120863036,
-              "opening_displacement_mm": -0.01743167046517092,
-              "half_opening_mm": 0.00871583523258546
-            },
-            {
-              "tip": "left",
-              "target_x_mm": -17.5,
-              "actual_x_mm": -17.5,
-              "actual_distance_from_tip_mm": 2.5,
-              "upper_node": 3273,
-              "lower_node": 3354,
-              "upper_uy_mm": 0.03860470165569601,
-              "lower_uy_mm": 0.056036372120866866,
-              "opening_displacement_mm": -0.017431670465170856,
-              "half_opening_mm": 0.008715835232585428
-            }
-          ],
-          "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
-        }
-      ],
-      "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
-      "relative_spread_percent": 4.622007512891694
+      "requested_information": [
+        "屈服强度",
+        "真实应力-塑性应变曲线",
+        "硬化模型",
+        "断裂或损伤参数"
+      ]
     },
-    "limitations": [
-      "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
-      "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
-      "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
-    ],
-    "proposal_sha256": "2f538f0ddfad6707917180e8fd7ea905851660aa7123d9807dc6c853bc131008"
+    "limitations": [],
+    "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e"
   }
 }

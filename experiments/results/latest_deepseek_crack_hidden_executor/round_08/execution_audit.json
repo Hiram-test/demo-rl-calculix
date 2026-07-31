@@ -1,6 +1,6 @@
 {
-  "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213",
-  "internal_operation": "crack_face_displacement_probe",
+  "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa",
+  "internal_operation": "crack_face_displacement_with_material_request",
   "raw_result": {
     "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
     "rows": [
@@ -103,6 +103,12 @@
           }
         ]
       }
+    ],
+    "requested_information": [
+      "屈服强度",
+      "真实应力-塑性应变曲线",
+      "硬化模型",
+      "断裂韧性或损伤参数"
     ]
   },
   "actual_parameters": {
@@ -117,7 +123,7 @@
     "plane_condition": "plane_stress"
   },
   "public_feedback": {
-    "status": "completed",
+    "status": "information_required",
     "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
     "actual_parameters": {
       "requested_distances_mm": [
@@ -232,12 +238,18 @@
             }
           ]
         }
+      ],
+      "requested_information": [
+        "屈服强度",
+        "真实应力-塑性应变曲线",
+        "硬化模型",
+        "断裂韧性或损伤参数"
       ]
     },
     "limitations": [
       "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
       "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
     ],
-    "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213"
+    "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa"
   }
 }

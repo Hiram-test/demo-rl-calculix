@@ -1,6 +1,6 @@
 {
-  "status": "completed",
-  "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+  "status": "information_required",
+  "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
   "actual_parameters": {
     "requested_distances_mm": [
       2.5
@@ -46,8 +46,7 @@
             "opening_displacement_mm": -0.023535554278367454,
             "half_opening_mm": 0.011767777139183727
           }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+        ]
       },
       {
         "nx": 60,
@@ -80,8 +79,7 @@
             "opening_displacement_mm": -0.019827908931635545,
             "half_opening_mm": 0.009913954465817772
           }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+        ]
       },
       {
         "nx": 80,
@@ -114,17 +112,19 @@
             "opening_displacement_mm": -0.017431670465170856,
             "half_opening_mm": 0.008715835232585428
           }
-        ],
-        "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+        ]
       }
     ],
-    "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
-    "relative_spread_percent": 4.622007512891694
+    "requested_information": [
+      "屈服强度",
+      "真实应力-塑性应变曲线",
+      "硬化模型",
+      "断裂韧性或损伤参数"
+    ]
   },
   "limitations": [
     "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
-    "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
-    "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+    "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
   ],
-  "proposal_sha256": "e56f6975d16204c939fc2b90122318ee7381cac27b535457103554d0a6215e91"
+  "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa"
 }

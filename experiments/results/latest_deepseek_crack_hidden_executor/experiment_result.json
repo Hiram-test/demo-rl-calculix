@@ -1,0 +1,2016 @@
+{
+  "experiment": "deepseek_crack_hidden_executor",
+  "model": "deepseek-v4-pro",
+  "system_prompt": "你是有限元与结构工程证据分析代理。你的总体目标始终是解决initial_evidence.user_question中的原始工程问题，不能因为某一种评价量、网格策略或分析路线达到停止条件就结束整个任务。请区分当前路线和总体任务：当当前方法应当结束但原始问题仍有未决决策门时，proposal_type必须为switch_route，并在route_transition中说明route_conclusion、next_route和reason；随后继续提出新的工程实验或信息请求。只有task_contract中的未决决策门已经全部关闭，并且你能够分别回答是否继续细化、当前模型能否用于判断以及下一步具体行动时，proposal_type才能为resolve_task，此时final_answer必须包含continue_refinement、model_usability、next_action和remaining_uncertainties。每轮至少提出两个竞争假设，区分直接观测、可能解释和未知，并选择一个最能推进未决决策门的唯一下一步。你不知道执行环境拥有哪些软件或能力，不得假设存在现成工具，不得使用函数名、工具名或软件命令表达方案；请只用工程和物理语言描述改变什么、保持什么不变、测量什么、怎样判断以及何时结束当前实验。证据不足时可以使用request_information请求缺失事实；请求外部事实不会自动关闭其他仍可计算的决策门。如果task_contract已经记录同一external_blocker，不要重复请求或自行假定该事实；应先完成其他可计算决策门，再用resolve_task给出条件性结论并保留阻塞项。只输出一个合法JSON对象，公共字段为competing_hypotheses、evidence_refs、uncertainties、proposal_type；proposal_type只能是experiment、request_information、switch_route或resolve_task，不要使用stop。当proposal_type=experiment时，experiment必须包含purpose、change、hold_fixed、measure、decision_rule、stop_condition，其中hold_fixed和measure必须是字符串数组；当proposal_type=request_information时，information_request必须包含question。",
+  "tool_catalog_visible_to_model": false,
+  "internal_mapping_visible_to_model": false,
+  "rounds": [
+    {
+      "round": 1,
+      "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213",
+      "chain_sha256": "e07df54a2331e92e527f74ef5e544793c9e9ac0dd983576b1ca9b87721c31f1b",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 4097,
+          "prompt_tokens": 1452,
+          "total_tokens": 5549,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 3509,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 1408
+          },
+          "prompt_cache_hit_tokens": 1408,
+          "prompt_cache_miss_tokens": 44
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213",
+        "operation": "crack_face_displacement_probe",
+        "mapping_reason": "actionable fields request raw crack-face or nodal displacement evidence",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ]
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ]
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ]
+            }
+          ]
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
+        ],
+        "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213"
+      }
+    },
+    {
+      "round": 2,
+      "proposal_sha256": "e56f6975d16204c939fc2b90122318ee7381cac27b535457103554d0a6215e91",
+      "chain_sha256": "5da17558e004cccabb84d33f857f284684221a3cb722e25176a8087c15da2966",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 5492,
+          "prompt_tokens": 3416,
+          "total_tokens": 8908,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 4720,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 1408
+          },
+          "prompt_cache_hit_tokens": 1408,
+          "prompt_cache_miss_tokens": 2008
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "e56f6975d16204c939fc2b90122318ee7381cac27b535457103554d0a6215e91",
+        "operation": "crack_face_displacement_k_sequence",
+        "mapping_reason": "actionable fields request crack-face displacement extraction and a displacement-derived fracture quantity",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "e56f6975d16204c939fc2b90122318ee7381cac27b535457103554d0a6215e91"
+      }
+    },
+    {
+      "round": 3,
+      "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e",
+      "chain_sha256": "e0d8c4a24b5560e5172c849309f7385982ee1b85d5bd7c6c460d839d4068d658",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 2078,
+          "prompt_tokens": 5739,
+          "total_tokens": 7817,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 1672,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 1408
+          },
+          "prompt_cache_hit_tokens": 1408,
+          "prompt_cache_miss_tokens": 4331
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e",
+        "operation": "request_material",
+        "mapping_reason": "question requests external material or constitutive facts rather than another numerical fracture calculation",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "information_required",
+        "executed_change": "未运行新模型，等待补充材料本构和断裂参数",
+        "actual_parameters": {},
+        "observations": {
+          "requested_information": [
+            "屈服强度",
+            "真实应力-塑性应变曲线",
+            "硬化模型",
+            "断裂或损伤参数"
+          ]
+        },
+        "limitations": [],
+        "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e"
+      }
+    },
+    {
+      "round": 4,
+      "proposal_sha256": "d713bc9528bb744939d4199331b041ff405293e05456b6a637ec62422d7dbf60",
+      "chain_sha256": "6aab170aa88818d60e34f0bddb8a9efcda2c8215f97972011573d0ca1c9316bd",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 2630,
+          "prompt_tokens": 6355,
+          "total_tokens": 8985,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 1811,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 1280
+          },
+          "prompt_cache_hit_tokens": 1280,
+          "prompt_cache_miss_tokens": 5075
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "d713bc9528bb744939d4199331b041ff405293e05456b6a637ec62422d7dbf60",
+        "operation": "crack_face_displacement_k_sequence",
+        "mapping_reason": "actionable fields request crack-face displacement extraction and a displacement-derived fracture quantity",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "d713bc9528bb744939d4199331b041ff405293e05456b6a637ec62422d7dbf60"
+      }
+    },
+    {
+      "round": 5,
+      "proposal_sha256": "b06d619db8d1cca4f2e50332f1c69d31bd6aa3060c1a8303d7e55e8859b24c7d",
+      "chain_sha256": "2c21990710a2bd3391b5cfc8e13638c000e01f448d8f3c55b5021920da884aec",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 6465,
+          "prompt_tokens": 8738,
+          "total_tokens": 15203,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 5615,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 256
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 8482
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "b06d619db8d1cca4f2e50332f1c69d31bd6aa3060c1a8303d7e55e8859b24c7d",
+        "operation": "route_transition",
+        "mapping_reason": "proposal ends or changes only the current reasoning route; the global task remains under controller review",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "route_transition",
+        "executed_change": "未运行新模型；当前方法结束，但原始工程任务继续。",
+        "actual_parameters": {},
+        "observations": {
+          "route_conclusion": "基于位移外推K的收敛性评估路线无法提供明确网格充分性证据：执行环境未能以多点拟合改善K估计，单点K总体变化-4.6%未满足预设2%收敛判据。继续单纯加密常规单元可能低效。",
+          "next_route": "采用奇异单元改进裂尖捕捉能力，通过对比奇异单元与常规单元的K收敛性来判断网格充分性，并确定下一步网格处理。",
+          "task_continues": true
+        },
+        "limitations": [],
+        "proposal_sha256": "b06d619db8d1cca4f2e50332f1c69d31bd6aa3060c1a8303d7e55e8859b24c7d"
+      }
+    },
+    {
+      "round": 6,
+      "proposal_sha256": "954d94a38a3a0e306ffb491a7de6d1e4a0836c4ab3128a9ec06dbbbc9e8f7237",
+      "chain_sha256": "e8dce1f9050a90459316bed4c37d9626da50eba72b36fc5b55b0ecd44b44d61c",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 2662,
+          "prompt_tokens": 9814,
+          "total_tokens": 12476,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 1896,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 6272
+          },
+          "prompt_cache_hit_tokens": 6272,
+          "prompt_cache_miss_tokens": 3542
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "954d94a38a3a0e306ffb491a7de6d1e4a0836c4ab3128a9ec06dbbbc9e8f7237",
+        "operation": "crack_face_displacement_k_sequence",
+        "mapping_reason": "actionable fields request crack-face displacement extraction and a displacement-derived fracture quantity",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "954d94a38a3a0e306ffb491a7de6d1e4a0836c4ab3128a9ec06dbbbc9e8f7237"
+      }
+    },
+    {
+      "round": 7,
+      "proposal_sha256": "233ffbe83aaed3516569624fed296c4351ac91f32b1de95b9603d12a9f60a51c",
+      "chain_sha256": "853b62b1f67aea35c096a823df49c09f19d63a379d13c1211ea57ceb5cb30d55",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 2874,
+          "prompt_tokens": 12138,
+          "total_tokens": 15012,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 2120,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 9728
+          },
+          "prompt_cache_hit_tokens": 9728,
+          "prompt_cache_miss_tokens": 2410
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "233ffbe83aaed3516569624fed296c4351ac91f32b1de95b9603d12a9f60a51c",
+        "operation": "route_transition",
+        "mapping_reason": "proposal ends or changes only the current reasoning route; the global task remains under controller review",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "route_transition",
+        "executed_change": "未运行新模型；当前方法结束，但原始工程任务继续。",
+        "actual_parameters": {},
+        "observations": {
+          "route_conclusion": "奇异单元路线反复返回常规单元数据，表明在当前执行环境中无法实施四分之一节点奇异单元；该路线无法获得进一步证据。",
+          "next_route": "利用已有常规单元数据的Richardson外推评估网格收敛性，结合已收敛的远程位移等全局量，为是否继续加密提供证据。",
+          "task_continues": true
+        },
+        "limitations": [],
+        "proposal_sha256": "233ffbe83aaed3516569624fed296c4351ac91f32b1de95b9603d12a9f60a51c"
+      }
+    },
+    {
+      "round": 8,
+      "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa",
+      "chain_sha256": "eaede11bb9cc15174dae1ddbe1b3a1061f37177fa0df07e4d884e3c2b023e2da",
+      "metadata": {
+        "requested_model": "deepseek-v4-pro",
+        "response_model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 1721,
+          "prompt_tokens": 13100,
+          "total_tokens": 14821,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 983,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 12032
+          },
+          "prompt_cache_hit_tokens": 12032,
+          "prompt_cache_miss_tokens": 1068
+        }
+      },
+      "internal_mapping": {
+        "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa",
+        "operation": "crack_face_displacement_with_material_request",
+        "mapping_reason": "proposal requests computable crack-face displacement evidence together with external material facts",
+        "proposal_unchanged": true
+      },
+      "public_feedback": {
+        "status": "information_required",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ]
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ]
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ]
+            }
+          ],
+          "requested_information": [
+            "屈服强度",
+            "真实应力-塑性应变曲线",
+            "硬化模型",
+            "断裂韧性或损伤参数"
+          ]
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
+        ],
+        "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa"
+      }
+    }
+  ],
+  "public_history": [
+    {
+      "round": 1,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 裂尖应力随网格加密升高是弹性奇异性未被捕捉的正常现象，峰值应力不收敛，但远程张开位移可能已经收敛，适合作为网格收敛的工程判据。"
+          },
+          {
+            "hypothesis": "H2: 当前网格密度仍不足以获得收敛的远程位移，继续加密将逐渐改变远程位移值，需要进一步细化直至稳定。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中三个网格的remote_opening序列 (0.1006, 0.1009, 0.1011 mm) 变化逐渐减小，但尚未达到明确平稳。"
+        ],
+        "uncertainties": [
+          "材料是否具有塑性行为未知，塑性可能影响远程位移，但当前线弹性假设已采用。",
+          "所用单元类型未指定，无法评估其捕捉裂尖奇异性的能力。",
+          "局部加密至1.25 mm后能否获得单调收敛趋势未知，可能仍受网格扭曲等影响。"
+        ],
+        "proposal_type": "experiment",
+        "experiment": {
+          "purpose": "通过进一步局部加密评估远程张开位移的收敛性，为是否停止细化网格提供证据。",
+          "change": "将裂尖附近单元特征尺寸从当前2.5 mm减小到约1.25 mm（例如整体网格密度加倍或裂尖区域细化），保持裂尖节点分布与变形模式一致。",
+          "hold_fixed": [
+            "几何尺寸（200 mm x 200 mm x 10 mm 及半裂纹长20 mm）",
+            "加载（上下边缘100 MPa对称均布应力）",
+            "材料属性（E=210000 MPa, ν=0.3，无塑性）",
+            "平面应力假设",
+            "单元类型和积分方案",
+            "求解器与收敛容差"
+          ],
+          "measure": [
+            "remote_opening（远程开口位移）",
+            "tip_peak_sigma_y（裂尖最大应力，用于对比）",
+            "strain_energy（应变能，用于全局能量检查）"
+          ],
+          "decision_rule": "比较新网格与2.5 mm网格的remote_opening相对变化，若|remote_opening_new - 0.101079855| / 0.101079855 < 2%，则判定远程位移已收敛，无需进一步细化；否则继续加密。",
+          "stop_condition": "远程位移满足收敛容差（变化<2%），或裂尖单元尺寸已细化至约0.6 mm以下仍未收敛，或因计算资源限制无法继续加密时停止。"
+        }
+      },
+      "execution_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ]
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ]
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ]
+            }
+          ]
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
+        ],
+        "proposal_sha256": "5e72c0e896b03676ad259b31964091f08db72fd6fc8875d90d72a228c3d46213"
+      }
+    },
+    {
+      "round": 2,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 基于现有三档网格的裂纹面张开位移计算应力强度因子K，随网格加密K值迅速收敛（nx80与nx60相对变化≤2%），结合已接近收敛的远程开口位移，表明无需进一步加密网格。"
+          },
+          {
+            "hypothesis": "H2: 由于未使用奇异单元且网格仍较粗，通过外推获得的K值尚未收敛，需进一步加密或改进网格技术。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中三个网格的远程开口位移序列(0.100613, 0.100923, 0.10108 mm)变化逐渐减小，nx60到nx80相对变化约0.156%",
+          "previous_rounds中提取的裂尖附近不同距离(r=5.0,3.33,2.5 mm)的半张开位移(0.011768,0.009914,0.008716 mm)均递减，符合裂纹张开规律"
+        ],
+        "uncertainties": [
+          "线弹性平面应力假设是否严格满足；实际材料可能存在塑性但未定义",
+          "常规四节点四边形单元无法精确捕捉裂尖奇异性，可能导致K值系统偏低",
+          "位移外推法中拟合节点范围和公式的选取会影响K值",
+          "执行环境能否提取足够多节点位移进行稳健的最小二乘拟合存在不确定性"
+        ],
+        "proposal_type": "experiment",
+        "experiment": {
+          "purpose": "利用已有三档网格的裂纹面位移数据，通过位移外推法计算应力强度因子K，评估其网格收敛性，以确定是否需继续加密网格并获得一个适合工程决策的评价量。",
+          "change": "保持有限元模型、网格和物理假设不变。从nx=40,60,80三档已求解的右裂纹段（优先使用右裂尖数据以保证对称性）提取多个距裂尖不同距离r的实际节点，计算总张开位移δ=2×half_opening；基于线弹性平面应力裂纹尖端张开位移场公式δ(r)=(8K/E)·√(r/(2π))，对δ与√r做线性最小二乘拟合（排除极近裂尖可能受数值污染的点，例如使用r≥2.5 mm的节点），由斜率反算每档网格的K；对左右裂尖结果取平均作为该档网格的K估计值。",
+          "hold_fixed": [
+            "几何尺寸与裂纹长度",
+            "加载条件(100 MPa均布拉应力)",
+            "材料属性(E=210000 MPa, ν=0.3，无塑性)",
+            "单元类型与网格拓扑(已固定为常规四节点四边形)"
+          ],
+          "measure": [
+            "每档网格的应力强度因子K估计值 (MPa√mm)",
+            "网格间K值的相对变化百分比（重点比较nx80与nx60）"
+          ],
+          "decision_rule": "若nx80相对nx60的K值变化≤2%，且已观察到远程开口位移nx80相对nx60变化约0.156%<2%，则判定网格已足够，无需进一步细化；若K值变化>2%，则建议将裂尖单元尺寸进一步加密至约1.25 mm并重新评估。",
+          "stop_condition": "K值收敛满足2%容差，或任何一档网格的拟合决定系数R²<0.95（表明线性外推不可靠），即终止当前路线。"
+        }
+      },
+      "execution_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "e56f6975d16204c939fc2b90122318ee7381cac27b535457103554d0a6215e91"
+      }
+    },
+    {
+      "round": 3,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 材料屈服强度较高，塑性区尺寸远小于裂纹长度和韧带，线弹性断裂力学（K准则）适用，此时当前K值尚未随网格加密收敛（变化4.6%），仍需继续细化或采用奇异单元以获得可靠K。"
+          },
+          {
+            "hypothesis": "H2: 材料屈服强度较低，塑性区尺寸显著，线弹性K不适用，需采用弹塑性断裂参数（如J积分或CTOD）以及相应的材料塑性和网格策略，当前线弹性模型不能直接用于裂纹问题。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中的远程开口位移序列（0.1006→0.1009→0.1011 mm）已收敛，相对变化<0.2%",
+          "previous_rounds中基于位移外推的K值从nx40到nx80分别为692.6、714.6、725.4 MPa√mm，nx80相对nx60变化约1.5%，但总变化范围约4.6%，超出2%收敛判据",
+          "所有计算基于线弹性、平面应力、常规四节点四边形单元，未引入裂尖奇异单元"
+        ],
+        "uncertainties": [
+          "材料屈服强度未知，无法评估塑性区尺寸及小范围屈服条件是否满足",
+          "现有单元类型无法精确捕捉裂尖弹性奇异性，可能导致K值系统偏低且收敛缓慢",
+          "若塑性影响显著，远程位移收敛仅反映总体刚度，不代表裂尖场有效"
+        ],
+        "proposal_type": "request_information",
+        "information_request": {
+          "question": "请提供钢板材料的屈服强度（或塑性应力-应变曲线），以便评估线弹性断裂力学的适用性和小范围屈服条件。"
+        }
+      },
+      "execution_feedback": {
+        "status": "information_required",
+        "executed_change": "未运行新模型，等待补充材料本构和断裂参数",
+        "actual_parameters": {},
+        "observations": {
+          "requested_information": [
+            "屈服强度",
+            "真实应力-塑性应变曲线",
+            "硬化模型",
+            "断裂或损伤参数"
+          ]
+        },
+        "limitations": [],
+        "proposal_sha256": "75e0ad476b3a8831f4c365a086c12f907445b41eacb05308e8186f1b5786383e"
+      }
+    },
+    {
+      "round": 4,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 利用现有三档网格的裂纹面多点位移进行线性拟合得到的K值，在nx60到nx80之间已收敛（相对变化≤2%），结合已收敛的远程张开位移，表明当前网格已足够，无需进一步细化。"
+          },
+          {
+            "hypothesis": "H2: 即使通过多点拟合，K值仍未收敛（变化>2%），说明单纯均匀细化无法充分捕捉裂尖奇异性，需改用奇异单元或继续加密以获得可靠的断裂参数。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中三档网格的远程开口位移已收敛（相对变化<0.2%）",
+          "previous_rounds中基于单点的K值显示nx80相对nx60变化约1.5%，但总范围4.6%超出2%判据，且单点估计受取样位置和网格节点偏置影响",
+          "已有三档网格的整个裂纹面节点坐标和位移场，可支持多点拟合以降低单点误差"
+        ],
+        "uncertainties": [
+          "材料塑性特性未知（已在external_blockers记录），线弹性K主导区的选取可能受塑性影响，但当前实验仅评估纯弹性网格收敛性",
+          "多点拟合时节点选择的范围和数量会影响K值，需明确选取规则以确保可重复性",
+          "当前网格使用常规四节点四边形单元，无法精确表示裂纹尖端奇异性，可能导致拟合的线性关系在极近裂尖处偏离"
+        ],
+        "proposal_type": "experiment",
+        "experiment": {
+          "purpose": "通过多点裂纹面位移拟合更可靠地评估应力强度因子K的网格收敛性，为是否继续细化网格提供决定性证据。",
+          "change": "保持有限元模型、网格及所有物理假设不变。从nx=40,60,80三档已求解网格的裂纹面（优先右侧裂纹）提取多个距裂尖不同距离r的节点（r在约2.5 mm至10 mm范围内至少取4个不重合节点，避开最近的裂尖单元），计算每个节点的总张开位移δ=2×half_opening；基于线弹性平面应力裂纹尖端张开位移渐近式δ(r)=(8K/E)·√(r/(2π))，对δ与√r进行过原点线性最小二乘拟合，由斜率反算每档网格的K；对左右裂尖结果取平均作为该档网格的K估计值，并报告拟合决定系数R²。",
+          "hold_fixed": [
+            "几何尺寸与裂纹长度（200 mm×200 mm，半裂纹20 mm）",
+            "加载条件（上下边缘100 MPa对称均布拉应力）",
+            "材料属性（E=210000 MPa, ν=0.3，无塑性）",
+            "平面应力假设",
+            "单元类型与网格拓扑（常规四节点四边形）"
+          ],
+          "measure": [
+            "每档网格多点拟合的应力强度因子K（MPa√mm）",
+            "每档网格拟合的决定系数R²",
+            "网格间K的相对变化百分比（重点比较nx80与nx60）"
+          ],
+          "decision_rule": "若nx80相对nx60的K值相对变化≤2%且nx80的R²>0.95，则判定网格已收敛，无需进一步细化；否则表明网格仍需进一步加密或改用奇异单元，并据此切换路线。",
+          "stop_condition": "K值收敛满足2%容差且R²>0.95，或任一网格的R²<0.95（线性关系不可靠），即终止当前路线。"
+        }
+      },
+      "execution_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "d713bc9528bb744939d4199331b041ff405293e05456b6a637ec62422d7dbf60"
+      }
+    },
+    {
+      "round": 5,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 当前常规四边形单元在2.5mm细化下总体响应（远程位移、总应变能）已收敛，但裂尖局部断裂参数K需奇异单元方能经济收敛；继续加密常规单元效率低，改用奇异单元后可在当前网格密度下获得足够精度的K。"
+          },
+          {
+            "hypothesis": "H2: 常规单元虽收敛慢，但通过进一步细化（如裂尖单元尺寸1.25mm）仍可使K趋近收敛值，且简单可行，无需改变单元类型。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history远程开口位移序列收敛（nx60->nx80相对变化0.156%）",
+          "总应变能序列（10076.2→10102.7→10116.0 N·mm）变化微小",
+          "单点位移外推K值从nx40到nx80变化-4.6%，nx80->nx60变化1.5%，低于2%但总范围未达标",
+          "理论K约833 MPa√mm，nx80的K低估约13%"
+        ],
+        "uncertainties": [
+          "未获得多点拟合K，单点K受节点偏移影响",
+          "塑性影响未知，当前仅限线弹性",
+          "实施奇异单元的能力未知，执行环境可能不支持中节点移动"
+        ],
+        "proposal_type": "switch_route",
+        "route_transition": {
+          "route_conclusion": "基于位移外推K的收敛性评估路线无法提供明确网格充分性证据：执行环境未能以多点拟合改善K估计，单点K总体变化-4.6%未满足预设2%收敛判据。继续单纯加密常规单元可能低效。",
+          "next_route": "采用奇异单元改进裂尖捕捉能力，通过对比奇异单元与常规单元的K收敛性来判断网格充分性，并确定下一步网格处理。",
+          "reason": "常规单元缺乏裂尖奇异性，导致K收敛缓慢且偏低；引入奇异单元是标准工程实践，可在不显著增加总自由度的前提下提升局部精度。本路线旨在验证奇异单元在当前密度下是否使K收敛。"
+        },
+        "experiment": {
+          "purpose": "验证在相似网格密度下引入四分之一节点奇异单元后，应力强度因子K是否较常规单元有显著改善并趋于收敛，从而明确是否需要继续加密网格。",
+          "change": "在主裂尖周围的常规四边形单元中，将边中节点从默认位置移动至距裂尖四分之一边长的位置，形成退化奇异单元（例如，若原始单元边长L，将节点置于L/4处），保持网格拓扑和节点总数基本不变。",
+          "hold_fixed": [
+            "几何尺寸（200 mm x 200 mm，半裂纹20 mm）",
+            "材料属性（E=210000 MPa, ν=0.3，线弹性）",
+            "加载条件（100 MPa对称均布拉应力）",
+            "平面应力假设",
+            "全局网格划分策略和近似节点密度（基于nx80的密度）",
+            "求解器设置与收敛容差"
+          ],
+          "measure": [
+            "应力强度因子K（可通过裂纹面位移渐近公式或围线积分估算）",
+            "远程开口位移remote_opening",
+            "总应变能"
+          ],
+          "decision_rule": "若奇异单元K值比常规nx80的K值（725.4 MPa√mm）提高超过5%且与理论值833的偏差小于10%，则判定当前网格密度结合奇异单元已足够，无需进一步细化；否则需保持奇异单元并进一步加密裂尖网格。",
+          "stop_condition": "奇异单元K值满足与理论值偏差<10%且不再显著变化，或执行环境无法实施奇异单元导致实验终止。"
+        }
+      },
+      "execution_feedback": {
+        "status": "route_transition",
+        "executed_change": "未运行新模型；当前方法结束，但原始工程任务继续。",
+        "actual_parameters": {},
+        "observations": {
+          "route_conclusion": "基于位移外推K的收敛性评估路线无法提供明确网格充分性证据：执行环境未能以多点拟合改善K估计，单点K总体变化-4.6%未满足预设2%收敛判据。继续单纯加密常规单元可能低效。",
+          "next_route": "采用奇异单元改进裂尖捕捉能力，通过对比奇异单元与常规单元的K收敛性来判断网格充分性，并确定下一步网格处理。",
+          "task_continues": true
+        },
+        "limitations": [],
+        "proposal_sha256": "b06d619db8d1cca4f2e50332f1c69d31bd6aa3060c1a8303d7e55e8859b24c7d"
+      }
+    },
+    {
+      "round": 6,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 引入四分之一节点奇异单元后，裂尖奇异性被有效捕捉，计算得到的应力强度因子K显著升高并接近理论解（约813 MPa√mm），表明当前网格密度（裂尖尺寸2.5 mm）结合奇异单元已足够，无需进一步加密。"
+          },
+          {
+            "hypothesis": "H2: 即使使用奇异单元，K值仍未充分收敛或仍明显低于理论值，需要进一步细化奇异单元周围的网格才能获得可靠的断裂参数。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中远程开口位移已收敛（nx60→nx80变化0.156%），总应变能变化微小",
+          "常规单元下单点位移外推K值依次为692.6、714.6、725.4 MPa√mm，nx80时仍比理论值低约11%",
+          "断裂力学理论中，奇异单元可显著改善局部精度，但当前执行环境能否实现尚不确定"
+        ],
+        "uncertainties": [
+          "执行环境是否支持将裂尖单元升级为二次四边形并移动中节点未知",
+          "精确的理论K值需考虑有限板宽修正，可能略有偏差",
+          "材料塑性行为信息缺失，最终工程判断仍需塑性数据（已在external_blockers中记录）"
+        ],
+        "proposal_type": "experiment",
+        "experiment": {
+          "purpose": "在裂尖引入四分之一节点奇异单元，评估应力强度因子K是否收敛至理论值附近，从而判断当前网格密度结合奇异单元是否足够，为网格策略提供决定性证据。",
+          "change": "保持全局网格密度与nx80（裂尖平均尺寸2.5 mm）相似，将裂尖周围至少一层单元由常规四节点四边形升级为二次四边形（8节点拓扑），并将裂尖辐射方向上每条边的中节点从默认中点移动至距裂尖四分之一边长的位置（例如，对边长为L的单元边，中节点置于距裂尖L/4处），以引入1/√r奇异性。若无法升级单元阶次，则尝试将现有四边形单元退化为三角形并合并节点形成奇异单元。",
+          "hold_fixed": [
+            "几何尺寸（200 mm×200 mm×10 mm，半裂纹长20 mm）",
+            "加载条件（上下边缘100 MPa对称均布拉应力）",
+            "材料属性（E=210000 MPa，ν=0.3，线弹性，无塑性）",
+            "平面应力假设",
+            "全局网格划分策略和近似节点密度",
+            "求解器类型与收敛容差"
+          ],
+          "measure": [
+            "应力强度因子K（通过裂纹面位移渐近式或围线积分获得）",
+            "远程开口位移remote_opening",
+            "总应变能strain_energy"
+          ],
+          "decision_rule": "若计算得到的K ≥ 800 MPa√mm（与理论值偏差约2%以内），则判定当前网格密度结合奇异单元已足够，无需进一步加密；否则须保持奇异单元并继续细化裂尖网格。",
+          "stop_condition": "K值满足目标（≥800 MPa√mm），或裂尖单元特征尺寸细化至约0.5 mm以下仍未收敛，或执行环境因不支持奇异单元而无法完成实验时停止。"
+        }
+      },
+      "execution_feedback": {
+        "status": "completed",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移并按同一位移渐近式换算K",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 692.5620187673566
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 714.5897539389225
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ],
+              "stress_intensity_from_opening_mpa_sqrt_mm": 725.4178616735846
+            }
+          ],
+          "k_conversion": "平面应力Mode-I裂纹面位移渐近式：K = u_y_half·E/[(1+ν)(κ+1)]·sqrt(2π/r)，κ=(3-ν)/(1+ν)",
+          "relative_spread_percent": 4.622007512891694
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元",
+          "位移渐近式只有在取样点位于K主导区且小范围屈服成立时具有工程意义"
+        ],
+        "proposal_sha256": "954d94a38a3a0e306ffb491a7de6d1e4a0836c4ab3128a9ec06dbbbc9e8f7237"
+      }
+    },
+    {
+      "round": 7,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 利用现有三档常规单元网格的K值（692.6, 714.6, 725.4 MPa√mm）进行Richardson外推，可得到接近理论解（~810 MPa√mm）的收敛估计，表明当前网格策略已基本满足工程精度，无需进一步加密。"
+          },
+          {
+            "hypothesis": "H2: Richardson外推可能因数据点太少或渐近阶次偏离理论假设而导致不可靠，但仍可为网格充分性提供量化依据；若外推值偏差过大，则明确需继续加密。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中远程开口位移已收敛（nx60→nx80变化0.156%），总应变能变化微小",
+          "常规单元K值序列（nx40:692.6, nx60:714.6, nx80:725.4）呈单调上升但总范围4.6%",
+          "无限板中心裂纹理论K≈792.8 MPa√mm，考虑有限宽度修正（2a/W=0.2）后约813 MPa√mm"
+        ],
+        "uncertainties": [
+          "塑性数据缺失，无法评估小范围屈服，但仍可在纯弹性框架下评估网格收敛",
+          "只有三档网格数据，Richardson外推的可靠性可能有限",
+          "执行环境是否支持进行外推计算或不需特殊工具，仅需数学运算"
+        ],
+        "proposal_type": "switch_route",
+        "route_transition": {
+          "route_conclusion": "奇异单元路线反复返回常规单元数据，表明在当前执行环境中无法实施四分之一节点奇异单元；该路线无法获得进一步证据。",
+          "next_route": "利用已有常规单元数据的Richardson外推评估网格收敛性，结合已收敛的远程位移等全局量，为是否继续加密提供证据。",
+          "reason": "外推法可量化当前网格序列的渐近行为，成本低且能直接回应mesh_strategy_evidence门，便于最终给出网格策略建议。"
+        },
+        "experiment": {
+          "purpose": "通过Richardson外推估计常规单元网格无关的应力强度因子K，判断当前网格策略是否已足够，为是否继续加密提供量化证据。",
+          "change": "不改变有限元模型，仅利用已有三档网格（h=5.0, 3.33, 2.5 mm）的K值序列进行数学外推。假设K=K_exact + A*h^p，使用最小二乘法拟合K_exact、A、p。",
+          "hold_fixed": [
+            "已有的三档网格K值数据",
+            "理论K值计算公式（中心裂纹板，2a/W=0.2，Feddersen修正）"
+          ],
+          "measure": [
+            "Richardson外推得到的收敛K估计值（MPa√mm）",
+            "外推K值与理论值的相对偏差百分比",
+            "拟合的收敛阶次p"
+          ],
+          "decision_rule": "若外推K值与理论值的相对偏差<5%，则判定常规单元网格已基本收敛，无需继续加密；否则建议进一步将裂尖单元尺寸加密至约1.25 mm并重新评估。",
+          "stop_condition": "外推拟合完成，或数据不足以可靠确定参数（如拟合残差不合理）时终止。"
+        }
+      },
+      "execution_feedback": {
+        "status": "route_transition",
+        "executed_change": "未运行新模型；当前方法结束，但原始工程任务继续。",
+        "actual_parameters": {},
+        "observations": {
+          "route_conclusion": "奇异单元路线反复返回常规单元数据，表明在当前执行环境中无法实施四分之一节点奇异单元；该路线无法获得进一步证据。",
+          "next_route": "利用已有常规单元数据的Richardson外推评估网格收敛性，结合已收敛的远程位移等全局量，为是否继续加密提供证据。",
+          "task_continues": true
+        },
+        "limitations": [],
+        "proposal_sha256": "233ffbe83aaed3516569624fed296c4351ac91f32b1de95b9603d12a9f60a51c"
+      }
+    },
+    {
+      "round": 8,
+      "proposal": {
+        "competing_hypotheses": [
+          {
+            "hypothesis": "H1: 利用现有三档常规单元网格的K值进行Richardson外推，得到的收敛K估计值与理论解（~813 MPa√mm）偏差小于5%，表明当前网格策略已基本收敛，无需继续细化。"
+          },
+          {
+            "hypothesis": "H2: 外推因数据点过少或网格未进入渐近区而不可靠，导致外推K仍明显偏离理论值，说明当前常规单元网格未充分收敛，仍需进一步加密裂尖网格。"
+          }
+        ],
+        "evidence_refs": [
+          "initial_mesh_history中远程开口位移已收敛（nx60→nx80变化0.156%），总应变能变化微小",
+          "常规单元K值序列：nx40（h=5.0 mm）692.6 MPa√mm，nx60（h≈3.33 mm）714.6 MPa√mm，nx80（h=2.5 mm）725.4 MPa√mm",
+          "中心裂纹板有限宽理论K≈813 MPa√mm（2a/W=0.2，Feddersen修正）"
+        ],
+        "uncertainties": [
+          "只有三档网格，Richardson外推可能因数据有限而不可靠",
+          "网格收敛阶次p未知，可能与理论值偏离",
+          "塑性响应缺失，当前外推仅评估纯弹性框架下的网格收敛性，不能替代塑性断裂评价"
+        ],
+        "proposal_type": "experiment",
+        "experiment": {
+          "purpose": "通过Richardson外推定量估计常规单元网格无关的应力强度因子K，结合已收敛的全局量，为是否继续加密提供决定性证据。",
+          "change": "不改变有限元模型，仅利用已有三档网格（h1=5.0 mm, h2≈3.333 mm, h3=2.5 mm）及其对应的单点K值（K1=692.6, K2=714.6, K3=725.4 MPa√mm）进行数学外推。假设K=K_exact + A·h^p，通过最小二乘法拟合未知参数K_exact、A、p；若拟合失败，则假设p=1并用最细两档网格线性外推。",
+          "hold_fixed": [
+            "已有的三档网格K值与网格尺寸数据",
+            "理论参考K值（中心裂纹板，2a/W=0.2，Feddersen修正后约813 MPa√mm）"
+          ],
+          "measure": [
+            "Richardson外推得到的收敛K估计值K_extr（MPa√mm）",
+            "K_extr与理论值的相对偏差百分比",
+            "拟合的收敛阶次p"
+          ],
+          "decision_rule": "若K_extr与理论值（813 MPa√mm）相对偏差≤5%，则判定常规单元网格已充分收敛，无需继续加密；否则建议将裂尖单元尺寸进一步细化至约1.25 mm并重新评估。",
+          "stop_condition": "外推计算完成并给出K_extr估计，或数据不足以可靠外推（如拟合决定系数<0.9）时终止。"
+        }
+      },
+      "execution_feedback": {
+        "status": "information_required",
+        "executed_change": "不改变有限元模型，从三档已求解网格的上下裂纹面节点提取真实张开位移",
+        "actual_parameters": {
+          "requested_distances_mm": [
+            2.5
+          ],
+          "mesh_levels": [
+            40,
+            60,
+            80
+          ],
+          "plane_condition": "plane_stress"
+        },
+        "observations": {
+          "method": "从每档真实有限元解的上下裂纹面重复节点提取竖向位移差，并报告实际取样坐标与距离",
+          "rows": [
+            {
+              "nx": 40,
+              "h_local_mm": 5.0,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 5.0,
+              "mean_half_opening_mm": 0.011767777139183703,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 843,
+                  "lower_node": 890,
+                  "upper_uy_mm": 0.035566924253060954,
+                  "lower_uy_mm": 0.05910247853142831,
+                  "opening_displacement_mm": -0.023535554278367357,
+                  "half_opening_mm": 0.011767777139183679
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -15.0,
+                  "actual_distance_from_tip_mm": 5.0,
+                  "upper_node": 837,
+                  "lower_node": 878,
+                  "upper_uy_mm": 0.0355669242530597,
+                  "lower_uy_mm": 0.05910247853142715,
+                  "opening_displacement_mm": -0.023535554278367454,
+                  "half_opening_mm": 0.011767777139183727
+                }
+              ]
+            },
+            {
+              "nx": 60,
+              "h_local_mm": 3.3333333333333335,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 3.3333333333333357,
+              "mean_half_opening_mm": 0.009913954465817778,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 16.66666666666667,
+                  "actual_distance_from_tip_mm": 3.3333333333333286,
+                  "upper_node": 1865,
+                  "lower_node": 1936,
+                  "upper_uy_mm": 0.03741120680063296,
+                  "lower_uy_mm": 0.057239115732268524,
+                  "opening_displacement_mm": -0.019827908931635566,
+                  "half_opening_mm": 0.009913954465817783
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -16.666666666666657,
+                  "actual_distance_from_tip_mm": 3.333333333333343,
+                  "upper_node": 1855,
+                  "lower_node": 1916,
+                  "upper_uy_mm": 0.037411206800633985,
+                  "lower_uy_mm": 0.05723911573226953,
+                  "opening_displacement_mm": -0.019827908931635545,
+                  "half_opening_mm": 0.009913954465817772
+                }
+              ]
+            },
+            {
+              "nx": 80,
+              "h_local_mm": 2.5,
+              "requested_distance_from_tip_mm": 2.5,
+              "actual_distance_from_tip_mm": 2.5,
+              "mean_half_opening_mm": 0.008715835232585444,
+              "tip_samples": [
+                {
+                  "tip": "right",
+                  "target_x_mm": 17.5,
+                  "actual_x_mm": 17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3287,
+                  "lower_node": 3382,
+                  "upper_uy_mm": 0.03860470165569212,
+                  "lower_uy_mm": 0.056036372120863036,
+                  "opening_displacement_mm": -0.01743167046517092,
+                  "half_opening_mm": 0.00871583523258546
+                },
+                {
+                  "tip": "left",
+                  "target_x_mm": -17.5,
+                  "actual_x_mm": -17.5,
+                  "actual_distance_from_tip_mm": 2.5,
+                  "upper_node": 3273,
+                  "lower_node": 3354,
+                  "upper_uy_mm": 0.03860470165569601,
+                  "lower_uy_mm": 0.056036372120866866,
+                  "opening_displacement_mm": -0.017431670465170856,
+                  "half_opening_mm": 0.008715835232585428
+                }
+              ]
+            }
+          ],
+          "requested_information": [
+            "屈服强度",
+            "真实应力-塑性应变曲线",
+            "硬化模型",
+            "断裂韧性或损伤参数"
+          ]
+        },
+        "limitations": [
+          "目标物理距离若不落在网格节点上，结果使用最近的裂纹面内部节点并明确报告实际距离",
+          "当前网格使用常规四节点四边形单元，未引入四分之一节点奇异单元"
+        ],
+        "proposal_sha256": "a276b60083d55dcc37fff3f21c0cbf07f67b2d56c9377459f2c9ce3cf1bfaaaa"
+      }
+    }
+  ],
+  "task_status": "inconclusive_budget_exhausted",
+  "task_state": {
+    "objective": "钢板有一条约40 mm贯穿裂纹，裂尖附近网格从5 mm细化到2.5 mm后最大应力一直升高。我还要继续加密吗？当前模型能不能用于判断裂纹问题，下一步网格具体怎么处理？",
+    "gates": {
+      "mesh_strategy_evidence": false,
+      "decision_quantity_evidence": true,
+      "model_scope_assessment": true,
+      "engineering_answer": false
+    },
+    "resolved_decision_gates": [
+      "decision_quantity_evidence",
+      "model_scope_assessment"
+    ],
+    "unresolved_decision_gates": [
+      "mesh_strategy_evidence",
+      "engineering_answer"
+    ],
+    "external_blockers": [
+      {
+        "round": 3,
+        "requested_information": [
+          "屈服强度",
+          "真实应力-塑性应变曲线",
+          "硬化模型",
+          "断裂或损伤参数"
+        ]
+      },
+      {
+        "round": 8,
+        "requested_information": [
+          "屈服强度",
+          "真实应力-塑性应变曲线",
+          "硬化模型",
+          "断裂韧性或损伤参数"
+        ]
+      }
+    ]
+  },
+  "route_transitions": 2,
+  "completed_by_model": false,
+  "stopped_voluntarily": false,
+  "final_chain_sha256": "eaede11bb9cc15174dae1ddbe1b3a1061f37177fa0df07e4d884e3c2b023e2da"
+}
