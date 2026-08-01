@@ -1,0 +1,207 @@
+name: Original V4 Agent live DeepSeek with exact Gmsh and CalculiX  # Run the retained Agent workflow with four independent live model sessions.
+on:  # Start on this explicit integration commit or by manual dispatch.
+  workflow_dispatch:  # Allow an exact rerun without editing the workflow.
+  pull_request:  # Start the first live run when this workflow is added or changed on the repair PR.
+    branches:  # Restrict execution to the retained paper branch target.
+      - feat/ai-dynamic-region-mesh-paper  # Keep live calls isolated from main.
+    paths:  # Avoid spending model calls for unrelated future edits.
+      - ".github/workflows/deepseek_v4_original_agent_entity_calculix_live.yml"  # Run when the live contract changes.
+      - ".github/agent_v4_payload/apply_entity_calculix_environment.py"  # Run when the environment adapter changes.
+      - ".github/agent_v4_payload/entity_calculix_environment.py"  # Run when the numerical backend changes.
+permissions:  # Grant only repository reads and artifact writes provided by Actions.
+  contents: read  # Allow source checkout.
+jobs:  # Run one original AgentRuntime and one new DeepSeek history per case, then audit all four together.
+  live-original-agent:  # Execute the original decision loop with the live provider.
+    strategy:  # Physically isolate case histories in different runners and processes.
+      fail-fast: false  # Preserve the other three complete traces when one case fails.
+      max-parallel: 4  # Run all four independent sessions concurrently.
+      matrix:  # Bind each original case contract to its stable identifier.
+        include:  # Define the complete retained V4 case set.
+          - case_file: bearing_load.json  # Use the original bearing-load question and facts.
+            case_id: bearing_load_introduction  # Preserve its original trace identifier.
+          - case_file: circular_opening.json  # Use the original circular-opening question and facts.
+            case_id: web_circular_opening  # Preserve its original trace identifier.
+          - case_file: multi_hole_pso.json  # Use the original three-opening budget question and facts.
+            case_id: diaphragm_multi_opening_budget  # Preserve its original trace identifier.
+          - case_file: cracked_panel.json  # Use the original crack question and facts.
+            case_id: bridge_web_crack  # Preserve its original trace identifier.
+    runs-on: ubuntu-24.04  # Use a fresh Linux host for every DeepSeek session.
+    environment: ds  # Read the protected live DeepSeek credential.
+    timeout-minutes: 240  # Bound one complete Agent loop and all real solver evaluations.
+    env:  # Configure the same official DeepSeek-compatible provider as the retained V4 live baseline.
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.DS || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.DS || vars.DS_API_KEY }}  # Resolve the existing masked credential.
+      DEEPSEEK_MODEL: deepseek-v4-pro  # Keep the requested retained model name.
+      DEEPSEEK_BASE_URL: https://api.deepseek.com  # Use the official OpenAI-compatible endpoint.
+      DEEPSEEK_MAX_TOKENS: "5000"  # Leave room for complete structured decisions.
+      DEEPSEEK_MAX_ATTEMPTS_PER_DECISION: "1"  # Preserve every provider failure instead of hiding it behind retries.
+      DEEPSEEK_TIMEOUT_SECONDS: "180"  # Bound one live request.
+      DEEPSEEK_MAX_HTTP_REQUESTS: "48"  # Permit the original 15-18 decision depth with bounded recovery.
+    steps:  # Reconstruct original code, patch only the numerical environment, run live, and preserve evidence.
+      - uses: actions/checkout@v4  # Check out the current repair PR merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled interpreter.
+        with:  # Configure Python explicitly.
+          python-version: "3.12"  # Match the retained V4 runtime.
+      - name: Materialize hash-verified original V4 source  # Reconstruct exactly the retained Agent implementation.
+        shell: bash  # Use strict shell behavior for the source-integrity gate.
+        run: |  # Decode and verify before applying any numerical environment aliases.
+          set -euo pipefail  # Stop on any source-integrity defect.
+          root="$RUNNER_TEMP/original-v4-live"  # Allocate this case's isolated original source root.
+          archive="$RUNNER_TEMP/original-v4-live-source.tar.xz"  # Allocate the reconstructed archive.
+          rm -rf "$root" "$archive"  # Remove any prior attempt on this fresh runner.
+          mkdir -p "$root"  # Create an empty extraction directory.
+          cat .github/agent_v4_payload/source_*.b64 | tr -d '[:space:]' | base64 --decode > "$archive"  # Rebuild exact source bytes.
+          echo '9d23b4d488986f8136babc0d9be00c37aa9a06b6c4ffab0efcfa5338344e3215  '"$archive" | sha256sum -c -  # Prove retained payload identity.
+          tar -xJf "$archive" -C "$root"  # Extract the original implementation.
+          test -s "$root/bridge_agent/runtime.py"  # Require the original decision loop.
+          test -s "$root/bridge_agent/provider.py"  # Require the original live provider and prompt.
+          test -s "$root/bridge_agent/region_skills.py"  # Require the original Skill and PSO contracts.
+          test -s "$root/scripts/run_one_case.py"  # Require the original single-case entry point.
+      - name: Seal original control plane  # Hash every file that must remain unchanged during environment installation.
+        working-directory: ${{ runner.temp }}/original-v4-live  # Operate inside the verified source.
+        run: |  # Write a machine-readable pre-patch seal.
+          python - <<'PY'
+          from hashlib import sha256  # Compute exact source hashes.
+          import json  # Persist the seal.
+          from pathlib import Path  # Resolve original files.
+          paths=["bridge_agent/runtime.py","bridge_agent/provider.py","bridge_agent/skills.py","bridge_agent/region_skills.py","scripts/run_one_case.py"]  # Cover loop, prompt, Skills, and entry point.
+          Path("control_plane_before.json").write_text(json.dumps({path:sha256(Path(path).read_bytes()).hexdigest() for path in paths},indent=2)+"\n",encoding="utf-8")  # Save the original hashes.
+          PY
+      - name: Install Gmsh, CalculiX, and original dependencies  # Create only the new numerical execution environment.
+        working-directory: ${{ runner.temp }}/original-v4-live  # Install against the exact original source.
+        run: |  # Record actual tool versions and require the live API credential.
+          set -euo pipefail  # Stop on every missing tool or credential.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh calculix-ccx  # Install OpenCASCADE-enabled Gmsh and CalculiX 2.21.
+          gmsh --version  # Preserve mesher provenance.
+          command -v ccx  # Require the solver executable.
+          ccx -v || true  # Record solver provenance.
+          python -m pip install --upgrade pip  # Use a current installer.
+          python -m pip install -r requirements.txt  # Install the unchanged original dependencies.
+          test -n "$DEEPSEEK_API_KEY"  # Require a real live credential before starting a session.
+          echo "::add-mask::$DEEPSEEK_API_KEY"  # Prevent accidental credential disclosure.
+      - name: Apply exact Gmsh and CalculiX environment only  # Redirect numerical implementations while preserving the Agent architecture.
+        run: |  # Install backend aliases into the verified original source.
+          set -euo pipefail  # Stop on incompatible source or backend defects.
+          python .github/agent_v4_payload/apply_entity_calculix_environment.py "$RUNNER_TEMP/original-v4-live"  # Patch meshers and solvers only.
+      - name: Prove control plane and model-controlled PSO schema are unchanged  # Reject any hidden workflow redesign.
+        working-directory: ${{ runner.temp }}/original-v4-live  # Inspect the patched runtime.
+        run: |  # Compare hashes and verify all original PSO fields remain provider-visible.
+          python - <<'PY'
+          from hashlib import sha256  # Recompute exact source hashes.
+          import json  # Read seals and write the proof receipt.
+          from pathlib import Path  # Resolve the same files.
+          before=json.loads(Path("control_plane_before.json").read_text(encoding="utf-8"))  # Load the original seal.
+          after={path:sha256(Path(path).read_bytes()).hexdigest() for path in before}  # Hash after environment installation.
+          if after!=before: raise SystemExit({"control_plane_changed":{path:[before[path],after[path]] for path in before if before[path]!=after[path]}})  # Refuse prompt, loop, or Skill drift.
+          from bridge_agent.region_skills import REGION_CATALOG  # Read the original PSO schema.
+          properties=REGION_CATALOG["optimize_region_size_field_pso"]["schema"]["properties"]  # Resolve provider-visible arguments.
+          required={"base_size","target_elements","particles","iterations","seed"}  # Preserve full DS decision authority.
+          if not required.issubset(properties): raise SystemExit(f"missing original PSO fields: {sorted(required-set(properties))}")  # Reject a reduced controller.
+          Path("control_plane_receipt.json").write_text(json.dumps({"control_plane_unchanged":True,"pso_fields":sorted(properties)},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")  # Persist architecture proof.
+          PY
+      - name: Run one new live DeepSeek session through the original Agent  # Execute the requested real decision chain from empty history.
+        working-directory: ${{ runner.temp }}/original-v4-live  # Run the original entry point directly.
+        env:  # Give this case its own state, entity cache, and numerical evidence directories.
+          DEEPSEEK_CONVERSATION_STATE_PATH: ${{ runner.temp }}/original-v4-live/artifacts/${{ matrix.case_id }}/deepseek_conversation_state.json  # Create one new conversation file for this case only.
+          DEEPSEEK_CACHE_RECEIPT_PATH: ${{ runner.temp }}/original-v4-live/artifacts/${{ matrix.case_id }}/deepseek_cache_receipt.json  # Record this session's provider accounting.
+          BRIDGE_AGENT_ENTITY_CACHE_ROOT: ${{ runner.temp }}/original-v4-live-evidence/${{ matrix.case_id }}/entity_cache  # Isolate immutable BREP entities.
+          BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT: ${{ runner.temp }}/original-v4-live-evidence/${{ matrix.case_id }}/numerical  # Retain every Gmsh and CalculiX transaction.
+        shell: bash  # Use strict pipe propagation while saving console output.
+        run: |  # Remove all previous state and execute one original live case.
+          set -euo pipefail  # Propagate provider, Agent, Gmsh, and CalculiX failures.
+          out="artifacts/${{ matrix.case_id }}"  # Allocate the case-local Agent output root.
+          rm -rf "$out" "$BRIDGE_AGENT_ENTITY_CACHE_ROOT" "$BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"  # Guarantee empty model history and numerical evidence.
+          mkdir -p "$out" "$BRIDGE_AGENT_ENTITY_CACHE_ROOT" "$BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"  # Create clean roots.
+          python scripts/run_one_case.py \
+            --case "${{ matrix.case_file }}" \
+            --output-dir "$out" \
+            --provider deepseek \
+            --model "$DEEPSEEK_MODEL" \
+            | tee "$RUNNER_TEMP/${{ matrix.case_id }}-live-console.log"  # Execute the unchanged Agent loop with the live provider.
+      - name: Audit live provider identity, original completion, and real numerical evidence  # Produce one case receipt without altering the decision chain.
+        working-directory: ${{ runner.temp }}/original-v4-live  # Inspect original Agent artifacts and backend receipts.
+        env:  # Resolve this case's isolated numerical evidence root.
+          BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT: ${{ runner.temp }}/original-v4-live-evidence/${{ matrix.case_id }}/numerical  # Locate actual Gmsh and CalculiX files.
+        run: |  # Require live DeepSeek metadata, model-selected PSO arguments, and complete solver evidence.
+          python - <<'PY'
+          import json,os  # Read traces and environment paths.
+          from pathlib import Path  # Discover receipts and raw files.
+          case_id="${{ matrix.case_id }}"  # Bind the audit to this matrix case.
+          root=Path("artifacts")/case_id  # Resolve original Agent output.
+          trace=json.loads((root/"agent_trace.json").read_text(encoding="utf-8"))  # Parse the complete live decision chain.
+          if trace.get("status")!="finished" or trace.get("requirements",{}).get("complete") is not True: raise SystemExit(f"{case_id}: original Agent incomplete status={trace.get('status')} missing={trace.get('requirements',{}).get('missing')}")  # Require original completion gates.
+          decisions=[event for event in trace.get("events",[]) if event.get("type")=="model_decision"]  # Collect every model turn.
+          if not decisions: raise SystemExit(f"{case_id}: no live model decisions")  # Reject an empty or replay-only trace.
+          providers={event.get("provider_metadata",{}).get("provider") for event in decisions}  # Read actual provider identities.
+          if providers!={"deepseek"}: raise SystemExit(f"{case_id}: non-live provider metadata {providers}")  # Reject replay, fallback, or mixed providers.
+          conversation_ids={event.get("provider_metadata",{}).get("conversation_id") for event in decisions}  # Read case-local session identity.
+          if len(conversation_ids)!=1 or None in conversation_ids: raise SystemExit(f"{case_id}: inconsistent conversation IDs {conversation_ids}")  # Require one continuous session per case.
+          pso=[event for event in trace.get("events",[]) if event.get("type")=="skill_call" and event.get("request",{}).get("skill")=="optimize_region_size_field_pso"]  # Locate the live-selected optimizer action.
+          if len(pso)!=1: raise SystemExit(f"{case_id}: expected one PSO call, found {len(pso)}")  # Require the original optimization stage.
+          arguments=pso[0]["request"].get("arguments",{})  # Read DS-selected PSO configuration.
+          required={"base_size","target_elements","particles","iterations","seed"}  # Define the complete decision payload.
+          if not required.issubset(arguments): raise SystemExit(f"{case_id}: DS PSO arguments incomplete {arguments}")  # Reject missing depth or budget decisions.
+          numerical=Path(os.environ["BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"])  # Resolve actual backend evidence.
+          meshes=sorted(numerical.rglob("mesh_receipt.json")); solves=sorted(numerical.rglob("solve_receipt.json")); inp=sorted(numerical.rglob("*.inp")); dat=sorted(numerical.rglob("*.dat")); frd=sorted(numerical.rglob("*.frd"))  # Collect mature-tool evidence.
+          if not meshes or not solves or not inp or not dat or not frd: raise SystemExit(f"{case_id}: incomplete backend evidence meshes={len(meshes)} solves={len(solves)} inp={len(inp)} dat={len(dat)} frd={len(frd)}")  # Reject in-memory or synthetic fallback.
+          if case_id=="bridge_web_crack":  # Apply fracture-specific gates.
+              seam=[json.loads(path.read_text(encoding="utf-8")).get("seam",{}) for path in meshes]  # Read seam evidence.
+              if not any(int(row.get("paired_internal_nodes",0))>0 and row.get("upper_lower_node_sets_disjoint") is True for row in seam): raise SystemExit(f"{case_id}: no valid zero-thickness seam")  # Reject a hole or shared-node guide.
+              plastic=list(root.rglob("*_summary.json"))  # Locate original Skill output for the real plastic solve.
+              if not plastic: raise SystemExit(f"{case_id}: plastic CalculiX summary missing")  # Require elastoplastic cross-check evidence.
+          receipt={"schema_version":"original-v4-live-deepseek-entity-calculix/1.0","case_id":case_id,"provider":"deepseek","conversation_id":next(iter(conversation_ids)),"model_calls":trace["counters"]["model_calls"],"solver_calls":trace["counters"]["solver_calls"],"optimizer_calls":trace["counters"]["optimizer_calls"],"pso_arguments_selected_by_deepseek":arguments,"gmsh_mesh_receipts":len(meshes),"calculix_linear_receipts":len(solves),"calculix_input_decks":len(inp),"calculix_dat_files":len(dat),"calculix_frd_files":len(frd),"agent_status":trace["status"],"requirements_complete":True,"control_plane_unchanged":True}  # Build the live case receipt.
+          (root/"live_entity_calculix_receipt.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")  # Persist case evidence.
+          print(json.dumps(receipt,ensure_ascii=False,indent=2))  # Echo load-bearing results.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish one independent live DS session and all numerical evidence.
+        if: always()  # Preserve partial traces and failures for diagnosis.
+        with:  # Configure a physically separate artifact for this case.
+          name: original-v4-live-deepseek-${{ matrix.case_id }}  # Keep all four model histories separate.
+          path: |  # Upload original trace, provider state, raw solver evidence, and source seals.
+            ${{ runner.temp }}/original-v4-live/control_plane_before.json
+            ${{ runner.temp }}/original-v4-live/control_plane_receipt.json
+            ${{ runner.temp }}/original-v4-live/artifacts/${{ matrix.case_id }}
+            ${{ runner.temp }}/original-v4-live-evidence/${{ matrix.case_id }}
+            ${{ runner.temp }}/${{ matrix.case_id }}-live-console.log
+          if-no-files-found: warn  # Keep provider-before-output failures visible in job logs.
+          retention-days: 90  # Retain complete live evidence for review.
+  verify-four-independent-live-sessions:  # Prove that all four cases used distinct live DeepSeek histories.
+    needs: [live-original-agent]  # Wait for every independent runner.
+    runs-on: ubuntu-24.04  # Use a clean aggregation host.
+    steps:  # Download case artifacts separately and enforce session uniqueness.
+      - uses: actions/download-artifact@v4  # Collect only this workflow's four live artifacts.
+        with:  # Preserve physical separation during aggregation.
+          pattern: original-v4-live-deepseek-*  # Match all original cases.
+          path: collected  # Store under one suite root.
+          merge-multiple: false  # Prevent trace or state-file overwrites.
+      - uses: actions/setup-python@v5  # Install controlled Python for receipt aggregation.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match case jobs.
+      - name: Verify four unique live DS sessions and complete original workflows  # Build the final live suite receipt.
+        run: |  # Read each live receipt and reject shared or replayed histories.
+          python - <<'PY'
+          import json  # Read case receipts and traces.
+          from pathlib import Path  # Discover separate artifacts.
+          expected={"bearing_load_introduction","web_circular_opening","diaphragm_multi_opening_budget","bridge_web_crack"}  # Define the retained case set.
+          paths=sorted(Path("collected").rglob("live_entity_calculix_receipt.json"))  # Find successful live case receipts.
+          if len(paths)!=4: raise SystemExit(f"expected four live receipts, found {len(paths)}")  # Reject missing cases.
+          cases={}; conversations=set()  # Collect case evidence and detect session reuse.
+          for path in paths:  # Validate every live case independently.
+              row=json.loads(path.read_text(encoding="utf-8")); case=row["case_id"]  # Parse the case receipt.
+              if case in cases or row["provider"]!="deepseek" or row["agent_status"]!="finished" or row["requirements_complete"] is not True: raise SystemExit(f"{case}: duplicate, replayed, or incomplete")  # Enforce live completion.
+              conversation=row["conversation_id"]  # Read the provider session identity.
+              if conversation in conversations: raise SystemExit(f"shared DeepSeek conversation detected: {conversation}")  # Require one session per case.
+              conversations.add(conversation); cases[case]=row  # Preserve unique evidence.
+          if set(cases)!=expected: raise SystemExit(f"unexpected case set: {sorted(cases)}")  # Require all four original cases.
+          suite={"schema_version":"original-v4-four-independent-live-deepseek-sessions/1.0","provider":"deepseek","case_count":4,"session_count":len(conversations),"one_session_per_case":len(conversations)==4,"total_model_calls":sum(int(row["model_calls"]) for row in cases.values()),"total_solver_calls":sum(int(row["solver_calls"]) for row in cases.values()),"total_gmsh_mesh_receipts":sum(int(row["gmsh_mesh_receipts"]) for row in cases.values()),"total_calculix_linear_receipts":sum(int(row["calculix_linear_receipts"]) for row in cases.values()),"cases":cases,"valid":True}  # Build the live suite receipt.
+          Path("original_v4_four_live_deepseek_sessions_receipt.json").write_text(json.dumps(suite,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")  # Persist aggregate evidence.
+          print(json.dumps(suite,ensure_ascii=False,indent=2))  # Echo the complete live summary.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish all original traces and one compact live suite receipt.
+        with:  # Configure the final live evidence package.
+          name: original-v4-four-live-deepseek-entity-calculix-suite  # Mark this unambiguously as live DeepSeek.
+          path: |  # Include the compact receipt and four separately downloaded artifacts.
+            original_v4_four_live_deepseek_sessions_receipt.json
+            collected
+          if-no-files-found: error  # Refuse a green workflow without complete evidence.
+          retention-days: 90  # Retain for decision-chain review.
