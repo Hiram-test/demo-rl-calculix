@@ -91,10 +91,26 @@ from .entity_calculix_environment import (
         f'''{MARKER}
 from .entity_calculix_environment import calculix_solve_linear as solve_linear''',  # Preserve the original solve_linear signature.
     )
-    _append_once(  # Redirect the crack plastic sequence to the exact-seam CalculiX implementation.
+    _append_once(  # Redirect the crack plastic sequence and mirror its raw evidence into the common numerical audit root.
         root / "bridge_agent" / "calculix_plastic.py",  # Patch only the crack solver implementation module.
         f'''{MARKER}
-from .entity_calculix_environment import run_elastoplastic_crack_exact as run_elastoplastic_crack''',  # Preserve the original Skill-facing function name.
+import os as _entity_os
+import shutil as _entity_shutil
+from pathlib import Path as _EntityPath
+from .entity_calculix_environment import run_elastoplastic_crack_exact as _run_elastoplastic_crack_exact
+
+def run_elastoplastic_crack(*args, **kwargs):
+    result = _run_elastoplastic_crack_exact(*args, **kwargs)
+    out_dir = _EntityPath(args[1] if len(args) > 1 else kwargs["out_dir"]).resolve()
+    job = str(kwargs.get("job", "plastic"))
+    evidence_root_text = _entity_os.environ.get("BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT", "").strip()
+    if evidence_root_text:
+        mirror_dir = _EntityPath(evidence_root_text).resolve() / "plastic" / out_dir.parent.name / out_dir.name
+        mirror_dir.mkdir(parents=True, exist_ok=True)
+        for source_path in sorted(out_dir.glob(f"{{job}}*")):
+            if source_path.is_file():
+                _entity_shutil.copy2(source_path, mirror_dir / source_path.name)
+    return result''',  # Preserve the original Skill-facing signature while exposing actual plastic INP/DAT/FRD/summary evidence to the audit root.
     )
     print(f"Applied exact Gmsh/OpenCASCADE and CalculiX environment to {root}")  # Record the only intended modification boundary.
     return 0  # Report success after all four backend aliases are installed.
