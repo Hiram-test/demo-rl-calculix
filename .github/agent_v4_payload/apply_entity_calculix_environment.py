@@ -15,6 +15,34 @@ def _append_once(path: Path, block: str) -> None:  # Append one compatibility ov
     path.write_text(text.rstrip() + "\n\n" + block.strip() + "\n", encoding="utf-8")  # Append only the backend alias block.
 
 
+def _replace_once(path: Path, old: str, new: str) -> None:  # Apply one exact compatibility correction inside the new backend only.
+    text = path.read_text(encoding="utf-8")  # Read the installed backend source.
+    if new in text:  # Treat the corrected implementation as already applied.
+        return  # Keep repeated patch application idempotent.
+    count = text.count(old)  # Count the exact legacy expression before replacing it.
+    if count != 1:  # Refuse an ambiguous source drift.
+        raise RuntimeError(f"expected one compatibility marker in {path}, found {count}")  # Preserve a precise packaging failure.
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")  # Replace only the intended numerical expression.
+
+
+def _patch_backend_compatibility(path: Path) -> None:  # Adapt planar area calculations to NumPy 2.5 without changing algorithms.
+    _replace_once(  # Replace scalar planar cross product used for triangle orientation.
+        path,  # Patch only the newly installed backend module.
+        "        twice_area = float(np.cross(coordinates[1] - coordinates[0], coordinates[2] - coordinates[0]))",  # Match the NumPy 2.4-compatible expression.
+        "        first_edge = coordinates[1] - coordinates[0]\n        second_edge = coordinates[2] - coordinates[0]\n        twice_area = float(first_edge[0] * second_edge[1] - first_edge[1] * second_edge[0])",  # Use the explicit two-dimensional determinant.
+    )
+    _replace_once(  # Replace vectorized planar cross products used for triangle areas.
+        path,  # Patch only the newly installed backend module.
+        "    return 0.5 * np.abs(np.cross(coordinates[:, 1] - coordinates[:, 0], coordinates[:, 2] - coordinates[:, 0]))",  # Match the deprecated vectorized expression.
+        "    first_edges = coordinates[:, 1] - coordinates[:, 0]\n    second_edges = coordinates[:, 2] - coordinates[:, 0]\n    return 0.5 * np.abs(first_edges[:, 0] * second_edges[:, 1] - first_edges[:, 1] * second_edges[:, 0])",  # Use the explicit batched determinant.
+    )
+    _replace_once(  # Replace scalar planar cross product used by mesh-quality calculations.
+        path,  # Patch only the newly installed backend module.
+        "        area = 0.5 * abs(float(np.cross(coordinates[1] - coordinates[0], coordinates[2] - coordinates[0])))",  # Match the deprecated quality expression.
+        "        first_edge = coordinates[1] - coordinates[0]\n        second_edge = coordinates[2] - coordinates[0]\n        area = 0.5 * abs(float(first_edge[0] * second_edge[1] - first_edge[1] * second_edge[0]))",  # Preserve the same signed-area magnitude.
+    )
+
+
 def main() -> int:  # Install the numerical environment behind the original V4 Skills.
     if len(sys.argv) != 2:  # Require one explicit hash-verified payload root.
         raise SystemExit("usage: apply_entity_calculix_environment.py <payload-root>")  # Reject ambiguous target directories.
@@ -24,7 +52,9 @@ def main() -> int:  # Install the numerical environment behind the original V4 S
     source = ASSET_ROOT / "entity_calculix_environment.py"  # Resolve the checked-in compatibility backend.
     if not source.is_file():  # Require the backend asset before changing any imports.
         raise FileNotFoundError(source)  # Preserve a clear packaging failure.
-    shutil.copyfile(source, root / "bridge_agent" / "entity_calculix_environment.py")  # Install exact Gmsh and CalculiX execution code.
+    backend_path = root / "bridge_agent" / "entity_calculix_environment.py"  # Resolve the installed backend target.
+    shutil.copyfile(source, backend_path)  # Install exact Gmsh and CalculiX execution code.
+    _patch_backend_compatibility(backend_path)  # Keep planar geometry calculations compatible with the current original requirements environment.
     _append_once(  # Redirect original geometry helpers while preserving every caller and Skill contract.
         root / "bridge_agent" / "meshers.py",  # Patch only the old numerical mesh implementation module.
         f'''{MARKER}
