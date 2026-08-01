@@ -1,0 +1,54 @@
+name: Export live DeepSeek chains and meshes PR
+
+on:
+  pull_request:
+    branches:
+      - fix/entity-first-gmsh-pipeline
+    paths:
+      - .github/workflows/export_live_ds_chains_meshes_pr.yml
+      - .github/export_live_ds_chains_meshes.py
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install compact-export dependencies
+        run: python -m pip install numpy matplotlib
+
+      - name: Download four completed live artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p input
+          gh run download 30707886295 --repo "$GITHUB_REPOSITORY" --name original-v4-live-deepseek-bearing_load_introduction --dir input/bearing_load_introduction
+          gh run download 30707886295 --repo "$GITHUB_REPOSITORY" --name original-v4-live-deepseek-web_circular_opening --dir input/web_circular_opening
+          gh run download 30707886295 --repo "$GITHUB_REPOSITORY" --name original-v4-live-deepseek-diaphragm_multi_opening_budget --dir input/diaphragm_multi_opening_budget
+          gh run download 30707886295 --repo "$GITHUB_REPOSITORY" --name original-v4-live-deepseek-bridge_web_crack --dir input/bridge_web_crack
+
+      - name: Extract chains and render actual meshes
+        env:
+          MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
+        run: python .github/export_live_ds_chains_meshes.py
+
+      - name: Upload compact package
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-deepseek-four-cases-chains-meshes-compact
+          path: |
+            output
+            四案例_live_DeepSeek_决策链与实际网格.zip
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
