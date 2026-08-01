@@ -1,103 +1,218 @@
-name: Entity-first pipeline staged audit  # Identify the isolated pre-repair verification workflow.
-on:  # Define explicit triggers for the isolated branch only.
-  pull_request:  # Run checks on the draft repair pull request.
-    branches:  # Restrict the base branch that receives this repair.
-      - feat/ai-dynamic-region-mesh-paper  # Keep the repair isolated from main and unrelated research branches.
-  workflow_dispatch:  # Allow a manual rerun without modifying source files.
-permissions:  # Grant only the access required to download the frozen baseline artifact.
-  actions: read  # Allow the workflow to read an earlier workflow artifact.
+name: Entity-first full staged pipeline  # Run one ordered geometry, solver, and hotspot-optimization chain.
+on:  # Define explicit triggers for the isolated repair branch.
+  pull_request:  # Run every stage for updates to the draft repair pull request.
+    branches:  # Restrict the target research branch.
+      - feat/ai-dynamic-region-mesh-paper  # Keep the repair isolated from main and unrelated work.
+  workflow_dispatch:  # Allow manual reproduction without changing source files.
+permissions:  # Grant only repository and artifact reads.
+  actions: read  # Allow the frozen V4 artifact to be downloaded during Stage 1.
   contents: read  # Allow checkout of the isolated repair branch.
-jobs:  # Execute each repair stage behind the preceding hard gate.
-  verify-audit-code:  # Prove the guard itself works before it judges production evidence.
+jobs:  # Execute every stage behind the preceding hard gates.
+  verify-audit-code:  # Prove the audit guard before it judges production evidence.
     runs-on: ubuntu-latest  # Use a clean hosted Linux runner.
-    steps:  # Execute deterministic tests with no Gmsh, CalculiX, LLM, or PSO.
-      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+    steps:  # Execute deterministic code checks without Gmsh, CalculiX, DeepSeek, or PSO.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
       - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
         with:  # Configure the interpreter explicitly.
-          python-version: "3.12"  # Use the project-compatible Python line.
-      - name: Install NPZ reader  # Install the only Stage 1 runtime dependency.
-        run: python -m pip install --disable-pip-version-check numpy  # Keep the first stage independent from meshing and solving tools.
-      - name: Compile audit script  # Detect syntax and import errors before self-tests.
-        run: python -m py_compile scripts/entity_first_stage1_audit.py  # Compile the exact diagnostic entry point.
-      - name: Run audit self-tests  # Verify fake-hole, hole-drift, and sliver detection.
+          python-version: "3.12"  # Match all subsequent stages.
+      - name: Install audit dependency  # Install the frozen-NPZ reader required by Stage 1.
+        run: python -m pip install --disable-pip-version-check numpy  # Keep dependency installation explicit.
+      - name: Compile audit script  # Detect syntax and import errors before regression tests.
+        run: python -m py_compile scripts/entity_first_stage1_audit.py  # Compile the exact audit entry point.
+      - name: Run audit self-tests  # Verify intact-surface, fake-hole, hole-drift, and sliver detection.
         run: python scripts/entity_first_stage1_audit.py --self-test  # Execute deterministic internal regressions.
-  diagnose-frozen-v4:  # Inspect the exact archived meshes without rerunning optimization or solvers.
-    runs-on: ubuntu-latest  # Use a runner isolated from the self-test job.
-    steps:  # Download the baseline and require the new guard to reject it.
-      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+  diagnose-frozen-v4:  # Inspect archived legacy meshes without rerunning their optimizer or solver.
+    runs-on: ubuntu-latest  # Use a runner isolated from the audit-code test.
+    steps:  # Download the exact baseline and require the new guard to reject it.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
       - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
         with:  # Configure the interpreter explicitly.
           python-version: "3.12"  # Match the audit-code job.
-      - name: Install NPZ reader  # Install the frozen-artifact reader.
-        run: python -m pip install --disable-pip-version-check numpy  # Avoid Gmsh and CalculiX until Stage 1 is complete.
-      - name: Download frozen V4 artifact  # Retrieve the exact evidence produced by run 30576340910.
+      - name: Install audit dependency  # Install the frozen-artifact reader.
+        run: python -m pip install --disable-pip-version-check numpy  # Avoid meshing and solving dependencies in Stage 1.
+      - name: Download frozen V4 artifact  # Retrieve the exact evidence produced by Run 30576340910.
         env:  # Supply the built-in token only for this repository-scoped read.
           GH_TOKEN: ${{ github.token }}  # Avoid external credentials and write access.
         run: gh run download 30576340910 --repo "$GITHUB_REPOSITORY" --name deepseek-ai-region-mesh-agent-v4-paper --dir frozen_v4  # Preserve the baseline unchanged.
-      - name: Require rejection of the broken baseline  # Make detection of current defects the Stage 1 success condition.
+      - name: Require rejection of the broken baseline  # Make correct defect detection the success condition.
         shell: bash  # Use explicit status handling for the expected audit failure.
-        run: |  # Run the hard gate and assert that at least one current mesh is invalid.
+        run: |  # Run the hard gate and assert that the legacy suite is invalid.
           set +e  # Capture the diagnostic status instead of aborting immediately.
-          python scripts/entity_first_stage1_audit.py --artifact-root frozen_v4 --report stage1_reports/frozen_v4_mesh_audit.json  # Audit exact best-particle NPZ meshes.
+          python scripts/entity_first_stage1_audit.py --artifact-root frozen_v4 --report stage1_reports/frozen_v4_mesh_audit.json  # Audit the exact best-particle NPZ files.
           audit_status=$?  # Preserve the hard-gate process status.
           set -e  # Restore fail-fast shell behavior.
-          test "$audit_status" -ne 0  # Fail CI if the broken baseline is incorrectly accepted.
-      - uses: actions/upload-artifact@v4  # Publish machine-readable evidence for review.
-        with:  # Configure the isolated audit artifact.
-          name: entity-first-stage1-audit  # Give the report a stable artifact name.
+          test "$audit_status" -ne 0  # Fail if the broken baseline is incorrectly accepted.
+      - uses: actions/upload-artifact@v4  # Publish machine-readable Stage 1 evidence.
+        with:  # Configure the audit artifact.
+          name: entity-first-stage1-audit  # Give the report a stable name.
           path: stage1_reports/frozen_v4_mesh_audit.json  # Upload the complete diagnostic receipt.
-          if-no-files-found: error  # Refuse a green workflow without evidence.
-  build-exact-gmsh-entities:  # Start Stage 2 only after both Stage 1 jobs pass.
-    needs: [verify-audit-code, diagnose-frozen-v4]  # Enforce audit-first sequencing inside one workflow.
+          if-no-files-found: error  # Refuse a green job without evidence.
+  build-exact-gmsh-entities:  # Start Stage 2 after both Stage 1 jobs pass.
+    needs: [verify-audit-code, diagnose-frozen-v4]  # Enforce audit-first sequencing.
     runs-on: ubuntu-latest  # Use a clean runner with no legacy generated files.
-    steps:  # Build one OpenCASCADE BREP per IMP and mesh the same BREP twice.
-      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+    steps:  # Build one OpenCASCADE BREP per structured model and mesh each BREP twice.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
       - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
         with:  # Configure the interpreter explicitly.
-          python-version: "3.12"  # Match Stage 1 Python behavior.
-      - name: Install mature geometry and mesh tools  # Install Gmsh only after Stage 1 has completed.
-        run: |  # Use the Ubuntu repository package and record the exact version.
-          sudo apt-get update  # Refresh package metadata on the clean runner.
-          sudo apt-get install -y gmsh  # Install the public OpenCASCADE-based mesher.
-          gmsh --version  # Preserve the exact tool version in the Actions log.
-          python -m pip install --disable-pip-version-check numpy  # Install the Stage 1 mesh-audit dependency.
-      - name: Compile Stage 2 builder and launcher  # Detect Python errors before invoking Gmsh.
-        run: python -m py_compile scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py  # Compile model logic and the explicit batch adapter.
-      - name: Build and validate exact entities  # Generate bearing, single-hole, and three-hole BREP models.
-        run: python scripts/entity_first_stage2_run.py --self-test --output-dir stage2_outputs  # Mesh each frozen entity at two independent size levels in batch mode.
-      - uses: actions/upload-artifact@v4  # Publish all geometry, mesh, and validation evidence even on failure.
-        if: always()  # Preserve generated source and partial evidence for reproducible debugging.
-        with:  # Configure the isolated Stage 2 artifact.
-          name: entity-first-stage2-gmsh  # Give the entity-first evidence a stable name.
+          python-version: "3.12"  # Match Stage 1 behavior.
+      - name: Install Gmsh and audit dependency  # Install mature geometry and mesh tooling only after Stage 1 passes.
+        run: |  # Record exact tool and dependency versions.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh  # Install Gmsh with OpenCASCADE support.
+          gmsh --version  # Preserve the exact mesher version in the log.
+          python -m pip install --disable-pip-version-check numpy  # Install the mesh-audit dependency.
+      - name: Compile exact-entity builders  # Detect Python errors before invoking Gmsh.
+        run: python -m py_compile scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py  # Compile model logic and batch adapter.
+      - name: Build and hard-gate exact entities  # Generate bearing, single-hole, and three-hole BREP models.
+        run: python scripts/entity_first_stage2_run.py --self-test --output-dir stage2_outputs  # Require topology, area, Physical Group, and quality checks.
+      - uses: actions/upload-artifact@v4  # Publish complete exact-entity evidence.
+        if: always()  # Preserve partial evidence whenever a hard gate catches a defect.
+        with:  # Configure the Stage 2 artifact.
+          name: entity-first-stage2-gmsh  # Give BREP and mesh evidence a stable name.
           path: stage2_outputs  # Upload BREP, GEO, MSH, and JSON receipts.
-          if-no-files-found: warn  # Keep failure logs useful even if Gmsh stopped before file creation.
-  run-calculix-smoke-solves:  # Start Stage 3 only after the exact Gmsh entity job passes.
-    needs: [build-exact-gmsh-entities]  # Prevent CalculiX from seeing an unaudited or geometry-drifting mesh.
-    runs-on: ubuntu-latest  # Use a clean solver runner isolated from geometry creation.
-    steps:  # Verify deck generation, run CalculiX, and check result equilibrium.
-      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+          if-no-files-found: warn  # Keep failing runs diagnosable before file creation.
+  run-calculix-smoke-solves:  # Start Stage 3 only after exact entities pass.
+    needs: [build-exact-gmsh-entities]  # Prevent CalculiX from seeing an unaudited mesh.
+    runs-on: ubuntu-latest  # Use a clean solver runner isolated from geometry construction.
+    steps:  # Generate decks, run CalculiX, and verify fields and equilibrium.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
       - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
         with:  # Configure the interpreter explicitly.
-          python-version: "3.12"  # Match earlier stage behavior.
-      - uses: actions/download-artifact@v4  # Consume only the Stage 2 evidence from this workflow run.
-        with:  # Select the exact validated geometry artifact.
-          name: entity-first-stage2-gmsh  # Download BREP and audited MSH evidence.
-          path: stage2_inputs  # Isolate downloaded model evidence from solver outputs.
-      - name: Install mature CalculiX solver  # Install the public solver only after Gmsh validation passes.
-        run: |  # Record package and executable evidence in the Actions log.
-          sudo apt-get update  # Refresh package metadata on the clean runner.
-          sudo apt-get install -y calculix-ccx  # Install the Ubuntu CalculiX solver package.
-          command -v ccx  # Require the solver executable to exist on PATH.
-          ccx -v || true  # Record the solver version without treating version-output conventions as a failure.
-      - name: Compile and self-test CalculiX deck generator  # Test our conversion code before any full solve.
+          python-version: "3.12"  # Match earlier stages.
+      - uses: actions/download-artifact@v4  # Consume only exact-entity evidence from this workflow run.
+        with:  # Select the exact Stage 2 artifact.
+          name: entity-first-stage2-gmsh  # Download BREP and audited MSH files.
+          path: stage2_inputs  # Isolate model inputs from solver outputs.
+      - name: Install CalculiX  # Install the mature solver after the geometry gate passes.
+        run: |  # Record exact solver evidence.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y calculix-ccx  # Install CalculiX 2.21 from Ubuntu.
+          command -v ccx  # Require the solver executable on PATH.
+          ccx -v || true  # Record the version without depending on its exit-code convention.
+      - name: Compile and self-test solver adapters  # Validate conversion code before full solves.
         run: |  # Execute code-only checks first.
-          python -m py_compile scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Detect syntax and import errors in model logic and adapter.
-          python scripts/entity_first_stage3_run.py --generator-self-test  # Verify element, set, boundary, load, output cards, and corrected adapter behavior.
-      - name: Run three isolated CalculiX smoke solves  # Solve bearing, single-hole, and three-hole exact entities.
-        run: python scripts/entity_first_stage3_run.py --stage2-root stage2_inputs --output-dir stage3_outputs  # Require finite response, result files, and force equilibrium.
-      - uses: actions/upload-artifact@v4  # Publish decks, logs, fields, and receipts for review.
-        if: always()  # Preserve partial solver evidence when the hard gate catches a defect.
-        with:  # Configure the isolated Stage 3 artifact.
-          name: entity-first-stage3-calculix  # Give solver evidence a stable artifact name.
-          path: stage3_outputs  # Upload INP, DAT, FRD, logs, and JSON receipt.
-          if-no-files-found: warn  # Preserve a useful failing workflow even before files are emitted.
+          python -m py_compile scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Detect syntax and import errors.
+          python scripts/entity_first_stage3_run.py --generator-self-test  # Verify elements, named sets, loads, boundaries, and output cards.
+      - name: Run three exact-entity smoke solves  # Solve bearing, single-hole, and three-hole models.
+        run: python scripts/entity_first_stage3_run.py --stage2-root stage2_inputs --output-dir stage3_outputs  # Require finite fields and vertical-force equilibrium.
+      - uses: actions/upload-artifact@v4  # Publish decks, logs, DAT, FRD, and receipts.
+        if: always()  # Preserve partial solver evidence on failure.
+        with:  # Configure the Stage 3 artifact.
+          name: entity-first-stage3-calculix  # Give solver evidence a stable name.
+          path: stage3_outputs  # Upload complete CalculiX evidence.
+          if-no-files-found: warn  # Keep failures diagnosable before output creation.
+  verify-hotspot-pso-code:  # Start Stage 4 code verification after the deterministic geometry and solver chain passes.
+    needs: [run-calculix-smoke-solves]  # Keep optimizer code behind verified entities and solver adapters.
+    runs-on: ubuntu-latest  # Use a clean dependency-light runner.
+    steps:  # Compile and regression-test PSO state updates before any Gmsh optimization.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match all preceding stages.
+      - name: Install PSO audit dependency  # Install NumPy because the imported Stage 1 module reads NPZ evidence.
+        run: python -m pip install --disable-pip-version-check numpy  # Make the dependency explicit after the first caught CI defect.
+      - name: Compile hotspot PSO and prerequisites  # Detect syntax and import errors in the integrated optimizer path.
+        run: python -m py_compile scripts/entity_first_stage1_audit.py scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage5_hotspot_pso.py  # Compile the exact modules used by Stage 4.
+      - name: Run optimizer-state self-test  # Verify inertia, cognitive/social terms, clamping, and boundary projection.
+        run: python scripts/entity_first_stage5_hotspot_pso.py --self-test  # Execute deterministic PSO state regressions without Gmsh.
+  run-hotspot-pso:  # Optimize all four hotspot layouts on fixed entities without DeepSeek or FE-error objectives.
+    needs: [build-exact-gmsh-entities, verify-hotspot-pso-code]  # Reuse the exact BREP artifact and require optimizer-code verification.
+    strategy:  # Run every model independently while preserving failures.
+      fail-fast: false  # Allow all four cases to finish even if one case fails.
+      max-parallel: 4  # Use one hosted runner per case.
+      matrix:  # Define the complete four-case hotspot suite.
+        case: [bearing_plate, circular_opening, three_openings, cracked_web]  # Include the seam-based crack model.
+    runs-on: ubuntu-latest  # Use clean Gmsh runners for actual remeshing.
+    steps:  # Download exact entities, run the full swarm, and publish every candidate record.
+      - uses: actions/checkout@v4  # Check out the pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match optimizer self-tests.
+      - uses: actions/download-artifact@v4  # Consume exact BREP evidence from Stage 2 of this run.
+        with:  # Select the exact-entity artifact.
+          name: entity-first-stage2-gmsh  # Download bearing and opening BREP models.
+          path: fixed_entities  # Supply the entity root expected by the optimizer.
+      - name: Install Gmsh and PSO dependency  # Install the mature mesher and audit dependency.
+        run: |  # Record exact tools used for the 168 candidate evaluations.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh  # Install Gmsh with OpenCASCADE support.
+          gmsh --version  # Preserve the exact mesher version in the log.
+          python -m pip install --disable-pip-version-check numpy  # Install the imported audit dependency.
+      - name: Run fourteen-particle twelve-iteration hotspot PSO  # Execute 168 actual Gmsh remesh evaluations for this case.
+        run: python scripts/entity_first_stage5_hotspot_pso.py --case "${{ matrix.case }}" --entity-root fixed_entities --output-dir "stage4_results/${{ matrix.case }}" --particles 14 --iterations 12 --seed 20260801  # Optimize visible density separation only.
+      - uses: actions/upload-artifact@v4  # Publish best meshes, all receipts, and actual vector mesh evidence.
+        if: always()  # Preserve partial optimization evidence on failure.
+        with:  # Configure one case artifact.
+          name: entity-first-hotspot-pso-${{ matrix.case }}  # Give every model an independent stable artifact name.
+          path: stage4_results/${{ matrix.case }}  # Upload the complete case output directory.
+          if-no-files-found: warn  # Keep failures diagnosable before output creation.
+  summarize-hotspot-pso:  # Close the integrated flow with one hard-gated four-case receipt.
+    needs: [run-hotspot-pso]  # Wait for all matrix cases to finish.
+    runs-on: ubuntu-latest  # Use a lightweight summary runner.
+    steps:  # Download each case separately to prevent same-name receipt overwrites.
+      - uses: actions/download-artifact@v4  # Collect all four optimizer artifacts from this run.
+        with:  # Select the case-artifact pattern.
+          pattern: entity-first-hotspot-pso-*  # Match only integrated hotspot PSO artifacts.
+          path: collected  # Preserve one subdirectory per artifact.
+          merge-multiple: false  # Prevent four pso_receipt.json files from overwriting each other.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Use the same Python line as all stages.
+      - name: Verify and summarize four hotspot PSO cases  # Enforce expected optimizer depth and model-specific topology evidence.
+        shell: bash  # Run an inline deterministic verifier.
+        run: |  # Build one suite receipt only after all invariants pass.
+          python - <<'PY'
+          import json  # Read case receipts and write the integrated suite receipt.
+          from pathlib import Path  # Discover artifact-separated case directories safely.
+          receipts = sorted(Path("collected").rglob("pso_receipt.json"))  # Find every independently downloaded case receipt.
+          if len(receipts) != 4:  # Require the complete four-case suite.
+              raise SystemExit(f"expected four PSO receipts, found {len(receipts)}")  # Reject missing or overwritten evidence.
+          cases = {}  # Collect normalized case summaries.
+          for receipt_path in receipts:  # Validate every case independently.
+              receipt = json.loads(receipt_path.read_text(encoding="utf-8"))  # Parse the machine-readable optimizer evidence.
+              case_id = receipt["case"]["case_id"]  # Resolve the stable model identifier.
+              if receipt["particles"] != 14 or receipt["iterations"] != 12:  # Enforce the requested deep search configuration.
+                  raise SystemExit(f"{case_id}: unexpected PSO depth")  # Reject an accidentally shortened run.
+              if receipt["actual_unique_gmsh_evaluations"] != 168:  # Require every particle-generation pair to perform an actual unique remesh.
+                  raise SystemExit(f"{case_id}: expected 168 unique Gmsh evaluations, found {receipt['actual_unique_gmsh_evaluations']}")  # Reject caching or skipped evaluations.
+              best = receipt["best"]  # Read the selected hotspot mesh evidence.
+              if not best["valid"] or best["issues"]:  # Require topology, geometry, and quality gates to pass.
+                  raise SystemExit(f"{case_id}: invalid best candidate {best['issues']}")  # Preserve exact failure evidence.
+              ratios = tuple(float(value) for value in best["density"]["ratios"])  # Read measured local-to-far element-size ratios.
+              if any(value >= 0.50 for value in ratios):  # Require clearly visible regional density separation.
+                  raise SystemExit(f"{case_id}: insufficient hotspot distinction {ratios}")  # Reject visually weak allocations.
+              if case_id == "three_openings" and not (ratios[1] < ratios[0] < ratios[2]):  # Require middle-left-right independent sizing order.
+                  raise SystemExit(f"{case_id}: three-hole ordering collapsed {ratios}")  # Reject a repeated single-hole pattern.
+              if case_id == "cracked_web":  # Apply seam-specific crack topology checks.
+                  seam = best["seam"]  # Read paired crack-face node evidence.
+                  if seam.get("paired_internal_nodes", 0) < 8 or not seam.get("upper_lower_node_sets_disjoint", False):  # Require a real zero-thickness internal discontinuity.
+                      raise SystemExit(f"{case_id}: invalid crack seam {seam}")  # Reject an embedded line with shared degrees of freedom.
+              cases[case_id] = {  # Preserve the load-bearing suite evidence.
+                  "particles": receipt["particles"],  # Record swarm population.
+                  "iterations": receipt["iterations"],  # Record optimizer depth.
+                  "actual_unique_gmsh_evaluations": receipt["actual_unique_gmsh_evaluations"],  # Record real remesh count.
+                  "best": best,  # Preserve complete best-candidate topology, quality, density, and seam evidence.
+                  "best_score_history": [row["global_best_score"] for row in receipt["history"]],  # Preserve convergence history.
+              }  # Complete one case summary.
+          required = {"bearing_plate", "circular_opening", "three_openings", "cracked_web"}  # Define the expected complete model set.
+          if set(cases) != required:  # Detect duplicate or misnamed artifacts.
+              raise SystemExit(f"unexpected case set: {sorted(cases)}")  # Reject an incomplete suite.
+          suite = {  # Build the integrated final receipt.
+              "schema_version": "entity-first-full-pipeline/1.0",  # Version the end-to-end evidence contract.
+              "stages": ["legacy-audit", "exact-brep", "calculix-smoke", "hotspot-pso"],  # Record the completed ordered chain.
+              "deepseek_used": False,  # State that hotspot allocation was deterministic and self-directed.
+              "fe_error_objective_used": False,  # State that this PSO stage optimized regional distinction only.
+              "total_actual_unique_gmsh_evaluations": sum(row["actual_unique_gmsh_evaluations"] for row in cases.values()),  # Record the full 672-remesh cost.
+              "cases": cases,  # Preserve all four case summaries.
+              "all_valid": True,  # Set success only after every preceding assertion passes.
+          }  # Complete the suite receipt.
+          Path("full_pipeline_receipt.json").write_text(json.dumps(suite, ensure_ascii=False, indent=2), encoding="utf-8")  # Persist the final machine-readable evidence.
+          print(json.dumps(suite, ensure_ascii=False, indent=2))  # Echo the final receipt to the Actions log.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish the complete integrated pipeline evidence.
+        with:  # Configure the final suite artifact.
+          name: entity-first-full-pipeline  # Give the unified flow a stable artifact name.
+          path: |  # Upload both the compact receipt and complete per-case evidence.
+            full_pipeline_receipt.json
+            collected
+          if-no-files-found: error  # Refuse a green workflow without final evidence.
