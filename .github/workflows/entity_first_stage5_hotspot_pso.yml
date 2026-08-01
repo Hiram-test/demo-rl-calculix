@@ -1,0 +1,150 @@
+name: Entity-first Stage 5 hotspot PSO
+
+on:
+  pull_request:
+    branches:
+      - feat/ai-dynamic-region-mesh-paper
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-pso-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile hotspot PSO and prerequisite modules
+        run: python -m py_compile scripts/entity_first_stage1_audit.py scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py scripts/entity_first_stage5_hotspot_pso.py
+      - name: Run optimizer-state self-test
+        run: python scripts/entity_first_stage5_hotspot_pso.py --self-test
+
+  prepare-fixed-entities:
+    needs: [verify-pso-code]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Gmsh and NPZ dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gmsh
+          gmsh --version
+          python -m pip install --disable-pip-version-check numpy
+      - name: Build and hard-gate exact bearing and opening entities
+        run: python scripts/entity_first_stage2_run.py --self-test --output-dir fixed_entities
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage5-fixed-entities
+          path: fixed_entities
+          if-no-files-found: error
+
+  smoke-hotspot-pso:
+    needs: [prepare-fixed-entities]
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [bearing_plate, circular_opening, three_openings, cracked_web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: stage5-fixed-entities
+          path: fixed_entities
+      - name: Install Gmsh
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gmsh
+          gmsh --version
+      - name: Run short actual-remesh PSO smoke test
+        run: python scripts/entity_first_stage5_hotspot_pso.py --case "${{ matrix.case }}" --entity-root fixed_entities --output-dir "smoke/${{ matrix.case }}" --particles 5 --iterations 3 --seed 20260801
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage5-smoke-${{ matrix.case }}
+          path: smoke/${{ matrix.case }}
+          if-no-files-found: warn
+
+  full-hotspot-pso:
+    needs: [prepare-fixed-entities, smoke-hotspot-pso]
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        case: [bearing_plate, circular_opening, three_openings, cracked_web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: stage5-fixed-entities
+          path: fixed_entities
+      - name: Install Gmsh
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gmsh
+          gmsh --version
+      - name: Run fourteen-particle twelve-iteration hotspot PSO
+        run: python scripts/entity_first_stage5_hotspot_pso.py --case "${{ matrix.case }}" --entity-root fixed_entities --output-dir "results/${{ matrix.case }}" --particles 14 --iterations 12 --seed 20260801
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage5-hotspot-pso-${{ matrix.case }}
+          path: results/${{ matrix.case }}
+          if-no-files-found: warn
+
+  summarize-hotspot-pso:
+    needs: [full-hotspot-pso]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: stage5-hotspot-pso-*
+          path: collected
+          merge-multiple: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build one four-case hotspot PSO summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          roots = sorted(Path('collected').rglob('pso_receipt.json'))
+          if len(roots) != 4:
+              raise SystemExit(f'expected four PSO receipts, found {len(roots)}')
+          cases = {}
+          for path in roots:
+              receipt = json.loads(path.read_text(encoding='utf-8'))
+              case_id = receipt['case']['case_id']
+              cases[case_id] = {
+                  'particles': receipt['particles'],
+                  'iterations': receipt['iterations'],
+                  'actual_unique_gmsh_evaluations': receipt['actual_unique_gmsh_evaluations'],
+                  'best': receipt['best'],
+                  'best_score_history': [row['global_best_score'] for row in receipt['history']],
+              }
+          summary = {'schema_version': 'entity-first-hotspot-pso-suite/1.0', 'cases': cases, 'all_valid': all(row['best']['valid'] for row in cases.values())}
+          Path('suite_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage5-hotspot-pso-suite
+          path: |
+            suite_summary.json
+            collected
+          if-no-files-found: error
