@@ -1,4 +1,4 @@
-name: Entity-first pipeline Stage 1 audit  # Identify the isolated pre-repair verification workflow.
+name: Entity-first pipeline staged audit  # Identify the isolated pre-repair verification workflow.
 on:  # Define explicit triggers for the isolated branch only.
   pull_request:  # Run checks on the draft repair pull request.
     branches:  # Restrict the base branch that receives this repair.
@@ -7,7 +7,7 @@ on:  # Define explicit triggers for the isolated branch only.
 permissions:  # Grant only the access required to download the frozen baseline artifact.
   actions: read  # Allow the workflow to read an earlier workflow artifact.
   contents: read  # Allow checkout of the isolated repair branch.
-jobs:  # Separate audit-code verification from frozen-baseline diagnosis.
+jobs:  # Execute each repair stage behind the preceding hard gate.
   verify-audit-code:  # Prove the guard itself works before it judges production evidence.
     runs-on: ubuntu-latest  # Use a clean hosted Linux runner.
     steps:  # Execute deterministic tests with no Gmsh, CalculiX, LLM, or PSO.
@@ -47,3 +47,26 @@ jobs:  # Separate audit-code verification from frozen-baseline diagnosis.
           name: entity-first-stage1-audit  # Give the report a stable artifact name.
           path: stage1_reports/frozen_v4_mesh_audit.json  # Upload the complete diagnostic receipt.
           if-no-files-found: error  # Refuse a green workflow without evidence.
+  build-exact-gmsh-entities:  # Start Stage 2 only after both Stage 1 jobs pass.
+    needs: [verify-audit-code, diagnose-frozen-v4]  # Enforce audit-first sequencing inside one workflow.
+    runs-on: ubuntu-latest  # Use a clean runner with no legacy generated files.
+    steps:  # Build one OpenCASCADE BREP per IMP and mesh the same BREP twice.
+      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match Stage 1 Python behavior.
+      - name: Install mature geometry and mesh tools  # Install Gmsh only after Stage 1 has completed.
+        run: |  # Use the Ubuntu repository package and record the exact version.
+          sudo apt-get update  # Refresh package metadata on the clean runner.
+          sudo apt-get install -y gmsh  # Install the public OpenCASCADE-based mesher.
+          gmsh --version  # Preserve the exact tool version in the Actions log.
+          python -m pip install --disable-pip-version-check numpy  # Install the Stage 1 mesh-audit dependency.
+      - name: Compile Stage 2 builder  # Detect Python errors before invoking Gmsh.
+        run: python -m py_compile scripts/entity_first_stage2_gmsh.py  # Compile the exact entity-first entry point.
+      - name: Build and validate exact entities  # Generate bearing, single-hole, and three-hole BREP models.
+        run: python scripts/entity_first_stage2_gmsh.py --self-test --output-dir stage2_outputs  # Mesh each frozen entity at two independent size levels.
+      - uses: actions/upload-artifact@v4  # Publish all geometry, mesh, and validation evidence.
+        with:  # Configure the isolated Stage 2 artifact.
+          name: entity-first-stage2-gmsh  # Give the entity-first evidence a stable name.
+          path: stage2_outputs  # Upload BREP, GEO, MSH, and JSON receipts.
+          if-no-files-found: error  # Refuse a green workflow without generated entities.
