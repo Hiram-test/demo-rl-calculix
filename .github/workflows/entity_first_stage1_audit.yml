@@ -71,3 +71,33 @@ jobs:  # Execute each repair stage behind the preceding hard gate.
           name: entity-first-stage2-gmsh  # Give the entity-first evidence a stable name.
           path: stage2_outputs  # Upload BREP, GEO, MSH, and JSON receipts.
           if-no-files-found: warn  # Keep failure logs useful even if Gmsh stopped before file creation.
+  run-calculix-smoke-solves:  # Start Stage 3 only after the exact Gmsh entity job passes.
+    needs: [build-exact-gmsh-entities]  # Prevent CalculiX from seeing an unaudited or geometry-drifting mesh.
+    runs-on: ubuntu-latest  # Use a clean solver runner isolated from geometry creation.
+    steps:  # Verify deck generation, run CalculiX, and check result equilibrium.
+      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match earlier stage behavior.
+      - uses: actions/download-artifact@v4  # Consume only the Stage 2 evidence from this workflow run.
+        with:  # Select the exact validated geometry artifact.
+          name: entity-first-stage2-gmsh  # Download BREP and audited MSH evidence.
+          path: stage2_inputs  # Isolate downloaded model evidence from solver outputs.
+      - name: Install mature CalculiX solver  # Install the public solver only after Gmsh validation passes.
+        run: |  # Record package and executable evidence in the Actions log.
+          sudo apt-get update  # Refresh package metadata on the clean runner.
+          sudo apt-get install -y calculix-ccx  # Install the Ubuntu CalculiX solver package.
+          command -v ccx  # Require the solver executable to exist on PATH.
+          ccx -v || true  # Record the solver version without treating version-output conventions as a failure.
+      - name: Compile and self-test CalculiX deck generator  # Test our conversion code before any full solve.
+        run: |  # Execute code-only checks first.
+          python -m py_compile scripts/entity_first_stage3_calculix.py  # Detect syntax and import errors.
+          python scripts/entity_first_stage3_calculix.py --generator-self-test  # Verify element, set, boundary, load, and output cards.
+      - name: Run three isolated CalculiX smoke solves  # Solve bearing, single-hole, and three-hole exact entities.
+        run: python scripts/entity_first_stage3_calculix.py --stage2-root stage2_inputs --output-dir stage3_outputs  # Require finite response, result files, and force equilibrium.
+      - uses: actions/upload-artifact@v4  # Publish decks, logs, fields, and receipts for review.
+        if: always()  # Preserve partial solver evidence when the hard gate catches a defect.
+        with:  # Configure the isolated Stage 3 artifact.
+          name: entity-first-stage3-calculix  # Give solver evidence a stable artifact name.
+          path: stage3_outputs  # Upload INP, DAT, FRD, logs, and JSON receipt.
+          if-no-files-found: warn  # Preserve a useful failing workflow even before files are emitted.
