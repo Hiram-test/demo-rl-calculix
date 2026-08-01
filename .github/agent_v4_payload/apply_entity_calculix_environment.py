@@ -25,7 +25,7 @@ def _replace_once(path: Path, old: str, new: str) -> None:  # Apply one exact co
     path.write_text(text.replace(old, new, 1), encoding="utf-8")  # Replace only the intended numerical expression.
 
 
-def _patch_backend_compatibility(path: Path) -> None:  # Adapt planar area calculations to NumPy 2.5 without changing algorithms.
+def _patch_backend_compatibility(path: Path) -> None:  # Adapt the new backend to current Gmsh, CalculiX, and NumPy contracts.
     _replace_once(  # Replace scalar planar cross product used for triangle orientation.
         path,  # Patch only the newly installed backend module.
         "        twice_area = float(np.cross(coordinates[1] - coordinates[0], coordinates[2] - coordinates[0]))",  # Match the NumPy 2.4-compatible expression.
@@ -41,6 +41,16 @@ def _patch_backend_compatibility(path: Path) -> None:  # Adapt planar area calcu
         "        area = 0.5 * abs(float(np.cross(coordinates[1] - coordinates[0], coordinates[2] - coordinates[0])))",  # Match the deprecated quality expression.
         "        first_edge = coordinates[1] - coordinates[0]\n        second_edge = coordinates[2] - coordinates[0]\n        area = 0.5 * abs(float(first_edge[0] * second_edge[1] - first_edge[1] * second_edge[0]))",  # Preserve the same signed-area magnitude.
     )
+    _replace_once(  # Bind the embedded crack curve to the single imported material surface explicitly.
+        path,  # Patch only the new crack mesher.
+        '            "Curve{crack_line} In Surface{domain[]};",',  # Match the list expression rejected by Gmsh 4.12.
+        '            "Curve{crack_line} In Surface{domain[0]};",',  # Select the one exact intact-plate surface returned by the bounding-box query.
+    )
+    _replace_once(  # Keep every CalculiX node-set data line within its sixteen-entry parser limit.
+        path,  # Patch only the new linear deck writer.
+        '    if fixed_nodes:\n        lines.extend(["*NSET,NSET=FIXED", ",".join(str(node) for node in fixed_nodes)])',  # Match the unbounded single-line node-set writer.
+        '    if fixed_nodes:\n        lines.append("*NSET,NSET=FIXED")\n        for start in range(0, len(fixed_nodes), 16):\n            lines.append(",".join(str(node) for node in fixed_nodes[start : start + 16]))',  # Emit deterministic sixteen-node chunks accepted by CalculiX 2.21.
+    )
 
 
 def main() -> int:  # Install the numerical environment behind the original V4 Skills.
@@ -54,7 +64,7 @@ def main() -> int:  # Install the numerical environment behind the original V4 S
         raise FileNotFoundError(source)  # Preserve a clear packaging failure.
     backend_path = root / "bridge_agent" / "entity_calculix_environment.py"  # Resolve the installed backend target.
     shutil.copyfile(source, backend_path)  # Install exact Gmsh and CalculiX execution code.
-    _patch_backend_compatibility(backend_path)  # Keep planar geometry calculations compatible with the current original requirements environment.
+    _patch_backend_compatibility(backend_path)  # Apply only environment-level compatibility corrections.
     _append_once(  # Redirect original geometry helpers while preserving every caller and Skill contract.
         root / "bridge_agent" / "meshers.py",  # Patch only the old numerical mesh implementation module.
         f'''{MARKER}
