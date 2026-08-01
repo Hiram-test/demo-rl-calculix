@@ -61,12 +61,13 @@ jobs:  # Execute each repair stage behind the preceding hard gate.
           sudo apt-get install -y gmsh  # Install the public OpenCASCADE-based mesher.
           gmsh --version  # Preserve the exact tool version in the Actions log.
           python -m pip install --disable-pip-version-check numpy  # Install the Stage 1 mesh-audit dependency.
-      - name: Compile Stage 2 builder  # Detect Python errors before invoking Gmsh.
-        run: python -m py_compile scripts/entity_first_stage2_gmsh.py  # Compile the exact entity-first entry point.
+      - name: Compile Stage 2 builder and launcher  # Detect Python errors before invoking Gmsh.
+        run: python -m py_compile scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py  # Compile model logic and the explicit batch adapter.
       - name: Build and validate exact entities  # Generate bearing, single-hole, and three-hole BREP models.
-        run: python scripts/entity_first_stage2_gmsh.py --self-test --output-dir stage2_outputs  # Mesh each frozen entity at two independent size levels.
-      - uses: actions/upload-artifact@v4  # Publish all geometry, mesh, and validation evidence.
+        run: python scripts/entity_first_stage2_run.py --self-test --output-dir stage2_outputs  # Mesh each frozen entity at two independent size levels in batch mode.
+      - uses: actions/upload-artifact@v4  # Publish all geometry, mesh, and validation evidence even on failure.
+        if: always()  # Preserve generated source and partial evidence for reproducible debugging.
         with:  # Configure the isolated Stage 2 artifact.
           name: entity-first-stage2-gmsh  # Give the entity-first evidence a stable name.
           path: stage2_outputs  # Upload BREP, GEO, MSH, and JSON receipts.
-          if-no-files-found: error  # Refuse a green workflow without generated entities.
+          if-no-files-found: warn  # Keep failure logs useful even if Gmsh stopped before file creation.
