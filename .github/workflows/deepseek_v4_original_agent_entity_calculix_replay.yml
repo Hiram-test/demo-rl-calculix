@@ -1,0 +1,269 @@
+name: Original V4 Agent with exact Gmsh and CalculiX replay  # Validate the unchanged Agent workflow before spending live DeepSeek calls.
+on:  # Support manual reproduction and pull-request validation.
+  workflow_dispatch:  # Allow an explicit backend regression run.
+  pull_request:  # Re-run whenever the isolated repair branch changes.
+    branches:  # Restrict the target branch.
+      - feat/ai-dynamic-region-mesh-paper  # Keep the experiment isolated from main.
+permissions:  # Grant only repository read access.
+  contents: read  # Allow checkout of source and payload assets.
+jobs:  # Execute one original AgentRuntime process per engineering case.
+  original-agent-replay:  # Exercise the original Skill scheduler with the scripted regression provider.
+    strategy:  # Isolate every case and preserve all failures.
+      fail-fast: false  # Let the remaining cases complete after one backend defect.
+      max-parallel: 4  # Use one clean runner per case.
+      matrix:  # Preserve the original four V4 cases and case identifiers.
+        include:  # Bind each JSON contract to its stable runtime case ID.
+          - case_file: bearing_load.json  # Use the original bearing-load contract.
+            case_id: bearing_load_introduction  # Preserve the original case identifier.
+          - case_file: circular_opening.json  # Use the original single-opening contract.
+            case_id: web_circular_opening  # Preserve the original case identifier.
+          - case_file: multi_hole_pso.json  # Use the original multi-opening contract.
+            case_id: diaphragm_multi_opening_budget  # Preserve the original case identifier.
+          - case_file: cracked_panel.json  # Use the original fracture contract.
+            case_id: bridge_web_crack  # Preserve the original case identifier.
+    runs-on: ubuntu-24.04  # Use a clean Linux environment with packaged Gmsh and CalculiX.
+    timeout-minutes: 180  # Bound the original multi-Skill loop and all solver evaluations.
+    steps:  # Materialize original source, patch only the backend, run, and audit.
+      - uses: actions/checkout@v4  # Check out the current repair branch.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match the retained V4 workflow.
+      - name: Materialize hash-verified original V4 source  # Reconstruct the exact retained Agent implementation.
+        shell: bash  # Use strict shell behavior for the archive integrity gate.
+        run: |  # Decode and verify the original payload before applying any environment changes.
+          set -euo pipefail  # Stop on decoding, hashing, or extraction failure.
+          root="$RUNNER_TEMP/original-v4"  # Allocate an isolated payload root.
+          archive="$RUNNER_TEMP/original-v4-source.tar.xz"  # Allocate the reconstructed source archive.
+          rm -rf "$root" "$archive"  # Remove any prior attempt on this clean runner.
+          mkdir -p "$root"  # Create the extraction directory.
+          cat .github/agent_v4_payload/source_*.b64 | tr -d '[:space:]' | base64 --decode > "$archive"  # Rebuild the retained source bytes.
+          echo '9d23b4d488986f8136babc0d9be00c37aa9a06b6c4ffab0efcfa5338344e3215  '"$archive" | sha256sum -c -  # Prove exact payload identity.
+          tar -xJf "$archive" -C "$root"  # Extract the original Agent source.
+          test -s "$root/bridge_agent/runtime.py"  # Require original AgentRuntime.
+          test -s "$root/bridge_agent/provider.py"  # Require original provider and prompt.
+          test -s "$root/bridge_agent/region_skills.py"  # Require original Skill contracts and PSO controller.
+          test -s "$root/scripts/run_one_case.py"  # Require the original single-case entry point.
+      - name: Seal original control-plane files  # Record hashes for all files that must remain unchanged.
+        working-directory: ${{ runner.temp }}/original-v4  # Operate inside the verified payload.
+        run: |  # Hash the Agent control plane before backend installation.
+          python - <<'PY'
+          from hashlib import sha256  # Compute exact source hashes.
+          import json  # Persist a machine-readable control-plane seal.
+          from pathlib import Path  # Resolve original source paths.
+          paths = [  # List every file whose behavior must remain original.
+              "bridge_agent/runtime.py",  # Preserve Agent loop and completion logic.
+              "bridge_agent/provider.py",  # Preserve system prompt and live provider behavior.
+              "bridge_agent/skills.py",  # Preserve original non-regional Skills.
+              "bridge_agent/region_skills.py",  # Preserve original regional Skills and PSO parameters.
+              "bridge_agent/replay.py",  # Preserve regression decisions including particles and iterations.
+              "scripts/run_one_case.py",  # Preserve the original case entry point.
+          ]  # Complete the control-plane file list.
+          receipt = {path: sha256(Path(path).read_bytes()).hexdigest() for path in paths}  # Seal every file.
+          Path("control_plane_before.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")  # Persist the pre-patch seal.
+          PY
+      - name: Install Gmsh, CalculiX, and original Python dependencies  # Build only the numerical execution environment.
+        working-directory: ${{ runner.temp }}/original-v4  # Install against the original payload.
+        run: |  # Record actual tool versions and install original requirements.
+          set -euo pipefail  # Stop on any missing numerical dependency.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh calculix-ccx  # Install OpenCASCADE-enabled Gmsh and CalculiX.
+          gmsh --version  # Record the exact mesher version.
+          command -v ccx  # Require the CalculiX executable.
+          ccx -v || true  # Record the exact solver version without relying on its exit convention.
+          python -m pip install --upgrade pip  # Use a current installer.
+          python -m pip install -r requirements.txt  # Install the unchanged original V4 Python dependencies.
+      - name: Apply numerical-environment patch only  # Redirect old mesh and solver implementations without changing Agent logic.
+        run: |  # Install the compatibility backend into the verified payload.
+          set -euo pipefail  # Stop on missing source or an incompatible payload.
+          python .github/agent_v4_payload/apply_entity_calculix_environment.py "$RUNNER_TEMP/original-v4"  # Patch only meshers, adaptive mesh, linear solver, and plastic crack backend aliases.
+      - name: Prove Agent control plane and PSO schema are unchanged  # Reject any accidental decision-architecture modification.
+        working-directory: ${{ runner.temp }}/original-v4  # Inspect the patched payload.
+        run: |  # Compare source hashes and inspect the original PSO Skill contract.
+          python - <<'PY'
+          from hashlib import sha256  # Recompute exact source hashes.
+          import json  # Read the pre-patch seal and Skill catalog.
+          from pathlib import Path  # Resolve source files.
+          before = json.loads(Path("control_plane_before.json").read_text(encoding="utf-8"))  # Load the original control-plane seal.
+          after = {path: sha256(Path(path).read_bytes()).hexdigest() for path in before}  # Hash the same files after backend installation.
+          if after != before:  # Reject any prompt, AgentRuntime, Skill, replay, or entry-point change.
+              raise SystemExit({"control_plane_changed": {path: [before[path], after[path]] for path in before if before[path] != after[path]}})  # Show exact drift.
+          from bridge_agent.region_skills import REGION_CATALOG  # Import the original catalog after backend aliases are installed.
+          properties = REGION_CATALOG["optimize_region_size_field_pso"]["schema"]["properties"]  # Read the original PSO argument schema.
+          required = {"base_size", "target_elements", "particles", "iterations", "seed"}  # Define decision fields that must remain available to DS.
+          if not required.issubset(properties):  # Reject a hidden hardcoded or reduced PSO interface.
+              raise SystemExit(f"original PSO fields missing: {sorted(required - set(properties))}")  # Report the exact missing fields.
+          receipt = {"control_plane_unchanged": True, "pso_fields": sorted(properties), "backend_patch_marker": "ENTITY_CALCULIX_ENVIRONMENT_V1"}  # Build the architecture receipt.
+          Path("control_plane_receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # Persist the proof.
+          PY
+      - name: Compile patched numerical environment  # Detect syntax and import errors before solver work.
+        working-directory: ${{ runner.temp }}/original-v4  # Compile the actual payload used by the case.
+        run: python -m compileall -q bridge_agent scripts  # Compile original source plus the compatibility backend.
+      - name: Run one complete original-Agent replay case  # Exercise the unchanged Skill chain with real Gmsh and CalculiX.
+        working-directory: ${{ runner.temp }}/original-v4  # Run the original entry point directly.
+        env:  # Isolate exact entities and raw numerical evidence for this case.
+          BRIDGE_AGENT_ENTITY_CACHE_ROOT: ${{ runner.temp }}/original-v4-evidence/${{ matrix.case_id }}/entity_cache  # Cache immutable BREP entities only within this case job.
+          BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT: ${{ runner.temp }}/original-v4-evidence/${{ matrix.case_id }}/numerical  # Retain every Gmsh and CalculiX candidate directory.
+        shell: bash  # Use strict pipe behavior while preserving console output.
+        run: |  # Start a clean original runtime and retain its complete transcript.
+          set -euo pipefail  # Propagate all Agent and solver failures.
+          out="artifacts/${{ matrix.case_id }}"  # Allocate a case-isolated Agent output root.
+          rm -rf "$out" "$BRIDGE_AGENT_ENTITY_CACHE_ROOT" "$BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"  # Guarantee a from-scratch numerical run.
+          mkdir -p "$out" "$BRIDGE_AGENT_ENTITY_CACHE_ROOT" "$BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"  # Create empty evidence roots.
+          python scripts/run_one_case.py \
+            --case "${{ matrix.case_file }}" \
+            --output-dir "$out" \
+            --provider replay \
+            --model deepseek-v4-pro \
+            | tee "$RUNNER_TEMP/${{ matrix.case_id }}-console.log"  # Execute the original Skill scheduler; replay only substitutes deterministic model decisions.
+      - name: Audit original chain and real numerical backend  # Require completion, original PSO arguments, exact entities, and CalculiX evidence.
+        working-directory: ${{ runner.temp }}/original-v4  # Inspect case-local Agent and numerical artifacts.
+        env:  # Reuse the case-specific evidence roots.
+          BRIDGE_AGENT_ENTITY_CACHE_ROOT: ${{ runner.temp }}/original-v4-evidence/${{ matrix.case_id }}/entity_cache  # Locate immutable BREP evidence.
+          BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT: ${{ runner.temp }}/original-v4-evidence/${{ matrix.case_id }}/numerical  # Locate raw mesh and solver receipts.
+        run: |  # Build a hard-gated backend receipt without changing the original runtime.
+          python - <<'PY'
+          import json  # Read Agent traces and numerical receipts.
+          import os  # Resolve current case and evidence paths.
+          from pathlib import Path  # Discover files recursively.
+          case_id = "${{ matrix.case_id }}"  # Bind validation to the matrix case.
+          output_root = Path("artifacts") / case_id  # Resolve the original Agent output.
+          trace_path = output_root / "agent_trace.json"  # Locate the complete original runtime trace.
+          if not trace_path.is_file():  # Require a trace even when a Skill failed.
+              raise SystemExit(f"{case_id}: agent_trace.json missing")  # Reject an unexecuted case.
+          trace = json.loads(trace_path.read_text(encoding="utf-8"))  # Parse original Agent evidence.
+          if trace.get("status") != "finished":  # Require the original completion gate to close.
+              failed = [event for event in trace.get("events", []) if event.get("type") == "skill_call" and event.get("result", {}).get("status") == "failed"]  # Collect exact failed Skills.
+              raise SystemExit(f"{case_id}: status={trace.get('status')} failed={json.dumps(failed, ensure_ascii=False)[:12000]}")  # Preserve actionable failure evidence.
+          if trace.get("requirements", {}).get("complete") is not True:  # Require all original artifact kinds.
+              raise SystemExit(f"{case_id}: missing requirements {trace.get('requirements', {}).get('missing')}")  # Reject a premature finish.
+          successful_skills = [event.get("request", {}).get("skill") for event in trace.get("events", []) if event.get("type") == "skill_call" and event.get("result", {}).get("status") == "completed"]  # Preserve the executed Skill chain.
+          failed_skills = [event.get("request", {}).get("skill") for event in trace.get("events", []) if event.get("type") == "skill_call" and event.get("result", {}).get("status") == "failed"]  # Detect hidden backend failures.
+          if failed_skills:  # Refuse a green trace that recovered after backend defects.
+              raise SystemExit(f"{case_id}: failed Skills remain {failed_skills}")  # Require a clean replay regression.
+          pso_events = [event for event in trace.get("events", []) if event.get("type") == "skill_call" and event.get("request", {}).get("skill") == "optimize_region_size_field_pso"]  # Locate the original PSO call.
+          if len(pso_events) != 1:  # Require exactly one optimizer call as defined by the original workflow.
+              raise SystemExit(f"{case_id}: expected one PSO call, found {len(pso_events)}")  # Reject missing or duplicated optimization.
+          arguments = pso_events[0]["request"].get("arguments", {})  # Read provider-selected PSO arguments.
+          for key in ("base_size", "target_elements", "particles", "iterations", "seed"):  # Require the complete original decision interface.
+              if key not in arguments:  # Detect a reduced or hardcoded controller.
+                  raise SystemExit(f"{case_id}: original PSO argument missing {key}")  # Report the missing decision field.
+          numerical_root = Path(os.environ["BRIDGE_AGENT_NUMERICAL_EVIDENCE_ROOT"])  # Resolve raw candidate evidence.
+          mesh_receipts = sorted(numerical_root.rglob("mesh_receipt.json"))  # Find actual Gmsh mesh receipts.
+          solve_receipts = sorted(numerical_root.rglob("solve_receipt.json"))  # Find actual CalculiX linear-solve receipts.
+          input_decks = sorted(numerical_root.rglob("*.inp"))  # Find generated CalculiX decks.
+          dat_files = sorted(numerical_root.rglob("*.dat"))  # Find CalculiX text results.
+          frd_files = sorted(numerical_root.rglob("*.frd"))  # Find CalculiX field results.
+          if not mesh_receipts or not solve_receipts or not input_decks or not dat_files or not frd_files:  # Require both mature tools to have executed.
+              raise SystemExit(f"{case_id}: incomplete numerical evidence meshes={len(mesh_receipts)} solves={len(solve_receipts)} inp={len(input_decks)} dat={len(dat_files)} frd={len(frd_files)}")  # Reject in-memory fallback behavior.
+          entity_hashes = set()  # Collect immutable geometry identities.
+          minimum_angle = 180.0  # Track the worst accepted mesh quality.
+          for path in mesh_receipts:  # Audit every actual Gmsh mesh.
+              row = json.loads(path.read_text(encoding="utf-8"))  # Parse one mesh receipt.
+              entity_hashes.add(row["entity_sha256"])  # Preserve exact BREP identity.
+              minimum_angle = min(minimum_angle, float(row["quality"]["min_angle_deg"]))  # Track the quality tail.
+              if float(row["relative_area_error"]) > 0.02 or int(row["quality"]["invalid_count"]) != 0:  # Enforce topology and area gates.
+                  raise SystemExit(f"{case_id}: invalid mesh receipt {path}: {row}")  # Reject fake holes or degenerate elements.
+          if case_id == "bridge_web_crack":  # Apply zero-thickness seam checks to the fracture case.
+              seam_rows = [json.loads(path.read_text(encoding="utf-8")).get("seam", {}) for path in mesh_receipts]  # Read seam evidence from every crack mesh.
+              valid_seams = [row for row in seam_rows if int(row.get("paired_internal_nodes", 0)) > 0 and row.get("upper_lower_node_sets_disjoint") is True]  # Require duplicated coincident faces.
+              if not valid_seams:  # Reject a hole or merely embedded shared-node line.
+                  raise SystemExit(f"{case_id}: no valid crack seam evidence")  # Preserve the correct fracture representation gate.
+              plastic_summaries = sorted(numerical_root.rglob("*_summary.json"))  # Locate actual CalculiX plastic summaries.
+              if not plastic_summaries:  # Require the original elastoplastic Skill to use the new environment.
+                  raise SystemExit(f"{case_id}: elastoplastic CalculiX evidence missing")  # Reject a linear-only crack regression.
+          receipt = {  # Build the case-level backend regression receipt.
+              "schema_version": "original-v4-agent-entity-calculix-replay/1.0",  # Version the audit contract.
+              "case_id": case_id,  # Preserve the original case identifier.
+              "provider": "replay",  # Mark this strictly as executor regression, not live AI evidence.
+              "agent_status": trace["status"],  # Record original completion status.
+              "requirements_complete": trace["requirements"]["complete"],  # Record original completion gate.
+              "successful_skills": successful_skills,  # Preserve the exact original Skill chain.
+              "pso_arguments_from_original_provider": arguments,  # Prove PSO depth remains provider-controlled.
+              "model_calls": trace["counters"]["model_calls"],  # Record original Agent loop cost.
+              "solver_calls": trace["counters"]["solver_calls"],  # Record original solver counter.
+              "optimizer_calls": trace["counters"]["optimizer_calls"],  # Record original optimizer counter.
+              "gmsh_mesh_receipts": len(mesh_receipts),  # Record actual meshing count.
+              "calculix_linear_receipts": len(solve_receipts),  # Record actual linear solve count.
+              "calculix_input_decks": len(input_decks),  # Record raw solver inputs.
+              "calculix_dat_files": len(dat_files),  # Record raw text outputs.
+              "calculix_frd_files": len(frd_files),  # Record raw field outputs.
+              "entity_hashes": sorted(entity_hashes),  # Record exact immutable BREP identities.
+              "minimum_mesh_angle_deg": minimum_angle,  # Record worst accepted quality.
+              "control_plane_unchanged": True,  # Carry forward the preceding source-hash gate.
+          }  # Complete the case receipt.
+          (output_root / "entity_calculix_replay_receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # Persist machine-readable evidence.
+          print(json.dumps(receipt, ensure_ascii=False, indent=2))  # Echo the result to the Actions log.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish the complete original Agent and numerical evidence for this case.
+        if: always()  # Preserve partial evidence whenever a hard gate catches a defect.
+        with:  # Configure one independent artifact per case.
+          name: original-v4-entity-calculix-replay-${{ matrix.case_id }}  # Use the original case identifier.
+          path: |  # Upload source seals, Agent trace, model I/O, artifacts, and raw solver directories.
+            ${{ runner.temp }}/original-v4/control_plane_before.json
+            ${{ runner.temp }}/original-v4/control_plane_receipt.json
+            ${{ runner.temp }}/original-v4/artifacts/${{ matrix.case_id }}
+            ${{ runner.temp }}/original-v4-evidence/${{ matrix.case_id }}
+            ${{ runner.temp }}/${{ matrix.case_id }}-console.log
+          if-no-files-found: warn  # Keep pre-output failures diagnosable from logs.
+          retention-days: 90  # Retain numerical evidence for review.
+  summarize-replay:  # Combine four successful backend regressions into one suite receipt.
+    needs: [original-agent-replay]  # Wait for all four original Agent processes.
+    runs-on: ubuntu-24.04  # Use a lightweight clean summary runner.
+    steps:  # Download case artifacts separately and enforce suite completeness.
+      - uses: actions/download-artifact@v4  # Collect only this workflow's four replay artifacts.
+        with:  # Preserve one directory per case artifact.
+          pattern: original-v4-entity-calculix-replay-*  # Match the complete four-case set.
+          path: collected  # Store all evidence under one suite root.
+          merge-multiple: false  # Prevent same-name control-plane files from overwriting each other.
+      - uses: actions/setup-python@v5  # Install controlled Python for receipt aggregation.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match case jobs.
+      - name: Verify complete original-Agent replay suite  # Require four completed cases and provider-controlled PSO arguments.
+        run: |  # Build one machine-readable suite receipt.
+          python - <<'PY'
+          import json  # Read case receipts and write the suite receipt.
+          from pathlib import Path  # Discover independent case artifacts.
+          expected = {"bearing_load_introduction", "web_circular_opening", "diaphragm_multi_opening_budget", "bridge_web_crack"}  # Define the original four cases.
+          paths = sorted(Path("collected").rglob("entity_calculix_replay_receipt.json"))  # Find all successful case receipts.
+          if len(paths) != 4:  # Require every original Agent case.
+              raise SystemExit(f"expected four replay receipts, found {len(paths)}")  # Reject missing or overwritten evidence.
+          cases = {}  # Collect normalized case summaries.
+          for path in paths:  # Validate each case receipt independently.
+              row = json.loads(path.read_text(encoding="utf-8"))  # Parse one case result.
+              case_id = row["case_id"]  # Resolve the original identifier.
+              if case_id in cases:  # Detect duplicate artifacts.
+                  raise SystemExit(f"duplicate case receipt: {case_id}")  # Reject ambiguous evidence.
+              if row["agent_status"] != "finished" or row["requirements_complete"] is not True:  # Require original completion gates.
+                  raise SystemExit(f"{case_id}: original Agent did not finish")  # Reject partial regressions.
+              if row["optimizer_calls"] != 1 or row["gmsh_mesh_receipts"] < 1 or row["calculix_linear_receipts"] < 1:  # Require real regional optimization and numerical execution.
+                  raise SystemExit(f"{case_id}: missing optimizer, Gmsh, or CalculiX evidence")  # Reject fallback behavior.
+              arguments = row["pso_arguments_from_original_provider"]  # Read the original provider-selected PSO depth.
+              if int(arguments["particles"]) != 6 or int(arguments["iterations"]) != 3:  # Match the unchanged ReplayProvider contract.
+                  raise SystemExit(f"{case_id}: original replay PSO arguments changed {arguments}")  # Detect hidden hardcoding or schema drift.
+              cases[case_id] = row  # Preserve complete case evidence.
+          if set(cases) != expected:  # Require the exact original case set.
+              raise SystemExit(f"unexpected case set: {sorted(cases)}")  # Reject omissions or renamed scenarios.
+          suite = {  # Build the final replay-regression receipt.
+              "schema_version": "original-v4-agent-entity-calculix-replay-suite/1.0",  # Version the suite contract.
+              "provider": "replay",  # Prevent presentation as live DeepSeek evidence.
+              "purpose": "original Agent/Skill workflow numerical-backend regression",  # State the limited interpretation boundary.
+              "control_plane_unchanged": all(row["control_plane_unchanged"] for row in cases.values()),  # Record source-hash proof.
+              "case_count": len(cases),  # Record complete coverage.
+              "total_model_calls": sum(int(row["model_calls"]) for row in cases.values()),  # Record original Agent decisions.
+              "total_solver_calls": sum(int(row["solver_calls"]) for row in cases.values()),  # Record original runtime solver counter.
+              "total_gmsh_mesh_receipts": sum(int(row["gmsh_mesh_receipts"]) for row in cases.values()),  # Record actual meshing evidence.
+              "total_calculix_linear_receipts": sum(int(row["calculix_linear_receipts"]) for row in cases.values()),  # Record actual solver evidence.
+              "cases": cases,  # Preserve every original case receipt.
+              "valid": True,  # Set success only after all preceding assertions pass.
+          }  # Complete the suite result.
+          Path("original_v4_entity_calculix_replay_suite_receipt.json").write_text(json.dumps(suite, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # Persist the suite receipt.
+          print(json.dumps(suite, ensure_ascii=False, indent=2))  # Echo the complete summary to the log.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish the compact suite receipt and all raw case evidence.
+        with:  # Configure the final replay artifact.
+          name: original-v4-agent-entity-calculix-replay-suite  # Give the regression suite a stable name.
+          path: |  # Upload suite receipt and independently downloaded artifacts.
+            original_v4_entity_calculix_replay_suite_receipt.json
+            collected
+          if-no-files-found: error  # Refuse a green suite without complete evidence.
+          retention-days: 90  # Retain for audit and backend comparison.
