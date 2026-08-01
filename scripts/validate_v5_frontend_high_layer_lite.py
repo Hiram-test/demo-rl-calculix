@@ -32,9 +32,10 @@ SUPPORT_PATHS = [  # 冻结复现本验证所需的验证器和新工作流。
     Path("scripts/validate_v5_frontend_high_layer_lite.py"),  # 包含当前纯标准库验证逻辑。
     Path(".github/workflows/v5-frontend-high-layer-lite.yml"),  # 包含当前 GitHub Actions 执行合同。
 ]  # 结束复现支持文件路径列表。
-REQUIRED_PROFILE_FIELDS = {  # 冻结 profile 的十三个顶层字段，避免悄悄加入案例参数。
+REQUIRED_PROFILE_FIELDS = {  # 冻结 profile 的十四个顶层字段，避免悄悄加入案例参数。
     "profile_version",  # 记录静态档案合同版本。
     "case_id",  # 记录研究计划案例标识。
+    "execution_family",  # 记录用户明确确认的 FEniCS/FEniCSx 或 CalculiX 执行技术族。
     "status",  # 记录档案尚未执行的固定状态。
     "objective",  # 记录要验证的工程判断能力。
     "decision_question",  # 记录最终要回答的工程决策问题。
@@ -52,6 +53,16 @@ EXPECTED_SKILL_MAPPINGS = {  # 冻结三个档案只引用当前已有 Skill 的
     "FEN-014": {"problem-definition-source-audit"},  # FEN-014 当前只能使用来源审计 Skill。
     "CCX-015": {"problem-definition-source-audit", "mesh-convergence-and-singularity", "optimization-readiness"},  # CCX-015 使用三个现有通用 Skill。
 }  # 结束 Skill 精确映射。
+EXPECTED_EXECUTION_FAMILIES = {  # 冻结用户明确确认的案例与执行技术族映射。
+    "FEN-003": "FEniCS/FEniCSx",  # FEN-003 必须使用 FEniCS/FEniCSx 路线。
+    "FEN-014": "FEniCS/FEniCSx",  # FEN-014 必须使用 FEniCS/FEniCSx 路线。
+    "CCX-015": "CalculiX",  # CCX-015 必须使用 CalculiX 路线。
+}  # 结束执行技术族精确映射。
+EXPECTED_SKILL_GAPS = {  # 冻结当前三个 profile 公开声明的能力缺口。
+    "FEN-003": [],  # FEN-003 当前通用 Skill 已覆盖入口推理框架。
+    "FEN-014": ["fenics-imported-mesh-integrity-and-tag-mapping-diagnosis"],  # FEN-014 缺少 FEniCS 网格与标签映射诊断。
+    "CCX-015": ["mesh-quality-constrained-refinement-and-rollback"],  # CCX-015 缺少质量约束细化和回退能力。
+}  # 结束能力缺口精确映射。
 BANNED_EXACT_PLACEHOLDERS = {"tbd", "unknown", "待定"}  # 禁止用模糊占位值替代 missing_facts。
 QUANTITY_WITH_UNIT = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mm|cm|m|mpa|gpa|n|kn|s|ms|%)\b", re.IGNORECASE)  # 拒绝 profile 中任何带常见物理单位的数值。
 FORBIDDEN_FRONTEND_TOKENS = [  # 冻结轻量页面不得使用的网络、持久化和不安全渲染能力。
@@ -148,17 +159,33 @@ def validate_profiles(checks: list[dict[str, Any]]) -> None:  # 验证三个提�
         seen_case_ids.add(case_id)  # 记录当前案例标识。
         if set(payload) != REQUIRED_PROFILE_FIELDS:  # 要求顶层字段集合精确闭合。
             errors.append(relative.as_posix() + ": top-level fields do not match the frozen contract")  # 记录闭合字段失败。
+        if payload.get("profile_version") != "1.1":  # 加入执行技术族后要求 profile 合同版本同步升级。
+            errors.append(relative.as_posix() + ": profile_version must be 1.1")  # 记录旧合同版本或无版本升级。
         if payload.get("status") != "draft_not_executed":  # 要求档案始终明确未执行。
             errors.append(relative.as_posix() + ": status must be draft_not_executed")  # 记录状态越界。
+        execution_family = str(payload.get("execution_family", ""))  # 读取当前 profile 的机器可读执行技术族。
+        expected_execution_family = EXPECTED_EXECUTION_FAMILIES.get(case_id, "")  # 读取用户确认的案例执行技术族映射。
+        if execution_family != expected_execution_family:  # 要求 FEN 与 CCX 前缀不再接错执行后端。
+            errors.append(relative.as_posix() + ": execution_family does not match the user-confirmed mapping")  # 记录执行技术族映射错误。
+        serialized_profile = json.dumps(payload, ensure_ascii=False)  # 序列化 profile 以检查交叉技术族污染。
+        if case_id.startswith("FEN-") and ("CalculiX" in serialized_profile or "current input deck" in serialized_profile):  # FEN 案例不得出现 CalculiX 或输入 deck 执行语义。
+            errors.append(relative.as_posix() + ": FEN profile contains CalculiX semantics")  # 记录 FEniCS 案例误接 CalculiX。
+        if case_id.startswith("CCX-") and ("FEniCS" in serialized_profile or "DOLFIN" in serialized_profile):  # CCX 案例不得出现 FEniCS 或 DOLFIN 执行语义。
+            errors.append(relative.as_posix() + ": CCX profile contains FEniCS semantics")  # 记录 CalculiX 案例误接 FEniCS。
         applicable = set(payload.get("applicable_skill_ids", []))  # 读取 profile 声明的现有 Skill 映射。
         if applicable != EXPECTED_SKILL_MAPPINGS.get(case_id, set()):  # 要求映射与冻结案例定位完全一致。
             errors.append(relative.as_posix() + ": applicable_skill_ids do not match the case mapping")  # 记录 Skill 映射错误。
         if not applicable.issubset(skill_ids):  # 要求每个引用都存在于当前真实 Skill 库。
             errors.append(relative.as_posix() + ": applicable_skill_ids contain missing skills")  # 记录不存在的 Skill 引用。
         gaps = payload.get("skill_coverage_gaps", [])  # 读取通用能力缺口列表。
-        if case_id in {"FEN-014", "CCX-015"} and not gaps:  # 两个未覆盖案例必须保留明确 Skill 缺口。
-            errors.append(relative.as_posix() + ": expected a non-empty skill_coverage_gaps list")  # 记录缺失的能力缺口。
+        if gaps != EXPECTED_SKILL_GAPS.get(case_id, []):  # 要求 FEniCS 与 CalculiX 能力缺口不被混淆或静默删除。
+            errors.append(relative.as_posix() + ": skill_coverage_gaps do not match the frozen mapping")  # 记录能力缺口映射错误。
         missing_facts = payload.get("missing_facts", [])  # 读取当前案例缺失事实列表。
+        missing_paths = {str(item.get("path", "")) for item in missing_facts if isinstance(item, dict)} if isinstance(missing_facts, list) else set()  # 提取当前缺失事实路径供运行时合同检查。
+        if case_id.startswith("FEN-") and "runtime.fenics_variant_version_and_entrypoint" not in missing_paths:  # FEN 案例必须显式保留 FEniCS 变体、版本和入口缺口。
+            errors.append(relative.as_posix() + ": FEN runtime missing fact is absent")  # 记录 FEniCS 运行时被错误默认。
+        if case_id == "CCX-015" and not {"runtime.calculix_version_command_and_input", "mesh.refinement_toolchain"}.issubset(missing_paths):  # CCX 必须分别确认 CalculiX 运行时和细化工具链。
+            errors.append(relative.as_posix() + ": CalculiX runtime or refinement toolchain missing fact is absent")  # 记录 CalculiX 或网格器被错误默认。
         if not isinstance(missing_facts, list) or not missing_facts:  # 要求每个未执行档案至少包含一项缺失事实。
             errors.append(relative.as_posix() + ": missing_facts must be a non-empty list")  # 记录缺失事实合同失败。
         else:  # 缺失事实列表存在时逐项验证结构。
@@ -184,6 +211,9 @@ def validate_profiles(checks: list[dict[str, Any]]) -> None:  # 验证三个提�
                     errors.append(relative.as_posix() + ": physical quantity default at " + leaf_path)  # 记录物理数量位置。
     if seen_case_ids != set(EXPECTED_SKILL_MAPPINGS):  # 要求恰好出现三个冻结案例标识。
         errors.append("case IDs do not match FEN-003, FEN-014, and CCX-015")  # 记录案例集合错误。
+    documentation_text = (REPO_ROOT / DOCUMENTATION_PATHS[0]).read_text(encoding="utf-8") if (REPO_ROOT / DOCUMENTATION_PATHS[0]).is_file() else ""  # 读取当前配套说明以验证用户确认映射可见。
+    if "FEN-* = FEniCS/FEniCSx" not in documentation_text or "CCX-* = CalculiX" not in documentation_text:  # 文档必须同时公开两条执行技术族映射。
+        errors.append("documentation does not state both execution-family mappings")  # 记录说明文档仍可能误导执行后端。
     add_check(checks, "high_layer_profiles", not errors, {"profile_count": len(PROFILE_PATHS), "skill_ids": sorted(skill_ids), "errors": errors})  # 写入 profile 综合检查。
 
 
@@ -255,6 +285,7 @@ def main() -> int:  # 执行全部静态检查、现有测试、源码快照和 
         "execution_boundaries": {  # 明确本工作流没有执行的能力。
             "dependencies_installed": False,  # 本工作流没有运行 pip、npm 或 apt 安装。
             "deepseek_calls": 0,  # 本工作流没有模型凭证和模型调用。
+            "fenics_calls": 0,  # 本静态工作流没有导入或运行 FEniCS/FEniCSx。
             "calculix_calls": 0,  # 本工作流没有安装或调用 CalculiX。
             "mesh_generation_calls": 0,  # 本工作流没有生成任何网格。
             "engineering_results_generated": False,  # 本工作流没有生成工程结果或结论。

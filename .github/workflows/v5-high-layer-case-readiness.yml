@@ -1,0 +1,127 @@
+# 定义执行技术族修正后的三案例 T0 与 FEniCSx 环境资格工作流。
+name: V5 high-layer case readiness and FEniCSx qualification # 使用独立名称，避免与既有 V5 DeepSeek 或 CalculiX 工作流混淆。
+
+# 定义允许触发本工作流的事件。
+on: # 支持权威分支相关推送和维护者手动复核。
+  workflow_dispatch: # 允许从 Actions 页面显式发起当前分支资格测试。
+  push: # 在本案例测试切片变化时自动运行。
+    branches: # 将自动运行限定到唯一权威工作分支。
+      - feat/ai-dynamic-region-mesh-paper # 使用用户冻结的当前研究分支。
+    paths: # 只监听三个 profile、合同、runner、测试、说明和本工作流。
+      - "examples/v5_high_layer/fen-003.json" # 覆盖 FEniCS/FEniCSx 的 FEN-003 profile。
+      - "examples/v5_high_layer/fen-014.json" # 覆盖 FEniCS/FEniCSx 的 FEN-014 profile。
+      - "examples/v5_high_layer/ccx-015.json" # 覆盖 CalculiX 的 CCX-015 profile。
+      - "docs/v5_high_layer/HIGH_LAYER_LITE.md" # 覆盖机器 profile 的执行技术族说明。
+      - "docs/v5_high_layer/CASE_TEST_READINESS.md" # 覆盖 T0、环境和真实数值输入说明。
+      - "scripts/run_v5_high_layer_readiness.py" # 覆盖三案例 fail-closed runner。
+      - "scripts/qualify_fenicsx_runtime.py" # 覆盖固定官方镜像内的 FEniCSx 资格脚本。
+      - "tests/test_v5_high_layer_readiness.py" # 覆盖执行技术族和缺失事实单元测试。
+      - "src/engineering_agent/problem_manifest.py" # 覆盖实际使用的 ProblemManifest 合同。
+      - "src/engineering_agent/skill_contract.py" # 覆盖实际使用的 Skill 加载合同。
+      - "schemas/problem_manifest.schema.json" # 覆盖缺失事实和来源 JSON 合同。
+      - "skills/engineering/**" # 覆盖三个案例实际引用的通用 Skill。
+      - ".github/workflows/v5-high-layer-case-readiness.yml" # 覆盖工作流自身修改。
+
+# 将默认 GitHub 令牌权限限制为只读仓库内容。
+permissions: # 明确声明两个 job 的最小权限。
+  contents: read # checkout 和公开容器拉取不需要写仓库。
+
+# 定义 T0 来源审计和 FEniCSx 环境资格两个独立任务。
+jobs: # 将无依赖 T0 与约一 GiB 容器拉取分开留证。
+  readiness: # 执行三个案例的 fail-closed 前置条件测试。
+    if: ${{ github.ref_name == 'feat/ai-dynamic-region-mesh-paper' }} # 阻止手动调度在非权威分支运行。
+    runs-on: ubuntu-24.04 # 使用带 Python 标准库的固定 Ubuntu runner。
+    timeout-minutes: 5 # 将无依赖 T0 最坏运行时间限制为五分钟。
+    steps: # 按检出、准备、单测、活动和证据上传执行。
+      - name: Checkout current commit # 检出当前不可变提交供只读来源审计。
+        uses: actions/checkout@v4 # 使用仓库既有版本的官方 checkout action。
+        with: # 配置 checkout 不保留可写凭证。
+          persist-credentials: false # 本任务不会提交、推送或改写 GitHub 状态。
+      - name: Prepare readiness evidence directory # 在任何测试失败前创建可上传目录。
+        shell: bash # 使用 Bash 执行确定性目录准备。
+        run: | # 创建只属于本 workflow 的小型 artifact 根。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 创建三案例 T0 证据目录。
+          mkdir -p artifacts/v5-high-layer-readiness
+          # 记录本 job 不安装和不调用 FEniCS、CalculiX 或 DeepSeek。
+          echo 'T0 source audit only; no FEniCS, CalculiX, mesh, solver, optimizer, or model call.' > artifacts/v5-high-layer-readiness/job_boundary.txt
+      - name: Run readiness contract tests # 验证执行技术族、缺失事实和零执行边界。
+        shell: bash # 使用 Bash 保留标准库 unittest 的真实退出状态。
+        run: | # 运行三项当前提交单元测试并保存完整日志。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 运行只依赖 Python 标准库和当前 V5 源码的就绪性测试。
+          python3 -m unittest tests/test_v5_high_layer_readiness.py -v 2>&1 | tee artifacts/v5-high-layer-readiness/unit_tests.log
+      - name: Generate three readiness receipts # 生成三个 ProblemManifest、问题清单和机器 receipt。
+        shell: bash # 使用 Bash 传入显式仓库路径。
+        run: | # 执行无模型、无网格、无求解器的 fail-closed 活动。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 使用当前 profile 与 Skill 目录生成完整 T0 artifact。
+          python3 scripts/run_v5_high_layer_readiness.py --profiles-dir examples/v5_high_layer --skills-dir skills/engineering --output-dir artifacts/v5-high-layer-readiness 2>&1 | tee artifacts/v5-high-layer-readiness/campaign_stdout.log
+      - name: Upload readiness evidence # 无论成功或失败都上传已经形成的 T0 证据。
+        if: always() # 确保单元测试或 runner 失败日志仍可审计。
+        uses: actions/upload-artifact@v4 # 使用官方 artifact action。
+        with: # 配置唯一的小型 T0 证据包。
+          name: v5-high-layer-readiness-${{ github.run_id }}-${{ github.run_attempt }} # 使用运行和重跑编号避免名称冲突。
+          path: artifacts/v5-high-layer-readiness # 只上传当前 T0 活动目录。
+          if-no-files-found: error # 连边界文本都没有时将证据上传视为失败。
+          retention-days: 14 # 轻量初测证据保留十四天。
+
+  fenicsx-runtime: # 验证 FEN-003 与 FEN-014 所需的官方 FEniCSx 环境。
+    if: ${{ github.ref_name == 'feat/ai-dynamic-region-mesh-paper' }} # 阻止手动调度在非权威分支拉取镜像。
+    runs-on: ubuntu-24.04 # 使用带 Docker 的 GitHub 托管 x64 Ubuntu runner。
+    timeout-minutes: 15 # 为约一 GiB 官方镜像首次拉取保留十五分钟边界。
+    env: # 冻结公开官方镜像标签和不可变多架构摘要。
+      FENICSX_RUNTIME_IMAGE: ghcr.io/fenics/dolfinx/dolfinx:v0.11.0@sha256:2ae4bfbc0d9077268880faf04c72750528bee986c94ab223a2c159969bd56fa8 # 使用 FEniCS 官方 v0.11.0 镜像摘要。
+    steps: # 按检出、准备、拉取、导入资格、哈希和上传执行。
+      - name: Checkout current commit # 检出当前资格脚本但不读取任何未提供案例输入。
+        uses: actions/checkout@v4 # 使用官方 checkout action。
+        with: # 配置 checkout 不保留可写凭证。
+          persist-credentials: false # 本任务不会提交或推送。
+      - name: Prepare FEniCSx evidence directory # 在镜像拉取前建立失败可审计目录。
+        shell: bash # 使用 Bash 创建证据和镜像引用文本。
+        run: | # 只写当前 workflow 的 artifact 目录。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 创建 FEniCSx 环境资格证据目录。
+          mkdir -p artifacts/v5-fenicsx-runtime
+          # 记录工作流实际要求拉取的完整官方镜像引用。
+          printf '%s\n' "$FENICSX_RUNTIME_IMAGE" > artifacts/v5-fenicsx-runtime/image_reference.txt
+      - name: Pull and inspect pinned official FEniCSx image # 拉取固定摘要并记录真实镜像身份。
+        shell: bash # 使用 Bash 的 pipefail 保留 docker pull 失败状态。
+        run: | # 拉取公开镜像并写出最小镜像元数据。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 拉取固定多架构摘要在 linux/amd64 上解析出的官方镜像。
+          docker pull --platform linux/amd64 "$FENICSX_RUNTIME_IMAGE" 2>&1 | tee artifacts/v5-fenicsx-runtime/docker_pull.log
+          # 记录 Image ID、RepoDigest、架构、系统和创建时间，不写运行环境秘密。
+          docker image inspect --format '{"id":"{{.Id}}","repo_digests":{{json .RepoDigests}},"architecture":"{{.Architecture}}","os":"{{.Os}}","created":"{{.Created}}"}' "$FENICSX_RUNTIME_IMAGE" > artifacts/v5-fenicsx-runtime/image_inspect.json
+      - name: Qualify FEniCSx imports without solving # 只导入运行时组件并记录版本与零计算边界。
+        shell: bash # 使用 Bash 传递容器真实退出状态。
+        run: | # 把仓库只作为挂载工作目录运行资格脚本。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 在固定官方镜像内传入 GitHub 元数据，不创建网格、不组装形式也不求解。
+          docker run --rm --platform linux/amd64 -e GITHUB_REPOSITORY -e GITHUB_REF -e GITHUB_SHA -e GITHUB_RUN_ID -e GITHUB_RUN_ATTEMPT -e FENICSX_RUNTIME_IMAGE -v "$GITHUB_WORKSPACE:/workspace" -w /workspace "$FENICSX_RUNTIME_IMAGE" python3 scripts/qualify_fenicsx_runtime.py --expected-dolfinx-version-prefix 0.11.0 --receipt artifacts/v5-fenicsx-runtime/fenicsx_runtime_receipt.json 2>&1 | tee artifacts/v5-fenicsx-runtime/qualification_stdout.log
+      - name: Hash FEniCSx qualification evidence # 为当前已形成证据生成 SHA-256 清单。
+        if: always() # 即使拉取或资格脚本失败也哈希现有日志。
+        shell: bash # 使用 Bash 和标准 sha256sum。
+        run: | # 对目录中现有顶层文件生成排序稳定的清单。
+          # 即使前一步失败也继续处理已生成证据，但仍拒绝空目录。
+          set -u
+          # 进入专用 artifact 目录以生成相对文件名。
+          cd artifacts/v5-fenicsx-runtime
+          # 对当前全部普通顶层文件计算 SHA-256 并稳定排序。
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          # 要求哈希清单非空，避免上传没有证据的目录。
+          test -s SHA256SUMS
+      - name: Upload FEniCSx runtime evidence # 无论成功或失败都上传镜像与导入证据。
+        if: always() # 确保镜像拉取失败日志仍可审计。
+        uses: actions/upload-artifact@v4 # 使用官方 artifact action。
+        with: # 配置唯一的环境资格证据包。
+          name: v5-fenicsx-runtime-${{ github.run_id }}-${{ github.run_attempt }} # 使用运行与重跑编号避免名称冲突。
+          path: artifacts/v5-fenicsx-runtime # 只上传固定镜像资格目录。
+          if-no-files-found: error # 没有任何环境证据时明确失败。
+          retention-days: 14 # 环境初探证据保留十四天。

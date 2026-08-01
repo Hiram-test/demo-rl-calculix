@@ -1,32 +1,33 @@
 {
-  "profile_version": "1.0",
+  "profile_version": "1.1",
   "case_id": "FEN-014",
+  "execution_family": "FEniCS/FEniCSx",
   "status": "draft_not_executed",
-  "objective": "区分外部导入网格失败究竟来自文件解析、拓扑、单元方向、单位尺度、物理标签、边界映射、模型设定还是求解器。",
-  "decision_question": "当前外部网格是否具备与可运行参考模型一致的拓扑、物理映射和可审计求解条件，因而可以用于既定用途？",
+  "objective": "在 FEniCS/FEniCSx 中区分外部导入网格失败究竟来自格式读取、拓扑、几何维数、单元方向、单位尺度、cell 或 facet tags、边界自由度映射、函数空间、变分形式还是线性或非线性求解过程。",
+  "decision_question": "当前外部网格是否具备与可运行 FEniCS/FEniCSx 参考问题一致的拓扑、标签映射、函数空间、变分形式和可审计运行条件，因而可以用于既定用途？",
   "applicable_skill_ids": [
     "problem-definition-source-audit"
   ],
   "skill_coverage_gaps": [
-    "imported-mesh-integrity-and-mapping-diagnosis"
+    "fenics-imported-mesh-integrity-and-tag-mapping-diagnosis"
   ],
   "required_evidence": [
     {
       "name": "imported_mesh_and_format_contract",
       "purpose": "保留原始外部网格、格式版本、导出来源和解析日志。",
       "acceptable_sources": [
-        "current imported mesh",
+        "current FEniCS/FEniCSx imported-mesh input",
         "current exporter record",
-        "current parser log"
+        "current mesh reader log"
       ]
     },
     {
       "name": "working_reference_case",
-      "purpose": "提供使用相同物理模型和求解设置的可运行规则网格作为差分基线。",
+      "purpose": "提供使用同一物理问题、函数空间、变分形式和运行设置的可运行 FEniCS/FEniCSx 规则网格作为差分基线。",
       "acceptable_sources": [
-        "current reference solver input",
+        "current working FEniCS/FEniCSx reference source",
         "current reference mesh",
-        "current solver output"
+        "current reference run artifact"
       ]
     },
     {
@@ -39,32 +40,32 @@
     },
     {
       "name": "mapping_and_scale_report",
-      "purpose": "检查单位尺度、物理标签、节点集、单元集、材料、载荷和边界集合映射。",
+      "purpose": "检查单位尺度、cell 或 facet tags、几何与拓扑维数、函数空间、Measure、材料或系数、载荷和边界自由度映射。",
       "acceptable_sources": [
-        "current model mapping",
-        "current input deck",
+        "current FEniCS/FEniCSx mapping code",
+        "current MeshTags and Measure construction",
         "current deterministic comparison"
       ]
     },
     {
-      "name": "minimal_solver_reproduction",
-      "purpose": "仅在静态预检通过后，以受控方式复现最小失败或成功路径。",
+      "name": "minimal_fenics_reproduction",
+      "purpose": "仅在静态预检通过后，以受控方式复现最小 FEniCS/FEniCSx 失败或成功路径。",
       "acceptable_sources": [
         "GitHub Actions log",
-        "current solver log",
-        "current raw solver output"
+        "current Python traceback and stdout or stderr",
+        "current FEniCS/FEniCSx run artifact"
       ]
     }
   ],
   "minimal_experiment": {
     "design": "working_reference_vs_imported_mesh_differential_diagnosis",
     "steps": [
-      "freeze_shared_physical_model_and_solver_settings",
+      "freeze_shared_fenics_problem_function_space_form_and_runtime",
       "record_imported_mesh_format_source_and_parser_behavior",
       "check_topology_duplicates_degeneracy_and_element_orientation",
-      "compare_units_scale_physical_labels_and_boundary_sets",
+      "compare_units_scale_cell_facet_tags_measures_and_boundary_dofs",
       "separate_import_mapping_model_and_solver_failure_layers",
-      "run_minimal_solver_reproduction_only_after_precheck",
+      "run_minimal_fenics_reproduction_only_after_precheck",
       "record_credible_not_credible_or_unresolved_decision_with_limits"
     ],
     "execution_status": "not_executed"
@@ -91,17 +92,27 @@
     "element_orientation_rule",
     "unit_and_scale_rule",
     "label_and_set_mapping_rule",
-    "minimal_solver_reproduction_rule",
+    "minimal_fenics_reproduction_rule",
     "qoi_comparability_rule",
     "intended_use_boundary"
   ],
   "missing_facts": [
     {
-      "path": "imported_mesh.current_file",
-      "reason": "尚未提供发生问题的当前外部网格及其原始来源。",
-      "question": "请提供当前导入网格文件、生成或导出来源以及未修改的原始版本。",
+      "path": "runtime.fenics_variant_version_and_entrypoint",
+      "reason": "尚未确认本次任务使用 legacy FEniCS 还是 FEniCSx、具体版本、网格读取入口和底层线性或非线性求解配置。",
+      "question": "请提供当前 FEniCS/FEniCSx 变体、版本、Python 入口、运行命令和依赖合同。",
       "acceptable_sources": [
-        "current mesh file",
+        "current repository source",
+        "current environment specification",
+        "user-confirmed runtime contract"
+      ]
+    },
+    {
+      "path": "imported_mesh.current_file",
+      "reason": "尚未提供供本次 FEniCS/FEniCSx 案例导入的当前外部网格及其原始来源。",
+      "question": "请提供当前 FEniCS/FEniCSx 外部网格文件、生成或导出来源以及未修改的原始版本。",
+      "acceptable_sources": [
+        "current FEniCS/FEniCSx imported-mesh input",
         "current exporter artifact",
         "user-confirmed repository path"
       ]
@@ -118,22 +129,22 @@
     },
     {
       "path": "reference_regular_mesh.current_evidence",
-      "reason": "尚未提供可运行规则网格及其与导入网格共用模型设置的证明。",
-      "question": "请提供参考网格、输入文件、求解日志和共享模型设置。",
+      "reason": "尚未提供可运行 FEniCS/FEniCSx 规则网格及其与导入网格共用函数空间、变分形式和运行设置的证明。",
+      "question": "请提供参考 FEniCS/FEniCSx 源码、网格、运行日志和共享问题设置。",
       "acceptable_sources": [
-        "current reference input",
-        "current solver artifact",
+        "current working FEniCS/FEniCSx reference source",
+        "current reference run artifact",
         "GitHub Actions log"
       ]
     },
     {
       "path": "model_mapping.current_definition",
-      "reason": "物理标签、材料、载荷、边界和集合从网格到求解器的映射尚未建立。",
-      "question": "请提供当前映射规则及目标求解器集合定义。",
+      "reason": "cell 或 facet tags、几何与拓扑维数、函数空间、Measure、材料或系数、载荷和边界自由度映射尚未建立。",
+      "question": "请提供当前 FEniCS/FEniCSx 网格标签、函数空间、Measure、边界自由度和变分形式映射代码。",
       "acceptable_sources": [
-        "current mapping code",
-        "current solver input",
-        "user-confirmed model definition"
+        "current FEniCS/FEniCSx mapping code",
+        "current MeshTags and Measure construction",
+        "user-confirmed problem definition"
       ]
     },
     {
@@ -147,20 +158,20 @@
       ]
     },
     {
-      "path": "solver_failure.current_log",
-      "reason": "尚未获得真实失败命令、退出状态、标准输出、错误输出和原始求解文件。",
-      "question": "请提供产生失败的 GitHub Actions 日志和完整原始求解证据。",
+      "path": "runtime.fenics_failure_log",
+      "reason": "尚未获得真实 FEniCS/FEniCSx 失败命令、版本、Python traceback、标准输出、错误输出和运行产物。",
+      "question": "请提供产生失败的 GitHub Actions 日志、FEniCS/FEniCSx 版本、运行命令和完整原始证据。",
       "acceptable_sources": [
         "GitHub Actions log",
-        "current solver stdout",
-        "current solver raw files"
+        "current Python traceback",
+        "current FEniCS/FEniCSx run artifact"
       ]
     }
   ],
   "interpretation_limits": [
-    "文件能够解析不等于拓扑、方向、尺度和物理映射正确。",
-    "规则网格成功不能单独证明外部网格失败来自求解器。",
-    "求解器开始迭代或完成不等于当前网格适合既定工程用途。",
+    "FEniCS/FEniCSx 能够读取文件或构造 Mesh 与 FunctionSpace，不等于拓扑、方向、尺度、tags、边界自由度和变分形式正确。",
+    "规则网格成功不能单独证明外部网格失败来自 FEniCS/FEniCSx 运行时。",
+    "线性或非线性求解过程开始或收敛，不等于当前网格适合既定工程用途。",
     "没有同一物理模型的受控参考时不能把差异归因于网格本身。"
   ]
 }

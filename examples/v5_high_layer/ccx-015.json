@@ -1,9 +1,10 @@
 {
-  "profile_version": "1.0",
+  "profile_version": "1.1",
   "case_id": "CCX-015",
+  "execution_family": "CalculiX",
   "status": "draft_not_executed",
-  "objective": "在结果驱动细化可能恶化单元质量时，建立精度、求解稳定性、计算预算和网格质量之间的受约束决策。",
-  "decision_question": "下一次局部细化是否能在不越过质量、稳定性和预算边界的条件下提供有意义的 QoI 改善，还是应回退或改变策略？",
+  "objective": "在 CalculiX 结果驱动细化可能恶化单元质量时，建立精度、求解稳定性、计算预算和网格质量之间的受约束决策。",
+  "decision_question": "下一次局部细化候选是否能在不越过质量、CalculiX 稳定性和预算边界的条件下提供有意义的 QoI 改善，还是应回退或改变网格策略？",
   "applicable_skill_ids": [
     "problem-definition-source-audit",
     "mesh-convergence-and-singularity",
@@ -17,9 +18,9 @@
       "name": "last_accepted_mesh_and_result",
       "purpose": "建立可回退的当前已接受状态及其来源、质量、QoI 和求解证据。",
       "acceptable_sources": [
-        "current accepted mesh",
-        "current solver artifact",
-        "current trace"
+        "current accepted CalculiX input deck",
+        "current CalculiX result artifact",
+        "current accepted trace"
       ]
     },
     {
@@ -45,7 +46,7 @@
       "purpose": "比较候选的网格规模、求解行为、失败原因和计算预算消耗。",
       "acceptable_sources": [
         "current mesh metadata",
-        "current solver log",
+        "current CalculiX log and raw output",
         "current budget ledger"
       ]
     }
@@ -56,8 +57,8 @@
       "freeze_last_accepted_mesh_qoi_and_budget_state",
       "define_one_local_refinement_region_from_current_evidence",
       "generate_one_candidate_with_explicit_transition_controls",
-      "apply_pre_solve_quality_and_topology_checks",
-      "solve_only_if_hard_quality_checks_are_satisfied",
+      "apply_pre_solve_mesh_quality_and_topology_checks",
+      "run_calculix_only_if_hard_quality_checks_are_satisfied",
       "compare_qoi_quality_stability_and_cost_against_last_accepted_state",
       "accept_rollback_or_change_strategy_and_record_limits"
     ],
@@ -82,7 +83,7 @@
   "stop_condition_fields": [
     "qoi_improvement_rule",
     "mesh_quality_hard_gate",
-    "solver_stability_rule",
+    "calculix_stability_rule",
     "computation_budget_boundary",
     "diminishing_return_rule",
     "candidate_failure_policy",
@@ -91,12 +92,32 @@
   ],
   "missing_facts": [
     {
-      "path": "mesh.last_accepted_state",
-      "reason": "尚未提供当前最后一个可回退网格、结果、来源哈希和接受理由。",
-      "question": "请提供最后一个已接受网格及其真实求解、质量和 QoI 证据。",
+      "path": "runtime.calculix_version_command_and_input",
+      "reason": "尚未提供本次任务的 CalculiX 版本、运行命令、输入 deck 入口和运行环境来源。",
+      "question": "请提供当前 CalculiX 版本、执行命令、输入 deck 路径和 GitHub Actions 环境合同。",
       "acceptable_sources": [
-        "current mesh artifact",
-        "current solver artifact",
+        "current GitHub Actions workflow",
+        "current CalculiX version log",
+        "user-confirmed runtime contract"
+      ]
+    },
+    {
+      "path": "mesh.refinement_toolchain",
+      "reason": "尚未确认由哪个网格器或细化器生成候选、如何保持集合映射，以及它与 CalculiX 输入之间的转换合同。",
+      "question": "请提供当前候选网格生成或细化工具链、版本、转换入口和集合保持规则。",
+      "acceptable_sources": [
+        "current mesher source",
+        "current refinement command",
+        "user-confirmed toolchain contract"
+      ]
+    },
+    {
+      "path": "mesh.last_accepted_state",
+      "reason": "尚未提供当前最后一个可回退 CalculiX 输入、网格、结果、来源哈希和接受理由。",
+      "question": "请提供最后一个已接受 CalculiX 输入与网格，以及真实求解、质量和 QoI 证据。",
+      "acceptable_sources": [
+        "current accepted CalculiX input deck",
+        "current CalculiX result artifact",
         "current accepted trace"
       ]
     },
@@ -152,9 +173,10 @@
     }
   ],
   "interpretation_limits": [
-    "QoI 改善不能覆盖网格质量硬门或求解稳定性失败。",
+    "CalculiX 完成或收敛不能覆盖网格质量硬门、QoI 合同或预算边界。",
     "单个诊断候选不能证明优化或搜索已经充分。",
     "局部尺寸变小不等于离散误差必然减小。",
-    "没有可回退状态和失败记录时不能安全执行自动细化。"
+    "没有可回退状态和失败记录时不能安全执行自动细化。",
+    "CalculiX 在本案例中承担求解和结果输出；候选网格生成或自动细化工具链必须另行确认。"
   ]
 }

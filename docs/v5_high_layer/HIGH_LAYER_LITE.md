@@ -1,6 +1,12 @@
 # V5 提高层轻量诊断档案
 
-本切片把 FEN-003、FEN-014 和 CCX-015 记录为机器可读的未执行诊断设计。三个 JSON 的 status 均为 draft_not_executed；它们没有生成网格、没有调用模型、没有运行 CalculiX，也不包含工程结论。
+本切片把 FEN-003、FEN-014 和 CCX-015 记录为机器可读的未执行诊断设计。三个 JSON 的 status 均为 draft_not_executed；FEN-003 与 FEN-014 没有运行 FEniCS/FEniCSx，CCX-015 没有运行 CalculiX；它们都没有生成新网格、调用模型或形成工程结论。
+
+## 执行技术族映射
+
+本映射来自当前用户的明确确认：FEN-* = FEniCS/FEniCSx，CCX-* = CalculiX。不得用 CalculiX 运行器替代 FEN 案例，也不得用 FEniCS/FEniCSx 结果冒充 CCX 案例证据。
+
+execution_family 是机器可读的执行技术族字段。具体采用 legacy FEniCS 还是 FEniCSx、版本、入口程序、底层线性或非线性求解配置仍必须由当前案例证据提供，不能由静态 profile 默认。CCX-015 中 CalculiX 只承担求解与结果输出；候选网格生成或自动细化工具链必须独立确认。
 
 ## 共同原则
 
@@ -12,9 +18,11 @@
 
 ## 顶层字段
 
-profile_version 表示本组静态档案的合同版本。
+profile_version 表示本组静态档案的合同版本；加入 execution_family 后版本为 1.1。
 
 case_id 是研究计划冻结的案例标识。
+
+execution_family 记录用户明确确认的执行技术族，不包含几何、材料、载荷、边界、版本或求解参数。
 
 status 固定为 draft_not_executed，防止档案被误认为真实运行证据。
 
@@ -60,19 +68,19 @@ provenance_refs 连接当前输入、代码、工作流、原始结果和用户�
 
 ### FEN-003
 
-该案例回答是否需要继续加密。现有 problem-definition-source-audit 和 mesh-convergence-and-singularity 已覆盖主要推理框架，因此本档案不声明额外 Skill 缺口。
+该案例使用 FEniCS/FEniCSx，回答是否需要继续加密。现有 problem-definition-source-audit 和 mesh-convergence-and-singularity 已覆盖主要推理框架，因此本档案不声明额外 Skill 缺口。
 
 最小实验先冻结当前模型和 QoI，再审计已有受控网格序列。只有现有证据无法区分离散误差、提取问题或奇异性迹象时，才补充一个具有区分力的网格层级。
 
 ### FEN-014
 
-该案例回答当前外部网格是否可信。现有来源审计 Skill 可以冻结输入与事实，但缺少外部网格完整性、方向、单位尺度、标签集合和求解器映射的通用诊断 Skill。
+该案例使用 FEniCS/FEniCSx，回答当前外部网格是否可信。现有来源审计 Skill 可以冻结输入与事实，但缺少外部网格完整性、方向、单位尺度、标签集合和求解器映射的通用诊断 Skill。
 
 最小实验保持物理模型与求解设置不变，对可运行规则网格和失败导入网格做分层差分检查。静态预检未通过时不启动求解器。
 
 ### CCX-015
 
-该案例回答如何安全地自动细化。现有来源审计、网格收敛和优化准备 Skill 只能部分覆盖，需要补充质量约束细化、过渡区、求解前硬门、回退和策略切换合同。
+该案例使用 CalculiX 求解候选，回答如何安全地自动细化；候选网格生成工具链不是由 CalculiX 名称自动确定。现有来源审计、网格收敛和优化准备 Skill 只能部分覆盖，需要补充质量约束细化、过渡区、求解前硬门、回退和策略切换合同。
 
 最小实验只从最后一个已接受状态生成一个受约束候选。候选先通过拓扑与质量预检，才允许求解；QoI 改善不能覆盖质量硬门或求解稳定性失败。
 
