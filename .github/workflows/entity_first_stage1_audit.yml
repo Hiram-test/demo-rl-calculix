@@ -91,10 +91,10 @@ jobs:  # Execute each repair stage behind the preceding hard gate.
           ccx -v || true  # Record the solver version without treating version-output conventions as a failure.
       - name: Compile and self-test CalculiX deck generator  # Test our conversion code before any full solve.
         run: |  # Execute code-only checks first.
-          python -m py_compile scripts/entity_first_stage3_calculix.py  # Detect syntax and import errors.
-          python scripts/entity_first_stage3_calculix.py --generator-self-test  # Verify element, set, boundary, load, and output cards.
+          python -m py_compile scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Detect syntax and import errors in model logic and adapter.
+          python scripts/entity_first_stage3_run.py --generator-self-test  # Verify element, set, boundary, load, output cards, and corrected adapter behavior.
       - name: Run three isolated CalculiX smoke solves  # Solve bearing, single-hole, and three-hole exact entities.
-        run: python scripts/entity_first_stage3_calculix.py --stage2-root stage2_inputs --output-dir stage3_outputs  # Require finite response, result files, and force equilibrium.
+        run: python scripts/entity_first_stage3_run.py --stage2-root stage2_inputs --output-dir stage3_outputs  # Require finite response, result files, and force equilibrium.
       - uses: actions/upload-artifact@v4  # Publish decks, logs, fields, and receipts for review.
         if: always()  # Preserve partial solver evidence when the hard gate catches a defect.
         with:  # Configure the isolated Stage 3 artifact.
