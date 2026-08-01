@@ -1,0 +1,146 @@
+<!doctype html><!-- 声明 HTML5 文档模式，确保浏览器使用标准布局。 -->
+<html lang="zh-CN"><!-- 指定页面主语言为简体中文，帮助辅助技术正确朗读。 -->
+<head><!-- 开始定义页面元数据与本地资源。 -->
+<meta charset="utf-8"><!-- 使用 UTF-8 编码以稳定显示中文工程文本。 -->
+<meta name="viewport" content="width=device-width, initial-scale=1"><!-- 让页面按设备宽度响应式呈现，初始缩放比例为一倍。 -->
+<meta name="description" content="有限元工程任务的本地静态输入与真实证据预览原型。"><!-- 说明页面用途，避免把原型描述成已连接的求解系统。 -->
+<title>有限元任务台 · 轻量预览</title><!-- 设置浏览器标签标题，明确这是轻量预览。 -->
+<link rel="stylesheet" href="styles.css"><!-- 仅加载同目录样式表，不连接任何外部资源。 -->
+<script src="app.js" defer></script><!-- 延迟加载同目录经典脚本，确保 DOM 构建完成后再绑定交互。 -->
+</head><!-- 结束页面元数据定义。 -->
+<body><!-- 开始页面可见内容。 -->
+<a class="skip-link" href="#main-content">跳到主要内容</a><!-- 提供键盘用户直接跳过顶部区域的入口。 -->
+<header class="topbar"><!-- 展示产品名称和永久运行边界。 -->
+<div class="brand-block"><!-- 将标题与说明组织成一个语义组。 -->
+<p class="eyebrow">V5 FOUNDATION · STATIC INTAKE</p><!-- 标识当前属于 V5 基础层静态接入切片。 -->
+<h1>有限元工程任务台</h1><!-- 使用唯一一级标题说明页面核心用途。 -->
+<p class="lede">输入当前问题、登记材料与缺失事实，并查看真实 trace；页面不会自行运行模型或求解器。</p><!-- 清楚描述本原型能做与不能做的事情。 -->
+</div><!-- 结束标题语义组。 -->
+<div class="boundary-badges" aria-label="当前运行边界"><!-- 用状态徽标持续提示系统连接边界。 -->
+<span class="badge neutral">本地静态预览</span><!-- 说明页面仅在浏览器内工作。 -->
+<span class="badge caution">未连接后端</span><!-- 说明没有任务服务接收输入。 -->
+<span class="badge caution">未启动网格或求解</span><!-- 说明没有有限元计算发生。 -->
+</div><!-- 结束运行边界徽标组。 -->
+</header><!-- 结束顶部区域。 -->
+<main id="main-content" class="page-shell"><!-- 开始主要内容并提供跳转目标。 -->
+<section class="panel intake-panel" aria-labelledby="intake-title"><!-- 创建自然语言、材料和缺参登记区域。 -->
+<div class="panel-heading"><!-- 统一显示区域编号、标题和辅助说明。 -->
+<p class="section-index">01 · 当前任务输入</p><!-- 标识输入阶段的顺序。 -->
+<h2 id="intake-title">建立 ProblemManifest 输入草案</h2><!-- 说明本区输出是草案而非已验证模型。 -->
+<p>所有工程事实必须来自当前输入；页面不会从旧案例补入几何、材料、载荷、边界或优化参数。</p><!-- 重申禁止隐藏默认值的核心边界。 -->
+</div><!-- 结束输入区标题。 -->
+<form id="task-form" novalidate><!-- 由脚本提供可审计的必填校验和下载行为。 -->
+<div class="field-group"><!-- 组织浏览器生成的任务标识字段。 -->
+<label for="task-id">任务 ID</label><!-- 为只读任务标识提供可访问名称。 -->
+<input id="task-id" name="task-id" type="text" readonly><!-- 显示浏览器生成的运行标识，用户不能误改。 -->
+<p class="field-note">仅用于本次草案追踪，不代表后端任务已经创建。</p><!-- 解释任务标识的用途边界。 -->
+</div><!-- 结束任务标识字段。 -->
+<div class="field-group"><!-- 组织自然语言工程问题字段。 -->
+<label for="user-goal">自然语言有限元问题 <span aria-hidden="true">*</span></label><!-- 标明工程问题是导出草案的唯一必填文本。 -->
+<textarea id="user-goal" name="user-goal" rows="7" aria-describedby="goal-help" required placeholder="请说明要研究的对象、工程决策、希望判断的响应，以及资料来源。"></textarea><!-- 接收用户本人提供的当前问题，不自动解析成工程事实。 -->
+<p id="goal-help" class="field-note">页面只原样保存此文本，不从中推断或填充参数。</p><!-- 说明自然语言不会被当前静态页面解释。 -->
+</div><!-- 结束自然语言问题字段。 -->
+<div class="field-group"><!-- 组织 IMP 输入材料选择字段。 -->
+<label for="imp-files">IMP 输入材料</label><!-- 为多文件选择器提供可访问名称。 -->
+<input id="imp-files" name="imp-files" type="file" multiple aria-describedby="imp-help"><!-- 允许选择任意格式的多个文件，不使用 accept 预设未知格式。 -->
+<p id="imp-help" class="field-note">仅记录浏览器可见元数据；不读取、不上传、不嵌入文件内容，也不把未知格式误报为解析失败。</p><!-- 明确材料处理能力和隐私边界。 -->
+<div id="file-list" class="file-list" aria-live="polite"></div><!-- 动态展示已选文件的真实元数据和未解析状态。 -->
+<button id="clear-files" class="button secondary" type="button">清除材料选择</button><!-- 允许用户撤销当前浏览器文件选择。 -->
+</div><!-- 结束 IMP 材料字段。 -->
+<fieldset class="missing-facts"><!-- 将一组缺失事实登记控件组织成语义字段集。 -->
+<legend>显式登记 missing facts</legend><!-- 说明本区只保存用户明确登记的缺失事实。 -->
+<p class="field-note">缺参不会阻止生成草案，但必须写清缺少什么、为什么需要以及应该向谁确认。</p><!-- 解释缺失事实不会触发旧值回填。 -->
+<div class="missing-grid"><!-- 使用响应式网格排列缺失事实输入项。 -->
+<div class="field-group"><!-- 组织缺失事实路径字段。 -->
+<label for="missing-path">字段路径</label><!-- 为路径输入提供名称。 -->
+<input id="missing-path" type="text" placeholder="例如：model.geometry_source"><!-- 接收逻辑字段路径，示例仅表示命名方式而非物理默认值。 -->
+</div><!-- 结束缺失事实路径字段。 -->
+<div class="field-group"><!-- 组织缺失原因字段。 -->
+<label for="missing-reason">缺失原因</label><!-- 为原因输入提供名称。 -->
+<input id="missing-reason" type="text" placeholder="说明当前资料为何不能建立该事实"><!-- 接收当前证据不足的具体原因。 -->
+</div><!-- 结束缺失原因字段。 -->
+<div class="field-group wide"><!-- 组织面向用户的确认问题。 -->
+<label for="missing-question">需要确认的问题</label><!-- 为确认问题输入提供名称。 -->
+<input id="missing-question" type="text" placeholder="请提供该事实及其权威来源"><!-- 接收下一步应向用户提出的问题。 -->
+</div><!-- 结束确认问题字段。 -->
+<div class="field-group wide"><!-- 组织可接受来源列表。 -->
+<label for="missing-sources">可接受来源（每行一个）</label><!-- 为来源文本区提供名称和输入约定。 -->
+<textarea id="missing-sources" rows="3" placeholder="用户明确说明&#10;当前图纸或模型&#10;当前数据文件"></textarea><!-- 接收来源类别，不预置任何案例数值。 -->
+</div><!-- 结束可接受来源字段。 -->
+</div><!-- 结束缺失事实输入网格。 -->
+<div class="action-row"><!-- 放置缺失事实操作按钮。 -->
+<button id="add-missing-fact" class="button secondary" type="button">添加 missing fact</button><!-- 将填写完整的缺失事实加入草案状态。 -->
+</div><!-- 结束缺失事实按钮行。 -->
+<ul id="missing-list" class="record-list" aria-live="polite"></ul><!-- 展示已登记缺失事实并提供删除按钮。 -->
+</fieldset><!-- 结束缺失事实字段集。 -->
+<div class="action-row primary-actions"><!-- 放置草案生成和下载操作。 -->
+<button id="preview-manifest" class="button secondary" type="button">刷新草案预览</button><!-- 根据当前浏览器状态生成可读 JSON 预览。 -->
+<button class="button primary" type="submit">导出 ProblemManifest 输入草案</button><!-- 校验自然语言问题后下载草案 JSON。 -->
+</div><!-- 结束草案操作按钮行。 -->
+<p id="form-message" class="message" role="status" aria-live="polite"></p><!-- 显示校验、添加和下载结果。 -->
+</form><!-- 结束任务输入表单。 -->
+</section><!-- 结束自然语言与材料输入区。 -->
+<section class="panel manifest-panel" aria-labelledby="manifest-title"><!-- 创建草案 JSON 预览区域。 -->
+<div class="panel-heading"><!-- 统一显示草案预览标题。 -->
+<p class="section-index">02 · 输入契约</p><!-- 标识草案预览阶段。 -->
+<h2 id="manifest-title">ProblemManifest 草案预览</h2><!-- 说明展示内容尚未经过后端解析。 -->
+<p>预览只包含当前浏览器中可证实的输入记录；文件内容、工程事实和算法配置均不会被猜测。</p><!-- 解释 JSON 内容的来源边界。 -->
+</div><!-- 结束草案预览标题。 -->
+<pre id="manifest-preview" class="json-preview" tabindex="0">尚未生成草案。</pre><!-- 以可聚焦区域展示格式化 JSON，便于键盘滚动查看。 -->
+</section><!-- 结束草案 JSON 预览区域。 -->
+<section class="panel evidence-panel" aria-labelledby="evidence-title"><!-- 创建真实 trace 或 receipt 的本地查看区域。 -->
+<div class="panel-heading"><!-- 统一显示证据导入标题。 -->
+<p class="section-index">03 · 真实证据查看</p><!-- 标识证据查看阶段。 -->
+<h2 id="evidence-title">导入 agent_trace.json 或 validation receipt</h2><!-- 限定支持的证据类型，避免暗示在线查询。 -->
+<p>数据只在当前页面内解析；对象型 receipt 没有冻结 schema，因此仅按明确字段展示，不推断工程含义。</p><!-- 说明对象型数据的验证边界。 -->
+</div><!-- 结束证据导入标题。 -->
+<div class="evidence-toolbar"><!-- 组织证据文件选择和清除操作。 -->
+<div class="field-group grow"><!-- 让文件选择字段占用主要横向空间。 -->
+<label for="evidence-file">真实 JSON 证据文件</label><!-- 为证据文件选择器提供可访问名称。 -->
+<input id="evidence-file" type="file" accept=".json,application/json" aria-describedby="evidence-help"><!-- 只选择 JSON 证据，格式错误由脚本明确报告。 -->
+<p id="evidence-help" class="field-note">仅查看，不上传；导入新文件前会清空旧展示。</p><!-- 解释证据查看不会改变仓库或远端状态。 -->
+</div><!-- 结束证据文件字段。 -->
+<button id="clear-evidence" class="button secondary" type="button">清除证据展示</button><!-- 允许用户移除当前导入结果。 -->
+</div><!-- 结束证据工具栏。 -->
+<p id="evidence-message" class="message" role="status" aria-live="polite"></p><!-- 显示证据读取和格式错误信息。 -->
+<div class="status-grid"><!-- 以响应式卡片展示显式证据字段。 -->
+<article class="status-card"><!-- 展示证据声明的当前阶段。 -->
+<h3>阶段</h3><!-- 标明本卡片展示阶段字段。 -->
+<p id="stage-value">源文件未提供，页面未推断。</p><!-- 初始状态不从其他字段猜测阶段。 -->
+</article><!-- 结束阶段卡片。 -->
+<article class="status-card"><!-- 展示模型决策动作和理由。 -->
+<h3>决策</h3><!-- 标明本卡片展示决策字段。 -->
+<p id="decision-value">尚未导入真实 trace。</p><!-- 初始状态不展示任何虚构决策。 -->
+</article><!-- 结束决策卡片。 -->
+<article class="status-card"><!-- 展示显式执行观察或证据引用。 -->
+<h3>执行与证据</h3><!-- 标明本卡片展示执行证据。 -->
+<ul id="evidence-values" class="compact-list"><li>源文件未提供，页面未推断。</li></ul><!-- 初始列表仅说明没有来源数据。 -->
+</article><!-- 结束执行证据卡片。 -->
+<article class="status-card"><!-- 展示显式预算或调用计数。 -->
+<h3>预算与计数</h3><!-- 标明本卡片展示预算字段。 -->
+<dl id="budget-values" class="metric-list"><div><dt>状态</dt><dd>源文件未提供</dd></div></dl><!-- 初始定义列表不生成任何调用次数。 -->
+</article><!-- 结束预算卡片。 -->
+<article class="status-card"><!-- 展示显式错误和 decision issues。 -->
+<h3>错误与问题</h3><!-- 标明本卡片展示失败信息。 -->
+<ul id="error-values" class="compact-list"><li>尚未导入证据。</li></ul><!-- 初始列表不暗示运行成功或失败。 -->
+</article><!-- 结束错误卡片。 -->
+<article class="status-card"><!-- 展示显式允许用途和禁止用途。 -->
+<h3>用途边界</h3><!-- 标明本卡片展示解释范围。 -->
+<ul id="boundary-values" class="compact-list"><li>源文件未提供，页面未推断。</li></ul><!-- 初始列表不生成工程结论。 -->
+</article><!-- 结束用途边界卡片。 -->
+</div><!-- 结束证据状态卡片网格。 -->
+<details class="raw-details"><!-- 允许按需查看原始 JSON 而不占据首屏。 -->
+<summary>查看导入的原始 JSON</summary><!-- 提供原生键盘可操作的折叠控件。 -->
+<pre id="evidence-preview" class="json-preview" tabindex="0">尚未导入证据。</pre><!-- 展示未经改写的导入 JSON。 -->
+</details><!-- 结束原始 JSON 折叠区域。 -->
+</section><!-- 结束真实证据查看区域。 -->
+<section class="boundary-note" aria-labelledby="boundary-title"><!-- 汇总本静态切片的不可越界事项。 -->
+<h2 id="boundary-title">本切片的允许用途</h2><!-- 说明最后一块内容是使用边界。 -->
+<p>可用于准备输入草案、登记来源与缺参、离线查看真实 JSON 证据。不可把页面状态当作模型调用、网格生成、求解收敛或工程结论的证明。</p><!-- 明确禁止把界面展示误当作计算证据。 -->
+</section><!-- 结束使用边界说明。 -->
+</main><!-- 结束主要内容。 -->
+<footer class="footer"><!-- 显示不依赖外部服务的实现说明。 -->
+<p>无网络请求 · 无持久化 · 无 DeepSeek 调用 · 无 CalculiX 调用</p><!-- 汇总轻量前端的零外部执行属性。 -->
+</footer><!-- 结束页脚。 -->
+</body><!-- 结束页面可见内容。 -->
+</html><!-- 结束 HTML 文档。 -->

@@ -1,0 +1,166 @@
+{
+  "profile_version": "1.0",
+  "case_id": "FEN-014",
+  "status": "draft_not_executed",
+  "objective": "区分外部导入网格失败究竟来自文件解析、拓扑、单元方向、单位尺度、物理标签、边界映射、模型设定还是求解器。",
+  "decision_question": "当前外部网格是否具备与可运行参考模型一致的拓扑、物理映射和可审计求解条件，因而可以用于既定用途？",
+  "applicable_skill_ids": [
+    "problem-definition-source-audit"
+  ],
+  "skill_coverage_gaps": [
+    "imported-mesh-integrity-and-mapping-diagnosis"
+  ],
+  "required_evidence": [
+    {
+      "name": "imported_mesh_and_format_contract",
+      "purpose": "保留原始外部网格、格式版本、导出来源和解析日志。",
+      "acceptable_sources": [
+        "current imported mesh",
+        "current exporter record",
+        "current parser log"
+      ]
+    },
+    {
+      "name": "working_reference_case",
+      "purpose": "提供使用相同物理模型和求解设置的可运行规则网格作为差分基线。",
+      "acceptable_sources": [
+        "current reference solver input",
+        "current reference mesh",
+        "current solver output"
+      ]
+    },
+    {
+      "name": "mesh_integrity_report",
+      "purpose": "检查节点、连接、重复实体、退化实体、单元方向和可用质量量。",
+      "acceptable_sources": [
+        "current deterministic mesh checker",
+        "current parser output"
+      ]
+    },
+    {
+      "name": "mapping_and_scale_report",
+      "purpose": "检查单位尺度、物理标签、节点集、单元集、材料、载荷和边界集合映射。",
+      "acceptable_sources": [
+        "current model mapping",
+        "current input deck",
+        "current deterministic comparison"
+      ]
+    },
+    {
+      "name": "minimal_solver_reproduction",
+      "purpose": "仅在静态预检通过后，以受控方式复现最小失败或成功路径。",
+      "acceptable_sources": [
+        "GitHub Actions log",
+        "current solver log",
+        "current raw solver output"
+      ]
+    }
+  ],
+  "minimal_experiment": {
+    "design": "working_reference_vs_imported_mesh_differential_diagnosis",
+    "steps": [
+      "freeze_shared_physical_model_and_solver_settings",
+      "record_imported_mesh_format_source_and_parser_behavior",
+      "check_topology_duplicates_degeneracy_and_element_orientation",
+      "compare_units_scale_physical_labels_and_boundary_sets",
+      "separate_import_mapping_model_and_solver_failure_layers",
+      "run_minimal_solver_reproduction_only_after_precheck",
+      "record_credible_not_credible_or_unresolved_decision_with_limits"
+    ],
+    "execution_status": "not_executed"
+  },
+  "fixed_qoi_contract_fields": [
+    "qoi_id",
+    "engineering_purpose",
+    "physical_quantity",
+    "component_or_invariant",
+    "unit",
+    "spatial_selection",
+    "coordinate_frame",
+    "analysis_step_or_time",
+    "aggregation_or_reduction",
+    "extraction_method",
+    "extraction_implementation_ref",
+    "comparison_rule",
+    "singularity_exposure",
+    "provenance_refs"
+  ],
+  "stop_condition_fields": [
+    "format_compatibility_rule",
+    "topology_integrity_rule",
+    "element_orientation_rule",
+    "unit_and_scale_rule",
+    "label_and_set_mapping_rule",
+    "minimal_solver_reproduction_rule",
+    "qoi_comparability_rule",
+    "intended_use_boundary"
+  ],
+  "missing_facts": [
+    {
+      "path": "imported_mesh.current_file",
+      "reason": "尚未提供发生问题的当前外部网格及其原始来源。",
+      "question": "请提供当前导入网格文件、生成或导出来源以及未修改的原始版本。",
+      "acceptable_sources": [
+        "current mesh file",
+        "current exporter artifact",
+        "user-confirmed repository path"
+      ]
+    },
+    {
+      "path": "imported_mesh.format_contract",
+      "reason": "尚未确认文件格式、版本、节点与单元约定以及物理标签表达方式。",
+      "question": "请提供导入格式合同、版本和导出器信息。",
+      "acceptable_sources": [
+        "format specification",
+        "exporter documentation",
+        "current parser contract"
+      ]
+    },
+    {
+      "path": "reference_regular_mesh.current_evidence",
+      "reason": "尚未提供可运行规则网格及其与导入网格共用模型设置的证明。",
+      "question": "请提供参考网格、输入文件、求解日志和共享模型设置。",
+      "acceptable_sources": [
+        "current reference input",
+        "current solver artifact",
+        "GitHub Actions log"
+      ]
+    },
+    {
+      "path": "model_mapping.current_definition",
+      "reason": "物理标签、材料、载荷、边界和集合从网格到求解器的映射尚未建立。",
+      "question": "请提供当前映射规则及目标求解器集合定义。",
+      "acceptable_sources": [
+        "current mapping code",
+        "current solver input",
+        "user-confirmed model definition"
+      ]
+    },
+    {
+      "path": "units.current_definition",
+      "reason": "导入网格与参考模型的单位和尺度关系尚未确认。",
+      "question": "请提供网格坐标、材料、载荷和结果使用的当前一致单位定义。",
+      "acceptable_sources": [
+        "current model specification",
+        "current exporter setting",
+        "user-confirmed unit system"
+      ]
+    },
+    {
+      "path": "solver_failure.current_log",
+      "reason": "尚未获得真实失败命令、退出状态、标准输出、错误输出和原始求解文件。",
+      "question": "请提供产生失败的 GitHub Actions 日志和完整原始求解证据。",
+      "acceptable_sources": [
+        "GitHub Actions log",
+        "current solver stdout",
+        "current solver raw files"
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "文件能够解析不等于拓扑、方向、尺度和物理映射正确。",
+    "规则网格成功不能单独证明外部网格失败来自求解器。",
+    "求解器开始迭代或完成不等于当前网格适合既定工程用途。",
+    "没有同一物理模型的受控参考时不能把差异归因于网格本身。"
+  ]
+}

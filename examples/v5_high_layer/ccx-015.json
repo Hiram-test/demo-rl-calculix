@@ -1,0 +1,160 @@
+{
+  "profile_version": "1.0",
+  "case_id": "CCX-015",
+  "status": "draft_not_executed",
+  "objective": "在结果驱动细化可能恶化单元质量时，建立精度、求解稳定性、计算预算和网格质量之间的受约束决策。",
+  "decision_question": "下一次局部细化是否能在不越过质量、稳定性和预算边界的条件下提供有意义的 QoI 改善，还是应回退或改变策略？",
+  "applicable_skill_ids": [
+    "problem-definition-source-audit",
+    "mesh-convergence-and-singularity",
+    "optimization-readiness"
+  ],
+  "skill_coverage_gaps": [
+    "mesh-quality-constrained-refinement-and-rollback"
+  ],
+  "required_evidence": [
+    {
+      "name": "last_accepted_mesh_and_result",
+      "purpose": "建立可回退的当前已接受状态及其来源、质量、QoI 和求解证据。",
+      "acceptable_sources": [
+        "current accepted mesh",
+        "current solver artifact",
+        "current trace"
+      ]
+    },
+    {
+      "name": "refinement_indicator_and_region",
+      "purpose": "说明当前结果为何指向某个局部区域以及该指标与固定 QoI 的关系。",
+      "acceptable_sources": [
+        "current result field",
+        "current deterministic indicator",
+        "current extraction evidence"
+      ]
+    },
+    {
+      "name": "quality_and_transition_contract",
+      "purpose": "冻结适用单元族的质量量、过渡区规则、硬门、回退和策略切换字段。",
+      "acceptable_sources": [
+        "approved mesh policy",
+        "current element formulation",
+        "user-confirmed engineering rule"
+      ]
+    },
+    {
+      "name": "candidate_cost_and_stability_evidence",
+      "purpose": "比较候选的网格规模、求解行为、失败原因和计算预算消耗。",
+      "acceptable_sources": [
+        "current mesh metadata",
+        "current solver log",
+        "current budget ledger"
+      ]
+    }
+  ],
+  "minimal_experiment": {
+    "design": "single_constrained_refinement_candidate_with_rollback",
+    "steps": [
+      "freeze_last_accepted_mesh_qoi_and_budget_state",
+      "define_one_local_refinement_region_from_current_evidence",
+      "generate_one_candidate_with_explicit_transition_controls",
+      "apply_pre_solve_quality_and_topology_checks",
+      "solve_only_if_hard_quality_checks_are_satisfied",
+      "compare_qoi_quality_stability_and_cost_against_last_accepted_state",
+      "accept_rollback_or_change_strategy_and_record_limits"
+    ],
+    "execution_status": "not_executed"
+  },
+  "fixed_qoi_contract_fields": [
+    "qoi_id",
+    "engineering_purpose",
+    "physical_quantity",
+    "component_or_invariant",
+    "unit",
+    "spatial_selection",
+    "coordinate_frame",
+    "analysis_step_or_time",
+    "aggregation_or_reduction",
+    "extraction_method",
+    "extraction_implementation_ref",
+    "comparison_rule",
+    "singularity_exposure",
+    "provenance_refs"
+  ],
+  "stop_condition_fields": [
+    "qoi_improvement_rule",
+    "mesh_quality_hard_gate",
+    "solver_stability_rule",
+    "computation_budget_boundary",
+    "diminishing_return_rule",
+    "candidate_failure_policy",
+    "rollback_trigger",
+    "strategy_change_trigger"
+  ],
+  "missing_facts": [
+    {
+      "path": "mesh.last_accepted_state",
+      "reason": "尚未提供当前最后一个可回退网格、结果、来源哈希和接受理由。",
+      "question": "请提供最后一个已接受网格及其真实求解、质量和 QoI 证据。",
+      "acceptable_sources": [
+        "current mesh artifact",
+        "current solver artifact",
+        "current accepted trace"
+      ]
+    },
+    {
+      "path": "qoi.current_definition",
+      "reason": "尚未冻结本次细化要改善的 QoI 和完整提取协议。",
+      "question": "请定义当前 QoI、工程用途、位置、单位、提取实现和比较规则。",
+      "acceptable_sources": [
+        "current engineering requirement",
+        "current extraction specification",
+        "user-confirmed definition"
+      ]
+    },
+    {
+      "path": "mesh.quality_contract",
+      "reason": "尚未定义适用单元族的质量量、质量硬门和来源。",
+      "question": "请提供当前单元族的质量检查字段、工程来源和失败处理规则。",
+      "acceptable_sources": [
+        "approved mesh policy",
+        "element formulation guidance",
+        "user-confirmed engineering rule"
+      ]
+    },
+    {
+      "path": "mesh.transition_contract",
+      "reason": "局部尺寸变化、过渡区、邻接和回退规则尚未建立。",
+      "question": "请提供局部细化与过渡区必须满足的当前约束。",
+      "acceptable_sources": [
+        "approved meshing procedure",
+        "current mesher contract",
+        "user-confirmed engineering rule"
+      ]
+    },
+    {
+      "path": "budget.current_definition",
+      "reason": "尚未建立当前允许的网格、求解、失败和墙钟预算。",
+      "question": "请提供本次诊断允许使用的计算预算及其来源。",
+      "acceptable_sources": [
+        "project budget",
+        "GitHub Actions budget",
+        "user-confirmed run configuration"
+      ]
+    },
+    {
+      "path": "refinement.current_indicator",
+      "reason": "尚未提供当前结果驱动指标、目标区域及其与 QoI 的可追溯关系。",
+      "question": "请提供用于提出局部细化区域的当前结果、指标实现和来源。",
+      "acceptable_sources": [
+        "current result field",
+        "current deterministic indicator",
+        "current trace"
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "QoI 改善不能覆盖网格质量硬门或求解稳定性失败。",
+    "单个诊断候选不能证明优化或搜索已经充分。",
+    "局部尺寸变小不等于离散误差必然减小。",
+    "没有可回退状态和失败记录时不能安全执行自动细化。"
+  ]
+}

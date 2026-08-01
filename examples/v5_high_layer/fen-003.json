@@ -1,0 +1,134 @@
+{
+  "profile_version": "1.0",
+  "case_id": "FEN-003",
+  "status": "draft_not_executed",
+  "objective": "判断受控网格变化是否真正改善当前工程目标量，并区分离散误差、提取误差、奇异性迹象和模型设定问题。",
+  "decision_question": "当前证据是否足以停止加密，还是需要一个更有区分力的受控网格层级或提取检查？",
+  "applicable_skill_ids": [
+    "problem-definition-source-audit",
+    "mesh-convergence-and-singularity"
+  ],
+  "skill_coverage_gaps": [],
+  "required_evidence": [
+    {
+      "name": "current_model_and_source",
+      "purpose": "冻结当前几何、材料、载荷、边界和分析设置，并证明各事实来自当前任务。",
+      "acceptable_sources": [
+        "current solver input",
+        "current model file",
+        "current user-confirmed specification"
+      ]
+    },
+    {
+      "name": "fixed_qoi_contract",
+      "purpose": "确保全部网格层级使用同一物理量、位置、坐标系、单位和提取实现。",
+      "acceptable_sources": [
+        "current extraction specification",
+        "current result parser",
+        "current user-confirmed QoI definition"
+      ]
+    },
+    {
+      "name": "controlled_mesh_sequence",
+      "purpose": "提供仅改变网格离散且保留模型与提取协议的可追溯序列。",
+      "acceptable_sources": [
+        "current generated meshes",
+        "current solver inputs",
+        "current solver outputs"
+      ]
+    },
+    {
+      "name": "independent_consistency_evidence",
+      "purpose": "用反力、能量或其他与当前用途相关的独立量帮助区分局部提取问题与整体离散误差。",
+      "acceptable_sources": [
+        "current solver outputs",
+        "current verification calculation"
+      ]
+    }
+  ],
+  "minimal_experiment": {
+    "design": "controlled_mesh_sequence_review",
+    "steps": [
+      "freeze_current_model_and_qoi_contract",
+      "audit_existing_mesh_levels_and_source_hashes",
+      "compare_qoi_and_independent_consistency_quantities",
+      "check_extraction_consistency_and_singularity_exposure",
+      "add_only_the_mesh_level_needed_to_separate_competing_explanations",
+      "record_stop_continue_or_unresolved_decision_with_limits"
+    ],
+    "execution_status": "not_executed"
+  },
+  "fixed_qoi_contract_fields": [
+    "qoi_id",
+    "engineering_purpose",
+    "physical_quantity",
+    "component_or_invariant",
+    "unit",
+    "spatial_selection",
+    "coordinate_frame",
+    "analysis_step_or_time",
+    "aggregation_or_reduction",
+    "extraction_method",
+    "extraction_implementation_ref",
+    "comparison_rule",
+    "singularity_exposure",
+    "provenance_refs"
+  ],
+  "stop_condition_fields": [
+    "evidence_sufficiency_rule",
+    "model_consistency_rule",
+    "extraction_consistency_rule",
+    "convergence_criterion_and_source",
+    "singularity_discrimination_rule",
+    "computation_budget_boundary",
+    "allowed_decision_states"
+  ],
+  "missing_facts": [
+    {
+      "path": "model.current_input",
+      "reason": "当前 profile 没有获得本次任务的权威有限元模型或输入文件。",
+      "question": "请提供当前模型或求解器输入，并说明其权威来源。",
+      "acceptable_sources": [
+        "current solver input",
+        "current model file",
+        "user-confirmed repository path"
+      ]
+    },
+    {
+      "path": "qoi.current_definition",
+      "reason": "尚未冻结目标量、提取位置、坐标系、单位、聚合和实现引用。",
+      "question": "请定义本次判断必须固定的 QoI 及完整提取协议。",
+      "acceptable_sources": [
+        "current engineering requirement",
+        "current extraction specification",
+        "user-confirmed definition"
+      ]
+    },
+    {
+      "path": "mesh_sequence.current_evidence",
+      "reason": "尚未提供保持模型和提取协议不变的当前网格序列及真实结果。",
+      "question": "请提供各网格层级、来源哈希、求解日志和对应 QoI 结果。",
+      "acceptable_sources": [
+        "current mesh files",
+        "current solver outputs",
+        "GitHub Actions artifact"
+      ]
+    },
+    {
+      "path": "convergence_criterion.current_source",
+      "reason": "停止或继续加密的判据与来源尚未建立。",
+      "question": "请提供适用于当前用途的判断规则及其来源。",
+      "acceptable_sources": [
+        "project requirement",
+        "approved verification plan",
+        "user-confirmed engineering rule"
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "求解器完成或收敛不等于 QoI 已离散收敛。",
+    "局部峰值变化不能自动解释为需要继续加密。",
+    "未固定提取协议时不能比较不同网格层级。",
+    "一个新增网格层级只能用于区分当前竞争解释，不能证明普遍收敛。"
+  ]
+}

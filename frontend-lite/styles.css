@@ -1,0 +1,498 @@
+:root { /* 定义全站颜色、间距和阴影变量，便于一致维护。 */
+  color-scheme: dark; /* 告知浏览器本页面以深色控件为主。 */
+  --bg: #07111f; /* 设置深蓝黑页面背景，降低长时间查看数据的眩光。 */
+  --surface: #0d1b2c; /* 设置主要面板背景色。 */
+  --surface-strong: #13243a; /* 设置交互区域和卡片的较强背景色。 */
+  --line: #29415e; /* 设置边框颜色以区分区域而不过度抢眼。 */
+  --text: #eef6ff; /* 设置主要文字颜色以获得清晰对比。 */
+  --muted: #9fb3c9; /* 设置辅助说明文字颜色。 */
+  --accent: #58d5c9; /* 设置主操作与聚焦强调色。 */
+  --accent-strong: #20b9ab; /* 设置主按钮的较深强调色。 */
+  --warning: #f4c56a; /* 设置未连接和未运行状态的警示色。 */
+  --danger: #ff8b91; /* 设置输入错误与失败信息颜色。 */
+  --radius: 18px; /* 设置面板圆角半径，单位为 CSS 像素。 */
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.28); /* 设置柔和阴影以建立层级，不表达验证状态。 */
+} /* 结束全站变量定义。 */
+
+* { /* 对所有元素应用统一盒模型。 */
+  box-sizing: border-box; /* 让宽高计算包含内边距和边框。 */
+} /* 结束通用盒模型规则。 */
+
+html { /* 配置页面根节点行为。 */
+  scroll-behavior: smooth; /* 为页内跳转提供平滑滚动。 */
+} /* 结束根节点规则。 */
+
+body { /* 定义页面主体视觉与排版。 */
+  margin: 0; /* 移除浏览器默认外边距。 */
+  min-width: 320px; /* 支持最窄三百二十像素视口且避免控件被压坏。 */
+  min-height: 100vh; /* 让背景至少覆盖一个完整视口高度。 */
+  background: radial-gradient(circle at top left, rgba(42, 112, 133, 0.28), transparent 34rem), var(--bg); /* 使用纯 CSS 光晕强调工程工作台首屏。 */
+  color: var(--text); /* 使用主要文字颜色。 */
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; /* 使用系统字体栈以避免外部字体请求。 */
+  line-height: 1.6; /* 设置适合中文长文本阅读的行高。 */
+} /* 结束页面主体规则。 */
+
+button, input, textarea { /* 统一表单控件字体。 */
+  font: inherit; /* 继承页面字体和字号。 */
+} /* 结束表单字体规则。 */
+
+button, input, textarea, summary { /* 统一交互元素聚焦行为。 */
+  outline: none; /* 移除浏览器默认轮廓，后续使用更明显的 focus-visible 样式。 */
+} /* 结束交互元素基础轮廓规则。 */
+
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible, .skip-link:focus-visible { /* 为键盘聚焦元素提供明确可见状态。 */
+  outline: 3px solid var(--accent); /* 使用三像素强调色轮廓，便于低视力用户定位。 */
+  outline-offset: 3px; /* 将轮廓向外偏移三像素，避免遮挡控件边界。 */
+} /* 结束键盘聚焦规则。 */
+
+.skip-link { /* 定义跳过导航链接的默认隐藏位置。 */
+  position: fixed; /* 固定链接位置以便聚焦时立即可见。 */
+  top: 0.75rem; /* 距离顶部四分之三根字号。 */
+  left: 0.75rem; /* 距离左侧四分之三根字号。 */
+  z-index: 20; /* 确保链接显示在全部面板上方。 */
+  padding: 0.6rem 0.9rem; /* 设置易点击的内边距。 */
+  transform: translateY(-180%); /* 默认将链接移出视口但保留键盘可聚焦性。 */
+  border-radius: 0.55rem; /* 设置小圆角以匹配控件风格。 */
+  background: var(--accent); /* 使用强调色背景。 */
+  color: #02100f; /* 使用深色文字确保与强调色背景对比。 */
+} /* 结束跳转链接默认规则。 */
+
+.skip-link:focus { /* 定义跳转链接获得焦点时的显示状态。 */
+  transform: translateY(0); /* 将链接移回视口。 */
+} /* 结束跳转链接聚焦规则。 */
+
+.topbar { /* 定义页面顶部产品区。 */
+  display: flex; /* 使用弹性布局并排标题与边界徽标。 */
+  justify-content: space-between; /* 将两组内容分布在两侧。 */
+  gap: 2rem; /* 设置两组内容间的两根字号间距。 */
+  width: min(1180px, calc(100% - 2rem)); /* 将最大宽度限制为一千一百八十像素并保留移动端边距。 */
+  margin: 0 auto; /* 水平居中顶部区域。 */
+  padding: 3rem 0 2rem; /* 设置顶部三根字号和底部两根字号留白。 */
+} /* 结束顶部产品区规则。 */
+
+.brand-block { /* 限制品牌说明的可读行宽。 */
+  max-width: 760px; /* 将文字行宽限制为七百六十像素。 */
+} /* 结束品牌说明规则。 */
+
+.eyebrow, .section-index { /* 统一阶段标签视觉。 */
+  margin: 0 0 0.5rem; /* 设置下方半根字号间距。 */
+  color: var(--accent); /* 使用强调色显示阶段标识。 */
+  font-size: 0.76rem; /* 使用较小字号呈现辅助标签。 */
+  font-weight: 800; /* 使用较粗字重提高小字号辨识度。 */
+  letter-spacing: 0.12em; /* 增加字符间距形成技术标签感。 */
+} /* 结束阶段标签规则。 */
+
+h1, h2, h3, p { /* 统一标题和段落的顶部默认间距。 */
+  margin-top: 0; /* 移除顶部默认外边距以由容器控制节奏。 */
+} /* 结束文本顶部间距规则。 */
+
+h1 { /* 定义页面主标题。 */
+  margin-bottom: 0.65rem; /* 在标题下保留适中间距。 */
+  font-size: clamp(2.15rem, 5vw, 4.4rem); /* 在移动端二点一五根字号到桌面四点四根字号间自适应。 */
+  line-height: 1.02; /* 使用紧凑行高保持主标题整体性。 */
+  letter-spacing: -0.045em; /* 略微收紧主标题字距。 */
+} /* 结束页面主标题规则。 */
+
+h2 { /* 定义区域标题。 */
+  margin-bottom: 0.55rem; /* 在区域标题下保留说明空间。 */
+  font-size: clamp(1.35rem, 2.5vw, 2rem); /* 在一点评三五到两根字号间响应式变化。 */
+  line-height: 1.2; /* 使用紧凑但易读的区域标题行高。 */
+} /* 结束区域标题规则。 */
+
+h3 { /* 定义状态卡片标题。 */
+  margin-bottom: 0.55rem; /* 在卡片标题下保留正文空间。 */
+  color: var(--muted); /* 使用辅助颜色避免与主标题竞争。 */
+  font-size: 0.78rem; /* 使用较小字号展示指标名称。 */
+  letter-spacing: 0.08em; /* 增加字距以形成清晰标签。 */
+  text-transform: uppercase; /* 对拉丁字符统一使用大写展示。 */
+} /* 结束状态卡片标题规则。 */
+
+.lede, .panel-heading p, .field-note { /* 统一辅助说明文字。 */
+  color: var(--muted); /* 使用辅助文字颜色。 */
+} /* 结束辅助说明文字规则。 */
+
+.lede { /* 限制顶部说明段落宽度。 */
+  max-width: 680px; /* 将说明限制为六百八十像素行宽。 */
+  margin-bottom: 0; /* 移除底部外边距以便容器控制。 */
+  font-size: 1.04rem; /* 略微放大顶部说明。 */
+} /* 结束顶部说明规则。 */
+
+.boundary-badges { /* 定义运行边界徽标容器。 */
+  display: flex; /* 使用弹性布局排列徽标。 */
+  flex-wrap: wrap; /* 空间不足时允许换行。 */
+  align-content: flex-start; /* 将多行徽标靠上排列。 */
+  justify-content: flex-end; /* 桌面端将徽标靠右对齐。 */
+  gap: 0.55rem; /* 设置徽标间的适中间距。 */
+  max-width: 330px; /* 限制徽标容器宽度避免拉散。 */
+} /* 结束运行边界徽标容器规则。 */
+
+.badge { /* 定义单个状态徽标。 */
+  display: inline-flex; /* 使用内联弹性布局对齐文字。 */
+  align-items: center; /* 垂直居中徽标内容。 */
+  min-height: 2.1rem; /* 提供至少二点一根字号的触达高度。 */
+  padding: 0.35rem 0.7rem; /* 设置徽标内边距。 */
+  border: 1px solid var(--line); /* 使用边线区分徽标。 */
+  border-radius: 999px; /* 使用大圆角形成胶囊形态。 */
+  background: rgba(13, 27, 44, 0.8); /* 使用半透明面板背景。 */
+  font-size: 0.78rem; /* 使用较小字号显示状态。 */
+  font-weight: 750; /* 使用较粗字重提高状态辨识度。 */
+} /* 结束状态徽标规则。 */
+
+.badge.neutral { /* 定义中性预览状态颜色。 */
+  color: var(--muted); /* 使用辅助颜色避免暗示成功。 */
+} /* 结束中性徽标规则。 */
+
+.badge.caution { /* 定义未连接和未运行状态颜色。 */
+  border-color: rgba(244, 197, 106, 0.45); /* 使用半透明警示色边框。 */
+  color: var(--warning); /* 使用警示色文字。 */
+} /* 结束警示徽标规则。 */
+
+.page-shell { /* 定义主要内容布局。 */
+  display: grid; /* 使用网格布局组织各面板。 */
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr); /* 桌面端让输入区略宽于预览区。 */
+  gap: 1.25rem; /* 设置面板之间的一点二五根字号间距。 */
+  width: min(1180px, calc(100% - 2rem)); /* 将内容最大宽度限制为一千一百八十像素并保留边距。 */
+  margin: 0 auto; /* 水平居中主要内容。 */
+} /* 结束主要内容布局规则。 */
+
+.panel, .boundary-note { /* 定义主要面板和边界说明的共同视觉。 */
+  border: 1px solid var(--line); /* 使用统一边框区分内容层级。 */
+  border-radius: var(--radius); /* 使用全站面板圆角。 */
+  background: linear-gradient(145deg, rgba(19, 36, 58, 0.94), rgba(9, 23, 39, 0.96)); /* 使用纯 CSS 深色渐变建立工程工作台层次。 */
+  box-shadow: var(--shadow); /* 使用统一面板阴影。 */
+} /* 结束面板共同视觉规则。 */
+
+.panel { /* 定义面板内部留白。 */
+  padding: clamp(1.15rem, 3vw, 2rem); /* 在一点一五到两根字号之间响应式设置内边距。 */
+} /* 结束面板内部留白规则。 */
+
+.intake-panel { /* 定义输入面板跨行布局。 */
+  grid-row: span 2; /* 让输入面板在桌面端占据两行高度。 */
+} /* 结束输入面板布局规则。 */
+
+.evidence-panel, .boundary-note { /* 让证据和边界区跨越全部列。 */
+  grid-column: 1 / -1; /* 从第一列延伸到最后一列。 */
+} /* 结束跨列规则。 */
+
+.panel-heading { /* 定义面板标题区与内容区间距。 */
+  margin-bottom: 1.5rem; /* 在标题区下保留一点五根字号间距。 */
+} /* 结束面板标题区规则。 */
+
+.panel-heading p:last-child { /* 控制标题说明的底部间距。 */
+  margin-bottom: 0; /* 移除最后说明段的底部间距。 */
+} /* 结束标题说明末段规则。 */
+
+.field-group { /* 定义单个表单字段组。 */
+  margin-bottom: 1.2rem; /* 在字段组之间保留一点二根字号间距。 */
+} /* 结束字段组规则。 */
+
+.field-group label, legend { /* 统一表单标签和字段集标题。 */
+  display: block; /* 让标签占据独立行。 */
+  margin-bottom: 0.45rem; /* 在标签和控件之间保留间距。 */
+  color: var(--text); /* 使用主要文字颜色。 */
+  font-weight: 760; /* 使用较粗字重强调输入含义。 */
+} /* 结束表单标签规则。 */
+
+input, textarea { /* 定义文本与文件输入控件。 */
+  width: 100%; /* 让控件占满字段组宽度。 */
+  border: 1px solid var(--line); /* 使用统一边框。 */
+  border-radius: 0.75rem; /* 设置十二像素左右的圆角。 */
+  background: #081522; /* 使用比面板更深的输入背景。 */
+  color: var(--text); /* 使用主要文字颜色。 */
+} /* 结束输入控件共同规则。 */
+
+input[type="text"], textarea { /* 定义文本输入的内部留白。 */
+  padding: 0.75rem 0.85rem; /* 设置舒适的输入内边距。 */
+} /* 结束文本输入留白规则。 */
+
+input[type="file"] { /* 定义原生文件输入控件。 */
+  padding: 0.55rem; /* 为文件按钮和文件名提供空间。 */
+} /* 结束文件输入规则。 */
+
+input[readonly] { /* 定义只读任务标识控件。 */
+  color: var(--muted); /* 使用辅助颜色表示不可编辑。 */
+  cursor: not-allowed; /* 使用不可编辑光标提示状态。 */
+} /* 结束只读控件规则。 */
+
+textarea { /* 定义多行文本控件。 */
+  resize: vertical; /* 仅允许垂直调整高度，避免破坏页面宽度。 */
+} /* 结束多行文本控件规则。 */
+
+.field-note { /* 定义字段辅助说明。 */
+  margin: 0.38rem 0 0; /* 在控件上方保留小间距且移除其他方向间距。 */
+  font-size: 0.85rem; /* 使用较小字号显示说明。 */
+} /* 结束字段辅助说明规则。 */
+
+.file-list { /* 定义已选文件列表容器。 */
+  display: grid; /* 使用网格堆叠文件记录。 */
+  gap: 0.55rem; /* 设置文件记录间距。 */
+  margin: 0.75rem 0; /* 在文件选择器和按钮之间保留间距。 */
+} /* 结束文件列表容器规则。 */
+
+.file-record { /* 定义单个文件记录。 */
+  display: grid; /* 使用网格组织名称和元数据。 */
+  gap: 0.25rem; /* 设置记录内部小间距。 */
+  padding: 0.7rem 0.8rem; /* 设置记录内边距。 */
+  border: 1px solid rgba(88, 213, 201, 0.24); /* 使用弱强调边框表示已选择但未验证。 */
+  border-radius: 0.7rem; /* 设置记录圆角。 */
+  background: rgba(8, 21, 34, 0.74); /* 使用半透明深色背景。 */
+} /* 结束文件记录规则。 */
+
+.file-record strong { /* 定义文件名显示。 */
+  overflow-wrap: anywhere; /* 允许超长文件名在任意位置换行。 */
+} /* 结束文件名规则。 */
+
+.file-record span { /* 定义文件元数据文字。 */
+  color: var(--muted); /* 使用辅助颜色显示元数据。 */
+  font-size: 0.82rem; /* 使用较小字号减少视觉噪音。 */
+} /* 结束文件元数据规则。 */
+
+.missing-facts { /* 定义缺失事实登记字段集。 */
+  margin: 1.4rem 0; /* 在字段集上下保留一点四根字号间距。 */
+  padding: 1rem; /* 设置字段集内部留白。 */
+  border: 1px solid var(--line); /* 使用统一边框。 */
+  border-radius: 0.85rem; /* 设置字段集圆角。 */
+} /* 结束缺失事实字段集规则。 */
+
+.missing-grid { /* 定义缺失事实输入网格。 */
+  display: grid; /* 使用网格排列字段。 */
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 桌面端使用两个等宽列。 */
+  gap: 0 0.85rem; /* 仅设置横向字段间距。 */
+} /* 结束缺失事实输入网格规则。 */
+
+.missing-grid .wide { /* 定义需要横跨两列的字段。 */
+  grid-column: 1 / -1; /* 让字段覆盖全部列。 */
+} /* 结束宽字段规则。 */
+
+.action-row { /* 定义按钮行。 */
+  display: flex; /* 使用弹性布局排列按钮。 */
+  flex-wrap: wrap; /* 空间不足时允许按钮换行。 */
+  align-items: center; /* 垂直居中按钮。 */
+  gap: 0.7rem; /* 设置按钮间距。 */
+} /* 结束按钮行规则。 */
+
+.primary-actions { /* 定义主要草案操作区。 */
+  margin-top: 1.1rem; /* 在前方内容下保留一点一根字号间距。 */
+} /* 结束主要操作区规则。 */
+
+.button { /* 定义所有按钮的共同样式。 */
+  min-height: 2.7rem; /* 提供至少二点七根字号的可点击高度。 */
+  padding: 0.65rem 0.95rem; /* 设置按钮内边距。 */
+  border: 1px solid transparent; /* 预留统一边框宽度避免状态跳动。 */
+  border-radius: 0.72rem; /* 设置按钮圆角。 */
+  cursor: pointer; /* 使用指针光标表示可点击。 */
+  font-weight: 780; /* 使用较粗字重提高操作辨识度。 */
+} /* 结束按钮共同样式。 */
+
+.button.primary { /* 定义主要下载按钮。 */
+  background: var(--accent-strong); /* 使用较深强调色背景。 */
+  color: #001514; /* 使用深色文字确保与背景对比。 */
+} /* 结束主要按钮规则。 */
+
+.button.secondary { /* 定义次要操作按钮。 */
+  border-color: var(--line); /* 使用统一边框。 */
+  background: var(--surface-strong); /* 使用较强面板背景。 */
+  color: var(--text); /* 使用主要文字颜色。 */
+} /* 结束次要按钮规则。 */
+
+.button:hover { /* 定义指针悬停状态。 */
+  filter: brightness(1.08); /* 将按钮亮度提高百分之八以提供反馈。 */
+} /* 结束按钮悬停规则。 */
+
+.record-list, .compact-list { /* 统一记录和状态列表。 */
+  padding-left: 1.15rem; /* 为列表标记保留一点一五根字号空间。 */
+} /* 结束列表共同规则。 */
+
+.record-list { /* 定义缺失事实记录列表。 */
+  display: grid; /* 使用网格堆叠记录。 */
+  gap: 0.6rem; /* 设置记录间距。 */
+  margin: 0.8rem 0 0; /* 在字段集按钮下保留间距。 */
+} /* 结束缺失事实记录列表规则。 */
+
+.record-list li { /* 定义单条缺失事实记录。 */
+  padding: 0.65rem; /* 设置记录内边距。 */
+  border-radius: 0.65rem; /* 设置记录圆角。 */
+  background: rgba(8, 21, 34, 0.72); /* 使用深色背景区分记录。 */
+} /* 结束缺失事实记录规则。 */
+
+.remove-button { /* 定义记录内删除按钮。 */
+  margin-left: 0.6rem; /* 与记录文字保持间距。 */
+  border: 0; /* 移除默认边框。 */
+  background: transparent; /* 使用透明背景减少视觉重量。 */
+  color: var(--danger); /* 使用错误色表示删除操作。 */
+  cursor: pointer; /* 使用指针光标。 */
+  font-weight: 760; /* 使用较粗字重确保可识别。 */
+} /* 结束记录删除按钮规则。 */
+
+.message { /* 定义动态消息区域。 */
+  min-height: 1.5rem; /* 即使没有消息也保留稳定高度。 */
+  margin: 0.8rem 0 0; /* 在操作区下保留间距。 */
+  color: var(--muted); /* 默认使用中性辅助颜色。 */
+} /* 结束动态消息规则。 */
+
+.message.error { /* 定义错误消息颜色。 */
+  color: var(--danger); /* 使用错误色显示明确失败。 */
+} /* 结束错误消息规则。 */
+
+.message.success { /* 定义成功完成本地操作的消息颜色。 */
+  color: var(--accent); /* 只用于本地添加或下载完成，不表示工程验证成功。 */
+} /* 结束本地操作成功消息规则。 */
+
+.json-preview { /* 定义 JSON 预览区域。 */
+  max-width: 100%; /* 防止预览区域超出容器。 */
+  max-height: 33rem; /* 将最大高度限制为三十三根字号并允许内部滚动。 */
+  margin: 0; /* 移除预格式文本默认外边距。 */
+  padding: 1rem; /* 设置预览内部留白。 */
+  overflow: auto; /* 允许长 JSON 在区域内部双向滚动。 */
+  border: 1px solid var(--line); /* 使用统一边框。 */
+  border-radius: 0.8rem; /* 设置预览圆角。 */
+  background: #030b13; /* 使用最深背景突出机器数据。 */
+  color: #cce9ff; /* 使用浅蓝文字提高代码可读性。 */
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; /* 使用系统等宽字体栈。 */
+  font-size: 0.78rem; /* 使用较小字号容纳结构化数据。 */
+  white-space: pre-wrap; /* 保留格式同时允许超长文本换行。 */
+  overflow-wrap: anywhere; /* 允许长哈希或路径在任意位置换行。 */
+} /* 结束 JSON 预览规则。 */
+
+.evidence-toolbar { /* 定义证据文件工具栏。 */
+  display: flex; /* 使用弹性布局排列文件字段和清除按钮。 */
+  align-items: flex-end; /* 将按钮与字段底部对齐。 */
+  gap: 0.9rem; /* 设置工具栏项目间距。 */
+} /* 结束证据工具栏规则。 */
+
+.grow { /* 定义弹性增长字段。 */
+  flex: 1; /* 让证据文件字段占据剩余空间。 */
+} /* 结束弹性增长规则。 */
+
+.status-grid { /* 定义证据状态卡片网格。 */
+  display: grid; /* 使用网格排列状态卡片。 */
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* 桌面端使用三列等宽卡片。 */
+  gap: 0.8rem; /* 设置卡片间距。 */
+  margin-top: 1rem; /* 在消息区下保留一根字号间距。 */
+} /* 结束状态卡片网格规则。 */
+
+.status-card { /* 定义单个证据状态卡片。 */
+  min-width: 0; /* 允许卡片内长文本正确收缩。 */
+  padding: 1rem; /* 设置卡片内边距。 */
+  border: 1px solid var(--line); /* 使用统一边框。 */
+  border-radius: 0.85rem; /* 设置卡片圆角。 */
+  background: rgba(8, 21, 34, 0.78); /* 使用半透明深色背景。 */
+} /* 结束状态卡片规则。 */
+
+.status-card p, .compact-list { /* 控制状态卡片正文底部间距。 */
+  margin-bottom: 0; /* 移除最后内容的默认底部间距。 */
+} /* 结束状态正文间距规则。 */
+
+.compact-list { /* 定义紧凑状态列表。 */
+  margin-top: 0; /* 移除列表顶部默认外边距。 */
+} /* 结束紧凑状态列表规则。 */
+
+.metric-list { /* 定义预算指标列表。 */
+  display: grid; /* 使用网格堆叠指标。 */
+  gap: 0.45rem; /* 设置指标间距。 */
+  margin: 0; /* 移除定义列表默认外边距。 */
+} /* 结束预算指标列表规则。 */
+
+.metric-list div { /* 定义单条预算指标。 */
+  display: flex; /* 使用弹性布局并排名称和值。 */
+  justify-content: space-between; /* 将指标名称和值分布到两端。 */
+  gap: 0.7rem; /* 设置名称和值间距。 */
+} /* 结束单条预算指标规则。 */
+
+.metric-list dt { /* 定义预算指标名称。 */
+  color: var(--muted); /* 使用辅助颜色。 */
+} /* 结束预算指标名称规则。 */
+
+.metric-list dd { /* 定义预算指标值。 */
+  margin: 0; /* 移除定义值默认外边距。 */
+  overflow-wrap: anywhere; /* 允许长值换行。 */
+  text-align: right; /* 将值靠右对齐便于扫描。 */
+} /* 结束预算指标值规则。 */
+
+.raw-details { /* 定义原始 JSON 折叠区。 */
+  margin-top: 1rem; /* 在状态卡片下保留一根字号间距。 */
+} /* 结束原始 JSON 折叠区规则。 */
+
+.raw-details summary { /* 定义折叠区摘要控件。 */
+  width: fit-content; /* 让可点击区域按内容宽度呈现。 */
+  margin-bottom: 0.7rem; /* 展开后与 JSON 预览保持间距。 */
+  cursor: pointer; /* 使用指针光标表示可点击。 */
+  color: var(--accent); /* 使用强调色显示操作入口。 */
+  font-weight: 760; /* 使用较粗字重。 */
+} /* 结束折叠区摘要规则。 */
+
+.boundary-note { /* 定义使用边界说明区域。 */
+  padding: 1.2rem 1.4rem; /* 设置边界说明内边距。 */
+  border-color: rgba(244, 197, 106, 0.42); /* 使用警示色弱边框提示重要限制。 */
+} /* 结束使用边界说明规则。 */
+
+.boundary-note h2 { /* 定义边界说明标题。 */
+  font-size: 1.05rem; /* 使用一点评零五根字号避免与主区域标题竞争。 */
+} /* 结束边界说明标题规则。 */
+
+.boundary-note p { /* 定义边界说明正文。 */
+  margin-bottom: 0; /* 移除底部外边距。 */
+  color: var(--muted); /* 使用辅助文字颜色。 */
+} /* 结束边界说明正文规则。 */
+
+.footer { /* 定义页脚。 */
+  width: min(1180px, calc(100% - 2rem)); /* 与主要内容保持相同最大宽度和边距。 */
+  margin: 0 auto; /* 水平居中页脚。 */
+  padding: 1.5rem 0 2.5rem; /* 设置顶部一点五根字号和底部二点五根字号留白。 */
+  color: var(--muted); /* 使用辅助文字颜色。 */
+  font-size: 0.82rem; /* 使用较小字号显示技术边界。 */
+  text-align: center; /* 将简短边界说明居中。 */
+} /* 结束页脚规则。 */
+
+@media (max-width: 900px) { /* 在九百像素以下切换为单列主要布局。 */
+  .topbar { /* 调整顶部区域为纵向排列。 */
+    flex-direction: column; /* 将标题和徽标垂直排列。 */
+    gap: 1.25rem; /* 将纵向间距设置为一点二五根字号。 */
+  } /* 结束移动端顶部区域规则。 */
+  .boundary-badges { /* 调整移动端徽标对齐。 */
+    justify-content: flex-start; /* 将徽标靠左排列以匹配正文。 */
+    max-width: none; /* 取消桌面端宽度限制。 */
+  } /* 结束移动端徽标规则。 */
+  .page-shell { /* 调整主要内容为单列。 */
+    grid-template-columns: minmax(0, 1fr); /* 使用一个可收缩列。 */
+  } /* 结束移动端主要内容规则。 */
+  .intake-panel { /* 取消输入面板跨行。 */
+    grid-row: auto; /* 让输入面板按正常文档顺序占一行。 */
+  } /* 结束移动端输入面板规则。 */
+  .evidence-panel, .boundary-note { /* 调整跨列区域为单列。 */
+    grid-column: auto; /* 使用当前唯一列。 */
+  } /* 结束移动端跨列规则。 */
+  .status-grid { /* 将状态卡片改为两列。 */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 使用两个等宽列。 */
+  } /* 结束移动端状态卡片规则。 */
+} /* 结束九百像素媒体查询。 */
+
+@media (max-width: 640px) { /* 在六百四十像素以下优化窄屏交互。 */
+  .topbar { /* 缩小窄屏顶部留白。 */
+    padding-top: 2rem; /* 将顶部留白缩小为两根字号。 */
+  } /* 结束窄屏顶部规则。 */
+  .missing-grid, .status-grid { /* 将表单和状态卡片改为单列。 */
+    grid-template-columns: minmax(0, 1fr); /* 使用一个可收缩列。 */
+  } /* 结束窄屏网格规则。 */
+  .missing-grid .wide { /* 取消宽字段跨列设置。 */
+    grid-column: auto; /* 使用当前唯一列。 */
+  } /* 结束窄屏宽字段规则。 */
+  .evidence-toolbar { /* 将证据工具栏改为纵向排列。 */
+    align-items: stretch; /* 让按钮和字段占满可用宽度。 */
+    flex-direction: column; /* 垂直排列文件字段和按钮。 */
+  } /* 结束窄屏证据工具栏规则。 */
+  .button { /* 让窄屏按钮更易触达。 */
+    width: 100%; /* 让按钮占满容器宽度。 */
+  } /* 结束窄屏按钮规则。 */
+} /* 结束六百四十像素媒体查询。 */
+
+@media (prefers-reduced-motion: reduce) { /* 尊重用户减少动态效果的系统偏好。 */
+  html { /* 关闭平滑滚动。 */
+    scroll-behavior: auto; /* 使用即时跳转避免可能的不适。 */
+  } /* 结束减少动态效果根节点规则。 */
+  * { /* 关闭页面可能出现的过渡和动画。 */
+    animation-duration: 0.01ms !important; /* 将动画时长压缩到零点零一毫秒。 */
+    animation-iteration-count: 1 !important; /* 将动画循环限制为一次。 */
+    transition-duration: 0.01ms !important; /* 将过渡时长压缩到零点零一毫秒。 */
+  } /* 结束减少动态效果通用规则。 */
+} /* 结束减少动态效果媒体查询。 */

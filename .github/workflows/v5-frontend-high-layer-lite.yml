@@ -1,0 +1,56 @@
+# 定义轻量前端与提高层静态验证工作流名称。
+name: V5 frontend and high-layer lite validation # 使用独立名称，避免与现有 V4/V5 工作流混淆。
+
+# 定义允许触发本工作流的事件。
+on: # 同时支持权威分支相关推送和维护者手动验证。
+  workflow_dispatch: # 允许从 GitHub Actions 页面显式发起验证。
+  push: # 在权威分支相关路径变化时自动运行。
+    branches: # 限定自动触发分支。
+      - feat/ai-dynamic-region-mesh-paper # 使用用户冻结的唯一权威工作分支。
+    paths: # 仅监听本切片和直接依赖合同。
+      - "frontend-lite/**" # 覆盖全部静态前端文件。
+      - "examples/v5_high_layer/**" # 覆盖三个提高层诊断档案。
+      - "docs/v5_high_layer/HIGH_LAYER_LITE.md" # 覆盖档案逐项说明。
+      - "scripts/validate_v5_frontend_high_layer_lite.py" # 覆盖纯标准库验证器。
+      - "tests/test_problem_manifest.py" # 覆盖现有五项 ProblemManifest 测试。
+      - "tests/test_decision_loop.py" # 覆盖现有四项 DecisionLoop 测试。
+      - "src/engineering_agent/**" # 覆盖现有 V5 Python 合同。
+      - "skills/engineering/**" # 覆盖 profile 引用的通用 Skill。
+      - "schemas/problem_manifest.schema.json" # 覆盖 ProblemManifest JSON 合同。
+      - "schemas/engineering_skill.schema.json" # 覆盖工程 Skill JSON 合同。
+      - ".github/workflows/v5-frontend-high-layer-lite.yml" # 覆盖工作流自身变化。
+
+# 将默认 GitHub 令牌权限限制为只读仓库内容。
+permissions: # 明确声明最小权限。
+  contents: read # checkout 只需要读取当前提交。
+
+# 定义唯一轻量验证任务。
+jobs: # 所有检查都在同一审计上下文完成。
+  validate-lite: # 创建轻量静态验证任务。
+    if: ${{ github.ref_name == 'feat/ai-dynamic-region-mesh-paper' }} # 阻止手动调度在非权威分支执行。
+    runs-on: ubuntu-24.04 # 使用与现有 V5 一致的 Ubuntu runner，不安装额外依赖。
+    timeout-minutes: 5 # 将最坏运行时间限制为五分钟以控制 Actions 成本。
+    steps: # 按检出、验证和上传证据的顺序执行。
+      - name: Checkout current commit # 检出当前权威提交供只读静态检查。
+        uses: actions/checkout@v4 # 使用仓库现有风格的官方 checkout action。
+        with: # 配置 checkout 不保留可写凭证。
+          persist-credentials: false # 本任务不会提交、推送或修改 GitHub 状态。
+      - name: Validate lite frontend, profiles, and V5 tests # 运行 Node 语法、档案合同和现有九项测试。
+        shell: bash # 使用 Bash 支持严格错误和真实退出码。
+        run: | # 执行无安装、无模型、无求解器的轻量验证。
+          # 对未定义变量、管道失败和未处理错误立即失败。
+          set -euo pipefail
+          # 初始化 Node.js 语法检查退出码，零表示语法检查成功。
+          node_check_exit_code=0
+          # 即使 JavaScript 语法失败也继续运行验证器以先写失败 receipt。
+          node --check frontend-lite/app.js || node_check_exit_code=$?
+          # 传入真实 Node 退出码并让纯标准库验证器生成单一证据目录。
+          python3 scripts/validate_v5_frontend_high_layer_lite.py --node-check-exit-code "${node_check_exit_code}" --receipt artifacts/v5-frontend-high-layer-lite/validation_receipt.json
+      - name: Upload lite validation evidence # 无论成功或失败都上传现有证据。
+        if: always() # 确保失败 receipt 和源码快照仍可审计。
+        uses: actions/upload-artifact@v4 # 使用官方 artifact action保存轻量证据。
+        with: # 配置单一小型证据包。
+          name: v5-frontend-high-layer-lite-${{ github.run_id }}-${{ github.run_attempt }} # 使用运行与重跑编号避免 artifact 名称冲突。
+          path: artifacts/v5-frontend-high-layer-lite # 只上传验证器创建的单一目录。
+          if-no-files-found: error # 若验证器未留下任何证据则明确失败。
+          retention-days: 14 # 轻量初探证据保留十四天以控制存储。
