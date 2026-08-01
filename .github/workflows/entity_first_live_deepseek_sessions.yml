@@ -1,0 +1,221 @@
+name: Entity-first live DeepSeek four-session test  # Run each engineering case in a separate clean DeepSeek conversation.
+on:  # Define explicit manual and pull-request triggers.
+  workflow_dispatch:  # Allow the complete four-session test to be started directly.
+  pull_request:  # Re-run the test for every update to the repair pull request.
+    branches:  # Restrict the target research branch.
+      - feat/ai-dynamic-region-mesh-paper  # Keep this live test isolated from main and unrelated branches.
+permissions:  # Grant only repository and artifact reads.
+  contents: read  # Allow checkout of the current repair branch.
+jobs:  # Execute exact-model preparation, solver verification, four live sessions, and one isolation audit.
+  build-exact-entities:  # Reconstruct all non-crack BREP entities from scratch for this workflow run.
+    runs-on: ubuntu-24.04  # Use a clean hosted Linux runner.
+    steps:  # Compile the deterministic geometry code before invoking Gmsh.
+      - uses: actions/checkout@v4  # Check out the current pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python runtime.
+        with:  # Configure the runtime explicitly.
+          python-version: "3.12"  # Match the validated entity-first pipeline.
+      - name: Install Gmsh and mesh-audit dependency  # Install only deterministic geometry dependencies.
+        run: |  # Record the exact mesher version in the job log.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh  # Install Gmsh with OpenCASCADE support.
+          gmsh --version  # Preserve the exact Gmsh version.
+          python -m pip install --disable-pip-version-check numpy  # Install the shared NPZ and audit dependency.
+      - name: Compile exact-entity and solver-input modules  # Detect source errors before model construction.
+        run: python -m py_compile scripts/entity_first_stage1_audit.py scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Compile every deterministic prerequisite.
+      - name: Build exact entities from structured facts  # Generate one new BREP and two audited meshes per simple case.
+        run: python scripts/entity_first_stage2_run.py --self-test --output-dir exact_entities  # Require topology, area, hole, Physical Group, and quality gates.
+      - uses: actions/upload-artifact@v4  # Publish exact entities for solver and live-session matrix jobs.
+        with:  # Configure the current-run entity artifact.
+          name: live-ds-exact-entities  # Give the clean model set a unique workflow-local name.
+          path: exact_entities  # Upload BREP, GEO, MSH, SVG, and receipts.
+          if-no-files-found: error  # Refuse to continue without actual model evidence.
+  verify-calculix-before-live-sessions:  # Prove the current-run exact meshes remain valid solver inputs.
+    needs: [build-exact-entities]  # Wait for clean exact entities.
+    runs-on: ubuntu-24.04  # Use a separate clean CalculiX runner.
+    steps:  # Download only current-run entities and perform real solver smoke tests.
+      - uses: actions/checkout@v4  # Check out the same pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python runtime.
+        with:  # Configure the runtime explicitly.
+          python-version: "3.12"  # Match entity generation.
+      - uses: actions/download-artifact@v4  # Download the exact entities built in this run.
+        with:  # Select the workflow-local entity artifact.
+          name: live-ds-exact-entities  # Avoid any frozen or previous-run artifact.
+          path: exact_entities  # Restore the entity directory expected by the solver adapter.
+      - name: Install CalculiX  # Install the mature solver after exact-entity gates pass.
+        run: |  # Record the solver version and executable.
+          sudo apt-get update  # Refresh package metadata.
+          sudo apt-get install -y calculix-ccx  # Install CalculiX 2.21 from Ubuntu.
+          command -v ccx  # Require a solver executable on PATH.
+          ccx -v || true  # Record version output without depending on its exit code.
+      - name: Compile and test solver adapter  # Verify input generation and output parsing before live decisions.
+        run: |  # Execute code tests before full smoke solves.
+          python -m py_compile scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Detect syntax and import errors.
+          python scripts/entity_first_stage3_run.py --generator-self-test  # Verify elements, sets, loads, boundaries, and output requests.
+      - name: Run current-run exact-entity smoke solves  # Solve bearing, single-hole, and three-hole models.
+        run: python scripts/entity_first_stage3_run.py --stage2-root exact_entities --output-dir solver_evidence  # Require finite response files and force equilibrium.
+      - uses: actions/upload-artifact@v4  # Publish solver evidence consumed only for audit.
+        with:  # Configure the solver artifact.
+          name: live-ds-calculix-prerequisite  # Mark it as the deterministic prerequisite for the live sessions.
+          path: solver_evidence  # Upload INP, DAT, FRD, logs, and receipt.
+          if-no-files-found: error  # Refuse live testing when the current solver chain has no evidence.
+  run-one-clean-deepseek-session:  # Start four independent case-local DeepSeek histories after deterministic prerequisites pass.
+    needs: [build-exact-entities, verify-calculix-before-live-sessions]  # Require clean geometry and solver verification first.
+    strategy:  # Use one isolated runner and process for each case.
+      fail-fast: false  # Preserve all four outcomes even if one session fails.
+      max-parallel: 4  # Run one DeepSeek session per case concurrently.
+      matrix:  # Define the complete case set.
+        case: [bearing_plate, circular_opening, three_openings, cracked_web]  # Include the intact-plate crack seam case.
+    runs-on: ubuntu-24.04  # Use a fresh runner for every case-local history.
+    environment: ds  # Read the existing protected DeepSeek credential environment.
+    timeout-minutes: 180  # Bound one live session plus 168 real Gmsh remeshes.
+    env:  # Configure the official OpenAI-compatible DeepSeek API.
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.DS || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.DS || vars.DS_API_KEY }}  # Resolve the existing masked credential without writing it to disk.
+      DEEPSEEK_MODEL: deepseek-v4-pro  # Use the same requested model as the retained V4 live baseline.
+      DEEPSEEK_BASE_URL: https://api.deepseek.com  # Use the official compatible endpoint.
+      DEEPSEEK_MAX_TOKENS: "5000"  # Leave enough room for complete structured hotspot proposals.
+    steps:  # Download current-run entities, verify code, start an empty session, and run the full hotspot PSO.
+      - uses: actions/checkout@v4  # Check out the same pull-request merge ref independently in every matrix job.
+      - uses: actions/setup-python@v5  # Install a controlled Python runtime.
+        with:  # Configure the runtime explicitly.
+          python-version: "3.12"  # Match deterministic pipeline stages.
+      - uses: actions/download-artifact@v4  # Download only the exact entities generated earlier in this run.
+        with:  # Select the clean entity artifact.
+          name: live-ds-exact-entities  # Avoid old traces, conversations, meshes, or optimization results.
+          path: exact_entities  # Restore the entity root consumed by the live case runner.
+      - name: Install Gmsh and audit dependency  # Install deterministic executor dependencies after session isolation is established.
+        run: |  # Record the mesher version and Python dependency.
+          sudo apt-get update  # Refresh package metadata on this clean case runner.
+          sudo apt-get install -y gmsh  # Install Gmsh with OpenCASCADE support.
+          gmsh --version  # Preserve the exact mesher version for this case.
+          python -m pip install --disable-pip-version-check numpy  # Install the shared mesh-audit dependency.
+      - name: Confirm live credential and compile session runner  # Fail before API use if credential or source is missing.
+        run: |  # Keep credential output masked and compile all imported modules.
+          test -n "$DEEPSEEK_API_KEY"  # Require a real live credential.
+          echo "::add-mask::$DEEPSEEK_API_KEY"  # Prevent accidental log disclosure.
+          python -m py_compile scripts/entity_first_stage1_audit.py scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage5_hotspot_pso.py scripts/entity_first_stage6_live_deepseek.py  # Compile deterministic and live-session code.
+      - name: Run one empty-history DeepSeek session and full hotspot PSO  # Execute the requested case-isolated test from scratch.
+        run: |  # Remove any pre-existing case directory before starting the session.
+          out="live_sessions/${{ matrix.case }}"  # Allocate one case-specific output directory.
+          rm -rf "$out"  # Guarantee no trace, message, mesh, or result reuse.
+          mkdir -p "$out"  # Create an empty directory for the session runner.
+          python scripts/entity_first_stage6_live_deepseek.py \
+            --case "${{ matrix.case }}" \
+            --entity-root exact_entities \
+            --output-dir "$out" \
+            --particles 14 \
+            --iterations 12 \
+            --seed 20260801 \
+            | tee "$out/command_output.json"  # Preserve the complete case receipt in logs and artifact evidence.
+      - uses: actions/upload-artifact@v4  # Publish this case's isolated messages and numerical evidence even on failure.
+        if: always()  # Preserve provider, validation, and optimization failures for audit.
+        with:  # Configure one artifact per DeepSeek session.
+          name: live-ds-session-${{ matrix.case }}  # Keep case histories physically separate in artifact storage.
+          path: live_sessions/${{ matrix.case }}  # Upload only this case's trace, proposals, preview, PSO, and review.
+          if-no-files-found: warn  # Keep a provider-before-output failure diagnosable from the job log.
+          retention-days: 90  # Retain the complete live evidence for paper review.
+  verify-four-session-isolation:  # Audit that the matrix produced four clean and independent DeepSeek histories.
+    needs: [run-one-clean-deepseek-session]  # Wait for all four case jobs and fail if a required case failed.
+    runs-on: ubuntu-24.04  # Use a lightweight clean summary runner.
+    steps:  # Download artifacts separately and enforce cross-case isolation and numerical gates.
+      - uses: actions/download-artifact@v4  # Collect only the four live-session artifacts from this run.
+        with:  # Select the case artifact pattern.
+          pattern: live-ds-session-*  # Exclude prerequisite and unrelated artifacts.
+          path: collected  # Preserve one subdirectory per session artifact.
+          merge-multiple: false  # Prevent same-name trace or receipt files from overwriting each other.
+      - uses: actions/setup-python@v5  # Install a controlled Python runtime for deterministic verification.
+        with:  # Configure the runtime explicitly.
+          python-version: "3.12"  # Match the case jobs.
+      - name: Verify four unique empty-history sessions and hotspot results  # Build one suite receipt only after all invariants pass.
+        shell: bash  # Run an inline deterministic verifier.
+        run: |  # Parse case receipts and traces without invoking DeepSeek again.
+          python - <<'PY'
+          import json  # Read live traces and write the suite receipt.
+          from pathlib import Path  # Discover separately downloaded session artifacts.
+          expected = {"bearing_plate", "circular_opening", "three_openings", "cracked_web"}  # Define the complete case set.
+          receipt_paths = sorted(Path("collected").rglob("live_case_receipt.json"))  # Find every successful case receipt.
+          trace_paths = sorted(Path("collected").rglob("deepseek_session_trace.json"))  # Find every complete case history.
+          if len(receipt_paths) != 4 or len(trace_paths) != 4:  # Require all four independent artifacts.
+              raise SystemExit(f"expected four receipts and four traces, found {len(receipt_paths)} and {len(trace_paths)}")  # Reject missing or overwritten sessions.
+          cases = {}  # Collect normalized suite evidence.
+          session_ids = set()  # Detect any reused local conversation identity.
+          message_hashes = set()  # Detect accidental byte-identical shared histories.
+          for receipt_path in receipt_paths:  # Validate each live case independently.
+              receipt = json.loads(receipt_path.read_text(encoding="utf-8"))  # Parse the final case receipt.
+              case_id = receipt["case_id"]  # Resolve the stable model identifier.
+              if case_id in cases:  # Detect duplicate artifacts.
+                  raise SystemExit(f"duplicate case receipt: {case_id}")  # Reject ambiguous evidence.
+              if receipt["status"] != "completed" or not receipt["started_from_empty_history"]:  # Require successful clean-session startup.
+                  raise SystemExit(f"{case_id}: session was not completed from empty history")  # Reject resumed or inherited conversations.
+              if receipt["first_call_prior_message_count"] != 1:  # Allow only the freshly inserted system contract before the first user request.
+                  raise SystemExit(f"{case_id}: first call inherited unexpected history")  # Reject cross-case message reuse.
+              if receipt["deepseek_calls"] < 3:  # Require initial proposal, evidence revision, and final review.
+                  raise SystemExit(f"{case_id}: expected at least three DeepSeek calls")  # Reject a fake one-shot session.
+              session_id = receipt["session_id"]  # Read the case-local conversation identity.
+              if session_id in session_ids:  # Detect any shared session ID.
+                  raise SystemExit(f"duplicate DeepSeek session id: {session_id}")  # Enforce one session per case.
+              session_ids.add(session_id)  # Preserve the unique ID.
+              message_hash = receipt["session_messages_sha256"]  # Read the sealed case-local history.
+              if message_hash in message_hashes:  # Detect an accidentally reused complete history.
+                  raise SystemExit(f"duplicate DeepSeek message history: {case_id}")  # Reject shared context even under different IDs.
+              message_hashes.add(message_hash)  # Preserve the unique history hash.
+              if receipt["pso_particles"] != 14 or receipt["pso_iterations"] != 12:  # Enforce the requested full search depth.
+                  raise SystemExit(f"{case_id}: unexpected PSO depth")  # Reject a shortened test.
+              if receipt["pso_actual_unique_gmsh_evaluations"] < 160:  # Require almost all 168 particle-generation pairs to be genuinely remeshed.
+                  raise SystemExit(f"{case_id}: too few unique Gmsh evaluations")  # Reject a cached or collapsed swarm.
+              best = receipt["best"]  # Read deterministic best-candidate evidence.
+              if not best["valid"] or best["issues"]:  # Require topology, area, and quality validity.
+                  raise SystemExit(f"{case_id}: invalid best candidate {best['issues']}")  # Preserve exact failure evidence.
+              ratios = tuple(float(value) for value in best["density"]["ratios"])  # Read actual local-to-far median-size ratios.
+              if any(value >= 0.55 for value in ratios):  # Require visibly distinct local refinement in every hotspot family.
+                  raise SystemExit(f"{case_id}: weak hotspot distinction {ratios}")  # Reject a visually ambiguous allocation.
+              if case_id == "three_openings" and not (ratios[1] < ratios[0] < ratios[2]):  # Require independent middle-left-right allocation.
+                  raise SystemExit(f"{case_id}: three-hole ordering collapsed {ratios}")  # Reject repeated single-hole behavior.
+              if case_id == "cracked_web":  # Apply seam-specific fracture topology gates.
+                  seam = best["seam"]  # Read actual duplicated crack-face node evidence.
+                  if seam.get("paired_internal_nodes", 0) < 8 or not seam.get("upper_lower_node_sets_disjoint", False):  # Require a real zero-thickness discontinuity.
+                      raise SystemExit(f"{case_id}: invalid crack seam {seam}")  # Reject an embedded line that still shares degrees of freedom.
+              trace_candidates = list(receipt_path.parent.rglob("deepseek_session_trace.json"))  # Locate the trace inside the same artifact directory.
+              if len(trace_candidates) != 1:  # Require one history per case artifact.
+                  raise SystemExit(f"{case_id}: expected one local trace, found {len(trace_candidates)}")  # Reject mixed-session artifacts.
+              trace = json.loads(trace_candidates[0].read_text(encoding="utf-8"))  # Parse the complete case history.
+              if trace["case_id"] != case_id or trace["session_id"] != session_id:  # Bind trace and receipt identities.
+                  raise SystemExit(f"{case_id}: trace identity mismatch")  # Reject cross-case artifact mixing.
+              other_case_ids = expected - {case_id}  # Define identifiers forbidden in this local history.
+              serialized_messages = json.dumps(trace["messages"], ensure_ascii=False)  # Encode the complete local conversation for an isolation scan.
+              if any(other_case_id in serialized_messages for other_case_id in other_case_ids):  # Detect explicit contamination by another case ID.
+                  raise SystemExit(f"{case_id}: another case id appeared in its DeepSeek history")  # Reject shared multi-case context.
+              cases[case_id] = {  # Preserve load-bearing suite evidence.
+                  "session_id": session_id,  # Record the unique session identity.
+                  "message_history_sha256": message_hash,  # Record the sealed independent history.
+                  "deepseek_calls": receipt["deepseek_calls"],  # Record live model interaction count.
+                  "configured_case": receipt["configured_case"],  # Record model-proposed bounds, ratios, and budget.
+                  "deepseek_initial_position": receipt["deepseek_initial_position"],  # Record the live seed used by PSO.
+                  "actual_unique_gmsh_evaluations": receipt["pso_actual_unique_gmsh_evaluations"],  # Record real remesh cost.
+                  "best": best,  # Preserve deterministic final numerical evidence.
+                  "best_score_history": receipt["best_score_history"],  # Preserve convergence history.
+                  "final_deepseek_review": receipt["final_deepseek_review"],  # Preserve the same session's final interpretation.
+              }  # Complete one case summary.
+          if set(cases) != expected:  # Require the complete intended case set.
+              raise SystemExit(f"unexpected case set: {sorted(cases)}")  # Reject omissions or misnamed cases.
+          suite = {  # Build the final four-session receipt.
+              "schema_version": "entity-first-live-deepseek-four-session-suite/1.0",  # Version the new isolation contract.
+              "started_from_scratch": True,  # Record that no old conversation or result artifact was consumed.
+              "one_deepseek_session_per_case": True,  # Record the verified session architecture.
+              "session_count": len(session_ids),  # Record four unique local histories.
+              "case_count": len(cases),  # Record four completed engineering cases.
+              "total_deepseek_calls": sum(row["deepseek_calls"] for row in cases.values()),  # Record live API cost.
+              "total_actual_unique_gmsh_evaluations": sum(row["actual_unique_gmsh_evaluations"] for row in cases.values()),  # Record actual optimization cost.
+              "cases": cases,  # Preserve all case-level evidence.
+              "all_valid": True,  # Set success only after every assertion passes.
+          }  # Complete the suite receipt.
+          Path("live_four_session_suite_receipt.json").write_text(json.dumps(suite, ensure_ascii=False, indent=2), encoding="utf-8")  # Persist the final machine-readable result.
+          print(json.dumps(suite, ensure_ascii=False, indent=2))  # Echo the suite receipt to the Actions log.
+          PY
+      - uses: actions/upload-artifact@v4  # Publish the final summary and all independently downloaded session evidence.
+        with:  # Configure the complete live suite artifact.
+          name: entity-first-live-deepseek-four-sessions  # Give the new from-scratch result a stable name.
+          path: |  # Upload compact suite receipt and complete per-case histories.
+            live_four_session_suite_receipt.json
+            collected
+          if-no-files-found: error  # Refuse a green workflow without complete evidence.
+          retention-days: 90  # Retain the full live suite for review.
