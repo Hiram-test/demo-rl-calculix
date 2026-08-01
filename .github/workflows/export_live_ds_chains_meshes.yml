@@ -6,6 +6,11 @@ on:
       - export/live-ds-chains-meshes-30707886295
     paths:
       - .github/workflows/export_live_ds_chains_meshes.yml
+  pull_request:
+    branches:
+      - feat/ai-dynamic-region-mesh-paper
+    paths:
+      - .github/workflows/export_live_ds_chains_meshes.yml
   workflow_dispatch:
 
 permissions:
