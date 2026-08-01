@@ -1,5 +1,5 @@
-# 定义执行技术族修正后的三案例 T0 与 FEniCSx 环境资格工作流。
-name: V5 high-layer case readiness and FEniCSx qualification # 使用独立名称，避免与既有 V5 DeepSeek 或 CalculiX 工作流混淆。
+# 定义执行技术族修正后的三案例 T0、FEniCSx 环境资格与合成数值合同工作流。
+name: V5 high-layer readiness and FEniCSx synthetic numerical contracts # 明确真实求解属于合成合同而非原研究案例。
 
 # 定义允许触发本工作流的事件。
 on: # 支持权威分支相关推送和维护者手动复核。
@@ -13,8 +13,11 @@ on: # 支持权威分支相关推送和维护者手动复核。
       - "examples/v5_high_layer/ccx-015.json" # 覆盖 CalculiX 的 CCX-015 profile。
       - "docs/v5_high_layer/HIGH_LAYER_LITE.md" # 覆盖机器 profile 的执行技术族说明。
       - "docs/v5_high_layer/CASE_TEST_READINESS.md" # 覆盖 T0、环境和真实数值输入说明。
+      - "docs/v5_high_layer/FENICSX_SYNTHETIC_CASE_TESTS.md" # 覆盖两个轻量真实数值合同及其解释边界。
       - "scripts/run_v5_high_layer_readiness.py" # 覆盖三案例 fail-closed runner。
       - "scripts/qualify_fenicsx_runtime.py" # 覆盖固定官方镜像内的 FEniCSx 资格脚本。
+      - "scripts/run_v5_fenicsx_synthetic_cases.py" # 覆盖 FEN-003 与 FEN-014 的真实 DOLFINx 数值 runner。
+      - "scripts/validate_v5_fenicsx_synthetic_artifacts.py" # 覆盖与数值 runner 分离的标准库证据验收器。
       - "tests/test_v5_high_layer_readiness.py" # 覆盖执行技术族和缺失事实单元测试。
       - "src/engineering_agent/problem_manifest.py" # 覆盖实际使用的 ProblemManifest 合同。
       - "src/engineering_agent/skill_contract.py" # 覆盖实际使用的 Skill 加载合同。
@@ -69,26 +72,33 @@ jobs: # 将无依赖 T0 与约一 GiB 容器拉取分开留证。
           if-no-files-found: error # 连边界文本都没有时将证据上传视为失败。
           retention-days: 14 # 轻量初测证据保留十四天。
 
-  fenicsx-runtime: # 验证 FEN-003 与 FEN-014 所需的官方 FEniCSx 环境。
+  fenicsx-runtime: # 验证官方 FEniCSx 环境并在同一固定镜像中运行两个轻量数值合同。
+    needs: readiness # 只有执行技术族和原案例 missing-facts 门通过后才允许运行合成数值合同。
     if: ${{ github.ref_name == 'feat/ai-dynamic-region-mesh-paper' }} # 阻止手动调度在非权威分支拉取镜像。
     runs-on: ubuntu-24.04 # 使用带 Docker 的 GitHub 托管 x64 Ubuntu runner。
     timeout-minutes: 15 # 为约一 GiB 官方镜像首次拉取保留十五分钟边界。
     env: # 冻结公开官方镜像标签和不可变多架构摘要。
       FENICSX_RUNTIME_IMAGE: ghcr.io/fenics/dolfinx/dolfinx:v0.11.0@sha256:2ae4bfbc0d9077268880faf04c72750528bee986c94ab223a2c159969bd56fa8 # 使用 FEniCS 官方 v0.11.0 镜像摘要。
-    steps: # 按检出、准备、拉取、导入资格、哈希和上传执行。
+    steps: # 按检出、准备、拉取、导入资格、真实数值测试、哈希和上传执行。
       - name: Checkout current commit # 检出当前资格脚本但不读取任何未提供案例输入。
         uses: actions/checkout@v4 # 使用官方 checkout action。
         with: # 配置 checkout 不保留可写凭证。
           persist-credentials: false # 本任务不会提交或推送。
-      - name: Prepare FEniCSx evidence directory # 在镜像拉取前建立失败可审计目录。
+      - name: Prepare FEniCSx evidence directories # 在镜像拉取前建立环境与数值测试的失败可审计目录。
         shell: bash # 使用 Bash 创建证据和镜像引用文本。
-        run: | # 只写当前 workflow 的 artifact 目录。
+        run: | # 只写当前 workflow 的两个专用 artifact 目录。
           # 对未定义变量、管道失败和未处理错误立即失败。
           set -euo pipefail
           # 创建 FEniCSx 环境资格证据目录。
           mkdir -p artifacts/v5-fenicsx-runtime
+          # 创建合成数值合同证据与只读来源快照目录。
+          mkdir -p artifacts/v5-fenicsx-synthetic-contracts/source
           # 记录工作流实际要求拉取的完整官方镜像引用。
           printf '%s\n' "$FENICSX_RUNTIME_IMAGE" > artifacts/v5-fenicsx-runtime/image_reference.txt
+          # 记录数值测试只验证合成基准且不执行原研究输入或 CalculiX。
+          printf '%s\n' 'Synthetic DOLFINx numerical contracts only; original FEN research inputs remain missing; no CalculiX or model call.' > artifacts/v5-fenicsx-synthetic-contracts/execution_boundary.txt
+          # 复制实际执行入口、说明、工作流和两个原 profile，保留仓库相对路径供复现。
+          cp --parents scripts/run_v5_fenicsx_synthetic_cases.py scripts/validate_v5_fenicsx_synthetic_artifacts.py docs/v5_high_layer/FENICSX_SYNTHETIC_CASE_TESTS.md .github/workflows/v5-high-layer-case-readiness.yml examples/v5_high_layer/fen-003.json examples/v5_high_layer/fen-014.json artifacts/v5-fenicsx-synthetic-contracts/source
       - name: Pull and inspect pinned official FEniCSx image # 拉取固定摘要并记录真实镜像身份。
         shell: bash # 使用 Bash 的 pipefail 保留 docker pull 失败状态。
         run: | # 拉取公开镜像并写出最小镜像元数据。
@@ -104,19 +114,87 @@ jobs: # 将无依赖 T0 与约一 GiB 容器拉取分开留证。
           # 对未定义变量、管道失败和未处理错误立即失败。
           set -euo pipefail
           # 在固定官方镜像内传入 GitHub 元数据，不创建网格、不组装形式也不求解。
-          docker run --rm --platform linux/amd64 -e GITHUB_REPOSITORY -e GITHUB_REF -e GITHUB_SHA -e GITHUB_RUN_ID -e GITHUB_RUN_ATTEMPT -e FENICSX_RUNTIME_IMAGE -v "$GITHUB_WORKSPACE:/workspace" -w /workspace "$FENICSX_RUNTIME_IMAGE" python3 scripts/qualify_fenicsx_runtime.py --expected-dolfinx-version-prefix 0.11.0 --receipt artifacts/v5-fenicsx-runtime/fenicsx_runtime_receipt.json 2>&1 | tee artifacts/v5-fenicsx-runtime/qualification_stdout.log
+          docker run --rm --platform linux/amd64 -e GITHUB_REPOSITORY -e GITHUB_REF -e GITHUB_SHA -e GITHUB_RUN_ID -e GITHUB_RUN_ATTEMPT -e FENICSX_RUNTIME_IMAGE -v "$GITHUB_WORKSPACE:/workspace:ro" -v "$GITHUB_WORKSPACE/artifacts/v5-fenicsx-runtime:/runtime-evidence" -w /workspace "$FENICSX_RUNTIME_IMAGE" python3 scripts/qualify_fenicsx_runtime.py --expected-dolfinx-version-prefix 0.11.0 --receipt /runtime-evidence/fenicsx_runtime_receipt.json 2>&1 | tee artifacts/v5-fenicsx-runtime/qualification_stdout.log
+      - name: Run FEniCSx synthetic numerical case tests # 实际生成网格、编译形式、组装、求解并提取 FEN-003 与 FEN-014 指标。
+        shell: bash # 使用 Bash 的 PIPESTATUS 保留容器真实退出状态。
+        run: | # 以只读仓库、独立可写 evidence 目录和四分钟子超时运行数值合同。
+          # 对复制、未定义变量和管道外命令失败立即退出。
+          set -euo pipefail
+          # 将已核验的镜像引用和 inspect 结果复制到数值证据包。
+          cp artifacts/v5-fenicsx-runtime/image_reference.txt artifacts/v5-fenicsx-synthetic-contracts/runtime_image_reference.txt
+          # 将镜像本地解析身份复制到数值证据包。
+          cp artifacts/v5-fenicsx-runtime/image_inspect.json artifacts/v5-fenicsx-synthetic-contracts/runtime_image_inspect.json
+          # 用运行编号和重跑编号构造本 job 唯一的临时容器名称。
+          container_name="fenicsx-synth-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          # 定义 shell 退出时的强制容器清理函数。
+          cleanup_container() { # 在正常、失败、超时或取消路径清理同名容器。
+            # 强制删除容器；已经由 --rm 删除时忽略不存在错误。
+            docker rm -f "$container_name" >/dev/null 2>&1 || true
+          } # 结束临时容器清理函数。
+          # 注册退出清理，防止 timeout 终止 Docker CLI 后遗留后台求解。
+          trap cleanup_container EXIT
+          # 仅在捕获 pipeline 两个真实退出码期间关闭立即退出。
+          set +e
+          # 在固定官方镜像内禁用网络，以只读方式挂载仓库，并仅开放专用 artifact 目录写权限。
+          timeout --signal=TERM --kill-after=10s 240s docker run --name "$container_name" --rm --network none --platform linux/amd64 -e GITHUB_REPOSITORY -e GITHUB_REF -e GITHUB_SHA -e GITHUB_RUN_ID -e GITHUB_RUN_ATTEMPT -e FENICSX_RUNTIME_IMAGE -e PYTHONHASHSEED=0 -e OPENBLAS_NUM_THREADS=1 -e OMP_NUM_THREADS=1 -v "$GITHUB_WORKSPACE:/workspace:ro" -v "$GITHUB_WORKSPACE/artifacts/v5-fenicsx-synthetic-contracts:/evidence" -w /workspace "$FENICSX_RUNTIME_IMAGE" python3 scripts/run_v5_fenicsx_synthetic_cases.py --output-dir /evidence 2>&1 | tee artifacts/v5-fenicsx-synthetic-contracts/combined_stdout.log
+          # 一次性复制 PIPESTATUS，避免后续命令覆盖 timeout/docker 与 tee 状态。
+          pipeline_status=("${PIPESTATUS[@]}")
+          # 恢复普通命令和管道的严格失败行为。
+          set -e
+          # 读取 timeout 或 docker 数值 runner 的真实退出码。
+          case_exit_code="${pipeline_status[0]}"
+          # 读取 tee 写日志的真实退出码，防止日志落盘失败被掩盖。
+          tee_exit_code="${pipeline_status[1]}"
+          # 把数值 runner 十进制退出码写入 artifact，零表示两个合同均通过。
+          printf '%s\n' "$case_exit_code" > artifacts/v5-fenicsx-synthetic-contracts/docker_exit_code.txt
+          # 把日志复制命令退出码写入 artifact，零表示完整 stdout 已落盘。
+          printf '%s\n' "$tee_exit_code" > artifacts/v5-fenicsx-synthetic-contracts/tee_exit_code.txt
+          # 数值 runner 失败或超时时优先返回其非零状态。
+          if [[ "$case_exit_code" -ne 0 ]]; then # 检查 timeout 或 docker 退出状态。
+            # 将真实失败状态传递给 GitHub Actions。
+            exit "$case_exit_code"
+          fi # 结束数值 runner 状态分支。
+          # runner 成功时仍以 tee 状态结束，拒绝缺失完整日志的假阳性。
+          exit "$tee_exit_code"
+      - name: Independently validate FEniCSx numerical artifacts # 在容器 runner 之外重新验收回执、profile 边界和结果文件哈希。
+        shell: bash # 使用宿主机 Python 标准库，避免复用 DOLFINx runner 的判断实现。
+        run: | # 只有真实数值步骤成功后才执行；任一独立检查失败都会使 job 失败。
+          # 对验证器、日志管道和未定义变量的任一失败立即退出。
+          set -euo pipefail
+          # 重新读取磁盘 artifact 与原 profile，写出独立验收回执并保留完整日志。
+          python3 scripts/validate_v5_fenicsx_synthetic_artifacts.py --output-dir artifacts/v5-fenicsx-synthetic-contracts --fen003-profile examples/v5_high_layer/fen-003.json --fen014-profile examples/v5_high_layer/fen-014.json 2>&1 | tee artifacts/v5-fenicsx-synthetic-contracts/artifact_validation_stdout.log
       - name: Hash FEniCSx qualification evidence # 为当前已形成证据生成 SHA-256 清单。
         if: always() # 即使拉取或资格脚本失败也哈希现有日志。
         shell: bash # 使用 Bash 和标准 sha256sum。
         run: | # 对目录中现有顶层文件生成排序稳定的清单。
-          # 即使前一步失败也继续处理已生成证据，但仍拒绝空目录。
-          set -u
+          # 对未定义变量、哈希命令失败和管道失败立即退出，避免部分清单被当作成功证据。
+          set -euo pipefail
           # 进入专用 artifact 目录以生成相对文件名。
           cd artifacts/v5-fenicsx-runtime
-          # 对当前全部普通顶层文件计算 SHA-256 并稳定排序。
-          find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
-          # 要求哈希清单非空，避免上传没有证据的目录。
-          test -s SHA256SUMS
+          # 对当前全部普通顶层文件计算 SHA-256 并先写临时清单，避免中断时留下貌似完整的正式清单。
+          find . -maxdepth 1 -type f ! -name SHA256SUMS ! -name SHA256SUMS.tmp -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.tmp
+          # 要求临时哈希清单非空，避免上传没有证据的目录。
+          test -s SHA256SUMS.tmp
+          # 立即反向核验临时清单，确认写入的每一项都可由当前文件重新计算得到。
+          sha256sum --check SHA256SUMS.tmp
+          # 仅在完整反向核验通过后原子替换正式清单。
+          mv SHA256SUMS.tmp SHA256SUMS
+      - name: Hash FEniCSx numerical contract evidence # 为案例回执、网格、场、日志和来源快照生成完整哈希清单。
+        if: always() # 即使数值 runner 失败或超时也哈希当前已经形成的证据。
+        shell: bash # 使用 Bash 和标准 sha256sum 递归处理证据树。
+        run: | # 生成排除清单自身且按路径稳定排序的 SHA-256 文件。
+          # 对未定义变量、递归哈希失败和管道失败立即退出，避免上传残缺清单。
+          set -euo pipefail
+          # 进入数值合同 artifact 根以保存相对路径。
+          cd artifacts/v5-fenicsx-synthetic-contracts
+          # 对全部普通文件计算 SHA-256 并先写临时清单，排除正式与临时清单自身。
+          find . -type f ! -name SHA256SUMS ! -name SHA256SUMS.tmp -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.tmp
+          # 要求临时哈希清单至少包含执行边界文件。
+          test -s SHA256SUMS.tmp
+          # 立即反向核验所有递归条目，确认 artifact 内容与临时清单完全一致。
+          sha256sum --check SHA256SUMS.tmp
+          # 仅在完整反向核验通过后原子替换正式清单。
+          mv SHA256SUMS.tmp SHA256SUMS
       - name: Upload FEniCSx runtime evidence # 无论成功或失败都上传镜像与导入证据。
         if: always() # 确保镜像拉取失败日志仍可审计。
         uses: actions/upload-artifact@v4 # 使用官方 artifact action。
@@ -125,3 +203,12 @@ jobs: # 将无依赖 T0 与约一 GiB 容器拉取分开留证。
           path: artifacts/v5-fenicsx-runtime # 只上传固定镜像资格目录。
           if-no-files-found: error # 没有任何环境证据时明确失败。
           retention-days: 14 # 环境初探证据保留十四天。
+      - name: Upload FEniCSx numerical contract evidence # 无论数值成功、失败或超时都上传案例证据。
+        if: always() # 确保失败回执、traceback、场文件和 stdout 可供审计。
+        uses: actions/upload-artifact@v4 # 使用官方 artifact action 上传独立数值证据包。
+        with: # 配置唯一的合成数值合同 artifact。
+          name: v5-fenicsx-synthetic-contracts-${{ github.run_id }}-${{ github.run_attempt }} # 使用运行与重跑编号避免名称冲突。
+          path: artifacts/v5-fenicsx-synthetic-contracts # 只上传本轮合成数值合同目录。
+          include-hidden-files: true # 保留 source/.github 下已哈希的工作流快照；该专用目录不含凭证或用户秘密。
+          if-no-files-found: error # 连执行边界都不存在时明确失败。
+          retention-days: 14 # 轻量数值初测证据保留十四天。
