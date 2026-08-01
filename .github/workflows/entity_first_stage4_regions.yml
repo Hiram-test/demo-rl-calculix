@@ -1,0 +1,64 @@
+name: Entity-first pipeline Stage 4 regional fields  # Validate clear regional refinement only after exact entity reconstruction exists.
+on:  # Define explicit triggers for the isolated repair branch.
+  pull_request:  # Run on every repair-branch update visible in the draft PR.
+    branches:  # Restrict the target research branch.
+      - feat/ai-dynamic-region-mesh-paper  # Avoid main and unrelated project branches.
+  workflow_dispatch:  # Allow manual reproduction without a source edit.
+permissions:  # Grant only repository read access.
+  contents: read  # Allow checkout of the isolated repair branch.
+jobs:  # Split regional meshing from solver execution.
+  build-regional-fields:  # Rebuild exact entities, then apply deterministic regional fields without PSO.
+    runs-on: ubuntu-latest  # Use a clean hosted Linux runner.
+    steps:  # Execute geometry, mesh, topology, quality, and density gates in order.
+      - uses: actions/checkout@v4  # Check out only the pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match the preceding staged audit workflow.
+      - name: Install Gmsh and audit dependency  # Install mature geometry and mesh tooling.
+        run: |  # Record exact tool versions and dependencies.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y gmsh  # Install Gmsh with OpenCASCADE support.
+          gmsh --version  # Preserve the exact mesher version in CI logs.
+          python -m pip install --disable-pip-version-check numpy  # Install the Stage 1 audit dependency.
+      - name: Compile all geometry and region stages  # Detect code errors before running mature tools.
+        run: python -m py_compile scripts/entity_first_stage1_audit.py scripts/entity_first_stage2_gmsh.py scripts/entity_first_stage2_run.py scripts/entity_first_stage4_regions.py  # Compile every module used by this phase.
+      - name: Rebuild exact entity fixtures  # Produce one frozen BREP for each model family.
+        run: python scripts/entity_first_stage2_run.py --self-test --output-dir exact_entities  # Require topology, area, Physical Group, and quality checks.
+      - name: Apply and validate regional mesh fields  # Generate visibly distinct local refinement on the unchanged BREP files.
+        run: python scripts/entity_first_stage4_regions.py --stage2-root exact_entities --output-dir regional_outputs  # Require entity invariance and measured local-to-far size contrast.
+      - uses: actions/upload-artifact@v4  # Publish actual BREP, MSH, SVG, source, and receipt evidence.
+        if: always()  # Preserve partial evidence whenever a hard gate catches a defect.
+        with:  # Configure the regional mesh artifact.
+          name: entity-first-stage4-regions  # Give deterministic regional evidence a stable name.
+          path: regional_outputs  # Upload actual regional meshes and vector plots.
+          if-no-files-found: warn  # Keep failure diagnostics useful before output creation.
+  solve-regional-fields:  # Prove the actual regional meshes remain valid CalculiX models.
+    needs: [build-regional-fields]  # Refuse to solve if topology, geometry, quality, or density contrast failed.
+    runs-on: ubuntu-latest  # Use a clean solver runner.
+    steps:  # Download regional evidence, validate deck generation, and run CalculiX.
+      - uses: actions/checkout@v4  # Check out only the pull-request merge ref.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match all previous stages.
+      - uses: actions/download-artifact@v4  # Consume only regional meshes produced by this workflow run.
+        with:  # Select the exact regional evidence artifact.
+          name: entity-first-stage4-regions  # Download unchanged BREP and regional MSH files.
+          path: regional_inputs  # Isolate solver inputs from solver outputs.
+      - name: Install CalculiX  # Install the mature solver after regional validation passes.
+        run: |  # Record exact solver evidence.
+          sudo apt-get update  # Refresh Ubuntu package metadata.
+          sudo apt-get install -y calculix-ccx  # Install CalculiX 2.21 from Ubuntu.
+          command -v ccx  # Require the solver executable on PATH.
+          ccx -v || true  # Record the version without depending on exit-code convention.
+      - name: Compile and self-test solver adapters  # Validate our deck and output code before full solves.
+        run: |  # Execute code gates in strict order.
+          python -m py_compile scripts/entity_first_stage3_calculix.py scripts/entity_first_stage3_run.py  # Detect syntax and import errors.
+          python scripts/entity_first_stage3_run.py --generator-self-test  # Verify element, Physical Group set, load, boundary, and output cards.
+      - name: Solve actual regional meshes  # Execute the three exact regional models in CalculiX.
+        run: python scripts/entity_first_stage3_run.py --stage2-root regional_inputs --output-dir regional_solver_outputs  # Require finite fields and exact support-load equilibrium.
+      - uses: actions/upload-artifact@v4  # Publish solver decks, logs, DAT, FRD, and receipts.
+        if: always()  # Preserve evidence when a solver or parser gate catches a defect.
+        with:  # Configure the regional solver artifact.
+          name: entity-first-stage4-calculix  # Give regional solver evidence a stable name.
+          path: regional_solver_outputs  # Upload complete CalculiX evidence.
+          if-no-files-found: warn  # Preserve useful workflow diagnostics before output creation.
