@@ -1,0 +1,49 @@
+name: Entity-first pipeline Stage 1 audit  # Identify the isolated pre-repair verification workflow.
+on:  # Define explicit triggers for the isolated branch only.
+  pull_request:  # Run checks on the draft repair pull request.
+    branches:  # Restrict the base branch that receives this repair.
+      - feat/ai-dynamic-region-mesh-paper  # Keep the repair isolated from main and unrelated research branches.
+  workflow_dispatch:  # Allow a manual rerun without modifying source files.
+permissions:  # Grant only the access required to download the frozen baseline artifact.
+  actions: read  # Allow the workflow to read an earlier workflow artifact.
+  contents: read  # Allow checkout of the isolated repair branch.
+jobs:  # Separate audit-code verification from frozen-baseline diagnosis.
+  verify-audit-code:  # Prove the guard itself works before it judges production evidence.
+    runs-on: ubuntu-latest  # Use a clean hosted Linux runner.
+    steps:  # Execute deterministic tests with no Gmsh, CalculiX, LLM, or PSO.
+      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Use the project-compatible Python line.
+      - name: Install NPZ reader  # Install the only Stage 1 runtime dependency.
+        run: python -m pip install --disable-pip-version-check numpy  # Keep the first stage independent from meshing and solving tools.
+      - name: Compile audit script  # Detect syntax and import errors before self-tests.
+        run: python -m py_compile scripts/entity_first_stage1_audit.py  # Compile the exact diagnostic entry point.
+      - name: Run audit self-tests  # Verify fake-hole, hole-drift, and sliver detection.
+        run: python scripts/entity_first_stage1_audit.py --self-test  # Execute deterministic internal regressions.
+  diagnose-frozen-v4:  # Inspect the exact archived meshes without rerunning optimization or solvers.
+    runs-on: ubuntu-latest  # Use a runner isolated from the self-test job.
+    steps:  # Download the baseline and require the new guard to reject it.
+      - uses: actions/checkout@v4  # Check out only the isolated repair branch.
+      - uses: actions/setup-python@v5  # Install a controlled Python interpreter.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match the audit-code job.
+      - name: Install NPZ reader  # Install the frozen-artifact reader.
+        run: python -m pip install --disable-pip-version-check numpy  # Avoid Gmsh and CalculiX until Stage 1 is complete.
+      - name: Download frozen V4 artifact  # Retrieve the exact evidence produced by run 30576340910.
+        env:  # Supply the built-in token only for this repository-scoped read.
+          GH_TOKEN: ${{ github.token }}  # Avoid external credentials and write access.
+        run: gh run download 30576340910 --repo "$GITHUB_REPOSITORY" --name deepseek-ai-region-mesh-agent-v4-paper --dir frozen_v4  # Preserve the baseline unchanged.
+      - name: Require rejection of the broken baseline  # Make detection of current defects the Stage 1 success condition.
+        shell: bash  # Use explicit status handling for the expected audit failure.
+        run: |  # Run the hard gate and assert that at least one current mesh is invalid.
+          set +e  # Capture the diagnostic status instead of aborting immediately.
+          python scripts/entity_first_stage1_audit.py --artifact-root frozen_v4 --report stage1_reports/frozen_v4_mesh_audit.json  # Audit exact best-particle NPZ meshes.
+          audit_status=$?  # Preserve the hard-gate process status.
+          set -e  # Restore fail-fast shell behavior.
+          test "$audit_status" -ne 0  # Fail CI if the broken baseline is incorrectly accepted.
+      - uses: actions/upload-artifact@v4  # Publish machine-readable evidence for review.
+        with:  # Configure the isolated audit artifact.
+          name: entity-first-stage1-audit  # Give the report a stable artifact name.
+          path: stage1_reports/frozen_v4_mesh_audit.json  # Upload the complete diagnostic receipt.
+          if-no-files-found: error  # Refuse a green workflow without evidence.
