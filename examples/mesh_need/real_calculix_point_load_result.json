@@ -1,0 +1,45 @@
+{
+  "provenance": {
+    "workflow": "Mesh Need Demo",
+    "workflow_run_id": 30213175786,
+    "head_commit": "437f04efb8eae6cd176e41250a65d0eca31ae558",
+    "solver": "CalculiX ccx 2.21",
+    "status": "computed_on_github_hosted_runner"
+  },
+  "benchmark": "plane_stress_cantilever_with_corner_nodal_load",
+  "model_context": {
+    "geometry_mm": [100.0, 20.0],
+    "element_type": "CPS4",
+    "left_boundary": "all nodes on the left edge fixed in x and y",
+    "load": "-1000 N vertical CLOAD at the upper-right node",
+    "probe": "vertical displacement at the fixed physical point (50 mm, 10 mm)"
+  },
+  "mesh_history": [
+    {
+      "elements": 80,
+      "nodes": 105,
+      "mesh_size": 5.0,
+      "global_peak_von_mises_stress": 1265.0471135355594,
+      "fixed_probe_vertical_displacement": -0.7472229
+    },
+    {
+      "elements": 320,
+      "nodes": 369,
+      "mesh_size": 2.5,
+      "global_peak_von_mises_stress": 1449.3312253091135,
+      "fixed_probe_vertical_displacement": -0.7672666
+    },
+    {
+      "elements": 1280,
+      "nodes": 1377,
+      "mesh_size": 1.25,
+      "global_peak_von_mises_stress": 1636.5914598141549,
+      "fixed_probe_vertical_displacement": -0.7728704
+    }
+  ],
+  "derived_numerical_summaries": {
+    "global_peak_last_to_first_ratio": 1.2937000071406048,
+    "fixed_probe_last_relative_change": 0.007303589130557666
+  },
+  "interpretation_status": "not encoded; submit this evidence with the model and engineering question to an AI model"
+}

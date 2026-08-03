@@ -1,0 +1,133 @@
+name: Mesh Need DeepSeek Load Comparison
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/mesh_need/**"
+      - "scripts/run_real_calculix_demo.py"
+      - "scripts/run_upper_right_refinement.py"
+      - "scripts/run_distributed_edge_comparison.py"
+      - "scripts/call_deepseek.py"
+      - "tests/test_mesh_need_diagnosis.py"
+      - "tests/test_distributed_edge_case.py"
+      - ".github/workflows/mesh-need-demo.yml"
+  push:
+    branches:
+      - feat/model-aware-fea-mvp
+    paths:
+      - "src/mesh_need/**"
+      - "scripts/run_real_calculix_demo.py"
+      - "scripts/run_upper_right_refinement.py"
+      - "scripts/run_distributed_edge_comparison.py"
+      - "scripts/call_deepseek.py"
+      - "tests/test_mesh_need_diagnosis.py"
+      - "tests/test_distributed_edge_case.py"
+      - ".github/workflows/mesh-need-demo.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  compare-load-introduction:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    environment: ds
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CalculiX and DeepSeek client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y calculix-ccx
+          command -v ccx
+          python -m pip install --upgrade pip
+          python -m pip install "openai>=1.61,<3"
+
+      - name: Test analysis contract and distributed resultant
+        run: |
+          python -m unittest \
+            tests/test_mesh_need_diagnosis.py \
+            tests/test_distributed_edge_case.py \
+            -v
+
+      - name: Generate point-load refinement evidence
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/upper-right-refinement
+          python scripts/run_upper_right_refinement.py \
+            --output-dir artifacts/upper-right-refinement \
+            | tee artifacts/upper-right-refinement/ai_analysis_packet_stdout.json
+
+      - name: Generate 2.5 mm distributed-edge comparison
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/distributed-edge-comparison
+          python scripts/run_distributed_edge_comparison.py \
+            --point-evidence artifacts/upper-right-refinement/solver_evidence.json \
+            --output-dir artifacts/distributed-edge-comparison \
+            | tee artifacts/distributed-edge-comparison/comparison_packet_stdout.json
+
+      - name: Confirm DeepSeek credential
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+        run: |
+          test -n "$DEEPSEEK_API_KEY"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          echo "DeepSeek credential is available from environment ds"
+
+      - name: Ask DeepSeek to compare the two modeling cases
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+          DEEPSEEK_MODEL: deepseek-v4-pro
+        run: |
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+          python scripts/call_deepseek.py \
+            artifacts/distributed-edge-comparison/comparison_ai_analysis_packet.json \
+            artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json \
+            > artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json
+          cat artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json
+          test -s artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json
+
+      - name: Publish comparison evidence and AI analysis
+        if: github.event_name == 'push'
+        run: |
+          cp artifacts/distributed-edge-comparison/distributed_solver_evidence.json \
+            examples/mesh_need/latest_distributed_edge_evidence.json
+          cp artifacts/distributed-edge-comparison/comparison_solver_evidence.json \
+            examples/mesh_need/latest_load_comparison_evidence.json
+          cp artifacts/distributed-edge-comparison/deepseek_comparison_analysis.json \
+            examples/mesh_need/latest_deepseek_comparison_analysis.json
+          cp artifacts/distributed-edge-comparison/deepseek_comparison_call_summary.json \
+            examples/mesh_need/latest_deepseek_comparison_call_summary.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            examples/mesh_need/latest_distributed_edge_evidence.json \
+            examples/mesh_need/latest_load_comparison_evidence.json \
+            examples/mesh_need/latest_deepseek_comparison_analysis.json \
+            examples/mesh_need/latest_deepseek_comparison_call_summary.json
+          if git diff --cached --quiet; then
+            echo "Published comparison is unchanged"
+          else
+            git commit -m "Store point-versus-distributed load analysis [skip ci]"
+            git push origin HEAD:feat/model-aware-fea-mvp
+          fi
+
+      - name: Upload complete comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesh-need-load-comparison
+          path: artifacts/
+          if-no-files-found: error

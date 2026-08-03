@@ -1,0 +1,164 @@
+name: Bridge Component Mesh Suite - Full Evidence Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/model-aware-fea-mvp
+    paths:
+      - "bridge_mesh_suite/**"
+      - "scripts/run_bridge_mesh_suite.py"
+      - "tests/test_bridge_mesh_suite.py"
+      - ".github/workflows/bridge-component-mesh-suite.yml"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  full-suite:
+    runs-on: ubuntu-24.04
+    environment: ds
+    timeout-minutes: 60
+    env:
+      PYTHONPATH: .
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }}
+      DEEPSEEK_MODEL: deepseek-v4-pro
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install solver, report fonts, and QA tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y calculix-ccx fonts-noto-cjk libreoffice poppler-utils
+          python -m pip install --upgrade pip
+          python -m pip install -r bridge_mesh_suite/requirements.txt
+          command -v ccx || command -v ccx_2.21 || command -v ccx_2.20 || command -v ccx_2.19
+
+      - name: Run unit and physics regression tests
+        run: python -m unittest discover -s tests -p "test_bridge_mesh_suite.py" -v
+
+      - name: Confirm DeepSeek credential
+        run: |
+          test -n "$DEEPSEEK_API_KEY"
+          echo "::add-mask::$DEEPSEEK_API_KEY"
+
+      - name: Execute all bridge-component scenarios
+        id: suite
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          rm -rf artifacts/bridge-component-mesh-suite
+          mkdir -p artifacts/bridge-component-mesh-suite
+          python scripts/run_bridge_mesh_suite.py \
+            --require-calculix \
+            --output-dir artifacts/bridge-component-mesh-suite \
+            --model deepseek-v4-pro \
+            | tee artifacts/bridge-component-mesh-suite/command_summary.json
+
+      - name: Render and verify report files
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          out=artifacts/bridge-component-mesh-suite
+          test -s "$out/Bridge_Component_Mesh_Report.docx"
+          test -s "$out/Bridge_Component_Mesh_Report.pdf"
+          mkdir -p "$out/qa_docx" "$out/qa_pdf"
+          libreoffice --headless --convert-to pdf --outdir "$out/qa_docx" "$out/Bridge_Component_Mesh_Report.docx"
+          test -s "$out/qa_docx/Bridge_Component_Mesh_Report.pdf"
+          pdftoppm -f 1 -singlefile -png -r 120 "$out/Bridge_Component_Mesh_Report.pdf" "$out/qa_pdf/report-first-page"
+          test -s "$out/qa_pdf/report-first-page.png"
+          pdfinfo "$out/Bridge_Component_Mesh_Report.pdf" | tee "$out/pdfinfo.txt"
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          if [ -s artifacts/bridge-component-mesh-suite/BRIDGE_COMPONENT_MESH_REPORT.md ]; then
+            cat artifacts/bridge-component-mesh-suite/BRIDGE_COMPONENT_MESH_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Bridge component suite did not produce the Markdown report.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Update audit Issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUITE_OUTCOME: ${{ steps.suite.outcome }}
+        run: |
+          set -euo pipefail
+          title='Bridge component mesh suite full validation'
+          body="$RUNNER_TEMP/bridge-mesh-suite.md"
+          out=artifacts/bridge-component-mesh-suite
+          {
+            echo '<!-- bridge-component-mesh-suite-full-validation -->'
+            echo '# Bridge component mesh suite full validation'
+            echo
+            echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo "Suite step outcome: \`$SUITE_OUTCOME\`"
+            echo
+            for pair in 'Validation receipt:validation_receipt.json' 'CalculiX cross-check:calculix_crosscheck.json' 'DeepSeek user review:deepseek_user_review.json'; do
+              heading="${pair%%:*}"
+              file="${pair#*:}"
+              echo "## $heading"
+              if [ -s "$out/$file" ]; then
+                echo '```json'
+                cat "$out/$file"
+                echo '```'
+              else
+                echo "Missing: \`$file\`"
+              fi
+              echo
+            done
+            if [ -s "$out/BRIDGE_COMPONENT_MESH_REPORT.md" ]; then
+              cat "$out/BRIDGE_COMPONENT_MESH_REPORT.md"
+            fi
+          } > "$body"
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state all --search "$title in:title" --json number,title --jq '.[] | select(.title == "Bridge component mesh suite full validation") | .number' | head -n1)"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
+          fi
+
+      - name: Upload complete reports and raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-component-mesh-suite-full-v1
+          path: artifacts/bridge-component-mesh-suite
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce full gate
+        if: always()
+        env:
+          SUITE_OUTCOME: ${{ steps.suite.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          out = Path('artifacts/bridge-component-mesh-suite')
+          assert os.environ['SUITE_OUTCOME'] == 'success', os.environ['SUITE_OUTCOME']
+          receipt = json.loads((out / 'validation_receipt.json').read_text())
+          ccx = json.loads((out / 'calculix_crosscheck.json').read_text())
+          review = json.loads((out / 'deepseek_user_review.json').read_text())
+          assert receipt['valid'] is True, receipt
+          assert receipt['scenario_count'] >= 4, receipt
+          assert receipt['energy_skill_call_count'] == receipt['scenario_count'], receipt
+          assert receipt['deepseek_reviewed'] is True, receipt
+          assert receipt['calculix_valid'] is True, receipt
+          assert ccx['valid'] is True, ccx
+          assert len(review['scenario_reviews']) == receipt['scenario_count'], review
+          for name in ['BRIDGE_COMPONENT_MESH_REPORT.md', 'Bridge_Component_Mesh_Report.pdf', 'Bridge_Component_Mesh_Report.docx']:
+              assert (out / name).stat().st_size > 0, name
+          print('Full bridge-component mesh suite passed')
+          PY
