@@ -1,0 +1,35 @@
+name: Audit release inventory # 读取仓库发布与附件清单
+on: # 定义触发条件
+  push: # 在审计分支收到推送时运行
+    branches: # 限制目标分支
+      - audit/release-inventory-20260803 # 仅使用隔离审计分支
+    paths: # 限制触发文件
+      - .github/workflows/release-inventory.yml # 仅首次加入本工作流时触发
+permissions: # 设置最小仓库权限
+  contents: write # 允许读取发布并把结果写回审计分支
+jobs: # 定义审计任务
+  inventory: # 发布清单任务
+    runs-on: ubuntu-latest # 使用 GitHub 托管 Linux runner
+    steps: # 定义任务步骤
+      - name: Checkout audit branch # 检出审计分支
+        uses: actions/checkout@v4 # 使用官方检出动作
+        with: # 配置检出参数
+          ref: audit/release-inventory-20260803 # 固定检出隔离审计分支
+      - name: Read releases and assets # 调用仓库自身的 Releases API
+        env: # 注入认证变量
+          GH_TOKEN: ${{ github.token }} # 使用当前仓库的临时 GitHub Token
+        shell: bash # 使用 Bash 执行命令
+        run: | # 开始执行发布清单脚本
+          set -euo pipefail # 遇到错误、未定义变量或管道错误立即退出
+          curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" > release-inventory.raw.json # 获取最多一百个发布记录
+          jq '[.[] | {id, name, tag_name, draft, prerelease, created_at, published_at, html_url, assets: [.assets[] | {id, name, label, content_type, size, download_count, created_at, updated_at, browser_download_url}]}]' release-inventory.raw.json > release-inventory.json # 仅保留定位发布附件所需字段
+          rm release-inventory.raw.json # 删除未经精简的临时响应
+      - name: Commit inventory result # 将清单提交到审计分支
+        shell: bash # 使用 Bash 执行提交
+        run: | # 开始执行提交脚本
+          git config user.name 'github-actions[bot]' # 设置自动提交用户名
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 设置自动提交邮箱
+          git add release-inventory.json # 暂存生成的发布清单
+          if git diff --cached --quiet; then exit 0; fi # 没有变化时正常结束
+          git commit -m 'Audit GitHub release inventory' # 提交发布与附件清单
+          git push origin HEAD:audit/release-inventory-20260803 # 推送回隔离审计分支
