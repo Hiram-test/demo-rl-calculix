@@ -25,7 +25,8 @@ import torch.nn.functional as F
 
 REFINE = 0
 COARSEN = 1
-ACTION_NAMES = {REFINE: "refine", COARSEN: "coarsen"}
+KEEP = 2
+ACTION_NAMES = {REFINE: "refine", COARSEN: "coarsen", KEEP: "keep"}
 
 
 try:  # Prefer PyG when it is installed, but keep the code runnable without it.

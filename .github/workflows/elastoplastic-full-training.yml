@@ -1,0 +1,217 @@
+name: Elastoplastic path DQN full training
+
+on:
+  push:
+    branches:
+      - agent/elastoplastic-path-dqn
+    paths:
+      - archived-src/.plastic-training-trigger
+      - archived-src/calculix_plastic_backend.py
+      - archived-src/evaluate_plastic_baselines.py
+      - archived-src/rl_main_local.py
+      - archived-src/state_aware_dqn_agent.py
+      - archived-src/examples/calculix_plastic_*.json
+      - archived-src/examples/goal_plastic.json
+      - archived-src/tests/test_calculix_plastic_backend.py
+      - archived-src/tests/test_state_aware_dqn.py
+      - .github/workflows/elastoplastic-full-training.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-training:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: archived-src/requirements-state-aware.txt
+
+      - name: Install Python and solver dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip --quiet
+          python -m pip install numpy --quiet
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gmsh calculix-ccx
+
+      - name: Locate solvers
+        id: solvers
+        shell: bash
+        run: |
+          set -euo pipefail
+          GMSH_BIN="$(command -v gmsh)"
+          CCX_BIN="$(command -v ccx || true)"
+          if [[ -z "$CCX_BIN" ]]; then
+            CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n1)"
+          fi
+          test -x "$GMSH_BIN"
+          test -x "$CCX_BIN"
+          echo "gmsh=$GMSH_BIN" >> "$GITHUB_OUTPUT"
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT"
+          "$GMSH_BIN" --version
+          "$CCX_BIN" -v || true
+
+      - name: Compile and run regression tests
+        working-directory: archived-src
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            state_aware_dqn_agent.py \
+            calculix_plastic_backend.py \
+            evaluate_plastic_baselines.py \
+            rl_main_local.py
+          python -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Run 100-episode elastoplastic training
+        working-directory: archived-src
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p training_artifacts
+          python -u rl_main_local.py \
+            --backend calculix-plastic \
+            --mode train \
+            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
+            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
+            --plastic-plate-config examples/calculix_plastic_plate_eccentric.json \
+            --goal-file examples/goal_plastic.json \
+            --simulations-root training_artifacts/simulations \
+            --ckpt-dir training_artifacts/checkpoints \
+            --max-episodes 100 \
+            --max-steps 25 \
+            --global-mesh-size 0.75 \
+            --baseline-mesh-size 0.06 \
+            --cell-min-mesh-size 0.12 \
+            --cell-max-mesh-size 1.50 \
+            --min-elements 100 \
+            --max-elements 1500 \
+            --refine-step-size 0.18 \
+            --coarsen-step-size 0.18 \
+            --hidden-dim 96 \
+            --gcn-layers 3 \
+            --gamma 0.99 \
+            --learning-rate 0.0003 \
+            --batch-size 32 \
+            --replay-capacity 100000 \
+            --replay-warmup 64 \
+            --updates-per-step 2 \
+            --updates-after-episode 16 \
+            --target-update-tau 0.01 \
+            --n-step 3 \
+            --epsilon 0.40 \
+            --epsilon-decay 0.97 \
+            --epsilon-min 0.05 \
+            --eval-frequency 10 \
+            --best-resource-weight 0.25 \
+            --save-frequency 5 \
+            --solver-timeout 300 \
+            --seed 17 \
+            --debug \
+            2>&1 | tee training_artifacts/training.log
+
+      - name: Run deterministic hotspot baselines
+        if: success()
+        working-directory: archived-src
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u evaluate_plastic_baselines.py \
+            --plastic-config examples/calculix_plastic_plate_eccentric.json \
+            --goal-file examples/goal_plastic.json \
+            --gmsh-cmd '${{ steps.solvers.outputs.gmsh }}' \
+            --ccx-cmd '${{ steps.solvers.outputs.ccx }}' \
+            --simulations-root training_artifacts/baseline_simulations \
+            --baseline-cache training_artifacts/checkpoints/baseline_cache \
+            --output training_artifacts/heuristic_baselines.json \
+            --baseline-mesh-size 0.06 \
+            --global-mesh-size 0.75 \
+            --cell-min-mesh-size 0.12 \
+            --cell-max-mesh-size 1.50 \
+            --min-elements 100 \
+            --max-elements 1500 \
+            --refine-step-size 0.18 \
+            --coarsen-step-size 0.18 \
+            --solver-timeout 300 \
+            2>&1 | tee training_artifacts/heuristic_baselines.log
+
+      - name: Build compact result package
+        if: always()
+        working-directory: archived-src
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, shutil
+
+          root = Path('training_artifacts')
+          compact = root / 'compact'
+          compact.mkdir(parents=True, exist_ok=True)
+          for name in ('training.log', 'heuristic_baselines.json', 'heuristic_baselines.log'):
+              source = root / name
+              if source.exists():
+                  shutil.copy2(source, compact / name)
+          ckpt = root / 'checkpoints'
+          if ckpt.exists():
+              shutil.copytree(ckpt, compact / 'checkpoints', dirs_exist_ok=True)
+
+          history_path = ckpt / 'history_v2.json'
+          summary = {}
+          if history_path.exists():
+              history = json.loads(history_path.read_text(encoding='utf-8'))
+              valid = [item for item in history if item.get('relative_error') is not None]
+              if valid:
+                  best_train = min(valid, key=lambda item: item['relative_error'])
+                  summary['best_training_episode'] = best_train['episode']
+                  summary['best_training_error'] = best_train['relative_error']
+                  summary['best_training_resource'] = best_train['resource_usage']
+                  source_dir = root / 'simulations' / f"calculix-plastic_v2_{best_train['episode']:03d}"
+                  if source_dir.exists():
+                      shutil.copytree(source_dir, compact / 'best_training_episode', dirs_exist_ok=True)
+              summary['episodes_completed'] = len(history)
+
+          best_eval_path = ckpt / 'best_evaluation_v2.json'
+          if best_eval_path.exists():
+              best_eval = json.loads(best_eval_path.read_text(encoding='utf-8'))
+              summary['best_greedy_evaluation'] = best_eval
+              episode = int(best_eval.get('episode', 0))
+              source_dir = root / 'simulations' / f"calculix-plastic_greedy_eval_{episode:03d}"
+              if source_dir.exists():
+                  shutil.copytree(source_dir, compact / 'best_greedy_evaluation', dirs_exist_ok=True)
+
+          (compact / 'training_summary.json').write_text(
+              json.dumps(summary, indent=2, ensure_ascii=False), encoding='utf-8'
+          )
+          for source in (
+              Path('calculix_plastic_backend.py'),
+              Path('evaluate_plastic_baselines.py'),
+              Path('rl_main_local.py'),
+              Path('state_aware_dqn_agent.py'),
+              Path('examples/calculix_plastic_plate_eccentric.json'),
+              Path('examples/goal_plastic.json'),
+              Path('ELASTOPLASTIC_PATH_DQN.md'),
+          ):
+              if source.exists():
+                  destination = compact / 'source' / source
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(source, destination)
+          PY
+
+      - name: Upload full training results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elastoplastic-path-dqn-100ep
+          path: archived-src/training_artifacts/compact
+          compression-level: 6
+          retention-days: 7
+          if-no-files-found: error
