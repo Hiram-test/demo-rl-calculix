@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Hiram-test/demo-rl-calculix/schemas/bridge_mesh_intent.schema.json",
+  "title": "Bridge FE Mesh Intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "component",
+    "decision",
+    "analysis_stage",
+    "physics",
+    "qoi",
+    "model_fidelity",
+    "mesh_policy",
+    "verification_plan",
+    "review"
+  ],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "component": {
+      "type": "object",
+      "required": ["family", "description"],
+      "properties": {
+        "family": {"type": "string"},
+        "description": {"type": "string"},
+        "geometry_source": {"type": "string"},
+        "parameter_family": {"type": ["string", "null"]},
+        "topology_changes_expected": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "required": ["purpose", "consequence_if_wrong"],
+      "properties": {
+        "purpose": {
+          "enum": [
+            "concept_screening",
+            "design",
+            "code_check",
+            "load_rating",
+            "condition_assessment",
+            "repair_design",
+            "construction_control",
+            "forensic",
+            "research",
+            "batch_optimization"
+          ]
+        },
+        "consequence_if_wrong": {"enum": ["low", "moderate", "high", "safety_critical"]},
+        "decision_text": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "analysis_stage": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "physics": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "linear_static",
+          "geometric_nonlinearity",
+          "material_nonlinearity",
+          "contact",
+          "fracture",
+          "buckling",
+          "modal",
+          "transient_dynamic",
+          "impact",
+          "thermal",
+          "creep_shrinkage",
+          "construction_stage",
+          "soil_structure",
+          "fluid_structure"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "qoi": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "quantity_type", "location_definition", "acceptance"],
+        "properties": {
+          "name": {"type": "string"},
+          "quantity_type": {"type": "string"},
+          "unit": {"type": ["string", "null"]},
+          "location_definition": {"type": "string"},
+          "extraction_method": {"type": "string"},
+          "acceptance": {
+            "type": "object",
+            "properties": {
+              "relative_error_max": {"type": ["number", "null"], "minimum": 0},
+              "absolute_error_max": {"type": ["number", "null"], "minimum": 0},
+              "limit_value": {"type": ["number", "null"]},
+              "convergence_change_max": {"type": ["number", "null"], "minimum": 0}
+            },
+            "additionalProperties": false
+          },
+          "singularity_excluded": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "model_fidelity": {
+      "type": "object",
+      "required": ["global_representation", "local_representation", "element_families"],
+      "properties": {
+        "global_representation": {
+          "enum": ["analytical", "spine", "grillage", "beam_frame", "shell", "solid", "multiscale"]
+        },
+        "local_representation": {"type": ["string", "null"]},
+        "element_families": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "reasoning": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "mesh_policy": {
+      "type": "object",
+      "required": ["event_alignment", "critical_regions", "transition", "quality_constraints"],
+      "properties": {
+        "event_alignment": {"type": "array", "items": {"type": "string"}},
+        "critical_regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["region", "reason", "sizing_basis"],
+            "properties": {
+              "region": {"type": "string"},
+              "reason": {"type": "string"},
+              "sizing_basis": {"type": "string"},
+              "target_size": {"type": ["number", "null"]},
+              "unit": {"type": ["string", "null"]}
+            },
+            "additionalProperties": false
+          }
+        },
+        "transition": {
+          "type": "object",
+          "properties": {
+            "method": {"type": "string"},
+            "max_growth_ratio": {"type": ["number", "null"], "minimum": 1},
+            "keep_away_from_qoi": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "interface_rules": {"type": "array", "items": {"type": "string"}},
+        "quality_constraints": {"type": "array", "items": {"type": "string"}},
+        "element_order": {"type": ["integer", "null"], "minimum": 1},
+        "through_thickness_requirement": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "singularity_policy": {
+      "type": "object",
+      "properties": {
+        "suspected_locations": {"type": "array", "items": {"type": "string"}},
+        "treatment": {"type": "array", "items": {"type": "string"}},
+        "excluded_from_convergence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "verification_plan": {
+      "type": "object",
+      "required": ["evidence", "mesh_sequence", "stop_conditions"],
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "description"],
+            "properties": {
+              "type": {
+                "enum": [
+                  "analytical",
+                  "code_equation",
+                  "official_benchmark",
+                  "experiment",
+                  "field_measurement",
+                  "independent_model",
+                  "mesh_convergence",
+                  "energy_balance"
+                ]
+              },
+              "description": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "mesh_sequence": {"type": "array", "items": {"type": "string"}},
+        "space_time_joint_check": {"type": "boolean"},
+        "stop_conditions": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_elements": {"type": ["integer", "null"], "minimum": 1},
+        "max_dofs": {"type": ["integer", "null"], "minimum": 1},
+        "max_wall_time_seconds": {"type": ["number", "null"], "minimum": 0},
+        "max_solver_runs": {"type": ["integer", "null"], "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "source_precedents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["catalog_id", "reason"],
+        "properties": {
+          "catalog_id": {"type": "string"},
+          "reason": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["engineer_review_required", "open_questions"],
+      "properties": {
+        "engineer_review_required": {"type": "boolean"},
+        "open_questions": {"type": "array", "items": {"type": "string"}},
+        "approved_by": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}
