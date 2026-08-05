@@ -5,7 +5,8 @@ on: # 定义工作流触发条件
       - main # 仅面向主分支的实验 PR 运行
     paths: # 限定当前实验载荷、补丁和工作流变化
       - 'bootstrap_cross_passage_torsion_payload.part*' # 监听顺序分块压缩载荷
-      - patch_cross_passage_torsion_runner.py # 监听经审计的兼容性补丁
+      - patch_cross_passage_torsion_runner.py # 监听经审计的位移兼容补丁
+      - patch_cross_passage_torsion_metrics.py # 监听经审计的独立指标补丁
       - .github/workflows/bootstrap-cross-passage-torsion.yml # 监听当前工作流
 permissions: # 定义最小必要权限
   contents: write # 允许将完整实现和真实结果提交到 PR 源分支
@@ -25,7 +26,7 @@ jobs: # 定义作业集合
       - uses: actions/setup-python@v5 # 安装固定 Python 环境
         with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Expand patch and compile experiment # 拼接、校验、解包、应用兼容补丁并编译实现
+      - name: Expand patch and compile experiment # 拼接、校验、解包、应用两项补丁并编译实现
         shell: bash # 使用 Bash 执行载荷处理
         run: | # 开始载荷处理命令
           set -euo pipefail # 任一错误立即停止
@@ -35,6 +36,7 @@ jobs: # 定义作业集合
           echo '7bfe7e64ea28a4c2f817f1e5311b7514f40dd89f40d8042ddb49a7213717bbee  /tmp/cross_passage_torsion_payload.tar.gz' | sha256sum --check # 校验压缩归档字节
           tar --extract --gzip --file=/tmp/cross_passage_torsion_payload.tar.gz # 展开已通过哈希校验的完整实现和永久工作流
           python patch_cross_passage_torsion_runner.py # 应用 B31 原始节点 DAT 位移兼容补丁
+          python patch_cross_passage_torsion_metrics.py # 应用独立区域能量分布指标与报告修正补丁
           python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查修正后的实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行安装
@@ -66,9 +68,9 @@ jobs: # 定义作业集合
         shell: bash # 使用 Bash 调用验证器和 Git
         run: | # 开始验证提交脚本
           set -euo pipefail # 任一契约或提交错误立即停止
-          python -c "import json; from pathlib import Path; root=Path('experiments/cross_passage_torsion_benchmark/results'); data=json.loads((root/'results.json').read_text(encoding='utf-8')); expected={'uniform_mesh','pure_pso','hotspot_pso','graph_multi_agent','dqn_gcn'}; assert {item['name'] for item in data['methods']}==expected; assert data['reference']['element_count']>data['mesh']['element_cap']; assert all(item['solution']['element_count']<=data['mesh']['element_cap'] for item in data['methods']); assert (root/'RESULTS.md').is_file(); assert (root/'method_summary.csv').is_file()" # 验证五方法和资源契约
+          python -c "import json; from pathlib import Path; root=Path('experiments/cross_passage_torsion_benchmark/results'); data=json.loads((root/'results.json').read_text(encoding='utf-8')); expected={'uniform_mesh','pure_pso','hotspot_pso','graph_multi_agent','dqn_gcn'}; assert {item['name'] for item in data['methods']}==expected; assert data['reference']['element_count']>data['mesh']['element_cap']; assert all(item['solution']['element_count']<=data['mesh']['element_cap'] for item in data['methods']); assert all(0.0<=item['energy_error']<=1.0 for item in data['methods']); assert (root/'RESULTS.md').is_file(); assert (root/'method_summary.csv').is_file()" # 验证五方法、资源和独立能量分布指标契约
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add .github/workflows/cross-passage-torsion-benchmark.yml experiments/cross_passage_torsion_benchmark # 暂存永久工作流、修正实现和全部求解证据
+          git add experiments/cross_passage_torsion_benchmark # 仅暂存完整实现和全部求解证据以避免工作流写权限干扰
           git commit -m 'experiment: run cross-passage torsion five-method benchmark' # 创建测量结果提交
           git push origin HEAD:${{ github.event.pull_request.head.ref }} # 推送到 PR 源分支
