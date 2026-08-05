@@ -1,76 +1,37 @@
-name: Cross-passage torsion five-method experiment # 定义完整扭转实验工作流名称
+name: Remove torsion bootstrap files # 定义一次性仓库清理工作流名称
 on: # 定义工作流触发条件
-  pull_request: # 使用同仓库草稿 PR 事件运行并暴露可读作业状态
-    branches: # 限定目标分支
-      - main # 仅面向主分支的实验 PR 运行
-    paths: # 限定当前实验载荷、补丁和工作流变化
-      - 'bootstrap_cross_passage_torsion_payload.part*' # 监听顺序分块压缩载荷
-      - patch_cross_passage_torsion_runner.py # 监听经审计的位移兼容补丁
-      - patch_cross_passage_torsion_metrics.py # 监听经审计的独立指标补丁
-      - .github/workflows/bootstrap-cross-passage-torsion.yml # 监听当前工作流
+  push: # 在当前清理工作流提交到实验分支后执行
+    branches: # 限定清理分支
+      - exp/cross-passage-torsion-five-methods # 只清理横向通道扭转实验分支
+    paths: # 限定触发文件
+      - .github/workflows/bootstrap-cross-passage-torsion.yml # 仅当前一次性清理工作流变化时触发
 permissions: # 定义最小必要权限
-  contents: write # 允许将完整实现和真实结果提交到 PR 源分支
+  contents: write # 允许删除临时文件并提交清理结果
 jobs: # 定义作业集合
-  benchmark: # 定义唯一五方法实验作业
+  cleanup: # 定义唯一清理作业
     runs-on: ubuntu-24.04 # 使用固定 Ubuntu 24.04 虚拟机
-    timeout-minutes: 90 # 设置真实 CalculiX 全实验上限
-    env: # 定义确定性数值环境
-      MPLBACKEND: Agg # 强制使用无头绘图后端
-      OMP_NUM_THREADS: '1' # 固定 OpenMP 线程数
-      MKL_NUM_THREADS: '1' # 固定 MKL 线程数
     steps: # 定义顺序执行步骤
-      - uses: actions/checkout@v4 # 检出 PR 源分支而非临时合并提交
-        with: # 配置检出参数
-          ref: ${{ github.event.pull_request.head.ref }} # 明确检出实验源分支
-          fetch-depth: 0 # 获取完整历史以便提交结果
-      - uses: actions/setup-python@v5 # 安装固定 Python 环境
-        with: # 配置解释器版本
-          python-version: '3.11' # 使用 Python 3.11
-      - name: Expand patch and compile experiment # 拼接、校验、解包、应用两项补丁并编译实现
-        shell: bash # 使用 Bash 执行载荷处理
-        run: | # 开始载荷处理命令
-          set -euo pipefail # 任一错误立即停止
-          cat bootstrap_cross_passage_torsion_payload.part?? > /tmp/cross_passage_torsion_payload.b64 # 按文件名顺序拼接七个固定长度分块
-          echo 'ae1b0e317f8c4586ce1ec7a50667e46477e429c0161f2119ff3da2d32ce80f44  /tmp/cross_passage_torsion_payload.b64' | sha256sum --check # 校验拼接后的 Base64 文本
-          base64 --decode /tmp/cross_passage_torsion_payload.b64 > /tmp/cross_passage_torsion_payload.tar.gz # 解码受控压缩归档
-          echo '7bfe7e64ea28a4c2f817f1e5311b7514f40dd89f40d8042ddb49a7213717bbee  /tmp/cross_passage_torsion_payload.tar.gz' | sha256sum --check # 校验压缩归档字节
-          tar --extract --gzip --file=/tmp/cross_passage_torsion_payload.tar.gz # 展开已通过哈希校验的完整实现和永久工作流
-          python patch_cross_passage_torsion_runner.py # 应用 B31 原始节点 DAT 位移兼容补丁
-          python patch_cross_passage_torsion_metrics.py # 应用独立区域能量分布指标与报告修正补丁
-          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查修正后的实现
-      - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
-        shell: bash # 使用 Bash 执行安装
-        run: | # 开始依赖安装
-          set -euo pipefail # 任一安装错误立即停止
-          python -m pip install --upgrade pip --quiet # 更新 pip
-          python -m pip install numpy matplotlib --quiet # 安装数组和绘图依赖
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装 CPU 版 PyTorch
-          sudo apt-get update -qq # 更新 Ubuntu 软件包索引
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx # 安装真实 CalculiX 求解器
-      - name: Run complete comparison # 执行参考解和五种方法全部真实候选求解
-        shell: bash # 使用 Bash 执行实验
-        run: | # 开始求解命令
-          set -euo pipefail # 任一求解或解析错误立即停止
-          CCX_BIN="$(command -v ccx || true)" # 优先定位标准 ccx 命令
-          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退定位版本化求解器
-          test -x "$CCX_BIN" # 验证求解器可执行
-          rm -rf experiments/cross_passage_torsion_benchmark/results # 清除历史结果
-          python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx "$CCX_BIN" --output experiments/cross_passage_torsion_benchmark/results # 执行完整五方法实验
-      - name: Upload complete numerical evidence # 无论实验成功或失败均保存完整诊断证据
-        if: always() # 确保失败时仍上传已生成的输入和日志
-        uses: actions/upload-artifact@v4 # 使用官方制品上传动作
-        with: # 配置制品内容
-          name: cross-passage-torsion-five-method-evidence # 定义证据制品名称
-          path: experiments/cross_passage_torsion_benchmark/ # 上传实现、所有候选求解及汇总结果
-          if-no-files-found: warn # 早期失败时记录警告而不掩盖原始错误
-          retention-days: 14 # 保留完整证据十四天
-      - name: Validate and commit measured results # 验证结果契约并提交实现与结果
-        shell: bash # 使用 Bash 调用验证器和 Git
-        run: | # 开始验证提交脚本
-          set -euo pipefail # 任一契约或提交错误立即停止
-          python -c "import json; from pathlib import Path; root=Path('experiments/cross_passage_torsion_benchmark/results'); data=json.loads((root/'results.json').read_text(encoding='utf-8')); expected={'uniform_mesh','pure_pso','hotspot_pso','graph_multi_agent','dqn_gcn'}; assert {item['name'] for item in data['methods']}==expected; assert data['reference']['element_count']>data['mesh']['element_cap']; assert all(item['solution']['element_count']<=data['mesh']['element_cap'] for item in data['methods']); assert all(0.0<=item['energy_error']<=1.0 for item in data['methods']); assert (root/'RESULTS.md').is_file(); assert (root/'method_summary.csv').is_file()" # 验证五方法、资源和独立能量分布指标契约
+      - uses: actions/checkout@v4 # 检出当前实验分支
+        with: # 配置检出行为
+          ref: exp/cross-passage-torsion-five-methods # 明确检出需要清理的分支
+          fetch-depth: 0 # 获取完整历史以便提交删除
+      - name: Remove one-time bootstrap artifacts # 删除载荷分块、补丁、缓存和本工作流
+        shell: bash # 使用 Bash 执行清理
+        run: | # 开始清理命令
+          set -euo pipefail # 任一删除或提交错误立即停止
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark # 仅暂存完整实现和全部求解证据以避免工作流写权限干扰
-          git commit -m 'experiment: run cross-passage torsion five-method benchmark' # 创建测量结果提交
-          git push origin HEAD:${{ github.event.pull_request.head.ref }} # 推送到 PR 源分支
+          git rm -f .github/workflows/bootstrap-cross-passage-torsion.yml # 删除完成使命的一次性清理工作流
+          git rm -f bootstrap_cross_passage_torsion_payload.b64 # 删除早期截断的单文件载荷
+          git rm -f bootstrap_cross_passage_torsion_payload.part00 # 删除载荷分块零
+          git rm -f bootstrap_cross_passage_torsion_payload.part01 # 删除载荷分块一
+          git rm -f bootstrap_cross_passage_torsion_payload.part02 # 删除载荷分块二
+          git rm -f bootstrap_cross_passage_torsion_payload.part03 # 删除载荷分块三
+          git rm -f bootstrap_cross_passage_torsion_payload.part04 # 删除载荷分块四
+          git rm -f bootstrap_cross_passage_torsion_payload.part05 # 删除载荷分块五
+          git rm -f bootstrap_cross_passage_torsion_payload.part06 # 删除载荷分块六
+          git rm -f patch_cross_passage_torsion_runner.py # 删除已固化进正式主程序的位移兼容补丁
+          git rm -f patch_cross_passage_torsion_metrics.py # 删除已固化进正式主程序的独立指标补丁
+          git rm -f experiments/cross_passage_torsion_benchmark/__pycache__/run_benchmark.cpython-311.pyc # 删除 Python 编译缓存
+          git commit -m 'chore: remove torsion benchmark bootstrap artifacts' # 创建一次性清理提交
+          git push origin HEAD:exp/cross-passage-torsion-five-methods # 推送清理后的正式实验分支
