@@ -32,7 +32,7 @@ jobs: # 定义作业集合
           echo 'ae1b0e317f8c4586ce1ec7a50667e46477e429c0161f2119ff3da2d32ce80f44  /tmp/cross_passage_torsion_payload.b64' | sha256sum --check # 校验拼接后的 Base64 文本
           base64 --decode /tmp/cross_passage_torsion_payload.b64 > /tmp/cross_passage_torsion_payload.tar.gz # 解码受控压缩归档
           echo '7bfe7e64ea28a4c2f817f1e5311b7514f40dd89f40d8042ddb49a7213717bbee  /tmp/cross_passage_torsion_payload.tar.gz' | sha256sum --check # 校验压缩归档字节
-          tar --extract --gzip --file=/tmp/cross_passage_torsion_payload.tar.gz --wildcards 'experiments/cross_passage_torsion_benchmark/*' # 仅展开实验目录
+          tar --extract --gzip --file=/tmp/cross_passage_torsion_payload.tar.gz # 展开已通过哈希校验的完整实现和永久工作流
           python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行安装
@@ -67,6 +67,6 @@ jobs: # 定义作业集合
           python -c "import json; from pathlib import Path; root=Path('experiments/cross_passage_torsion_benchmark/results'); data=json.loads((root/'results.json').read_text(encoding='utf-8')); expected={'uniform_mesh','pure_pso','hotspot_pso','graph_multi_agent','dqn_gcn'}; assert {item['name'] for item in data['methods']}==expected; assert data['reference']['element_count']>data['mesh']['element_cap']; assert all(item['solution']['element_count']<=data['mesh']['element_cap'] for item in data['methods']); assert (root/'RESULTS.md').is_file(); assert (root/'method_summary.csv').is_file()" # 验证五方法和资源契约
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark # 暂存实现和全部求解证据
+          git add .github/workflows/cross-passage-torsion-benchmark.yml experiments/cross_passage_torsion_benchmark # 暂存永久工作流、实现和全部求解证据
           git commit -m 'experiment: run cross-passage torsion five-method benchmark' # 创建测量结果提交
           git push origin HEAD:${{ github.event.pull_request.head.ref }} # 推送到 PR 源分支
