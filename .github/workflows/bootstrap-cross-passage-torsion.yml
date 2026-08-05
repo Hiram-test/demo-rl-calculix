@@ -4,7 +4,7 @@ on: # 定义工作流触发条件
     branches: # 限定目标分支
       - main # 仅面向主分支的实验 PR 运行
     paths: # 限定当前实验载荷和工作流变化
-      - bootstrap_cross_passage_torsion_payload.b64 # 监听压缩实验载荷
+      - 'bootstrap_cross_passage_torsion_payload.part*' # 监听顺序分块压缩载荷
       - .github/workflows/bootstrap-cross-passage-torsion.yml # 监听当前工作流
 permissions: # 定义最小必要权限
   contents: write # 允许将完整实现和真实结果提交到 PR 源分支
@@ -24,11 +24,14 @@ jobs: # 定义作业集合
       - uses: actions/setup-python@v5 # 安装固定 Python 环境
         with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Expand and compile experiment # 解包并编译检查完整实验实现
-        shell: bash # 使用 Bash 执行解包和编译
-        run: | # 开始解包命令
+      - name: Expand and compile experiment # 拼接、校验、解包并编译完整实验实现
+        shell: bash # 使用 Bash 执行载荷处理
+        run: | # 开始载荷处理命令
           set -euo pipefail # 任一错误立即停止
-          base64 --decode bootstrap_cross_passage_torsion_payload.b64 > /tmp/cross_passage_torsion_payload.tar.gz # 解码受控压缩归档
+          cat bootstrap_cross_passage_torsion_payload.part?? > /tmp/cross_passage_torsion_payload.b64 # 按文件名顺序拼接七个固定长度分块
+          echo 'ae1b0e317f8c4586ce1ec7a50667e46477e429c0161f2119ff3da2d32ce80f44  /tmp/cross_passage_torsion_payload.b64' | sha256sum --check # 校验拼接后的 Base64 文本
+          base64 --decode /tmp/cross_passage_torsion_payload.b64 > /tmp/cross_passage_torsion_payload.tar.gz # 解码受控压缩归档
+          echo '7bfe7e64ea28a4c2f817f1e5311b7514f40dd89f40d8042ddb49a7213717bbee  /tmp/cross_passage_torsion_payload.tar.gz' | sha256sum --check # 校验压缩归档字节
           tar --extract --gzip --file=/tmp/cross_passage_torsion_payload.tar.gz --wildcards 'experiments/cross_passage_torsion_benchmark/*' # 仅展开实验目录
           python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
@@ -49,6 +52,14 @@ jobs: # 定义作业集合
           test -x "$CCX_BIN" # 验证求解器可执行
           rm -rf experiments/cross_passage_torsion_benchmark/results # 清除历史结果
           python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx "$CCX_BIN" --output experiments/cross_passage_torsion_benchmark/results # 执行完整五方法实验
+      - name: Upload complete numerical evidence # 无论实验成功或失败均保存完整诊断证据
+        if: always() # 确保失败时仍上传已生成的输入和日志
+        uses: actions/upload-artifact@v4 # 使用官方制品上传动作
+        with: # 配置制品内容
+          name: cross-passage-torsion-five-method-evidence # 定义证据制品名称
+          path: experiments/cross_passage_torsion_benchmark/ # 上传实现、所有候选求解及汇总结果
+          if-no-files-found: warn # 早期失败时记录警告而不掩盖原始错误
+          retention-days: 14 # 保留完整证据十四天
       - name: Validate and commit measured results # 验证结果契约并提交实现与结果
         shell: bash # 使用 Bash 调用验证器和 Git
         run: | # 开始验证提交脚本
