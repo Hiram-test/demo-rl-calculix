@@ -5,18 +5,18 @@ source = runner_path.read_text(encoding="utf-8")  # 读取已经应用位移兼�
 source = source.replace("T3D2", "B31")  # 统一修正遗留注释和报告中的单元类型名称
 old_metric = '''        energy_error = abs(solution.strain_energy - self.reference.strain_energy) / max(abs(self.reference.strain_energy), 1.0e-18)  # 计算应变能相对误差
         probe_error = float(np.linalg.norm(solution.probe_vector - self.reference.probe_vector) / max(np.linalg.norm(self.reference.probe_vector), 1.0e-18))  # 计算中部位移场相对误差
-        candidate_hotspots = set(int(index) for index in self._top_regions(solution.region_energy, TOP_HOTSPOT_COUNT))  # 提取候选结果最强热点区域
+        candidate_hotspots = {int(index) for index in np.argsort(solution.region_energy)[-TOP_HOTSPOT_COUNT:]}  # 选取候选能量热点区域
         hotspot_recall = len(candidate_hotspots.intersection(self.reference_hotspots)) / float(TOP_HOTSPOT_COUNT)  # 计算参考热点召回率
-        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终网格资源占用比例
+        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终单元预算使用率
         objective = 0.35 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.18 * (1.0 - hotspot_recall) + 0.02 * resource_fraction  # 形成统一综合目标函数
 '''
 new_metric = '''        solution_energy_distribution = solution.region_energy / max(float(np.sum(solution.region_energy)), 1.0e-18)  # 将候选区域能量转换为无量纲分布
         reference_energy_distribution = self.reference.region_energy / max(float(np.sum(self.reference.region_energy)), 1.0e-18)  # 将参考区域能量转换为无量纲分布
         energy_error = 0.5 * float(np.sum(np.abs(solution_energy_distribution - reference_energy_distribution)))  # 以总变差距离计算独立的区域能量分布误差
         probe_error = float(np.linalg.norm(solution.probe_vector - self.reference.probe_vector) / max(np.linalg.norm(self.reference.probe_vector), 1.0e-18))  # 计算中部位移场相对误差
-        candidate_hotspots = set(int(index) for index in self._top_regions(solution.region_energy, TOP_HOTSPOT_COUNT))  # 提取候选结果最强热点区域
+        candidate_hotspots = {int(index) for index in np.argsort(solution.region_energy)[-TOP_HOTSPOT_COUNT:]}  # 选取候选能量热点区域
         hotspot_recall = len(candidate_hotspots.intersection(self.reference_hotspots)) / float(TOP_HOTSPOT_COUNT)  # 计算参考热点召回率
-        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终网格资源占用比例
+        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终单元预算使用率
         objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.13 * (1.0 - hotspot_recall) + 0.02 * resource_fraction  # 使用互相独立的整体刚度、能量分布、位移场、热点和资源指标形成目标
 '''
 if old_metric not in source:  # 检查原始重复计权指标是否仍与已审查版本一致
