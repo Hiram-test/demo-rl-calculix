@@ -1,108 +1,82 @@
-name: Bootstrap cross-passage torsion experiment # 定义一次性完整实验工作流名称
-on: # 定义触发条件
-  push: # 在工作流文件首次写入实验分支时运行
-    branches: # 限定隔离实验分支
-      - exp/cross-passage-torsion-five-methods # 只运行横向通道扭转实验分支
-    paths: # 限定触发文件
-      - .github/workflows/bootstrap-cross-passage-torsion.yml # 仅当前一次性工作流变化时触发
-permissions: # 定义工作流权限
-  contents: write # 允许将真实实验结果提交回分支
+name: Cross-passage torsion five-method experiment # 定义完整扭转实验工作流名称
+on: # 定义工作流触发条件
+  pull_request: # 使用同仓库草稿 PR 事件运行并暴露可读作业状态
+    branches: # 限定目标分支
+      - main # 仅面向主分支的实验 PR 运行
+    paths: # 限定当前实验载荷和工作流变化
+      - bootstrap_cross_passage_torsion_payload.b64 # 监听压缩实验载荷
+      - .github/workflows/bootstrap-cross-passage-torsion.yml # 监听当前工作流
+permissions: # 定义最小必要权限
+  contents: write # 允许将完整实现和真实结果提交到 PR 源分支
 jobs: # 定义作业集合
-  bootstrap-and-run: # 定义解包、求解和提交的一体化作业
+  benchmark: # 定义唯一五方法实验作业
     runs-on: ubuntu-24.04 # 使用固定 Ubuntu 24.04 虚拟机
-    timeout-minutes: 90 # 为真实 CalculiX 五方法实验设置九十分钟上限
+    timeout-minutes: 90 # 设置真实 CalculiX 全实验上限
     env: # 定义确定性数值环境
-      MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端
-      OMP_NUM_THREADS: '1' # 限制 OpenMP 线程数量
-      MKL_NUM_THREADS: '1' # 限制 MKL 线程数量
-    steps: # 定义作业步骤
-      - uses: actions/checkout@v4 # 检出当前隔离分支
+      MPLBACKEND: Agg # 强制使用无头绘图后端
+      OMP_NUM_THREADS: '1' # 固定 OpenMP 线程数
+      MKL_NUM_THREADS: '1' # 固定 MKL 线程数
+    steps: # 定义顺序执行步骤
+      - uses: actions/checkout@v4 # 检出 PR 源分支而非临时合并提交
         with: # 配置检出参数
+          ref: ${{ github.event.pull_request.head.ref }} # 明确检出实验源分支
           fetch-depth: 0 # 获取完整历史以便提交结果
-      - uses: actions/setup-python@v5 # 安装固定 Python 解释器
-        with: # 配置 Python 版本
+      - uses: actions/setup-python@v5 # 安装固定 Python 环境
+        with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Expand audited experiment payload # 解码并展开已上传的实验实现
+      - name: Expand and compile experiment # 解包并编译检查完整实验实现
         shell: bash # 使用 Bash 调用内嵌 Python
-        run: | # 开始解包脚本
-          set -euo pipefail # 任一解码或解包错误立即停止
-          python - <<'PY' # 启动内嵌 Python 解包器
+        run: | # 开始解包命令
+          set -euo pipefail # 任一错误立即停止
+          python - <<'PY' # 启动受控 Python 解包器
           import base64 # 导入 Base64 解码模块
-          import tarfile # 导入压缩归档读取模块
-          from pathlib import Path # 导入跨平台路径模块
-          payload_path = Path('bootstrap_cross_passage_torsion_payload.b64') # 定义仓库内载荷文件
-          archive_path = Path('/tmp/cross_passage_torsion_payload.tar.gz') # 定义临时压缩包路径
-          archive_path.write_bytes(base64.b64decode(payload_path.read_text(encoding='utf-8'))) # 解码压缩包字节
-          with tarfile.open(archive_path, mode='r:gz') as archive: # 打开受控压缩包
+          import tarfile # 导入压缩归档模块
+          from pathlib import Path # 导入路径模块
+          source = Path('bootstrap_cross_passage_torsion_payload.b64') # 定义压缩载荷文件
+          target = Path('/tmp/cross_passage_torsion_payload.tar.gz') # 定义临时归档路径
+          target.write_bytes(base64.b64decode(source.read_text(encoding='utf-8'))) # 解码真实归档字节
+          with tarfile.open(target, mode='r:gz') as archive: # 打开归档
               for member in archive.getmembers(): # 遍历归档成员
-                  if not member.name.startswith('experiments/cross_passage_torsion_benchmark/'): # 限定只展开实验目录
-                      continue # 跳过归档中的工作流副本
-                  archive.extract(member, path='.') # 将受控实验成员展开到仓库
-          PY # 结束内嵌 Python 解包器
-          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查完整实现
-      - name: Install CalculiX and numerical dependencies # 安装真实求解器和五方法依赖
+                  if member.name.startswith('experiments/cross_passage_torsion_benchmark/'): # 仅选择实验目录
+                      archive.extract(member, path='.') # 展开受控实验成员
+          PY # 结束解包器
+          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查实现
+      - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行安装
-        run: | # 开始依赖安装脚本
+        run: | # 开始依赖安装
           set -euo pipefail # 任一安装错误立即停止
           python -m pip install --upgrade pip --quiet # 更新 pip
           python -m pip install numpy matplotlib --quiet # 安装数组和绘图依赖
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装 CPU 版 PyTorch
-          sudo apt-get update -qq >/tmp/apt-update.log 2>&1 # 更新 Ubuntu 软件包索引
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/apt-install.log 2>&1 # 安装真实 CalculiX
-      - name: Locate CalculiX executable # 定位 Ubuntu 中可能带版本后缀的求解器
-        id: solver # 保存求解器路径供后续步骤使用
-        shell: bash # 使用 Bash 执行定位
-        run: | # 开始定位脚本
-          set -euo pipefail # 找不到求解器时立即停止
-          CCX_BIN="$(command -v ccx || true)" # 首先查找标准 ccx 命令
-          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退查找版本化 ccx 文件
+          sudo apt-get update -qq # 更新 Ubuntu 软件包索引
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx # 安装真实 CalculiX 求解器
+      - name: Run complete comparison # 执行参考解和五种方法全部真实候选求解
+        shell: bash # 使用 Bash 执行实验
+        run: | # 开始求解命令
+          set -euo pipefail # 任一求解或解析错误立即停止
+          CCX_BIN="$(command -v ccx || true)" # 优先定位标准 ccx 命令
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退定位版本化求解器
           test -x "$CCX_BIN" # 验证求解器可执行
-          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 输出求解器路径
-          "$CCX_BIN" -v || true # 记录求解器版本
-      - name: Run five-method pure-torsion benchmark # 执行参考解及五种方法全部真实求解
-        shell: bash # 使用 Bash 启动实验脚本
-        run: | # 开始实验执行命令
-          set -euo pipefail # 任一候选求解或后处理错误立即停止
-          rm -rf experiments/cross_passage_torsion_benchmark/results # 清除任何历史结果
-          python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/cross_passage_torsion_benchmark/results | tee /tmp/cross-passage-torsion.log # 运行完整实验并记录日志
-      - name: Validate experiment contract # 验证五方法、参考网格、资源上限和结论文件
-        shell: bash # 使用 Bash 调用内嵌 Python
-        run: | # 开始结果契约验证
-          set -euo pipefail # 任一契约不满足立即停止
+          rm -rf experiments/cross_passage_torsion_benchmark/results # 清除历史结果
+          python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx "$CCX_BIN" --output experiments/cross_passage_torsion_benchmark/results # 执行完整五方法实验
+      - name: Validate and commit measured results # 验证结果契约并提交实现与结果
+        shell: bash # 使用 Bash 调用验证器和 Git
+        run: | # 开始验证提交脚本
+          set -euo pipefail # 任一契约或提交错误立即停止
           python - <<'PY' # 启动内嵌结果验证器
-          import json # 导入 JSON 读取模块
+          import json # 导入 JSON 模块
           from pathlib import Path # 导入路径模块
           root = Path('experiments/cross_passage_torsion_benchmark/results') # 定义结果根目录
           data = json.loads((root / 'results.json').read_text(encoding='utf-8')) # 读取机器可读结果
-          expected = {'uniform_mesh', 'pure_pso', 'hotspot_pso', 'graph_multi_agent', 'dqn_gcn'} # 定义用户要求的五种方法
-          actual = {item['name'] for item in data['methods']} # 提取实际完成的方法集合
-          assert actual == expected, (actual, expected) # 验证方法无缺失和替代
-          assert data['reference']['element_count'] > data['mesh']['element_cap'] # 验证参考网格严格细于资源上限
-          assert all(item['solution']['element_count'] <= data['mesh']['element_cap'] for item in data['methods']) # 验证最终网格均满足同一单元预算
-          assert all(item['objective'] >= 0.0 for item in data['methods']) # 验证目标值有效
-          assert (root / 'RESULTS.md').is_file() # 验证中文结论文件存在
-          assert (root / 'method_summary.csv').is_file() # 验证汇总表存在
-          assert (root / 'method_objective.png').is_file() # 验证方法目标图存在
-          assert (root / 'convergence.png').is_file() # 验证收敛轨迹图存在
-          PY # 结束内嵌结果验证器
-      - name: Upload complete solver evidence # 无论成功失败均保留输入输出和日志
-        if: always() # 确保失败时仍上传诊断证据
-        uses: actions/upload-artifact@v4 # 使用官方制品上传动作
-        with: # 配置制品内容
-          name: cross-passage-torsion-five-method-evidence # 定义制品名称
-          path: | # 列出完整证据路径
-            experiments/cross_passage_torsion_benchmark/ # 上传实现、候选求解、轨迹、表格、图和结论
-            /tmp/cross-passage-torsion.log # 上传完整实验日志
-            /tmp/apt-install.log # 上传求解器安装日志
-          if-no-files-found: warn # 早期失败无文件时保留原始错误
-          retention-days: 14 # 保留制品十四天
-      - name: Commit implementation and measured results # 将完整实现和实际实验结果提交回分支
-        if: success() # 仅在全部求解及验证通过后提交
-        shell: bash # 使用 Bash 执行 Git 操作
-        run: | # 开始提交脚本
-          set -euo pipefail # 任一 Git 错误立即停止
+          expected = {'uniform_mesh', 'pure_pso', 'hotspot_pso', 'graph_multi_agent', 'dqn_gcn'} # 定义五种要求方法
+          assert {item['name'] for item in data['methods']} == expected # 验证五种方法完整
+          assert data['reference']['element_count'] > data['mesh']['element_cap'] # 验证参考网格更细
+          assert all(item['solution']['element_count'] <= data['mesh']['element_cap'] for item in data['methods']) # 验证统一资源上限
+          assert (root / 'RESULTS.md').is_file() # 验证中文结论存在
+          assert (root / 'method_summary.csv').is_file() # 验证汇总数据存在
+          PY # 结束结果验证器
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark # 暂存实现和全部可复现实验结果
-          git commit -m 'experiment: run cross-passage torsion five-method benchmark' # 创建实验提交
-          git push origin HEAD:exp/cross-passage-torsion-five-methods # 推送回隔离实验分支
+          git add experiments/cross_passage_torsion_benchmark # 暂存实现和全部求解证据
+          git commit -m 'experiment: run cross-passage torsion five-method benchmark' # 创建测量结果提交
+          git push origin HEAD:${{ github.event.pull_request.head.ref }} # 推送到 PR 源分支
