@@ -1,0 +1,1280 @@
+{
+  "schema": "cross-passage-torsion-five-method-benchmark",
+  "schema_version": "1.0.0",
+  "seed": 20260806,
+  "model_scope": "normalized box-space-truss abstraction of one repeated catwalk cross-passage; algorithm benchmark only",
+  "loading": {
+    "type": "prescribed pure twist",
+    "twist_angle_rad": 0.005
+  },
+  "mesh": {
+    "region_count": 16,
+    "region_names": [
+      "panel_1_chords",
+      "panel_2_chords",
+      "panel_3_chords",
+      "panel_4_chords",
+      "panel_5_chords",
+      "station_1_frame",
+      "station_2_frame",
+      "station_3_frame",
+      "station_4_frame",
+      "station_5_frame",
+      "station_6_frame",
+      "panel_1_bracing",
+      "panel_2_bracing",
+      "panel_3_bracing",
+      "panel_4_bracing",
+      "panel_5_bracing"
+    ],
+    "level_subdivisions": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "reference_subdivisions": 16,
+    "element_cap": 336
+  },
+  "reference_hotspots": [
+    11,
+    13,
+    14,
+    15
+  ],
+  "reference": {
+    "levels": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "element_count": 1344,
+    "node_count": 1284,
+    "torque": 2307.52818,
+    "strain_energy": 5.768820343783523,
+    "region_energy": [
+      0.03257961359999999,
+      0.025540082600000003,
+      0.025171314099999995,
+      0.025082510400000004,
+      0.04285984450000001,
+      0.0014092045900224296,
+      0.004936359339999998,
+      0.0040012570530000005,
+      0.0042292440914999995,
+      0.006953789909,
+      0.08737790160000004,
+      1.093370926,
+      1.0931432119999993,
+      1.0985234279999998,
+      1.0953963519999999,
+      1.1282453040000007
+    ],
+    "region_peak_stress": [
+      0.002947281550985422,
+      0.003045314951999345,
+      0.003013357961988693,
+      0.003014887486341791,
+      0.004658731398403614,
+      0.001501777151118744,
+      0.003607316060320964,
+      0.0036967161194599142,
+      0.0037770907329538225,
+      0.004379435776430552,
+      0.03376552869388832,
+      0.041270511204024106,
+      0.043193749811380806,
+      0.044048786747453036,
+      0.043380088273681894,
+      0.04288311835691845
+    ],
+    "maximum_displacement": 0.008809787413115989,
+    "probe_vector": [
+      0.001953401,
+      -2.076311e-05,
+      -0.002309079,
+      0.001952394,
+      3.608428e-05,
+      0.002332105,
+      -0.001967359,
+      2.813303e-05,
+      -0.002308834,
+      -0.001969021,
+      -1.739885e-05,
+      0.002332309,
+      0.002907971,
+      -1.965491e-05,
+      -0.003500947,
+      0.002906989,
+      3.69782e-05,
+      0.003533732,
+      -0.002926756,
+      3.077316e-05,
+      -0.003500725,
+      -0.002928622,
+      -1.728369e-05,
+      0.003534024
+    ],
+    "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/reference"
+  },
+  "methods": [
+    {
+      "name": "uniform_mesh",
+      "objective": 1.8499941722181346,
+      "torque_error": 4.524917850407358,
+      "energy_error": 0.04679097264283147,
+      "probe_error": 0.041646444472416624,
+      "hotspot_recall": 1.0,
+      "unique_solves": 3,
+      "notes": "全局统一分段级别，在相同最终单元上限内枚举可行均匀网格。",
+      "solution": {
+        "levels": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "element_count": 336,
+        "node_count": 276,
+        "torque": 12748.903632000001,
+        "strain_energy": 31.872259970120002,
+        "region_energy": [
+          0.067297429,
+          0.0630257546,
+          0.06434970920000001,
+          0.0611053193,
+          0.374061364,
+          0.011587676520000003,
+          0.015532718399999998,
+          0.015476610299999999,
+          0.014816253699999997,
+          0.0330493751,
+          0.6825575599999999,
+          6.268833900000001,
+          5.675486,
+          5.6770693,
+          5.692131100000001,
+          7.155879900000001
+        ],
+        "region_peak_stress": [
+          0.0035609413936304917,
+          0.0044815044593642045,
+          0.0043858265307852,
+          0.004316892543480608,
+          0.01775558315970281,
+          0.005985057536652879,
+          0.006102726015967721,
+          0.004192496449629947,
+          0.00469762004278725,
+          0.008830770879455494,
+          0.15512702844436635,
+          0.1005470529853719,
+          0.08643428801385193,
+          0.086239171092759,
+          0.08810254154299224,
+          0.12741652228621478
+        ],
+        "maximum_displacement": 0.008400743147504433,
+        "probe_vector": [
+          0.00188946,
+          1.389557e-05,
+          -0.002272168,
+          0.001890715,
+          1.377046e-05,
+          0.002270317,
+          -0.001879603,
+          1.651978e-05,
+          -0.002270392,
+          -0.00188097,
+          2.169983e-05,
+          0.002270134,
+          0.002780241,
+          1.43827e-05,
+          -0.00337883,
+          0.002781926,
+          2.694604e-05,
+          0.003357869,
+          -0.002777218,
+          2.949188e-05,
+          -0.003376951,
+          -0.002779083,
+          2.192023e-05,
+          0.003357791
+        ],
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-75293470506b"
+      },
+      "history": [
+        {
+          "evaluation": 1.0,
+          "best_objective": 10.021474261640012,
+          "candidate_objective": 10.021474261640012
+        },
+        {
+          "evaluation": 2.0,
+          "best_objective": 4.132949452786935,
+          "candidate_objective": 4.132949452786935
+        },
+        {
+          "evaluation": 3.0,
+          "best_objective": 1.8499941722181346,
+          "candidate_objective": 1.8499941722181346
+        }
+      ]
+    },
+    {
+      "name": "pure_pso",
+      "objective": 1.0217107056207375,
+      "torque_error": 1.936018785694743,
+      "energy_error": 0.33572386798589876,
+      "probe_error": 0.5543611217318271,
+      "hotspot_recall": 0.75,
+      "unique_solves": 32,
+      "notes": "全部十六个图区域直接进入离散 PSO，不使用热点候选降维。",
+      "solution": {
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          0,
+          1,
+          1,
+          0,
+          2,
+          2,
+          0,
+          3,
+          3,
+          3
+        ],
+        "element_count": 336,
+        "node_count": 276,
+        "torque": 6774.946085,
+        "strain_energy": 16.93736282910793,
+        "region_energy": [
+          0.08407022,
+          0.05848945,
+          0.06823954,
+          0.06856798,
+          0.282359504,
+          0.00041401560792999996,
+          0.22098196,
+          0.022300238699999995,
+          0.19733724,
+          0.010439031500000001,
+          0.46806435999999996,
+          0.07371723929999999,
+          0.7121719200000001,
+          4.98013344,
+          4.420311229999999,
+          5.269765460000001
+        ],
+        "region_peak_stress": [
+          0.002201133,
+          0.0019859129999999997,
+          0.00206223,
+          0.0021505400000000003,
+          0.012143935372037501,
+          0.00026347706532029526,
+          0.029284024999999998,
+          0.005495210211544603,
+          0.02933062418750569,
+          0.002352507,
+          0.12737706218536654,
+          0.0017645196405418942,
+          0.010650616461830728,
+          0.12116838820128274,
+          0.1436738742642982,
+          0.12424053442639102
+        ],
+        "maximum_displacement": 0.010946384501589966,
+        "probe_vector": [
+          0.0002395436,
+          -1.377729e-05,
+          -0.000521943,
+          0.0002395214,
+          2.410519e-05,
+          0.0004563788,
+          -0.0002614482,
+          2.889595e-05,
+          -0.0005225682,
+          -0.0002617289,
+          -5.383622e-06,
+          0.0004564663,
+          0.00181213,
+          -8.503917e-06,
+          -0.002225127,
+          0.001812724,
+          3.606366e-05,
+          0.002162124,
+          -0.001812645,
+          3.824778e-05,
+          -0.002225279,
+          -0.001812925,
+          -7.989692e-06,
+          0.00216267
+        ],
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-5bfe4d03cde2"
+      },
+      "history": [
+        {
+          "evaluation": 1.0,
+          "best_objective": 1.706019567456324,
+          "candidate_objective": 1.706019567456324
+        },
+        {
+          "evaluation": 2.0,
+          "best_objective": 1.706019567456324,
+          "candidate_objective": 1.7534019385592876
+        },
+        {
+          "evaluation": 3.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.2555683875337467
+        },
+        {
+          "evaluation": 4.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 2.7026315529488008
+        },
+        {
+          "evaluation": 5.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.620583186033738
+        },
+        {
+          "evaluation": 6.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 3.1096929339750323
+        },
+        {
+          "evaluation": 7.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.7796671059796092
+        },
+        {
+          "evaluation": 8.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.6464897546280524
+        },
+        {
+          "evaluation": 9.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 3.526473533950394
+        },
+        {
+          "evaluation": 10.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 2.61458296909008
+        },
+        {
+          "evaluation": 11.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.7101476555367496
+        },
+        {
+          "evaluation": 12.0,
+          "best_objective": 1.2555683875337467,
+          "candidate_objective": 1.450780978497714
+        },
+        {
+          "evaluation": 13.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.1430888188319732
+        },
+        {
+          "evaluation": 14.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.3152347026407154
+        },
+        {
+          "evaluation": 15.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.424297637264882
+        },
+        {
+          "evaluation": 16.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.4825500145289094
+        },
+        {
+          "evaluation": 17.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 2.9732849593000092
+        },
+        {
+          "evaluation": 18.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.6217644636466888
+        },
+        {
+          "evaluation": 19.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.1669662885870618
+        },
+        {
+          "evaluation": 20.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.3436133631919864
+        },
+        {
+          "evaluation": 21.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.2413608678733412
+        },
+        {
+          "evaluation": 22.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.3357075491792423
+        },
+        {
+          "evaluation": 23.0,
+          "best_objective": 1.1430888188319732,
+          "candidate_objective": 1.3252832915124992
+        },
+        {
+          "evaluation": 24.0,
+          "best_objective": 1.1311246059934856,
+          "candidate_objective": 1.1311246059934856
+        },
+        {
+          "evaluation": 25.0,
+          "best_objective": 1.1311246059934856,
+          "candidate_objective": 1.2852932860036588
+        },
+        {
+          "evaluation": 26.0,
+          "best_objective": 1.1311246059934856,
+          "candidate_objective": 1.3330544947981917
+        },
+        {
+          "evaluation": 27.0,
+          "best_objective": 1.1311246059934856,
+          "candidate_objective": 1.2518108037605
+        },
+        {
+          "evaluation": 28.0,
+          "best_objective": 1.0973861179949984,
+          "candidate_objective": 1.0973861179949984
+        },
+        {
+          "evaluation": 29.0,
+          "best_objective": 1.0973861179949984,
+          "candidate_objective": 1.6924774341163977
+        },
+        {
+          "evaluation": 30.0,
+          "best_objective": 1.0758568150461694,
+          "candidate_objective": 1.0758568150461694
+        },
+        {
+          "evaluation": 31.0,
+          "best_objective": 1.0217107056207375,
+          "candidate_objective": 1.0217107056207375
+        },
+        {
+          "evaluation": 32.0,
+          "best_objective": 1.0217107056207375,
+          "candidate_objective": 1.4057150033694137
+        }
+      ]
+    },
+    {
+      "name": "hotspot_pso",
+      "objective": 0.9768789796704476,
+      "torque_error": 1.8698587160916065,
+      "energy_error": 0.30183696622157274,
+      "probe_error": 0.5048812583920586,
+      "hotspot_recall": 0.75,
+      "unique_solves": 32,
+      "notes": "粗网格能量、应力和邻域对比选出六个热点区域后执行离散 PSO。",
+      "solution": {
+        "levels": [
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1,
+          3,
+          1,
+          2,
+          1,
+          1,
+          1,
+          3,
+          3,
+          3
+        ],
+        "element_count": 336,
+        "node_count": 276,
+        "torque": 6622.279860000001,
+        "strain_energy": 16.55569875137,
+        "region_energy": [
+          0.032281082,
+          0.016767272899999998,
+          0.11231428,
+          0.09604584,
+          0.30746809,
+          0.00044273718,
+          0.013954412400000001,
+          0.05222856089,
+          0.016357452,
+          0.034040206,
+          0.17023104800000002,
+          0.54452256,
+          0.9354338400000001,
+          4.70384965,
+          4.69906292,
+          4.820698799999999
+        ],
+        "region_peak_stress": [
+          0.001068454,
+          0.0007158687315199266,
+          0.004858578131550594,
+          0.0038165269491224553,
+          0.012676488862928931,
+          9.2951e-05,
+          0.003340313197115902,
+          0.029859245860220467,
+          0.002263180797685039,
+          0.012519321676258485,
+          0.02988490481731795,
+          0.01120666735100014,
+          0.017102315967818135,
+          0.1079307887506313,
+          0.10825081180958322,
+          0.10678937058263084
+        ],
+        "maximum_displacement": 0.010102280240810783,
+        "probe_vector": [
+          0.000332415,
+          -1.59861e-05,
+          -0.000653327,
+          0.0003331372,
+          1.650963e-05,
+          0.0006412864,
+          -0.0004526473,
+          1.430542e-05,
+          -0.0006531512,
+          -0.0004529721,
+          -9.484046e-06,
+          0.0006417632,
+          0.001837489,
+          -2.529079e-05,
+          -0.002362178,
+          0.001837284,
+          2.586682e-05,
+          0.002361799,
+          -0.001919722,
+          2.900259e-05,
+          -0.002359772,
+          -0.001922233,
+          -1.917829e-05,
+          0.002361884
+        ],
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-77ed52521211"
+      },
+      "history": [
+        {
+          "evaluation": 1.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 1.2587087267998307
+        },
+        {
+          "evaluation": 2.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 3.3254779158783405
+        },
+        {
+          "evaluation": 3.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 1.8307399675596812
+        },
+        {
+          "evaluation": 4.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 2.518542530122825
+        },
+        {
+          "evaluation": 5.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 4.435951753855371
+        },
+        {
+          "evaluation": 6.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 2.9830154116252108
+        },
+        {
+          "evaluation": 7.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 2.8326245651496276
+        },
+        {
+          "evaluation": 8.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 3.3338441866007473
+        },
+        {
+          "evaluation": 9.0,
+          "best_objective": 1.2587087267998307,
+          "candidate_objective": 2.0613614443075243
+        },
+        {
+          "evaluation": 10.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.0292216270168983
+        },
+        {
+          "evaluation": 11.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2657515551493286
+        },
+        {
+          "evaluation": 12.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2245996726806403
+        },
+        {
+          "evaluation": 13.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.230776362569845
+        },
+        {
+          "evaluation": 14.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.8387295718661647
+        },
+        {
+          "evaluation": 15.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.6858365664362072
+        },
+        {
+          "evaluation": 16.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 2.929632487244505
+        },
+        {
+          "evaluation": 17.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.3352215242066818
+        },
+        {
+          "evaluation": 18.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.8200933775800776
+        },
+        {
+          "evaluation": 19.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.216130954193286
+        },
+        {
+          "evaluation": 20.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2646201200680496
+        },
+        {
+          "evaluation": 21.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2151674153685
+        },
+        {
+          "evaluation": 22.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2253291941299984
+        },
+        {
+          "evaluation": 23.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2660791323576648
+        },
+        {
+          "evaluation": 24.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2260669514802847
+        },
+        {
+          "evaluation": 25.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2241130635783326
+        },
+        {
+          "evaluation": 26.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2661194279476908
+        },
+        {
+          "evaluation": 27.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.230653462270313
+        },
+        {
+          "evaluation": 28.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.2308965017685316
+        },
+        {
+          "evaluation": 29.0,
+          "best_objective": 1.0292216270168983,
+          "candidate_objective": 1.6680348679821493
+        },
+        {
+          "evaluation": 30.0,
+          "best_objective": 0.9768789796704476,
+          "candidate_objective": 0.9768789796704476
+        },
+        {
+          "evaluation": 31.0,
+          "best_objective": 0.9768789796704476,
+          "candidate_objective": 0.9774274824502266
+        },
+        {
+          "evaluation": 32.0,
+          "best_objective": 0.9768789796704476,
+          "candidate_objective": 1.231482533733811
+        }
+      ]
+    },
+    {
+      "name": "graph_multi_agent",
+      "objective": 0.8449178595769697,
+      "torque_error": 1.733029925554365,
+      "energy_error": 0.2908482448476632,
+      "probe_error": 0.29496914071653957,
+      "hotspot_recall": 1.0,
+      "unique_solves": 32,
+      "notes": "十六个区域智能体仅读取本地与邻接区域状态，通过消息传递优先级和共享单元预算异步协商。",
+      "solution": {
+        "levels": [
+          1,
+          0,
+          0,
+          1,
+          2,
+          2,
+          0,
+          1,
+          0,
+          2,
+          2,
+          3,
+          2,
+          0,
+          3,
+          3
+        ],
+        "element_count": 336,
+        "node_count": 276,
+        "torque": 6306.543569999999,
+        "strain_energy": 15.76635680253,
+        "region_energy": [
+          0.27373099,
+          0.03157817,
+          0.032952435,
+          0.11024101600000001,
+          0.23628601600000002,
+          0.00761809963,
+          0.037070898000000005,
+          0.10503275,
+          0.0053181016,
+          0.0161529493,
+          0.42392646700000003,
+          4.1150907000000005,
+          0.57105125,
+          0.9163790199999999,
+          4.260485089999999,
+          4.62344285
+        ],
+        "region_peak_stress": [
+          0.007562801504712145,
+          0.0012899370000000001,
+          0.001061236,
+          0.003913479330362911,
+          0.010600619731632935,
+          0.0032775298826452377,
+          0.004696454166666667,
+          0.016972763973931194,
+          0.0009094565,
+          0.005412203207085392,
+          0.11332585258837985,
+          0.09924979980084642,
+          0.009569550346435418,
+          0.013591932468353475,
+          0.09583170953056441,
+          0.11362833550192869
+        ],
+        "maximum_displacement": 0.010562752652589382,
+        "probe_vector": [
+          0.001656733,
+          5.873603e-06,
+          -0.002002083,
+          0.001656782,
+          1.017453e-05,
+          0.002036313,
+          -0.00166506,
+          8.584901e-06,
+          -0.002002273,
+          -0.001665374,
+          1.066849e-05,
+          0.00203611,
+          0.001914492,
+          7.171748e-06,
+          -0.00230547,
+          0.001914714,
+          1.375787e-05,
+          0.002319721,
+          -0.001933562,
+          1.6412e-05,
+          -0.002305389,
+          -0.001933685,
+          8.521105e-06,
+          0.002319963
+        ],
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-af9af0f4a609"
+      },
+      "history": [
+        {
+          "evaluation": 1.0,
+          "best_objective": 3.2963026199614824,
+          "candidate_objective": 3.2963026199614824
+        },
+        {
+          "evaluation": 2.0,
+          "best_objective": 2.7345159132553967,
+          "candidate_objective": 2.7345159132553967
+        },
+        {
+          "evaluation": 3.0,
+          "best_objective": 2.426343400981746,
+          "candidate_objective": 2.426343400981746
+        },
+        {
+          "evaluation": 4.0,
+          "best_objective": 2.1330052270039346,
+          "candidate_objective": 2.1330052270039346
+        },
+        {
+          "evaluation": 5.0,
+          "best_objective": 1.929241054300587,
+          "candidate_objective": 1.929241054300587
+        },
+        {
+          "evaluation": 6.0,
+          "best_objective": 1.920514772871581,
+          "candidate_objective": 1.920514772871581
+        },
+        {
+          "evaluation": 7.0,
+          "best_objective": 1.8616932400277828,
+          "candidate_objective": 1.8616932400277828
+        },
+        {
+          "evaluation": 8.0,
+          "best_objective": 1.8608081774052732,
+          "candidate_objective": 1.8608081774052732
+        },
+        {
+          "evaluation": 9.0,
+          "best_objective": 1.8605615553736097,
+          "candidate_objective": 1.8605615553736097
+        },
+        {
+          "evaluation": 10.0,
+          "best_objective": 1.8605615553736097,
+          "candidate_objective": 1.8846736081077944
+        },
+        {
+          "evaluation": 11.0,
+          "best_objective": 1.860523554338299,
+          "candidate_objective": 1.860523554338299
+        },
+        {
+          "evaluation": 12.0,
+          "best_objective": 1.8603759912278102,
+          "candidate_objective": 1.8603759912278102
+        },
+        {
+          "evaluation": 13.0,
+          "best_objective": 1.8601382439823102,
+          "candidate_objective": 1.8601382439823102
+        },
+        {
+          "evaluation": 14.0,
+          "best_objective": 1.8601382439823102,
+          "candidate_objective": 1.8909374766696465
+        },
+        {
+          "evaluation": 15.0,
+          "best_objective": 1.8601382439823102,
+          "candidate_objective": 1.8840090979252841
+        },
+        {
+          "evaluation": 16.0,
+          "best_objective": 1.8493556940054157,
+          "candidate_objective": 1.8493556940054157
+        },
+        {
+          "evaluation": 17.0,
+          "best_objective": 1.333706313410221,
+          "candidate_objective": 1.333706313410221
+        },
+        {
+          "evaluation": 18.0,
+          "best_objective": 1.333706313410221,
+          "candidate_objective": 1.5304563531301754
+        },
+        {
+          "evaluation": 19.0,
+          "best_objective": 1.1018455485026608,
+          "candidate_objective": 1.1018455485026608
+        },
+        {
+          "evaluation": 20.0,
+          "best_objective": 0.8918390243099733,
+          "candidate_objective": 0.8918390243099733
+        },
+        {
+          "evaluation": 21.0,
+          "best_objective": 0.8918390243099733,
+          "candidate_objective": 1.559226975573157
+        },
+        {
+          "evaluation": 22.0,
+          "best_objective": 0.8918390243099733,
+          "candidate_objective": 1.5803738049067346
+        },
+        {
+          "evaluation": 23.0,
+          "best_objective": 0.8918390243099733,
+          "candidate_objective": 1.7718987797466719
+        },
+        {
+          "evaluation": 24.0,
+          "best_objective": 0.8918390243099733,
+          "candidate_objective": 0.9537495664945409
+        },
+        {
+          "evaluation": 25.0,
+          "best_objective": 0.8711670654471599,
+          "candidate_objective": 0.8711670654471599
+        },
+        {
+          "evaluation": 26.0,
+          "best_objective": 0.8711670654471599,
+          "candidate_objective": 0.934303050725079
+        },
+        {
+          "evaluation": 27.0,
+          "best_objective": 0.8711670654471599,
+          "candidate_objective": 0.9307859868945314
+        },
+        {
+          "evaluation": 28.0,
+          "best_objective": 0.8449178595769697,
+          "candidate_objective": 0.8449178595769697
+        },
+        {
+          "evaluation": 29.0,
+          "best_objective": 0.8449178595769697,
+          "candidate_objective": 0.9002609418547044
+        },
+        {
+          "evaluation": 30.0,
+          "best_objective": 0.8449178595769697,
+          "candidate_objective": 1.1103644763422256
+        },
+        {
+          "evaluation": 31.0,
+          "best_objective": 0.8449178595769697,
+          "candidate_objective": 1.1552355713212463
+        },
+        {
+          "evaluation": 32.0,
+          "best_objective": 0.8449178595769697,
+          "candidate_objective": 1.1522640860578688
+        }
+      ]
+    },
+    {
+      "name": "dqn_gcn",
+      "objective": 1.6258975851590731,
+      "torque_error": 3.5142707812998415,
+      "energy_error": 0.2866022700473031,
+      "probe_error": 0.4980506684936962,
+      "hotspot_recall": 0.75,
+      "unique_solves": 32,
+      "notes": "两层 GCN 编码十六区域图，Double DQN 在真实 CalculiX 反馈下在线选择区域粗化或细化动作。",
+      "solution": {
+        "levels": [
+          1,
+          1,
+          0,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2
+        ],
+        "element_count": 276,
+        "node_count": 216,
+        "torque": 10416.80704,
+        "strain_energy": 26.042015334499993,
+        "region_energy": [
+          0.04674042800000001,
+          0.025070900599999998,
+          0.037106253,
+          0.126042577,
+          0.259969326,
+          0.009068332100000001,
+          0.0147877198,
+          0.11475925500000002,
+          0.048707294,
+          0.05945022899999999,
+          0.53776731,
+          2.05650469,
+          2.16900011,
+          3.5934022999999997,
+          12.028916970000006,
+          4.914721639999999
+        ],
+        "region_peak_stress": [
+          0.001930241986455199,
+          0.0016546273851323664,
+          0.001222026,
+          0.007820153850497035,
+          0.015302785193843376,
+          0.0012829403067012694,
+          0.0033516191105990435,
+          0.02066390333477859,
+          0.009501441979364285,
+          0.008624303269679959,
+          0.06962403456404255,
+          0.03488806831369358,
+          0.03434935529403654,
+          0.056737233584184275,
+          0.31406924642457346,
+          0.08513387429432043
+        ],
+        "maximum_displacement": 0.010248760163561054,
+        "probe_vector": [
+          0.0007582756,
+          -6.490328e-06,
+          -0.00104479,
+          0.000758423,
+          1.67893e-05,
+          0.001033614,
+          -0.0008396383,
+          1.178585e-05,
+          -0.00104541,
+          -0.0008398401,
+          -1.332209e-07,
+          0.001033629,
+          0.001498687,
+          -5.58656e-06,
+          -0.00190206,
+          0.001498454,
+          1.856119e-05,
+          0.001972889,
+          -0.00152061,
+          1.214729e-05,
+          -0.001902762,
+          -0.00152096,
+          6.949735e-07,
+          0.001973488
+        ],
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-6e68ddc956ff"
+      },
+      "history": [
+        {
+          "evaluation": 1.0,
+          "best_objective": 4.132949452786935,
+          "candidate_objective": 4.140727251254102
+        },
+        {
+          "evaluation": 2.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.1203242550724735
+        },
+        {
+          "evaluation": 3.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.183612733373315
+        },
+        {
+          "evaluation": 4.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.528310425610428
+        },
+        {
+          "evaluation": 5.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.175557002864036
+        },
+        {
+          "evaluation": 6.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.151392612379273
+        },
+        {
+          "evaluation": 7.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.32625788699775
+        },
+        {
+          "evaluation": 8.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.1272358135936456
+        },
+        {
+          "evaluation": 9.0,
+          "best_objective": 4.1203242550724735,
+          "candidate_objective": 4.137664858065208
+        },
+        {
+          "evaluation": 10.0,
+          "best_objective": 4.0335551657460265,
+          "candidate_objective": 4.0335551657460265
+        },
+        {
+          "evaluation": 11.0,
+          "best_objective": 4.0335551657460265,
+          "candidate_objective": 4.386520630333408
+        },
+        {
+          "evaluation": 13.0,
+          "best_objective": 3.089508982532819,
+          "candidate_objective": 3.089508982532819
+        },
+        {
+          "evaluation": 14.0,
+          "best_objective": 3.0817931270702514,
+          "candidate_objective": 3.0817931270702514
+        },
+        {
+          "evaluation": 15.0,
+          "best_objective": 1.945976879346013,
+          "candidate_objective": 1.945976879346013
+        },
+        {
+          "evaluation": 16.0,
+          "best_objective": 1.945976879346013,
+          "candidate_objective": 1.946694294949909
+        },
+        {
+          "evaluation": 17.0,
+          "best_objective": 1.9455666871036281,
+          "candidate_objective": 1.9455666871036281
+        },
+        {
+          "evaluation": 18.0,
+          "best_objective": 1.9455666871036281,
+          "candidate_objective": 1.9463773659381987
+        },
+        {
+          "evaluation": 19.0,
+          "best_objective": 1.9455666871036281,
+          "candidate_objective": 1.9458931034924893
+        },
+        {
+          "evaluation": 20.0,
+          "best_objective": 1.8992626432295387,
+          "candidate_objective": 1.8992626432295387
+        },
+        {
+          "evaluation": 21.0,
+          "best_objective": 1.897165150346218,
+          "candidate_objective": 1.897165150346218
+        },
+        {
+          "evaluation": 22.0,
+          "best_objective": 1.8899464104997294,
+          "candidate_objective": 1.8899464104997294
+        },
+        {
+          "evaluation": 23.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 1.889098588164977
+        },
+        {
+          "evaluation": 24.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 1.8891301751323497
+        },
+        {
+          "evaluation": 26.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 2.7018519403360415
+        },
+        {
+          "evaluation": 27.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 2.6956193765941907
+        },
+        {
+          "evaluation": 28.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 2.6619860361394942
+        },
+        {
+          "evaluation": 29.0,
+          "best_objective": 1.889098588164977,
+          "candidate_objective": 2.7389843246736056
+        },
+        {
+          "evaluation": 30.0,
+          "best_objective": 1.7429612042232454,
+          "candidate_objective": 1.7429612042232454
+        },
+        {
+          "evaluation": 31.0,
+          "best_objective": 1.6669374449832939,
+          "candidate_objective": 1.6669374449832939
+        },
+        {
+          "evaluation": 32.0,
+          "best_objective": 1.6258975851590731,
+          "candidate_objective": 1.6258975851590731
+        }
+      ]
+    }
+  ]
+}
