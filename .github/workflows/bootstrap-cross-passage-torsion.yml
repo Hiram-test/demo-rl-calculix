@@ -18,20 +18,9 @@ jobs: # 定义作业集合
       - name: Remove one-time bootstrap artifacts # 删除载荷分块、补丁、缓存和本工作流
         shell: bash # 使用 Bash 执行清理
         run: | # 开始清理命令
-          set -euo pipefail # 任一删除或提交错误立即停止
+          set -euo pipefail # 任一提交或推送错误立即停止
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git rm -f .github/workflows/bootstrap-cross-passage-torsion.yml # 删除完成使命的一次性清理工作流
-          git rm -f bootstrap_cross_passage_torsion_payload.b64 # 删除早期截断的单文件载荷
-          git rm -f bootstrap_cross_passage_torsion_payload.part00 # 删除载荷分块零
-          git rm -f bootstrap_cross_passage_torsion_payload.part01 # 删除载荷分块一
-          git rm -f bootstrap_cross_passage_torsion_payload.part02 # 删除载荷分块二
-          git rm -f bootstrap_cross_passage_torsion_payload.part03 # 删除载荷分块三
-          git rm -f bootstrap_cross_passage_torsion_payload.part04 # 删除载荷分块四
-          git rm -f bootstrap_cross_passage_torsion_payload.part05 # 删除载荷分块五
-          git rm -f bootstrap_cross_passage_torsion_payload.part06 # 删除载荷分块六
-          git rm -f patch_cross_passage_torsion_runner.py # 删除已固化进正式主程序的位移兼容补丁
-          git rm -f patch_cross_passage_torsion_metrics.py # 删除已固化进正式主程序的独立指标补丁
-          git rm -f experiments/cross_passage_torsion_benchmark/__pycache__/run_benchmark.cpython-311.pyc # 删除 Python 编译缓存
+          git rm -f --ignore-unmatch .github/workflows/bootstrap-cross-passage-torsion.yml bootstrap_cross_passage_torsion_payload.b64 bootstrap_cross_passage_torsion_payload.part00 bootstrap_cross_passage_torsion_payload.part01 bootstrap_cross_passage_torsion_payload.part02 bootstrap_cross_passage_torsion_payload.part03 bootstrap_cross_passage_torsion_payload.part04 bootstrap_cross_passage_torsion_payload.part05 bootstrap_cross_passage_torsion_payload.part06 patch_cross_passage_torsion_runner.py patch_cross_passage_torsion_metrics.py experiments/cross_passage_torsion_benchmark/__pycache__/run_benchmark.cpython-311.pyc # 原子删除所有仍存在的一次性文件并忽略已缺失路径
           git commit -m 'chore: remove torsion benchmark bootstrap artifacts' # 创建一次性清理提交
           git push origin HEAD:${{ github.event.pull_request.head.ref }} # 推送清理后的正式实验分支
