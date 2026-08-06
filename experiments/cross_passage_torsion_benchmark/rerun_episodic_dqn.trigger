@@ -1,1 +1,1 @@
-Train three independent GCN-DQN policies for 128 episodes each, then evaluate frozen policies with 32 real CalculiX solves per seed.
+Train three independent GCN-DQN policies for 128 episodes each, preserve existing solver evidence, select the median seed by identity, then evaluate frozen policies with 32 real CalculiX solves per seed.
