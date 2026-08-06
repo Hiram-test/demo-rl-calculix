@@ -7,28 +7,32 @@ on: # 定义触发条件
       - .ops/query-episodic-run.trigger # 仅由一次性状态查询标记触发
 permissions: # 定义最小必要权限
   actions: read # 允许读取当前仓库 Actions 运行状态
-  issues: write # 允许将状态摘要写入 PR 对话
-  contents: read # 允许检出诊断分支
+  contents: write # 允许在独立诊断分支保存状态 JSON
 jobs: # 定义诊断作业
   query: # 查询当前实验分支的工作流运行
     runs-on: ubuntu-24.04 # 使用标准 GitHub 托管运行器
     steps: # 定义顺序步骤
       - uses: actions/checkout@v4 # 检出临时诊断分支
-      - name: Query and report runs # 查询实验分支最近运行并回写 PR 评论
-        shell: bash # 使用 Bash 执行 API 查询与文本整理
+        with: # 配置完整历史以便提交
+          fetch-depth: 0 # 获取诊断分支完整历史
+      - name: Query and persist runs # 查询实验分支最近运行并保存 JSON
+        shell: bash # 使用 Bash 执行 API 查询与提交
         env: # 定义 GitHub CLI 身份
           GH_TOKEN: ${{ github.token }} # 使用当前工作流最小权限令牌
-        run: | # 开始查询与回写命令
-          set -euo pipefail # 任一 API 或格式化错误立即停止
+        run: | # 开始查询与提交命令
+          set -euo pipefail # 任一 API、格式化或推送错误立即停止
           gh api "repos/${GITHUB_REPOSITORY}/actions/runs?branch=exp%2Fcross-passage-torsion-five-methods&per_page=10" > /tmp/runs.json # 获取实验分支最近十次 Actions 运行
-          python - <<'PY' # 将 JSON 转换为紧凑 Markdown 状态摘要
+          python - <<'PY' # 将 GitHub API 响应缩减为可审计状态 JSON
           import json  # 解析 GitHub Actions API 响应
-          from pathlib import Path  # 读取响应并写出评论正文
-          data = json.loads(Path('/tmp/runs.json').read_text(encoding='utf-8'))  # 读取运行列表
-          rows = []  # 初始化运行摘要行
+          from pathlib import Path  # 读取响应并写出状态文件
+          data = json.loads(Path('/tmp/runs.json').read_text(encoding='utf-8'))  # 读取完整运行列表
+          rows = []  # 初始化紧凑运行记录
           for run in data.get('workflow_runs', [])[:10]:  # 遍历最近十次工作流运行
-              rows.append(f"- `{run['id']}` | {run['name']} | event={run['event']} | status={run['status']} | conclusion={run.get('conclusion')} | head=`{run['head_sha'][:10]}` | updated={run['updated_at']} | {run['html_url']}")  # 写入运行编号、状态、提交和链接
-          body = "## Episodic DQN Actions status\n\n" + ("\n".join(rows) if rows else "No workflow runs found for the experiment branch.")  # 构造完整评论正文
-          Path('/tmp/status.md').write_text(body + '\n', encoding='utf-8')  # 保存评论正文
+              rows.append({'id': run['id'], 'name': run['name'], 'event': run['event'], 'status': run['status'], 'conclusion': run.get('conclusion'), 'head_sha': run['head_sha'], 'created_at': run['created_at'], 'updated_at': run['updated_at'], 'html_url': run['html_url']})  # 保存运行编号、状态、提交和链接
+          Path('episodic_run_status.json').write_text(json.dumps({'runs': rows}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')  # 写出诊断状态文件
           PY
-          gh api "repos/${GITHUB_REPOSITORY}/issues/24/comments" -f body="$(cat /tmp/status.md)" # 将只读状态摘要发布到 PR 二十四
+          git config user.name 'github-actions[bot]' # 配置自动提交者名称
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
+          git add episodic_run_status.json # 暂存只读状态文件
+          git commit -m 'ops: record episodic benchmark run status' # 创建诊断状态提交
+          git push origin HEAD:${{ github.ref_name }} # 推送回独立诊断分支
