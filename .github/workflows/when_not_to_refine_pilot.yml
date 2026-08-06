@@ -1,0 +1,79 @@
+name: When Not to Refine pilot  # Run the first evidence-grounded intervention-routing experiment.
+on:  # Trigger the isolated pilot when its branch is proposed for review.
+  pull_request:  # Start one immutable benchmark run for the experiment PR.
+    branches:  # Restrict execution to the exact numerical-backend branch used by the source evidence.
+      - fix/entity-first-gmsh-pipeline  # Keep the pilot isolated from main and the paper branch.
+    paths:  # Avoid model spending for unrelated future branch edits.
+      - "experiments/when_not_to_refine/**"  # Run when packets, labels, code, or protocol change.
+      - ".github/workflows/when_not_to_refine_pilot.yml"  # Run when the workflow contract changes.
+  workflow_dispatch:  # Permit an explicit exact rerun after reviewing the first result.
+permissions:  # Grant the minimum repository permission needed by checkout.
+  contents: read  # Read source packets and benchmark code only.
+jobs:  # Execute one controlled decision benchmark over frozen real-solver evidence.
+  decision-benchmark:  # Compare refine-only, single-agent, and role-separated multi-agent routing.
+    runs-on: ubuntu-24.04  # Use a clean current Linux runner.
+    environment: ds  # Read the repository's protected DeepSeek credential.
+    timeout-minutes: 75  # Bound all 32 structured model calls and retries.
+    env:  # Configure the same protected provider family used by the existing live FEA workflows.
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.DS || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.DS || vars.DS_API_KEY }}  # Resolve the existing masked credential without printing it.
+      DEEPSEEK_MODEL: deepseek-v4-pro  # Try the retained project model name first.
+      DEEPSEEK_FALLBACK_MODEL: deepseek-chat  # Fall back to the broadly supported official model name.
+      DEEPSEEK_BASE_URL: https://api.deepseek.com  # Use the official OpenAI-compatible endpoint.
+      DEEPSEEK_TIMEOUT_SECONDS: "180"  # Bound one model decision transaction.
+      DEEPSEEK_MAX_TOKENS: "1600"  # Bound one typed classification response.
+    steps:  # Validate packet separation, run the benchmark, and retain every transcript.
+      - uses: actions/checkout@v4  # Check out the exact experiment PR revision.
+      - uses: actions/setup-python@v5  # Install a controlled Python runtime.
+        with:  # Configure the interpreter explicitly.
+          python-version: "3.12"  # Match the script's tested runtime.
+      - name: Materialize and validate code and packet-label separation  # Reconstruct frozen evidence and reject leakage before spending model calls.
+        shell: bash  # Use strict shell and embedded Python validation.
+        run: |  # Decode the compact evidence bundle, verify its digest, compile code, and audit every packet.
+          set -euo pipefail  # Stop on the first validation failure.
+          evidence_root="$RUNNER_TEMP/when-not-to-refine-evidence"  # Allocate an isolated evidence directory.
+          archive="$RUNNER_TEMP/when-not-to-refine-evidence.tar.gz"  # Allocate the decoded evidence archive.
+          rm -rf "$evidence_root" "$archive"  # Remove any stale evidence from a prior attempt.
+          mkdir -p "$evidence_root"  # Create the empty extraction directory.
+          base64 --decode experiments/when_not_to_refine/evidence_payload.tar.gz.b64 > "$archive"  # Reconstruct the frozen packet archive.
+          echo '81cc9b9e6a93fc4ca7c7f8fed62ab0d91cf3ef192c7991994285fbfc01b1280d  '"$archive" | sha256sum -c -  # Prove exact evidence identity.
+          tar -xzf "$archive" -C "$evidence_root"  # Extract packets and the separately stored labels.
+          script="$RUNNER_TEMP/when-not-to-refine-runner.py"  # Allocate the reconstructed benchmark script outside the repository tree.
+          cat experiments/when_not_to_refine/run_benchmark.part*.py.txt > "$script"  # Reassemble the reviewed line-commented source fragments in lexical order.
+          echo '64bf3c4110a933a93770c12d7e79670ba5eb7abbe45306e927b5932b2a16c9d1  '"$script" | sha256sum -c -  # Prove exact runner identity before execution.
+          python -m py_compile "$script"  # Compile every executable Python line.
+          EVIDENCE_ROOT="$evidence_root" python - <<'PY'  # Run a deterministic preflight audit.
+          import json  # Read packets and labels for structural checks.
+          import os  # Resolve the extracted evidence root.
+          from pathlib import Path  # Discover packet files safely.
+          root = Path(os.environ["EVIDENCE_ROOT"])  # Resolve the isolated evidence directory.
+          labels = json.loads((root / "labels.json").read_text(encoding="utf-8"))["labels"]  # Read the hidden scoring labels.
+          packets = sorted((root / "packets").glob("*.json"))  # Discover every inference packet.
+          if {path.stem for path in packets} != set(labels):  # Require exact case-set agreement.
+              raise SystemExit("packet-label case mismatch")  # Reject missing or extra benchmark cases.
+          for path in packets:  # Audit every inference packet independently.
+              text = path.read_text(encoding="utf-8")  # Read the exact bytes exposed to the runner.
+              if "gold_action" in text:  # Detect a direct hidden-label field inside the inference packet.
+                  raise SystemExit(f"hidden label leaked into {path}")  # Stop before any model call.
+              packet = json.loads(text)  # Parse the sanitized packet.
+              if set(packet) != {"schema_version", "case_id", "source_provenance", "semantic_view", "numeric_view", "allowed_actions"}:  # Freeze the packet schema.
+                  raise SystemExit(f"unexpected packet fields in {path}")  # Reject unreviewed context channels.
+          print({"packets": len(packets), "label_separation": True})  # Record the successful preflight audit.
+          PY
+      - name: Run single-agent and multi-agent intervention routing  # Execute the complete semantics-ablation benchmark.
+        shell: bash  # Use strict failure propagation while preserving model transcripts.
+        run: |  # Run all tasks once with deterministic sampling.
+          set -euo pipefail  # Stop on provider or schema failure rather than substituting a heuristic.
+          test -n "$DEEPSEEK_API_KEY"  # Require a real protected model credential.
+          echo "::add-mask::$DEEPSEEK_API_KEY"  # Prevent accidental credential disclosure.
+          rm -rf experiments/results/when_not_to_refine_pilot  # Remove any stale result directory from the branch.
+          python "$RUNNER_TEMP/when-not-to-refine-runner.py" --packets "$RUNNER_TEMP/when-not-to-refine-evidence/packets" --labels "$RUNNER_TEMP/when-not-to-refine-evidence/labels.json" --output experiments/results/when_not_to_refine_pilot  # Execute all four cases under both input views.
+      - name: Publish the human-readable result in the workflow summary  # Surface metrics without downloading the artifact first.
+        shell: bash  # Append the frozen Markdown result verbatim.
+        run: cat experiments/results/when_not_to_refine_pilot/summary.md >> "$GITHUB_STEP_SUMMARY"  # Render the exact benchmark summary in GitHub Actions.
+      - name: Upload complete benchmark evidence  # Preserve machine results and every raw model transcript.
+        uses: actions/upload-artifact@v4  # Store immutable experiment evidence.
+        with:  # Configure a stable artifact contract.
+          name: when-not-to-refine-pilot-evidence  # Use a reusable evidence artifact name.
+          path: experiments/results/when_not_to_refine_pilot  # Include results, summary, failures, and transcripts.
+          if-no-files-found: error  # Fail if the experiment produced no evidence.
+          retention-days: 90  # Keep the pilot evidence for paper analysis.
