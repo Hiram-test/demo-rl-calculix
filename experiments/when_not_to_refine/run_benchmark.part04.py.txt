@@ -1,0 +1,38 @@
+    rows: list[dict[str, Any]] = []  # Collect task-level outcomes for final scoring.
+    all_calls: list[dict[str, Any]] = []  # Collect provider accounting across architectures.
+    for packet_path in packet_paths:  # Evaluate every engineering case.
+        packet = load_json(packet_path)  # Read one packet without its hidden label.
+        case_id = packet["case_id"]  # Bind all outputs to the stable case identifier.
+        gold = labels[case_id]  # Retrieve the label only after the evidence packet is selected.
+        for view_name in ("semantic_view", "numeric_view"):  # Perform the semantics ablation under identical numerical evidence.
+            task_id = f"{case_id}_{view_name.replace('_view', '')}"  # Create a stable transcript prefix.
+            evidence = evidence_packet(packet, view_name)  # Build the four numbered evidence blocks.
+            single_record = run_single(args, evidence, task_id, transcript_dir)  # Execute the single-agent baseline.
+            numerical_record = run_specialist(args, evidence, task_id, "numerical", transcript_dir)  # Execute the numerical specialist.
+            model_record = run_specialist(args, evidence, task_id, "model_physics", transcript_dir)  # Execute the modeling and physics specialist.
+            coordinator_record = run_coordinator(args, evidence, task_id, {"numerical": numerical_record, "model_physics": model_record}, transcript_dir)  # Execute the evidence-gated coordinator.
+            task_calls = [single_record, numerical_record, model_record, coordinator_record]  # Preserve all four provider transactions for this task.
+            all_calls.extend(task_calls)  # Add task accounting to the experiment total.
+            refine_decision = {"action": "REFINE_LOCAL", "confidence": 1.0, "evidence_ids": [], "reason": "Fixed refine-only baseline.", "abstain": False}  # Define the conventional mesh-first lower baseline.
+            rows.append({"case_id": case_id, "view": view_name.replace("_view", ""), "gold": gold, "refine_only": {"decision": refine_decision, "score": score_decision(refine_decision, gold)}, "single": {"decision": single_record["decision"], "score": score_decision(single_record["decision"], gold), "model": single_record["model"], "latency_seconds": single_record["latency_seconds"]}, "multi": {"specialists": {"numerical": numerical_record["decision"], "model_physics": model_record["decision"]}, "decision": coordinator_record["decision"], "score": score_decision(coordinator_record["decision"], gold), "model": coordinator_record["model"], "latency_seconds": sum(record["latency_seconds"] for record in [numerical_record, model_record, coordinator_record])}})  # Store complete task evidence and scores.
+    architectures = ["refine_only", "single", "multi"]  # Freeze the compared architecture names.
+    metrics: dict[str, Any] = {}  # Allocate aggregate metric storage.
+    for architecture in architectures:  # Aggregate each architecture identically.
+        architecture_rows = [row[architecture] for row in rows]  # Select one architecture outcome per task.
+        metrics[architecture] = {"accuracy": sum(int(item["score"]["correct"]) for item in architecture_rows) / len(architecture_rows), "unsafe_refine_rate": sum(int(item["score"]["unsafe_refine"]) for item in architecture_rows) / len(architecture_rows), "grounding_rate": sum(int(item["score"]["grounded"]) for item in architecture_rows) / len(architecture_rows), "abstain_rate": sum(int(item["score"]["abstain"]) for item in architecture_rows) / len(architecture_rows), "semantic_accuracy": sum(int(row[architecture]["score"]["correct"]) for row in rows if row["view"] == "semantic") / 4.0, "numeric_accuracy": sum(int(row[architecture]["score"]["correct"]) for row in rows if row["view"] == "numeric") / 4.0}  # Compute accuracy, safety, grounding, abstention, and semantic-ablation results.
+    provider_metrics = {"calls": len(all_calls), "prompt_tokens": usage_total(all_calls, "prompt_tokens"), "completion_tokens": usage_total(all_calls, "completion_tokens"), "total_tokens": usage_total(all_calls, "total_tokens"), "median_latency_seconds": statistics.median(record["latency_seconds"] for record in all_calls), "models": sorted({record["model"] for record in all_calls})}  # Report complete model cost and latency accounting.
+    result = {"schema_version": "when-not-to-refine-benchmark/1.0", "task_count": len(rows), "case_count": len(packet_paths), "views": ["semantic", "numeric"], "actions": ACTIONS, "metrics": metrics, "provider": provider_metrics, "rows": rows}  # Build the machine-readable experiment result.
+    (args.output / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # Persist all task-level and aggregate evidence.
+    lines = ["# When Not to Refine：第一轮实验结果", "", f"任务数：{len(rows)}（4个真实CalculiX案例 × 语义/数值两种视图）", "", "| 方法 | 总准确率 | 语义视图 | 数值视图 | 危险网格优先率 | 证据引用率 | 弃权率 |", "|---|---:|---:|---:|---:|---:|---:|"]  # Start a compact human-readable report.
+    for architecture in architectures:  # Render one comparable metric row per architecture.
+        metric = metrics[architecture]  # Read the aggregate architecture metrics.
+        lines.append(f"| {architecture} | {metric['accuracy']:.1%} | {metric['semantic_accuracy']:.1%} | {metric['numeric_accuracy']:.1%} | {metric['unsafe_refine_rate']:.1%} | {metric['grounding_rate']:.1%} | {metric['abstain_rate']:.1%} |")  # Add the architecture metric row.
+    lines.extend(["", f"模型调用：{provider_metrics['calls']}；总tokens：{provider_metrics['total_tokens']}；中位延迟：{provider_metrics['median_latency_seconds']:.2f}s。", "", "## 逐任务动作", "", "| 案例 | 视图 | 正确动作 | refine-only | single | multi |", "|---|---|---|---|---|---|"])  # Add provider cost and task-level headings.
+    for row in rows:  # Render every case-view decision without hiding failures.
+        lines.append(f"| {row['case_id']} | {row['view']} | {row['gold']} | {row['refine_only']['decision']['action']} | {row['single']['decision']['action']} | {row['multi']['decision']['action']} |")  # Add the exact action comparison.
+    (args.output / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")  # Persist the human-readable report.
+    print("\n".join(lines))  # Stream the same report into the GitHub Actions log.
+
+
+if __name__ == "__main__":  # Execute only when invoked as the benchmark entry point.
+    main()  # Run the complete experiment.
