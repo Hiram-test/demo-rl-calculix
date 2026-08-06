@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # 使用当前 Python 解释器修正 DQN 训练证据、结果定位与随机种子公平性
+#!/usr/bin/env python3  # 使用当前 Python 解释器修正 DQN 训练证据、结果定位、随机种子公平性和生成源码换行
 from pathlib import Path  # 读取和覆盖已应用 episodic DQN 的实验主程序
 
 source_path = Path('experiments/cross_passage_torsion_benchmark/run_benchmark.py')  # 定位实验主程序
@@ -23,4 +23,9 @@ new_payload = "        reported_seed_index = next(index for index, item in enume
 if old_payload not in source:  # 检查旧训练摘要代码是否符合预期
     raise RuntimeError('DQN training payload line not found')  # 在未知源码上拒绝修改
 source = source.replace(old_payload, new_payload, 1)  # 修正中位冻结策略的种子定位
+broken_newline = "+ '" + "\n" + "', encoding='utf-8')"  # 构造被三引号字符串提前解释后的断裂源码片段
+literal_newline = "+ '" + chr(92) + "n', encoding='utf-8')"  # 构造生成源码应保留的反斜杠 n 字面量
+if broken_newline not in source:  # 检查断裂换行片段是否存在
+    raise RuntimeError('DQN training JSON newline fragment not found')  # 在未知源码上拒绝静默修改
+source = source.replace(broken_newline, literal_newline, 1)  # 修复训练摘要 write_text 的字符串闭合
 source_path.write_text(source, encoding='utf-8')  # 保存全部正式 DQN 训练修正
