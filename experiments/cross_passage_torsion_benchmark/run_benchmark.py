@@ -387,7 +387,7 @@ class TorsionBenchmark:  # 管理横向通道拓扑、CalculiX 求解、缓存�
         probe_error = float(np.linalg.norm(solution.probe_vector - self.reference.probe_vector) / max(np.linalg.norm(self.reference.probe_vector), 1.0e-18))  # 计算中部位移场相对误差
         candidate_hotspots = {int(index) for index in np.argsort(solution.region_energy)[-TOP_HOTSPOT_COUNT:]}  # 选取候选能量热点区域
         hotspot_recall = len(candidate_hotspots.intersection(self.reference_hotspots)) / float(TOP_HOTSPOT_COUNT)  # 计算参考热点召回率
-        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.15 * (1.0 - hotspot_recall)  # 仅使用整体刚度、能量分布、位移场和热点精度指标形成目标
+        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.13 * (1.0 - hotspot_recall)  # 删除资源项并保留原四项精度指标相对权重
         return float(objective), float(torque_error), float(energy_error), float(probe_error), float(hotspot_recall)  # 返回综合目标和四个可解释指标
     def repair_levels(self, levels: np.ndarray, priority: np.ndarray | None = None) -> tuple[int, ...]:  # 将任意离散级别向量修复到统一单元预算内
         repaired = np.clip(np.rint(levels), 0, 3).astype(np.int64)  # 将连续或越界向量映射到四级离散动作
