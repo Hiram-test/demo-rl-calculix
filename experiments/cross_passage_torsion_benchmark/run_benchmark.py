@@ -387,8 +387,7 @@ class TorsionBenchmark:  # 管理横向通道拓扑、CalculiX 求解、缓存�
         probe_error = float(np.linalg.norm(solution.probe_vector - self.reference.probe_vector) / max(np.linalg.norm(self.reference.probe_vector), 1.0e-18))  # 计算中部位移场相对误差
         candidate_hotspots = {int(index) for index in np.argsort(solution.region_energy)[-TOP_HOTSPOT_COUNT:]}  # 选取候选能量热点区域
         hotspot_recall = len(candidate_hotspots.intersection(self.reference_hotspots)) / float(TOP_HOTSPOT_COUNT)  # 计算参考热点召回率
-        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终单元预算使用率
-        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.13 * (1.0 - hotspot_recall) + 0.02 * resource_fraction  # 使用互相独立的整体刚度、能量分布、位移场、热点和资源指标形成目标
+        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.15 * (1.0 - hotspot_recall)  # 仅使用整体刚度、能量分布、位移场和热点精度指标形成目标
         return float(objective), float(torque_error), float(energy_error), float(probe_error), float(hotspot_recall)  # 返回综合目标和四个可解释指标
     def repair_levels(self, levels: np.ndarray, priority: np.ndarray | None = None) -> tuple[int, ...]:  # 将任意离散级别向量修复到统一单元预算内
         repaired = np.clip(np.rint(levels), 0, 3).astype(np.int64)  # 将连续或越界向量映射到四级离散动作
@@ -606,7 +605,7 @@ class ExperimentRunner:  # 在统一参考解、单元预算和真实求解缓�
             before = len(self.benchmark.cache)  # 记录候选求解前缓存大小
             candidate_solution = self.benchmark.solve(candidate_levels)  # 执行或读取候选真实有限元解
             candidate_objective, _, _, _, _ = self.benchmark.metrics(candidate_solution)  # 计算候选统一目标
-            reward = 8.0 * (current_objective - candidate_objective) - 0.002 * candidate_solution.element_count / float(self.benchmark.element_cap)  # 以目标改进和轻微资源代价定义奖励
+            reward = 8.0 * (current_objective - candidate_objective)  # 仅以精度目标改进定义奖励，单元数由硬上限约束
             next_features = self.benchmark.region_features(candidate_solution, candidate_levels)  # 构造下一图状态节点特征
             next_priority = self.benchmark.hotspot_priority(candidate_solution, candidate_levels)  # 构造下一状态优先级
             next_mask = self._valid_action_mask(candidate_levels, next_priority)  # 构造下一状态动作掩码
