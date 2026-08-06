@@ -1,0 +1,45 @@
+from __future__ import annotations  # Enable postponed annotation evaluation for Python 3.12 compatibility.
+import argparse  # Parse the benchmark command-line arguments.
+import json  # Read packets and serialize all benchmark evidence.
+import os  # Read the protected API credential and runtime settings.
+import re  # Extract JSON objects from occasional Markdown-wrapped model responses.
+import statistics  # Summarize latency and confidence without external dependencies.
+import time  # Measure request latency and implement bounded retry delays.
+import urllib.error  # Handle HTTP failures from the model endpoint explicitly.
+import urllib.request  # Call the OpenAI-compatible DeepSeek endpoint with the standard library.
+from pathlib import Path  # Manage packet, transcript, and result paths safely.
+from typing import Any  # Type heterogeneous JSON payloads without third-party packages.
+
+ACTIONS = ["REFINE_LOCAL", "ALLOCATE_BUDGET", "MODIFY_MODEL", "SWITCH_QOI_PHYSICS", "ABSTAIN"]  # Freeze the complete intervention action space.
+ROLE_PROMPTS = {"numerical": "你是数值误差分析智能体，只判断收敛趋势、误差、预算竞争和继续细化是否有数值意义。", "model_physics": "你是工程建模与物理智能体，只检查载荷、约束、几何理想化、奇异性、QoI和物理模型是否需要改变。"}  # Separate numerical and modeling responsibilities.
+SYSTEM_RULES = "你正在参加有限元适应决策基准。必须只输出JSON对象，action只能取给定枚举；每个结论必须引用E1-E4证据编号；证据不足时选择ABSTAIN；不得假定隐藏参考答案。"  # Enforce typed, grounded, abstention-capable decisions.
+
+
+def parse_args() -> argparse.Namespace:  # Define the reproducible command-line contract.
+    parser = argparse.ArgumentParser(description="Run the When-Not-to-Refine decision benchmark.")  # Create the benchmark parser.
+    parser.add_argument("--packets", type=Path, required=True)  # Require the directory containing sanitized evidence packets.
+    parser.add_argument("--labels", type=Path, required=True)  # Require the separate hidden-label file used only after inference.
+    parser.add_argument("--output", type=Path, required=True)  # Require an isolated output directory for transcripts and summaries.
+    parser.add_argument("--base-url", default=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"))  # Use the configured official-compatible endpoint.
+    parser.add_argument("--model", default=os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro"))  # Prefer the retained project model name.
+    parser.add_argument("--fallback-model", default=os.environ.get("DEEPSEEK_FALLBACK_MODEL", "deepseek-chat"))  # Fall back to the broadly supported model name.
+    parser.add_argument("--timeout", type=float, default=float(os.environ.get("DEEPSEEK_TIMEOUT_SECONDS", "180")))  # Bound every HTTP request.
+    parser.add_argument("--max-tokens", type=int, default=int(os.environ.get("DEEPSEEK_MAX_TOKENS", "1600")))  # Bound each structured decision response.
+    return parser.parse_args()  # Return the validated runtime configuration.
+
+
+def load_json(path: Path) -> Any:  # Read one UTF-8 JSON resource.
+    return json.loads(path.read_text(encoding="utf-8"))  # Parse and return the complete JSON payload.
+
+
+def evidence_packet(packet: dict[str, Any], view_name: str) -> dict[str, Any]:  # Convert one sanitized view into numbered evidence blocks.
+    view = packet[view_name]  # Select either semantic or numeric evidence without exposing labels.
+    return {"E1": {"problem": {key: value for key, value in view.items() if key not in {"numerical_sequence", "energy_check", "independent_theory", "independent_theory_numbers"}}}, "E2": {"numerical_sequence": view.get("numerical_sequence")}, "E3": {"energy_check": view.get("energy_check")}, "E4": {"independent_theory": view.get("independent_theory", view.get("independent_theory_numbers"))}}  # Preserve four auditable evidence categories.
+
+
+def decision_schema_instruction() -> str:  # Build the exact response schema instruction once.
+    return "返回字段：action、confidence(0到1)、evidence_ids(数组，只能E1-E4)、reason(不超过180字)、abstain(bool)。可选动作：" + ", ".join(ACTIONS)  # Keep every model response directly scorable.
+
+
+def extract_json(text: str) -> dict[str, Any]:  # Parse a JSON object even when the provider adds code fences.
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.IGNORECASE | re.DOTALL)  # Remove one outer Markdown fence if present.
