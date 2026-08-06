@@ -1,1 +1,1 @@
-Query the current episodic DQN workflow status and persist it as JSON on this independent diagnostic branch.
+Query the compiled episodic DQN workflow run and persist its current status as JSON.
