@@ -12,7 +12,6 @@ permissions:  # Grant the minimum repository permission needed by checkout.
 jobs:  # Execute one controlled decision benchmark over frozen real-solver evidence.
   decision-benchmark:  # Compare refine-only, single-agent, and role-separated multi-agent routing.
     runs-on: ubuntu-24.04  # Use a clean current Linux runner.
-    environment: ds  # Read the repository's protected DeepSeek credential.
     timeout-minutes: 75  # Bound all 32 structured model calls and retries.
     env:  # Configure the same protected provider family used by the existing live FEA workflows.
       DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.DS || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.DS || vars.DS_API_KEY }}  # Resolve the existing masked credential without printing it.
