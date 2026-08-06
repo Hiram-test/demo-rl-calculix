@@ -1,1 +1,1 @@
-Train three independent GCN-DQN policies for 128 episodes each with identical per-seed epsilon schedules, preserve existing solver evidence, select the median seed by identity, then evaluate frozen policies with 32 real CalculiX solves per seed.
+Run the compiled episodic GCN-DQN benchmark: three independent seeds, 128 episodes per seed, identical epsilon schedules, and 32 frozen-policy CalculiX evaluations per seed.
