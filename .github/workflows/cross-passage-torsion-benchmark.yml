@@ -1,13 +1,8 @@
 name: Cross-passage torsion episodic DQN benchmark # 定义横向通道正式多回合 DQN 实验工作流
 on: # 定义工作流触发条件
-  workflow_dispatch: # 保留人工完整复跑入口
-  push: # 允许本次受控触发文件启动正式复算
-    branches: # 限定实验分支
-      - exp/cross-passage-torsion-five-methods # 仅监听当前横向通道分支
-    paths: # 限定触发路径以避免结果提交循环
-      - experiments/cross_passage_torsion_benchmark/rerun_episodic_dqn.trigger # 仅由本次 DQN 正式训练标记触发
+  workflow_dispatch: # 仅允许人工确认后完整复跑正式实验
 permissions: # 定义工作流最小必要权限
-  contents: write # 允许成功运行后提交正式源码与结果
+  contents: write # 允许成功运行后提交可复现实验结果
 jobs: # 定义工作流作业集合
   benchmark: # 定义正式五方法复算作业
     runs-on: ubuntu-24.04 # 固定使用 Ubuntu 24.04 虚拟机
@@ -17,19 +12,17 @@ jobs: # 定义工作流作业集合
       OMP_NUM_THREADS: '1' # 限制 OpenMP 线程数减少数值波动
       MKL_NUM_THREADS: '1' # 限制 MKL 线程数提高重复性
     steps: # 定义顺序执行步骤
-      - uses: actions/checkout@v4 # 检出当前实验分支
+      - uses: actions/checkout@v4 # 检出人工启动工作流的当前分支
         with: # 配置检出行为
           fetch-depth: 0 # 获取完整历史以便提交结果
       - uses: actions/setup-python@v5 # 安装固定 Python 环境
         with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Apply episodic DQN implementation # 应用正式 episode、done 和冻结评测流程
-        shell: bash # 使用 Bash 执行受控补丁
-        run: | # 开始补丁与语法检查命令
-          set -euo pipefail # 任一补丁或语法错误立即停止
-          python experiments/cross_passage_torsion_benchmark/patch_dqn_episodic.py # 替换旧伪在线 DQN 函数
-          python experiments/cross_passage_torsion_benchmark/patch_dqn_training_cleanup.py # 修正训练证据、探索日程和生成源码
-          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查正式实现
+      - name: Compile implementation # 在安装依赖前检查正式实验主程序语法
+        shell: bash # 使用 Bash 执行编译检查
+        run: | # 开始编译检查命令
+          set -euo pipefail # 任一语法错误立即停止
+          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查已固化的 episodic GCN-DQN 实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行依赖安装
         run: | # 开始依赖安装命令
@@ -49,7 +42,7 @@ jobs: # 定义工作流作业集合
           test -x "$CCX_BIN" # 验证求解器可执行
           echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 写入步骤输出
           "$CCX_BIN" -v || true # 记录求解器版本
-      - name: Run full episodic comparison # 执行参考解、四种搜索方法和正式多回合 DQN
+      - name: Run complete episodic comparison # 执行参考解、四种搜索方法和正式多回合 DQN
         shell: bash # 使用 Bash 启动实验主程序
         run: | # 开始完整实验命令
           set -euo pipefail # 任一求解或后处理错误立即停止
@@ -72,7 +65,8 @@ jobs: # 定义工作流作业集合
           assert training['steps_per_episode'] == 12  # 验证每回合最多十二步
           assert training['maximum_training_transitions'] == 4608  # 验证最大训练转移数量
           assert all(item['episodes'] == 128 for item in training['training'])  # 验证各种子训练回合数
-          assert all(item['gradient_updates'] > 1000 for item in training['training'])  # 验证每个种子实际完成充分参数更新
+          assert all(item['transitions'] == 1536 for item in training['training'])  # 验证各种子完整产生一千五百三十六条转移
+          assert all(item['gradient_updates'] > 1000 for item in training['training'])  # 验证各种子完成充分参数更新
           assert all(item['unique_evaluation_solves'] == 32 for item in training['evaluation'])  # 验证每个冻结策略独立使用三十二次真实求解
           assert all(item['solution']['element_count'] <= data['mesh']['element_cap'] for item in data['methods'])  # 验证全部最终网格满足硬上限
           assert (root / 'RESULTS.md').is_file()  # 验证 Markdown 报告存在
@@ -82,20 +76,21 @@ jobs: # 定义工作流作业集合
         if: always() # 确保失败时保留诊断证据
         uses: actions/upload-artifact@v4 # 使用官方制品上传动作
         with: # 配置上传范围
-          name: cross-passage-torsion-episodic-dqn-evidence # 定义本次正式训练制品名称
+          name: cross-passage-torsion-episodic-dqn-evidence # 定义正式训练制品名称
           path: |
             experiments/cross_passage_torsion_benchmark/results/
             /tmp/cross-passage-torsion.log
             /tmp/apt-install.log
           if-no-files-found: warn # 早期失败时保留原始错误
           retention-days: 14 # 保留完整证据十四天
-      - name: Commit episodic implementation and results # 将正式源码与复算结果提交回实验分支
+      - name: Commit reproducible results # 将成功复算结果提交回人工启动分支
         if: success() # 仅在完整训练、评测和验证成功后提交
         shell: bash # 使用 Bash 执行 Git 操作
         run: | # 开始结果提交命令
           set -euo pipefail # 任一提交或推送错误立即停止
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark/run_benchmark.py experiments/cross_passage_torsion_benchmark/results # 暂存正式 DQN 源码和全部复算结果
-          git commit -m 'results: train and evaluate episodic GCN-DQN' # 创建正式训练结果提交
-          git push origin HEAD:${{ github.ref_name }} # 推送回当前实验分支
+          git add experiments/cross_passage_torsion_benchmark/results # 仅暂存可复现实验结果
+          if git diff --cached --quiet; then exit 0; fi # 结果未变化时跳过空提交
+          git commit -m 'results: rerun episodic GCN-DQN benchmark' # 创建明确的实验结果提交
+          git push origin HEAD:${{ github.ref_name }} # 推送回人工启动工作流的当前分支
