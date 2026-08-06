@@ -1,0 +1,45 @@
+    try:  # Attempt strict parsing first.
+        payload = json.loads(cleaned)  # Parse a compliant provider response.
+    except json.JSONDecodeError:  # Recover only the outermost object when prose surrounds JSON.
+        start = cleaned.find("{")  # Locate the first object delimiter.
+        end = cleaned.rfind("}")  # Locate the final object delimiter.
+        if start < 0 or end <= start:  # Reject responses with no recoverable object.
+            raise ValueError(f"No JSON object found in response: {cleaned[:500]}")  # Preserve a bounded diagnostic excerpt.
+        payload = json.loads(cleaned[start : end + 1])  # Parse the recovered object substring.
+    if not isinstance(payload, dict):  # Require the declared object response type.
+        raise ValueError("Model response is not a JSON object.")  # Reject arrays and scalar outputs.
+    return payload  # Return the raw parsed decision for normalization.
+
+
+def normalize_decision(payload: dict[str, Any]) -> dict[str, Any]:  # Enforce the benchmark decision schema deterministically.
+    action = str(payload.get("action", "ABSTAIN")).strip().upper()  # Normalize the action token.
+    action = action if action in ACTIONS else "ABSTAIN"  # Convert unknown actions into safe abstention.
+    try:  # Parse confidence defensively.
+        confidence = min(1.0, max(0.0, float(payload.get("confidence", 0.0))))  # Clamp confidence to the declared range.
+    except (TypeError, ValueError):  # Handle malformed confidence fields.
+        confidence = 0.0  # Assign zero confidence to malformed responses.
+    raw_ids = payload.get("evidence_ids", [])  # Read the claimed evidence references.
+    evidence_ids = [str(item) for item in raw_ids if str(item) in {"E1", "E2", "E3", "E4"}] if isinstance(raw_ids, list) else []  # Retain only valid evidence identifiers.
+    reason = str(payload.get("reason", ""))[:600]  # Bound stored free text while preserving the audit trail.
+    abstain = bool(payload.get("abstain", action == "ABSTAIN")) or action == "ABSTAIN"  # Make the abstention flag consistent with the action.
+    return {"action": action, "confidence": confidence, "evidence_ids": evidence_ids, "reason": reason, "abstain": abstain}  # Return a stable scorable record.
+
+
+def call_model(args: argparse.Namespace, messages: list[dict[str, str]], call_id: str, transcript_dir: Path) -> dict[str, Any]:  # Execute one bounded provider call with model fallback.
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()  # Read the protected credential only at runtime.
+    if not api_key:  # Refuse a misleading offline benchmark.
+        raise RuntimeError("DEEPSEEK_API_KEY is empty.")  # Fail before creating partial model results.
+    models = list(dict.fromkeys([args.model, args.fallback_model]))  # Try each distinct configured model once per attempt cycle.
+    last_error = ""  # Preserve the final provider error for diagnostics.
+    for attempt in range(3):  # Permit two bounded transient retries after the first request.
+        for model in models:  # Try the retained model name before the compatibility fallback.
+            body = {"model": model, "messages": messages, "temperature": 0.0, "max_tokens": args.max_tokens, "response_format": {"type": "json_object"}}  # Request deterministic structured output.
+            request = urllib.request.Request(args.base_url.rstrip("/") + "/chat/completions", data=json.dumps(body, ensure_ascii=False).encode("utf-8"), headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, method="POST")  # Build the authenticated request without logging the key.
+            started = time.perf_counter()  # Start latency measurement immediately before network I/O.
+            try:  # Execute and parse one provider transaction.
+                with urllib.request.urlopen(request, timeout=args.timeout) as response:  # Open the bounded HTTPS request.
+                    raw = response.read().decode("utf-8")  # Read the complete UTF-8 response body.
+                latency = time.perf_counter() - started  # Record end-to-end request latency.
+                envelope = json.loads(raw)  # Parse the OpenAI-compatible response envelope.
+                text = envelope["choices"][0]["message"]["content"]  # Extract the assistant content.
+                decision = normalize_decision(extract_json(text))  # Convert free provider output into the strict benchmark schema.

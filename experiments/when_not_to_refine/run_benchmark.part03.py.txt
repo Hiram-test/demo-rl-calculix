@@ -1,0 +1,45 @@
+                record = {"call_id": call_id, "model": envelope.get("model", model), "latency_seconds": latency, "usage": envelope.get("usage", {}), "decision": decision, "raw_content": text}  # Preserve provider accounting and the exact response.
+                (transcript_dir / f"{call_id}.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")  # Seal one auditable call transcript.
+                return record  # Return after the first successful provider transaction.
+            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, KeyError, json.JSONDecodeError, ValueError) as error:  # Catch network, schema, and parsing failures uniformly.
+                latency = time.perf_counter() - started  # Record failed-call latency for debugging.
+                detail = error.read().decode("utf-8", errors="replace")[:2000] if isinstance(error, urllib.error.HTTPError) else str(error)  # Capture a bounded provider diagnostic.
+                last_error = f"attempt={attempt + 1} model={model} latency={latency:.3f}s error={detail}"  # Preserve the exact failed route.
+                (transcript_dir / f"{call_id}_failure_{attempt + 1}_{model.replace('/', '_')}.txt").write_text(last_error + "\n", encoding="utf-8")  # Persist failure evidence without credentials.
+        time.sleep(2.0 * (attempt + 1))  # Back off modestly before retrying all configured models.
+    raise RuntimeError(f"Provider call failed after bounded retries: {last_error}")  # Stop rather than silently substitute a heuristic decision.
+
+
+def run_single(args: argparse.Namespace, evidence: dict[str, Any], task_id: str, transcript_dir: Path) -> dict[str, Any]:  # Run the one-call single-agent baseline.
+    prompt = "独立完成下一步干预分类。" + decision_schema_instruction() + "\n证据包：\n" + json.dumps(evidence, ensure_ascii=False, separators=(",", ":"))  # Give one agent the complete evidence packet and no hidden labels.
+    return call_model(args, [{"role": "system", "content": SYSTEM_RULES}, {"role": "user", "content": prompt}], f"{task_id}_single", transcript_dir)  # Execute the baseline under the same provider contract.
+
+
+def run_specialist(args: argparse.Namespace, evidence: dict[str, Any], task_id: str, role: str, transcript_dir: Path) -> dict[str, Any]:  # Run one role-isolated specialist agent.
+    prompt = ROLE_PROMPTS[role] + decision_schema_instruction() + "\n只从你的职责提出候选动作，不替其他角色补充结论。\n证据包：\n" + json.dumps(evidence, ensure_ascii=False, separators=(",", ":"))  # Restrict each specialist to its declared epistemic role.
+    return call_model(args, [{"role": "system", "content": SYSTEM_RULES}, {"role": "user", "content": prompt}], f"{task_id}_{role}", transcript_dir)  # Execute the isolated specialist call.
+
+
+def run_coordinator(args: argparse.Namespace, evidence: dict[str, Any], task_id: str, proposals: dict[str, dict[str, Any]], transcript_dir: Path) -> dict[str, Any]:  # Coordinate typed specialist proposals against the original evidence.
+    compact = {role: record["decision"] for role, record in proposals.items()}  # Hide provider metadata and expose only typed proposals.
+    prompt = "你是证据协调与安全门智能体。检查两个角色是否越权、证据编号是否支持其动作，并给出最终动作。任何关键冲突无法由E1-E4消解时必须ABSTAIN。" + decision_schema_instruction() + "\n原始证据：\n" + json.dumps(evidence, ensure_ascii=False, separators=(",", ":")) + "\n角色提案：\n" + json.dumps(compact, ensure_ascii=False, separators=(",", ":"))  # Require evidence-grounded conflict resolution.
+    return call_model(args, [{"role": "system", "content": SYSTEM_RULES}, {"role": "user", "content": prompt}], f"{task_id}_coordinator", transcript_dir)  # Execute the final multi-agent decision gate.
+
+
+def score_decision(decision: dict[str, Any], gold: str) -> dict[str, Any]:  # Score one normalized decision against the hidden label.
+    return {"correct": decision["action"] == gold, "unsafe_refine": decision["action"] in {"REFINE_LOCAL", "ALLOCATE_BUDGET"} and gold in {"MODIFY_MODEL", "SWITCH_QOI_PHYSICS"}, "grounded": len(decision["evidence_ids"]) > 0, "abstain": decision["abstain"]}  # Track accuracy, unsafe mesh-first errors, grounding, and abstention.
+
+
+def usage_total(records: list[dict[str, Any]], key: str) -> int:  # Sum one provider usage field across heterogeneous envelopes.
+    return sum(int(record.get("usage", {}).get(key, 0) or 0) for record in records)  # Treat missing usage fields as zero.
+
+
+def main() -> None:  # Run the complete benchmark and persist all outputs.
+    args = parse_args()  # Parse the frozen command-line contract.
+    args.output.mkdir(parents=True, exist_ok=True)  # Create the isolated result root.
+    transcript_dir = args.output / "transcripts"  # Allocate one transcript directory for every provider call.
+    transcript_dir.mkdir(parents=True, exist_ok=True)  # Create the transcript directory before any network request.
+    labels = load_json(args.labels)["labels"]  # Load hidden labels separately from inference packets.
+    packet_paths = sorted(args.packets.glob("*.json"))  # Discover every sanitized packet deterministically.
+    if set(path.stem for path in packet_paths) != set(labels):  # Require one-to-one packet and label coverage.
+        raise RuntimeError("Packet and label case sets differ.")  # Reject an incomplete or contaminated benchmark.
