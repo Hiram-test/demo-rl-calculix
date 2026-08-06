@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # 使用当前 Python 解释器修正 DQN 训练证据清理范围
+#!/usr/bin/env python3  # 使用当前 Python 解释器修正 DQN 训练证据清理与结果定位
 from pathlib import Path  # 读取和覆盖已应用 episodic DQN 的实验主程序
 
 source_path = Path('experiments/cross_passage_torsion_benchmark/run_benchmark.py')  # 定位实验主程序
@@ -13,4 +13,9 @@ new_cleanup = "        training_only_workdirs = {solution.workdir for solution i
 if old_cleanup not in source:  # 检查旧清理代码是否符合预期
     raise RuntimeError('DQN cleanup block not found')  # 在未知源码上拒绝修改
 source = source.replace(old_cleanup, new_cleanup, 1)  # 替换为仅删除训练新增目录的逻辑
-source_path.write_text(source, encoding='utf-8')  # 保存证据清理修正
+old_payload = "        training_payload = {'schema': 'episodic-dqn-training-summary', 'training_seed_count': len(DQN_TRAIN_SEEDS), 'episodes_per_seed': DQN_TRAIN_EPISODES, 'steps_per_episode': DQN_EPISODE_STEPS, 'maximum_training_transitions': len(DQN_TRAIN_SEEDS) * DQN_TRAIN_EPISODES * DQN_EPISODE_STEPS, 'unique_training_solves': int(training_unique_solves), 'evaluation_solve_budget_per_seed': DQN_EVALUATION_SOLVE_BUDGET, 'reported_seed_rule': 'median objective across three independently trained frozen policies', 'training': training_summaries, 'evaluation': evaluation_summaries, 'reported_seed': int(DQN_TRAIN_SEEDS[evaluation_results.index(median_result)]) if median_result in evaluation_results else None}  # 构造完整 episodic DQN 训练审计记录\n"  # 定义会触发 NumPy 数组相等比较的旧摘要代码
+new_payload = "        reported_seed_index = next(index for index, item in enumerate(evaluation_results) if item is median_result)  # 使用对象身份定位中位冻结策略以避免 NumPy 数组相等比较\n        training_payload = {'schema': 'episodic-dqn-training-summary', 'training_seed_count': len(DQN_TRAIN_SEEDS), 'episodes_per_seed': DQN_TRAIN_EPISODES, 'steps_per_episode': DQN_EPISODE_STEPS, 'maximum_training_transitions': len(DQN_TRAIN_SEEDS) * DQN_TRAIN_EPISODES * DQN_EPISODE_STEPS, 'unique_training_solves': int(training_unique_solves), 'evaluation_solve_budget_per_seed': DQN_EVALUATION_SOLVE_BUDGET, 'reported_seed_rule': 'median objective across three independently trained frozen policies', 'training': training_summaries, 'evaluation': evaluation_summaries, 'reported_seed': int(DQN_TRAIN_SEEDS[reported_seed_index])}  # 构造完整 episodic DQN 训练审计记录\n"  # 定义使用对象身份定位的新摘要代码
+if old_payload not in source:  # 检查旧训练摘要代码是否符合预期
+    raise RuntimeError('DQN training payload line not found')  # 在未知源码上拒绝修改
+source = source.replace(old_payload, new_payload, 1)  # 修正中位冻结策略的种子定位
+source_path.write_text(source, encoding='utf-8')  # 保存证据清理与结果定位修正
