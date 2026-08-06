@@ -28,7 +28,7 @@ jobs: # 定义工作流作业集合
         run: | # 开始补丁与语法检查命令
           set -euo pipefail # 任一补丁或语法错误立即停止
           python experiments/cross_passage_torsion_benchmark/patch_dqn_episodic.py # 替换旧伪在线 DQN 函数
-          python experiments/cross_passage_torsion_benchmark/patch_dqn_training_cleanup.py # 修正训练证据清理范围
+          python experiments/cross_passage_torsion_benchmark/patch_dqn_training_cleanup.py # 修正训练证据、探索日程和生成源码
           python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查正式实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行依赖安装
@@ -83,10 +83,10 @@ jobs: # 定义工作流作业集合
         uses: actions/upload-artifact@v4 # 使用官方制品上传动作
         with: # 配置上传范围
           name: cross-passage-torsion-episodic-dqn-evidence # 定义本次正式训练制品名称
-          path: | # 列出需要保留的证据
-            experiments/cross_passage_torsion_benchmark/results/ # 上传正式评测求解、表格、图和训练摘要
-            /tmp/cross-passage-torsion.log # 上传完整实验日志
-            /tmp/apt-install.log # 上传 CalculiX 安装日志
+          path: |
+            experiments/cross_passage_torsion_benchmark/results/
+            /tmp/cross-passage-torsion.log
+            /tmp/apt-install.log
           if-no-files-found: warn # 早期失败时保留原始错误
           retention-days: 14 # 保留完整证据十四天
       - name: Commit episodic implementation and results # 将正式源码与复算结果提交回实验分支
