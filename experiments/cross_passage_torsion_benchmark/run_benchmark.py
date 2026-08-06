@@ -30,6 +30,14 @@ LEVEL_SUBDIVISIONS = np.asarray([1, 2, 4, 8], dtype=np.int64)  # 定义四级离
 REFERENCE_SUBDIVISIONS = 16  # 使用统一十六分段模型作为隐藏评价参考解
 OPTIMIZATION_SOLVE_BUDGET = 32  # 为三个搜索方法和 DQN 统一真实候选求解预算
 TOP_HOTSPOT_COUNT = 4  # 使用参考解能量最大的四个图区域评价热点命中率
+DQN_TRAIN_EPISODES = 128  # 为每个独立随机种子执行一百二十八个完整训练回合
+DQN_EPISODE_STEPS = 12  # 将每个训练回合限制为十二次确定性网格状态转移
+DQN_TRAIN_SEEDS = (SEED + 101, SEED + 202, SEED + 303)  # 使用三个独立随机种子评价训练稳定性
+DQN_REPLAY_CAPACITY = 8192  # 保存跨回合经验并限制内存占用
+DQN_BATCH_SIZE = 64  # 每次梯度更新抽取六十四条经验
+DQN_REPLAY_WARMUP = 128  # 经验池达到一百二十八条后开始参数更新
+DQN_TARGET_SYNC_UPDATES = 100  # 每一百次梯度更新同步目标网络
+DQN_EVALUATION_SOLVE_BUDGET = 32  # 冻结策略后为每个随机种子提供三十二次独立真实求解
 @dataclass(frozen=True)  # 将宏观杆件定义为不可变拓扑记录
 class MacroMember:  # 表示横向通道空间桁架中的一根宏观杆件
     start: int  # 保存起点宏观节点编号
@@ -568,87 +576,189 @@ class ExperimentRunner:  # 在统一参考解、单元预算和真实求解缓�
                 candidate[region] += 1.0  # 应用细化动作
                 mask[region, 1] = self.benchmark.repair_levels(candidate, priority) != levels  # 标记细化是否改变最终配置
         return mask  # 返回动作有效掩码
-    def run_dqn_gcn(self) -> MethodResult:  # 执行真实求解器在线交互的 GCN 编码深度 Q 学习
-        start_count = len(self.benchmark.cache)  # 记录方法开始前缓存候选数
-        online = GraphQNetwork(6, 48, 2, self.benchmark.normalized_adjacency)  # 创建在线 GCN-Q 网络
-        target = GraphQNetwork(6, 48, 2, self.benchmark.normalized_adjacency)  # 创建目标 GCN-Q 网络
-        target.load_state_dict(online.state_dict())  # 同步目标网络初始权重
-        optimizer = torch.optim.Adam(online.parameters(), lr=2.0e-3)  # 创建 Adam 优化器
-        replay = ReplayBuffer(256)  # 创建有限容量经验回放缓冲区
-        current_levels = tuple(1 for _ in range(self.benchmark.region_count))  # 使用统一二分段网格初始化在线环境
-        current_solution = self.benchmark.solve(current_levels)  # 获取初始真实有限元响应
-        current_objective, _, _, _, _ = self.benchmark.metrics(current_solution)  # 计算初始综合目标
-        best_levels = current_levels  # 初始化 DQN 全局最优级别配置
-        best_objective = current_objective  # 初始化 DQN 全局最优目标
-        history: list[dict[str, float]] = []  # 初始化 DQN 收敛轨迹
-        interaction = 0  # 初始化环境交互次数
-        while len(self.benchmark.cache) - start_count < OPTIMIZATION_SOLVE_BUDGET and interaction < 500:  # 在统一真实求解预算内在线训练
-            interaction += 1  # 累加环境交互次数
-            state_features = self.benchmark.region_features(current_solution, current_levels)  # 构造当前图状态节点特征
-            priority = self.benchmark.hotspot_priority(current_solution, current_levels)  # 构造预算修复和动作掩码使用的当前优先级
-            valid_mask = self._valid_action_mask(current_levels, priority)  # 构造当前有效动作掩码
-            epsilon = max(0.08, 0.85 - 0.75 * (len(self.benchmark.cache) - start_count) / float(OPTIMIZATION_SOLVE_BUDGET))  # 按真实求解进度衰减探索率
-            if random.random() < epsilon:  # 执行 epsilon 随机探索
-                valid_pairs = np.argwhere(valid_mask)  # 提取全部有效区域动作对
-                selected_pair = valid_pairs[random.randrange(len(valid_pairs))]  # 随机选择一个有效区域动作
-                region = int(selected_pair[0])  # 读取动作区域编号
-                action_index = int(selected_pair[1])  # 读取粗化或细化动作编号
-            else:  # 执行当前 GCN-Q 网络贪心动作
-                with torch.no_grad():  # 禁用动作选择阶段梯度
-                    q_values = online(torch.tensor(state_features[None, :, :], dtype=torch.float32))[0].numpy()  # 计算十六个区域的两类动作 Q 值
-                q_values[~valid_mask] = -1.0e30  # 屏蔽无效动作
-                flat_index = int(np.argmax(q_values))  # 选择全图最大有效 Q 值动作
-                region, action_index = np.unravel_index(flat_index, q_values.shape)  # 还原动作区域和动作类型
-            candidate = np.asarray(current_levels, dtype=np.float64)  # 复制当前级别向量
-            candidate[region] += -1.0 if action_index == 0 else 1.0  # 应用粗化或细化动作
-            candidate_levels = self.benchmark.repair_levels(candidate, priority)  # 将候选配置修复到统一单元预算
-            before = len(self.benchmark.cache)  # 记录候选求解前缓存大小
-            candidate_solution = self.benchmark.solve(candidate_levels)  # 执行或读取候选真实有限元解
-            candidate_objective, _, _, _, _ = self.benchmark.metrics(candidate_solution)  # 计算候选统一目标
-            reward = 8.0 * (current_objective - candidate_objective)  # 仅以精度目标改进定义奖励，单元数由硬上限约束
-            next_features = self.benchmark.region_features(candidate_solution, candidate_levels)  # 构造下一图状态节点特征
-            next_priority = self.benchmark.hotspot_priority(candidate_solution, candidate_levels)  # 构造下一状态优先级
-            next_mask = self._valid_action_mask(candidate_levels, next_priority)  # 构造下一状态动作掩码
-            replay.add((state_features.copy(), region, action_index, float(reward), next_features.copy(), next_mask.copy()))  # 将真实求解转移加入经验回放
-            if candidate_objective <= current_objective or random.random() < 0.05:  # 接受改进动作并保留少量探索性转移
-                current_levels = candidate_levels  # 更新在线环境级别配置
-                current_solution = candidate_solution  # 更新在线环境真实响应
-                current_objective = candidate_objective  # 更新在线环境综合目标
-            if candidate_objective < best_objective:  # 检查候选是否改进 DQN 全局最优
-                best_objective = candidate_objective  # 更新 DQN 全局最优目标
-                best_levels = candidate_levels  # 更新 DQN 全局最优级别配置
-            if len(self.benchmark.cache) > before:  # 仅对唯一真实求解写入轨迹
-                history.append({"evaluation": float(len(self.benchmark.cache) - start_count), "best_objective": float(best_objective), "candidate_objective": float(candidate_objective)})  # 记录当前候选和历史最优
-            if len(replay.items) >= 8:  # 在回放样本足够时执行一次 DQN 参数更新
-                batch = replay.sample(8)  # 随机抽取八条真实转移
-                state_batch = torch.tensor(np.stack([item[0] for item in batch]), dtype=torch.float32)  # 组成当前状态批次
-                region_batch = torch.tensor([item[1] for item in batch], dtype=torch.int64)  # 组成动作区域批次
-                action_batch = torch.tensor([item[2] for item in batch], dtype=torch.int64)  # 组成动作类型批次
-                reward_batch = torch.tensor([item[3] for item in batch], dtype=torch.float32)  # 组成奖励批次
-                next_batch = torch.tensor(np.stack([item[4] for item in batch]), dtype=torch.float32)  # 组成下一状态批次
-                mask_batch = torch.tensor(np.stack([item[5] for item in batch]), dtype=torch.bool)  # 组成下一状态有效动作掩码
-                q_batch = online(state_batch)  # 计算当前状态全部 Q 值
-                selected_q = q_batch[torch.arange(len(batch)), region_batch, action_batch]  # 提取实际执行动作 Q 值
-                with torch.no_grad():  # 禁用目标值计算梯度
-                    next_online = online(next_batch).masked_fill(~mask_batch, -1.0e30)  # 用在线网络选择下一状态全图动作
-                    next_flat = next_online.view(len(batch), -1).argmax(dim=1)  # 获取 Double DQN 下一动作扁平索引
-                    next_region = torch.div(next_flat, 2, rounding_mode="floor")  # 还原下一动作区域编号
-                    next_action = next_flat % 2  # 还原下一动作类型编号
-                    next_target = target(next_batch)[torch.arange(len(batch)), next_region, next_action]  # 用目标网络评价下一动作
-                    target_q = reward_batch + 0.92 * next_target  # 形成一步折扣 Bellman 目标
-                loss = F.smooth_l1_loss(selected_q, target_q)  # 计算稳定的平滑 L1 DQN 损失
-                optimizer.zero_grad()  # 清空上一批次梯度
-                loss.backward()  # 反向传播当前 DQN 损失
-                torch.nn.utils.clip_grad_norm_(online.parameters(), 5.0)  # 裁剪梯度以提高小样本在线训练稳定性
-                optimizer.step()  # 更新在线 GCN-Q 网络参数
-            if interaction % 6 == 0:  # 每六次交互同步一次目标网络
-                target.load_state_dict(online.state_dict())  # 将在线网络参数复制到目标网络
-            if interaction % 12 == 0 and len(self.benchmark.cache) - start_count < OPTIMIZATION_SOLVE_BUDGET:  # 周期性重置起点以扩大离散状态覆盖
-                restart = np.random.randint(0, 3, size=self.benchmark.region_count)  # 生成零到二级随机网格向量
-                current_levels = self.benchmark.repair_levels(restart, None)  # 修复随机网格到统一单元预算
-                current_solution = self.benchmark.solve(current_levels)  # 获取随机重启状态真实响应
-                current_objective, _, _, _, _ = self.benchmark.metrics(current_solution)  # 更新随机重启状态目标
-        return self.benchmark.method_result("dqn_gcn", best_levels, len(self.benchmark.cache) - start_count, history, "两层 GCN 编码十六区域图，Double DQN 在真实 CalculiX 反馈下在线选择区域粗化或细化动作。")  # 返回 DQN+GCN 方法结果
+    def run_dqn_gcn(self) -> MethodResult:  # 先完成多回合独立训练，再冻结 GCN-DQN 并使用统一真实求解预算评测
+        training_cache_start = len(self.benchmark.cache)  # 记录 DQN 训练开始前已有候选数量
+        preserved_workdirs = {solution.workdir for solution in self.benchmark.cache.values()}  # 保存前四种方法已产生的求解证据目录
+        trained_states: list[dict[str, torch.Tensor]] = []  # 保存三个独立随机种子的冻结网络参数
+        training_summaries: list[dict[str, Any]] = []  # 保存每个随机种子的训练回合与损失摘要
+        for seed_index, training_seed in enumerate(DQN_TRAIN_SEEDS):  # 逐个独立随机种子执行完整 episodic training
+            random.seed(training_seed)  # 固定当前随机种子的 Python 探索过程
+            np.random.seed(training_seed)  # 固定当前随机种子的 NumPy 重置状态
+            torch.manual_seed(training_seed)  # 固定当前随机种子的网络初始化和批次采样
+            online = GraphQNetwork(6, 64, 2, self.benchmark.normalized_adjacency)  # 创建当前种子的在线 GCN-Q 网络
+            target = GraphQNetwork(6, 64, 2, self.benchmark.normalized_adjacency)  # 创建当前种子的目标 GCN-Q 网络
+            target.load_state_dict(online.state_dict())  # 同步初始在线网络和目标网络参数
+            optimizer = torch.optim.Adam(online.parameters(), lr=1.0e-3)  # 使用较稳定学习率创建 Adam 优化器
+            replay_items: list[tuple[np.ndarray, int, int, float, np.ndarray, np.ndarray, float]] = []  # 初始化包含终止标志的跨回合经验池
+            episode_returns: list[float] = []  # 保存每个训练回合累计奖励
+            terminal_objectives: list[float] = []  # 保存每个训练回合终止目标值
+            losses: list[float] = []  # 保存全部参数更新损失
+            gradient_updates = 0  # 初始化当前种子的梯度更新次数
+            seed_cache_start = len(self.benchmark.cache)  # 记录当前种子开始前训练缓存规模
+            for episode in range(DQN_TRAIN_EPISODES):  # 执行规定数量的完整训练回合
+                if episode % 5 == 0:  # 周期性使用与最终评测一致的统一二分段起点
+                    current_levels = tuple(1 for _ in range(self.benchmark.region_count))  # 构造固定训练起点
+                else:  # 其余回合从随机可行网格状态开始以扩大覆盖范围
+                    restart_rng = np.random.default_rng(training_seed + episode)  # 为当前回合创建可复现重置随机数发生器
+                    restart = restart_rng.integers(0, 3, size=self.benchmark.region_count)  # 生成零到二级随机区域网格
+                    current_levels = self.benchmark.repair_levels(restart, None)  # 将随机网格修复到三百三十六单元硬上限内
+                current_solution = self.benchmark.solve(current_levels)  # 获取当前回合初始状态真实有限元响应
+                current_objective, _, _, _, _ = self.benchmark.metrics(current_solution)  # 计算初始状态精度目标
+                episode_return = 0.0  # 初始化当前回合累计奖励
+                for step in range(DQN_EPISODE_STEPS):  # 在固定回合长度内执行确定性环境转移
+                    state_features = self.benchmark.region_features(current_solution, current_levels)  # 构造当前图状态节点特征
+                    priority = self.benchmark.hotspot_priority(current_solution, current_levels)  # 构造预算修复使用的区域优先级
+                    valid_mask = self._valid_action_mask(current_levels, priority)  # 构造当前状态有效动作掩码
+                    valid_pairs = np.argwhere(valid_mask)  # 提取全部有效区域动作对
+                    if len(valid_pairs) == 0:  # 检查是否到达无可执行动作终止状态
+                        break  # 提前结束当前训练回合
+                    progress = episode / float(DQN_TRAIN_EPISODES - 1)  # 为每个独立随机种子使用相同的零到一训练进度
+                    epsilon = 0.05 + 0.90 * (1.0 - progress)  # 将探索率从零点九五线性衰减到零点零五
+                    if random.random() < epsilon:  # 按当前探索率执行随机有效动作
+                        selected_pair = valid_pairs[random.randrange(len(valid_pairs))]  # 随机选择一个有效区域动作
+                        region = int(selected_pair[0])  # 读取动作区域编号
+                        action_index = int(selected_pair[1])  # 读取粗化或细化动作编号
+                    else:  # 使用当前在线网络执行贪心动作
+                        with torch.no_grad():  # 禁用动作选择阶段梯度
+                            q_values = online(torch.tensor(state_features[None, :, :], dtype=torch.float32))[0].numpy()  # 计算当前图全部动作 Q 值
+                        q_values[~valid_mask] = -1.0e30  # 屏蔽全部无效动作
+                        flat_index = int(np.argmax(q_values))  # 选择全图最大有效 Q 值动作
+                        region, action_index = np.unravel_index(flat_index, q_values.shape)  # 还原动作区域和类型
+                    candidate = np.asarray(current_levels, dtype=np.float64)  # 复制当前级别向量
+                    candidate[region] += -1.0 if action_index == 0 else 1.0  # 应用当前粗化或细化动作
+                    candidate_levels = self.benchmark.repair_levels(candidate, priority)  # 将候选修复到统一单元上限内
+                    candidate_solution = self.benchmark.solve(candidate_levels)  # 执行或读取候选真实 CalculiX 响应
+                    candidate_objective, _, _, _, _ = self.benchmark.metrics(candidate_solution)  # 计算候选精度目标
+                    done = float(step + 1 >= DQN_EPISODE_STEPS)  # 在固定步数末端写入正式终止标志
+                    reward = 8.0 * (current_objective - candidate_objective)  # 仅按精度目标改进定义即时奖励
+                    next_features = self.benchmark.region_features(candidate_solution, candidate_levels)  # 构造实际下一状态图特征
+                    next_priority = self.benchmark.hotspot_priority(candidate_solution, candidate_levels)  # 构造实际下一状态优先级
+                    next_mask = self._valid_action_mask(candidate_levels, next_priority)  # 构造实际下一状态动作掩码
+                    replay_items.append((state_features.copy(), int(region), int(action_index), float(reward), next_features.copy(), next_mask.copy(), done))  # 将真实且一致的环境转移加入经验池
+                    if len(replay_items) > DQN_REPLAY_CAPACITY:  # 检查经验池是否超过固定容量
+                        replay_items.pop(0)  # 删除最早经验以保持固定容量
+                    current_levels = candidate_levels  # 无条件接受动作并更新实际环境状态
+                    current_solution = candidate_solution  # 更新实际环境有限元响应
+                    current_objective = candidate_objective  # 更新实际环境精度目标
+                    episode_return += reward  # 累加当前回合即时奖励
+                    if len(replay_items) >= DQN_REPLAY_WARMUP:  # 在经验池充分预热后执行一次梯度更新
+                        batch = random.sample(replay_items, DQN_BATCH_SIZE)  # 从跨回合经验池均匀抽取训练批次
+                        state_batch = torch.tensor(np.stack([item[0] for item in batch]), dtype=torch.float32)  # 组成当前状态批次
+                        region_batch = torch.tensor([item[1] for item in batch], dtype=torch.int64)  # 组成动作区域批次
+                        action_batch = torch.tensor([item[2] for item in batch], dtype=torch.int64)  # 组成动作类型批次
+                        reward_batch = torch.tensor([item[3] for item in batch], dtype=torch.float32)  # 组成即时奖励批次
+                        next_batch = torch.tensor(np.stack([item[4] for item in batch]), dtype=torch.float32)  # 组成实际下一状态批次
+                        mask_batch = torch.tensor(np.stack([item[5] for item in batch]), dtype=torch.bool)  # 组成下一状态动作掩码批次
+                        done_batch = torch.tensor([item[6] for item in batch], dtype=torch.float32)  # 组成正式终止标志批次
+                        q_batch = online(state_batch)  # 计算当前状态全部 Q 值
+                        selected_q = q_batch[torch.arange(len(batch)), region_batch, action_batch]  # 提取实际执行动作 Q 值
+                        with torch.no_grad():  # 禁用 Bellman 目标计算梯度
+                            next_online = online(next_batch).masked_fill(~mask_batch, -1.0e30)  # 用在线网络选择下一状态动作
+                            next_flat = next_online.view(len(batch), -1).argmax(dim=1)  # 获取 Double DQN 下一动作扁平编号
+                            next_region = torch.div(next_flat, 2, rounding_mode='floor')  # 还原下一动作区域编号
+                            next_action = next_flat % 2  # 还原下一动作类型编号
+                            next_target = target(next_batch)[torch.arange(len(batch)), next_region, next_action]  # 用目标网络评价下一动作
+                            target_q = reward_batch + 0.92 * (1.0 - done_batch) * next_target  # 使用终止标志形成正确的一步 Bellman 目标
+                        loss = F.smooth_l1_loss(selected_q, target_q)  # 计算稳定的平滑 L1 损失
+                        optimizer.zero_grad()  # 清空上一批次梯度
+                        loss.backward()  # 反向传播当前批次损失
+                        torch.nn.utils.clip_grad_norm_(online.parameters(), 5.0)  # 裁剪梯度以稳定有限元小样本训练
+                        optimizer.step()  # 更新在线 GCN-Q 网络参数
+                        gradient_updates += 1  # 累加当前种子梯度更新次数
+                        losses.append(float(loss.detach().cpu().item()))  # 保存当前批次损失
+                        if gradient_updates % DQN_TARGET_SYNC_UPDATES == 0:  # 按固定更新次数同步目标网络
+                            target.load_state_dict(online.state_dict())  # 将在线网络参数复制到目标网络
+                    if done > 0.5:  # 检查是否到达当前回合终止状态
+                        break  # 结束当前训练回合
+                episode_returns.append(float(episode_return))  # 保存当前回合累计奖励
+                terminal_objectives.append(float(current_objective))  # 保存当前回合终止目标
+            trained_states.append({name: tensor.detach().cpu().clone() for name, tensor in online.state_dict().items()})  # 冻结并保存当前独立种子网络参数
+            training_summaries.append({'seed': int(training_seed), 'episodes': DQN_TRAIN_EPISODES, 'episode_steps': DQN_EPISODE_STEPS, 'transitions': len(replay_items), 'gradient_updates': int(gradient_updates), 'unique_training_solves_added': int(len(self.benchmark.cache) - seed_cache_start), 'mean_episode_return': float(np.mean(episode_returns)), 'final_32_episode_return_mean': float(np.mean(episode_returns[-32:])), 'mean_terminal_objective': float(np.mean(terminal_objectives)), 'final_32_terminal_objective_mean': float(np.mean(terminal_objectives[-32:])), 'mean_loss': float(np.mean(losses)) if losses else None})  # 记录当前种子的完整训练摘要
+        training_unique_solves = len(self.benchmark.cache) - training_cache_start  # 统计三个种子共享缓存后的唯一训练求解总数
+        training_only_workdirs = {solution.workdir for solution in self.benchmark.cache.values() if solution.workdir not in preserved_workdirs}  # 找出仅由 DQN 训练新增的候选目录
+        for training_workdir_text in training_only_workdirs:  # 逐个清理 DQN 训练临时候选证据
+            training_workdir = Path(training_workdir_text)  # 将目录文本转换为路径对象
+            if training_workdir.exists():  # 检查训练候选目录是否仍存在
+                shutil.rmtree(training_workdir)  # 仅删除训练新增目录并保留前四种方法证据
+        self.benchmark.run_root.mkdir(parents=True, exist_ok=True)  # 确保冻结策略评测证据根目录存在
+        evaluation_results: list[MethodResult] = []  # 保存三个冻结策略的独立评测结果
+        evaluation_summaries: list[dict[str, Any]] = []  # 保存三个种子的评测摘要
+        for seed_index, training_seed in enumerate(DQN_TRAIN_SEEDS):  # 逐个冻结网络执行独立三十二求解评测
+            random.seed(SEED + 10000 + seed_index)  # 固定当前评测的重置与平局过程
+            np.random.seed(SEED + 10000 + seed_index)  # 固定当前评测 NumPy 随机状态
+            evaluation_network = GraphQNetwork(6, 64, 2, self.benchmark.normalized_adjacency)  # 重建当前种子的评测网络
+            evaluation_network.load_state_dict(trained_states[seed_index])  # 加载冻结训练参数
+            evaluation_network.eval()  # 切换到冻结推理模式
+            self.benchmark.cache = {}  # 清空训练与其他种子缓存以强制独立计算三十二个评测状态
+            evaluation_start = len(self.benchmark.cache)  # 记录当前种子评测起点
+            best_levels: tuple[int, ...] | None = None  # 初始化当前种子最优级别配置
+            best_objective = float('inf')  # 初始化当前种子最优精度目标
+            history: list[dict[str, float]] = []  # 初始化当前种子冻结策略评测轨迹
+            visited: set[tuple[int, ...]] = set()  # 保存当前种子已评测配置以禁止循环
+            evaluation_episode = 0  # 初始化冻结策略评测回合编号
+            while len(self.benchmark.cache) - evaluation_start < DQN_EVALUATION_SOLVE_BUDGET and evaluation_episode < 32:  # 使用多个明确评测回合消耗统一三十二求解预算
+                if evaluation_episode == 0:  # 第一回合使用统一二分段标准起点
+                    current_levels = tuple(1 for _ in range(self.benchmark.region_count))  # 构造标准评测起点
+                else:  # 后续回合使用确定性随机可行起点扩大冻结策略覆盖范围
+                    restart_rng = np.random.default_rng(SEED + 20000 + seed_index * 100 + evaluation_episode)  # 创建当前评测回合随机数发生器
+                    restart = restart_rng.integers(0, 3, size=self.benchmark.region_count)  # 生成零到二级随机网格
+                    current_levels = self.benchmark.repair_levels(restart, None)  # 修复到统一单元硬上限内
+                if current_levels in visited:  # 检查重置状态是否已经评测
+                    evaluation_episode += 1  # 跳过重复重置并推进回合编号
+                    continue  # 开始下一评测回合
+                current_solution = self.benchmark.solve(current_levels)  # 执行当前评测回合初始真实求解
+                current_objective, _, _, _, _ = self.benchmark.metrics(current_solution)  # 计算初始状态精度目标
+                visited.add(current_levels)  # 标记初始状态已评测
+                if current_objective < best_objective:  # 检查初始状态是否改进当前种子最优值
+                    best_objective = current_objective  # 更新当前种子最优目标
+                    best_levels = current_levels  # 更新当前种子最优级别配置
+                history.append({'evaluation': float(len(self.benchmark.cache) - evaluation_start), 'best_objective': float(best_objective), 'candidate_objective': float(current_objective)})  # 记录当前初始评测点
+                for _ in range(7):  # 每个评测回合最多执行七次冻结策略动作并连同起点形成八个状态
+                    if len(self.benchmark.cache) - evaluation_start >= DQN_EVALUATION_SOLVE_BUDGET:  # 检查是否已用满统一评测预算
+                        break  # 结束当前评测回合
+                    state_features = self.benchmark.region_features(current_solution, current_levels)  # 构造当前评测图状态
+                    priority = self.benchmark.hotspot_priority(current_solution, current_levels)  # 构造当前状态预算修复优先级
+                    valid_mask = self._valid_action_mask(current_levels, priority)  # 构造当前状态有效动作掩码
+                    with torch.no_grad():  # 禁用冻结策略推理梯度
+                        q_values = evaluation_network(torch.tensor(state_features[None, :, :], dtype=torch.float32))[0].numpy()  # 计算当前状态全部动作 Q 值
+                    ranked_actions = np.argsort(q_values.reshape(-1))[::-1]  # 按 Q 值从高到低排列全部区域动作
+                    chosen_levels: tuple[int, ...] | None = None  # 初始化当前评测动作候选
+                    for flat_index in ranked_actions:  # 依次检查冻结策略偏好的动作
+                        region, action_index = np.unravel_index(int(flat_index), q_values.shape)  # 还原动作区域和类型
+                        if not valid_mask[region, action_index]:  # 检查动作是否有效
+                            continue  # 跳过无效动作
+                        candidate = np.asarray(current_levels, dtype=np.float64)  # 复制当前级别向量
+                        candidate[region] += -1.0 if action_index == 0 else 1.0  # 应用候选粗化或细化动作
+                        candidate_levels = self.benchmark.repair_levels(candidate, priority)  # 修复候选到统一单元上限内
+                        if candidate_levels not in visited:  # 检查候选是否为当前种子未评测状态
+                            chosen_levels = candidate_levels  # 选择最高 Q 值未访问动作
+                            break  # 停止继续检查次优动作
+                    if chosen_levels is None:  # 检查当前状态是否不存在未访问有效动作
+                        break  # 结束当前评测回合并通过新 reset 继续评测
+                    candidate_solution = self.benchmark.solve(chosen_levels)  # 执行冻结策略选中状态真实 CalculiX 求解
+                    candidate_objective, _, _, _, _ = self.benchmark.metrics(candidate_solution)  # 计算候选精度目标
+                    current_levels = chosen_levels  # 无条件执行冻结策略动作并更新实际状态
+                    current_solution = candidate_solution  # 更新当前真实有限元响应
+                    current_objective = candidate_objective  # 更新当前精度目标
+                    visited.add(current_levels)  # 标记当前配置已独立评测
+                    if current_objective < best_objective:  # 检查当前候选是否改进当前种子最优值
+                        best_objective = current_objective  # 更新当前种子最优目标
+                        best_levels = current_levels  # 更新当前种子最优级别配置
+                    history.append({'evaluation': float(len(self.benchmark.cache) - evaluation_start), 'best_objective': float(best_objective), 'candidate_objective': float(current_objective)})  # 记录当前冻结策略评测点
+                evaluation_episode += 1  # 完成一个正式冻结策略评测回合
+            if best_levels is None:  # 检查当前种子是否至少完成一个真实评测
+                raise RuntimeError('frozen DQN policy did not evaluate a state')  # 无有效评测时停止实验
+            seed_result = self.benchmark.method_result(f'dqn_gcn_seed_{seed_index + 1}', best_levels, len(self.benchmark.cache) - evaluation_start, history, f'随机种子 {training_seed}：训练 {DQN_TRAIN_EPISODES} 个完整 episode 后冻结网络，并使用独立 {DQN_EVALUATION_SOLVE_BUDGET} 次 CalculiX 求解评测。')  # 生成当前种子统一结果
+            evaluation_results.append(seed_result)  # 保存当前种子评测结果
+            evaluation_summaries.append({'seed': int(training_seed), 'objective': float(seed_result.objective), 'levels': list(seed_result.levels), 'elements': int(seed_result.solution.element_count), 'unique_evaluation_solves': int(seed_result.unique_solves), 'evaluation_episodes': int(evaluation_episode), 'torque_error': float(seed_result.torque_error), 'energy_error': float(seed_result.energy_error), 'probe_error': float(seed_result.probe_error), 'hotspot_recall': float(seed_result.hotspot_recall)})  # 保存当前种子完整评测摘要
+        ordered_results = sorted(evaluation_results, key=lambda item: item.objective)  # 按冻结策略目标值排序三个独立种子
+        median_result = ordered_results[len(ordered_results) // 2]  # 选择中位种子避免报告偶然最好结果
+        median_result.name = 'dqn_gcn'  # 使用统一方法名称写入五方法对比表
+        median_result.notes = f'三个独立随机种子各训练 {DQN_TRAIN_EPISODES} 个完整 episode、每回合最多 {DQN_EPISODE_STEPS} 步；训练后冻结网络，每个种子独立使用 {DQN_EVALUATION_SOLVE_BUDGET} 次真实求解评测，表中报告中位种子。训练阶段共有 {training_unique_solves} 个唯一 CalculiX 状态。'  # 写入训练和评测边界
+        reported_seed_index = next(index for index, item in enumerate(evaluation_results) if item is median_result)  # 使用对象身份定位中位冻结策略以避免 NumPy 数组相等比较
+        training_payload = {'schema': 'episodic-dqn-training-summary', 'training_seed_count': len(DQN_TRAIN_SEEDS), 'episodes_per_seed': DQN_TRAIN_EPISODES, 'steps_per_episode': DQN_EPISODE_STEPS, 'maximum_training_transitions': len(DQN_TRAIN_SEEDS) * DQN_TRAIN_EPISODES * DQN_EPISODE_STEPS, 'unique_training_solves': int(training_unique_solves), 'evaluation_solve_budget_per_seed': DQN_EVALUATION_SOLVE_BUDGET, 'reported_seed_rule': 'median objective across three independently trained frozen policies', 'training': training_summaries, 'evaluation': evaluation_summaries, 'reported_seed': int(DQN_TRAIN_SEEDS[reported_seed_index])}  # 构造完整 episodic DQN 训练审计记录
+        (self.benchmark.output_root / 'dqn_training.json').write_text(json.dumps(training_payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')  # 写出训练回合、求解数量和三种子评测结果
+        return median_result  # 返回中位冻结策略作为五方法表中的 DQN 结果
     def run_all(self) -> list[MethodResult]:  # 按固定顺序执行五种方法并返回结果
         self.results.append(self.run_uniform())  # 执行均匀网格基线
         self.results.append(self._run_pso("pure_pso", hotspot_reduced=False))  # 执行全维纯离散 PSO
@@ -684,7 +794,7 @@ def write_outputs(benchmark: TorsionBenchmark, results: list[MethodResult], outp
     lines = ["# 横向通道纯扭转工况：五种网格策略实验结果", "", "## 实验边界", "", "本实验采用一处重复横向通道的规范化箱形空间多桁架拓扑，使用真实 CalculiX B31 线弹性求解，在右端施加刚性截面小转角形成纯扭转；材料、截面和初弯曲均为统一算法基准参数，结果只用于比较网格决策方法，不作为张靖皋猫道横向通道的工程应力或承载力结论。", "", f"隐藏参考解为每根宏观杆件 {REFERENCE_SUBDIVISIONS} 分段，共 {benchmark.reference.element_count} 个单元；五种方法最终网格均受 {benchmark.element_cap} 个单元上限约束。", "", "## 方法对比", "", "| 方法 | 综合目标↓ | 扭矩误差↓ | 区域能量分布误差↓ | 中部场误差↓ | 热点召回↑ | 单元数 | 唯一求解 |", "|---|---:|---:|---:|---:|---:|---:|---:|"]  # 初始化 Markdown 报告和方法表
     for result in sorted_results:  # 按综合目标排序写入方法表
         lines.append(f"| {result.name} | {result.objective:.6f} | {100.0 * result.torque_error:.3f}% | {100.0 * result.energy_error:.3f}% | {100.0 * result.probe_error:.3f}% | {100.0 * result.hotspot_recall:.1f}% | {result.solution.element_count} | {result.unique_solves} |")  # 写入当前方法指标
-    lines.extend(["", "## 实验结论", "", f"综合目标最优方法为 **{best.name}**，相对均匀网格基线改善 **{100.0 * improvement:.2f}%**；其最终网格在相同单元上限下将细网格集中到扭转能量与邻域对比最强的连接区和斜撑区域。", f"均匀网格的扭矩误差为 **{100.0 * uniform.torque_error:.3f}%**，最优方法为 **{100.0 * best.torque_error:.3f}%**；均匀细化能够稳定整体位移场，但在固定单元预算下对主导扭转刚度的斜撑和连接区资源利用率较低。", "固定转角线弹性分析中总应变能与反力矩满足 U=Tθ/2，因此总能量误差没有作为独立目标重复计权，本实验改用十六个图区域归一化能量分布的总变差距离。", "热点 PSO 与纯 PSO 的差异直接反映候选区域降维是否有效；图多智能体反映局部状态和邻域消息能否在不建立全局价值函数时形成有效资源协商；DQN+GCN 的结果同时包含其图表示能力和仅有三十二次真实求解在线训练造成的样本效率限制。", "", "## 可复现证据", "", "每个候选配置均保留 CalculiX `.inp`、`.frd`、标准输出、标准错误和 `receipt.json`；`results.json` 保存完整拓扑区域、参考解、五种方法级别向量和逐次收敛轨迹。", ""])  # 补充结论和证据说明
+    lines.extend(["", "## 实验结论", "", f"综合目标最优方法为 **{best.name}**，相对均匀网格基线改善 **{100.0 * improvement:.2f}%**；其最终网格在相同单元上限下将细网格集中到扭转能量与邻域对比最强的连接区和斜撑区域。", f"均匀网格的扭矩误差为 **{100.0 * uniform.torque_error:.3f}%**，最优方法为 **{100.0 * best.torque_error:.3f}%**；均匀细化能够稳定整体位移场，但在固定单元预算下对主导扭转刚度的斜撑和连接区资源利用率较低。", "固定转角线弹性分析中总应变能与反力矩满足 U=Tθ/2，因此总能量误差没有作为独立目标重复计权，本实验改用十六个图区域归一化能量分布的总变差距离。", "热点 PSO 与纯 PSO 的差异直接反映候选区域降维是否有效；图多智能体反映局部状态和邻域消息能否在不建立全局价值函数时形成有效资源协商；DQN+GCN 以三个独立随机种子各训练一百二十八个完整 episode，训练后冻结网络，并为每个种子单独提供三十二次真实求解评测预算；表中报告三个冻结策略的中位目标结果。", "", "## 可复现证据", "", "每个候选配置均保留 CalculiX `.inp`、`.frd`、标准输出、标准错误和 `receipt.json`；`results.json` 保存完整拓扑区域、参考解、五种方法级别向量和逐次收敛轨迹。", ""])  # 补充结论和证据说明
     (output_root / "RESULTS.md").write_text("\n".join(lines), encoding="utf-8")  # 写出中文实验报告
     figure = plt.figure(figsize=(9.0, 5.2))  # 创建综合目标柱状图
     axes = figure.add_subplot(111)  # 创建单一绘图区

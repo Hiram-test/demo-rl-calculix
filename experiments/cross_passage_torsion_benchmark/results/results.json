@@ -502,7 +502,7 @@
         {
           "evaluation": 32.0,
           "best_objective": 1.0017107056207375,
-          "candidate_objective": 1.3857150033694137
+          "candidate_objective": 1.3857150033694134
         }
       ]
     },
@@ -1028,251 +1028,261 @@
     },
     {
       "name": "dqn_gcn",
-      "objective": 1.6470188634876437,
-      "torque_error": 3.6088084003377165,
-      "energy_error": 0.29711795349083703,
-      "probe_error": 0.4835800748992379,
+      "objective": 1.3779162422518971,
+      "torque_error": 2.737211573294849,
+      "energy_error": 0.4236496227504152,
+      "probe_error": 0.7230960362317687,
       "hotspot_recall": 0.75,
       "unique_solves": 32,
-      "notes": "两层 GCN 编码十六区域图，Double DQN 在真实 CalculiX 反馈下在线选择区域粗化或细化动作。",
+      "notes": "三个独立随机种子各训练 128 个完整 episode、每回合最多 12 步；训练后冻结网络，每个种子独立使用 32 次真实求解评测，表中报告中位种子。训练阶段共有 4540 个唯一 CalculiX 状态。",
       "solution": {
         "levels": [
+          3,
+          3,
           1,
+          1,
+          2,
+          1,
+          3,
           1,
           0,
-          3,
-          1,
-          1,
-          1,
           2,
-          1,
-          1,
-          1,
-          1,
-          1,
-          2,
+          0,
           3,
-          2
+          3,
+          0,
+          1,
+          1
         ],
-        "element_count": 276,
-        "node_count": 216,
-        "torque": 10634.95526,
-        "strain_energy": 26.587386225699998,
+        "element_count": 336,
+        "node_count": 276,
+        "torque": 8623.721019999999,
+        "strain_energy": 21.55930393739,
         "region_energy": [
-          0.04662895,
-          0.025643274600000005,
-          0.040797470999999995,
-          0.11859937799999999,
-          0.41680111,
-          0.0088789264,
-          0.0164886626,
-          0.11136139410000001,
-          0.057690896,
-          0.107963393,
-          0.26662719999999995,
-          2.1484369199999995,
-          2.3027316,
-          3.763704160000001,
-          12.51637584,
-          4.638657049999999
+          0.180717334,
+          0.139139511,
+          0.0034703711,
+          0.0263528691,
+          0.0270953101,
+          0.0162322174,
+          0.023637593300000002,
+          0.070247132,
+          0.032761823,
+          0.01701976239,
+          0.029203114000000002,
+          8.7527761,
+          8.361225350000002,
+          1.1381006,
+          1.2822867399999998,
+          1.45903811
         ],
         "region_peak_stress": [
-          0.0018794642313060808,
-          0.0015984718494402373,
-          0.0013434369999999998,
-          0.008415770953292106,
-          0.01871685530934009,
-          0.0012692189799096661,
-          0.0037736562366043817,
-          0.03452475835410497,
-          0.010478244183895657,
-          0.024530603710936655,
-          0.0425111992626549,
-          0.037026669387939914,
-          0.035662498652888786,
-          0.05818257340008881,
-          0.31575820951053885,
-          0.08438584241485693
+          0.012365184822897548,
+          0.007658580126626428,
+          0.0001467794041228755,
+          0.002223461667273971,
+          0.0029613663685434844,
+          0.003617674912414261,
+          0.01495935892585885,
+          0.012511071284098407,
+          0.00632016,
+          0.00594906025297573,
+          0.004784057,
+          0.19929966517853864,
+          0.17782181933765376,
+          0.016895657222324365,
+          0.024913917179351357,
+          0.026670017041610834
         ],
-        "maximum_displacement": 0.01045830816846157,
+        "maximum_displacement": 0.00964014538285523,
         "probe_vector": [
-          0.0007574724,
-          -1.042342e-05,
-          -0.001085961,
-          0.0007574673,
-          1.825167e-05,
-          0.001079362,
-          -0.0008660316,
-          1.163639e-05,
-          -0.001086289,
-          -0.0008662591,
-          -2.402288e-06,
-          0.001079111,
-          0.001479331,
-          -1.120262e-05,
-          -0.001987874,
-          0.001479133,
-          1.967569e-05,
-          0.002060685,
-          -0.001557042,
-          1.27064e-05,
-          -0.001988631,
-          -0.001557453,
-          -3.63622e-06,
-          0.002061478
+          0.004056088,
+          8.214763e-06,
+          -0.004971061,
+          0.004056358,
+          1.496583e-05,
+          0.004792992,
+          -0.004007068,
+          9.325013e-06,
+          -0.004970877,
+          -0.004007455,
+          8.603138e-07,
+          0.004793362,
+          0.004370331,
+          9.231882e-06,
+          -0.005272145,
+          0.004370458,
+          8.880222e-06,
+          0.00514158,
+          -0.004306391,
+          4.297743e-06,
+          -0.005272792,
+          -0.004306302,
+          1.39477e-06,
+          0.005142379
         ],
-        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-8e880328fc9e"
+        "workdir": "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/cross_passage_torsion_benchmark/results/solver_runs/candidate-65fb065d219c"
       },
       "history": [
         {
           "evaluation": 1.0,
           "best_objective": 4.122949452786935,
-          "candidate_objective": 4.130965346492197
+          "candidate_objective": 4.122949452786935
         },
         {
           "evaluation": 2.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.109848064596283
+          "best_objective": 3.363140335396788,
+          "candidate_objective": 3.363140335396788
         },
         {
           "evaluation": 3.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.17337463813522
+          "best_objective": 2.0832961227175186,
+          "candidate_objective": 2.0832961227175186
         },
         {
           "evaluation": 4.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.518310425610428
+          "best_objective": 2.076066314803416,
+          "candidate_objective": 2.076066314803416
         },
         {
           "evaluation": 5.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.164366526673559
+          "best_objective": 2.0732288145908733,
+          "candidate_objective": 2.0732288145908733
         },
         {
           "evaluation": 6.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.139725945712606
+          "best_objective": 2.027031346566264,
+          "candidate_objective": 2.027031346566264
         },
         {
           "evaluation": 7.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.314829315569178
+          "best_objective": 2.0248414146144027,
+          "candidate_objective": 2.0248414146144027
         },
         {
           "evaluation": 8.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.1150929564507885
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.830585994757146
         },
         {
           "evaluation": 9.0,
-          "best_objective": 4.109848064596283,
-          "candidate_objective": 4.126474381874732
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 3.2672641066060453
         },
         {
           "evaluation": 10.0,
-          "best_objective": 4.021174213365074,
-          "candidate_objective": 4.021174213365074
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.9603996644516457
         },
         {
           "evaluation": 11.0,
-          "best_objective": 4.021174213365074,
-          "candidate_objective": 4.374377773190551
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.965087150281835
+        },
+        {
+          "evaluation": 12.0,
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.912113829445297
         },
         {
           "evaluation": 13.0,
-          "best_objective": 3.076175649199486,
-          "candidate_objective": 3.076175649199486
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.9013101299458703
         },
         {
           "evaluation": 14.0,
-          "best_objective": 3.0670312223083465,
-          "candidate_objective": 3.0670312223083465
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.8998471109093045
         },
         {
           "evaluation": 15.0,
-          "best_objective": 3.0670312223083465,
-          "candidate_objective": 3.0755281528925313
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.8897886325870217
         },
         {
           "evaluation": 16.0,
-          "best_objective": 3.0639841958639846,
-          "candidate_objective": 3.0639841958639846
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.8470812377434622
         },
         {
           "evaluation": 17.0,
-          "best_objective": 3.0610644666245075,
-          "candidate_objective": 3.0610644666245075
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 3.0979553866625698
         },
         {
           "evaluation": 18.0,
-          "best_objective": 3.0610644666245075,
-          "candidate_objective": 3.0626462200183195
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.9353759440890836
         },
         {
           "evaluation": 19.0,
-          "best_objective": 3.0610644666245075,
-          "candidate_objective": 3.0627990879968583
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.8858495813040441
         },
         {
           "evaluation": 20.0,
-          "best_objective": 3.0582340845191065,
-          "candidate_objective": 3.0582340845191065
+          "best_objective": 1.830585994757146,
+          "candidate_objective": 1.8850259798824036
         },
         {
           "evaluation": 21.0,
-          "best_objective": 1.9184520181751459,
-          "candidate_objective": 1.9184520181751459
+          "best_objective": 1.3899465801551785,
+          "candidate_objective": 1.3899465801551785
         },
         {
           "evaluation": 22.0,
-          "best_objective": 1.9172340103227399,
-          "candidate_objective": 1.9172340103227399
+          "best_objective": 1.3794344732972454,
+          "candidate_objective": 1.3794344732972454
         },
         {
           "evaluation": 23.0,
-          "best_objective": 1.9170894764441464,
-          "candidate_objective": 1.9170894764441464
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 1.3779162422518971
         },
         {
           "evaluation": 24.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 1.753870882992271
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 1.4000764681073334
+        },
+        {
+          "evaluation": 25.0,
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 5.632676843393603
         },
         {
           "evaluation": 26.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 2.957600833646666
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 4.039770666675897
         },
         {
           "evaluation": 27.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 2.6894709879550893
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.156330582308053
         },
         {
           "evaluation": 28.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 2.682762233737048
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.109953764072147
         },
         {
           "evaluation": 29.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 2.6730596258436043
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.096238711245358
         },
         {
           "evaluation": 30.0,
-          "best_objective": 1.753870882992271,
-          "candidate_objective": 2.6387607302882636
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.0953140522864544
         },
         {
           "evaluation": 31.0,
-          "best_objective": 1.7229820018503512,
-          "candidate_objective": 1.7229820018503512
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.093666737933232
         },
         {
           "evaluation": 32.0,
-          "best_objective": 1.6470188634876437,
-          "candidate_objective": 1.6470188634876437
+          "best_objective": 1.3779162422518971,
+          "candidate_objective": 2.1041554067537747
         }
       ]
     }
