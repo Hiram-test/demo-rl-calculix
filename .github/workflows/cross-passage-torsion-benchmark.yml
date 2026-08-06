@@ -1,16 +1,21 @@
-name: Cross-passage torsion five-method benchmark # 定义横向通道纯扭转五方法实验工作流
+name: Cross-passage torsion episodic DQN benchmark # 定义横向通道正式多回合 DQN 实验工作流
 on: # 定义工作流触发条件
-  workflow_dispatch: # 仅允许人工确认后从 GitHub 页面完整复跑
+  workflow_dispatch: # 保留人工完整复跑入口
+  push: # 允许本次受控触发文件启动正式复算
+    branches: # 限定实验分支
+      - exp/cross-passage-torsion-five-methods # 仅监听当前横向通道分支
+    paths: # 限定触发路径以避免结果提交循环
+      - experiments/cross_passage_torsion_benchmark/rerun_episodic_dqn.trigger # 仅由本次 DQN 正式训练标记触发
 permissions: # 定义工作流最小必要权限
-  contents: write # 允许成功运行后将可复现结果提交回实验分支
+  contents: write # 允许成功运行后提交正式源码与结果
 jobs: # 定义工作流作业集合
-  benchmark: # 定义唯一完整实验作业
+  benchmark: # 定义正式五方法复算作业
     runs-on: ubuntu-24.04 # 固定使用 Ubuntu 24.04 虚拟机
-    timeout-minutes: 90 # 为参考解、五方法搜索和在线训练设置九十分钟上限
+    timeout-minutes: 90 # 为数千训练状态和冻结策略评测设置九十分钟上限
     env: # 定义确定性数值环境
       MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端
-      OMP_NUM_THREADS: '1' # 限制 OpenMP 线程数以减少运行波动
-      MKL_NUM_THREADS: '1' # 限制 MKL 线程数以提高重复性
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 线程数减少数值波动
+      MKL_NUM_THREADS: '1' # 限制 MKL 线程数提高重复性
     steps: # 定义顺序执行步骤
       - uses: actions/checkout@v4 # 检出当前实验分支
         with: # 配置检出行为
@@ -18,18 +23,20 @@ jobs: # 定义工作流作业集合
       - uses: actions/setup-python@v5 # 安装固定 Python 环境
         with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Compile implementation # 在安装求解器前检查实验主程序语法
-        shell: bash # 使用 Bash 执行编译检查
-        run: | # 开始编译检查命令
-          set -euo pipefail # 任一语法错误立即停止
-          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查完整五方法实现
+      - name: Apply episodic DQN implementation # 应用正式 episode、done 和冻结评测流程
+        shell: bash # 使用 Bash 执行受控补丁
+        run: | # 开始补丁与语法检查命令
+          set -euo pipefail # 任一补丁或语法错误立即停止
+          python experiments/cross_passage_torsion_benchmark/patch_dqn_episodic.py # 替换旧伪在线 DQN 函数
+          python experiments/cross_passage_torsion_benchmark/patch_dqn_training_cleanup.py # 修正训练证据清理范围
+          python -m py_compile experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译检查正式实现
       - name: Install real solver dependencies # 安装真实 CalculiX 与数值依赖
         shell: bash # 使用 Bash 执行依赖安装
         run: | # 开始依赖安装命令
           set -euo pipefail # 任一安装错误立即停止
-          python -m pip install --upgrade pip --quiet # 更新 pip 以稳定解析轮包
-          python -m pip install numpy matplotlib --quiet # 安装数组与无头绘图依赖
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装 CPU 版 PyTorch 以运行 GCN-DQN
+          python -m pip install --upgrade pip --quiet # 更新 pip
+          python -m pip install numpy matplotlib --quiet # 安装数组与绘图依赖
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装 CPU 版 PyTorch
           sudo apt-get update -qq >/tmp/apt-update.log 2>&1 # 更新 Ubuntu 软件包索引并保存日志
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/apt-install.log 2>&1 # 安装真实 CalculiX 并保存日志
       - name: Locate CalculiX executable # 定位可能带版本后缀的 ccx 可执行文件
@@ -38,40 +45,57 @@ jobs: # 定义工作流作业集合
         run: | # 开始求解器定位命令
           set -euo pipefail # 找不到求解器时立即停止
           CCX_BIN="$(command -v ccx || true)" # 首先查找标准 ccx 命令
-          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退查找 Ubuntu 版本化命令
-          test -x "$CCX_BIN" # 验证定位结果可执行
-          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 将求解器路径写入步骤输出
-          "$CCX_BIN" -v || true # 在日志中记录求解器版本
-      - name: Run complete comparison # 执行隐藏参考解和五种方法全部真实候选求解
-        shell: bash # 使用 Bash 启动实验脚本
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退查找版本化命令
+          test -x "$CCX_BIN" # 验证求解器可执行
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 写入步骤输出
+          "$CCX_BIN" -v || true # 记录求解器版本
+      - name: Run full episodic comparison # 执行参考解、四种搜索方法和正式多回合 DQN
+        shell: bash # 使用 Bash 启动实验主程序
         run: | # 开始完整实验命令
           set -euo pipefail # 任一求解或后处理错误立即停止
-          rm -rf experiments/cross_passage_torsion_benchmark/results # 删除旧结果以禁止混入历史候选
-          python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/cross_passage_torsion_benchmark/results | tee /tmp/cross-passage-torsion.log # 运行完整实验并保存标准输出
-      - name: Validate result contract # 验证五方法、资源上限、独立指标和交付文件
-        shell: bash # 使用 Bash 调用单行 Python 验证器
-        run: | # 开始结果契约验证命令
+          rm -rf experiments/cross_passage_torsion_benchmark/results # 清除旧结果禁止混入历史数据
+          python experiments/cross_passage_torsion_benchmark/run_benchmark.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/cross_passage_torsion_benchmark/results | tee /tmp/cross-passage-torsion.log # 执行完整复算并保存日志
+      - name: Validate episodic DQN contract # 验证 episode、终止状态、训练规模与冻结评测预算
+        shell: bash # 使用 Bash 调用机器可读结果验证器
+        run: | # 开始契约验证命令
           set -euo pipefail # 任一契约不满足立即停止
-          python -c "import json; from pathlib import Path; root=Path('experiments/cross_passage_torsion_benchmark/results'); data=json.loads((root/'results.json').read_text(encoding='utf-8')); expected={'uniform_mesh','pure_pso','hotspot_pso','graph_multi_agent','dqn_gcn'}; assert {item['name'] for item in data['methods']}==expected; assert data['reference']['element_count']>data['mesh']['element_cap']; assert all(item['solution']['element_count']<=data['mesh']['element_cap'] for item in data['methods']); assert all(0.0<=item['energy_error']<=1.0 for item in data['methods']); assert (root/'RESULTS.md').is_file(); assert (root/'method_summary.csv').is_file(); assert (root/'method_objective.png').is_file(); assert (root/'convergence.png').is_file()" # 验证全部结果契约
-      - name: Upload complete evidence # 无论成功失败均上传输入、输出、轨迹和日志
-        if: always() # 确保失败时仍保留诊断证据
+          python - <<'PY' # 执行多行 Python 结果验证
+          import json  # 读取正式结果与 DQN 训练摘要
+          from pathlib import Path  # 定位结果目录
+          root = Path('experiments/cross_passage_torsion_benchmark/results')  # 定义结果目录
+          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取五方法结果
+          training = json.loads((root / 'dqn_training.json').read_text(encoding='utf-8'))  # 读取 DQN 正式训练摘要
+          expected = {'uniform_mesh', 'pure_pso', 'hotspot_pso', 'graph_multi_agent', 'dqn_gcn'}  # 定义预期方法集合
+          assert {item['name'] for item in data['methods']} == expected  # 验证五方法齐全
+          assert training['training_seed_count'] == 3  # 验证三个独立训练种子
+          assert training['episodes_per_seed'] == 128  # 验证每个种子一百二十八个完整回合
+          assert training['steps_per_episode'] == 12  # 验证每回合最多十二步
+          assert training['maximum_training_transitions'] == 4608  # 验证最大训练转移数量
+          assert all(item['episodes'] == 128 for item in training['training'])  # 验证各种子训练回合数
+          assert all(item['gradient_updates'] > 1000 for item in training['training'])  # 验证每个种子实际完成充分参数更新
+          assert all(item['unique_evaluation_solves'] == 32 for item in training['evaluation'])  # 验证每个冻结策略独立使用三十二次真实求解
+          assert all(item['solution']['element_count'] <= data['mesh']['element_cap'] for item in data['methods'])  # 验证全部最终网格满足硬上限
+          assert (root / 'RESULTS.md').is_file()  # 验证 Markdown 报告存在
+          assert (root / 'method_summary.csv').is_file()  # 验证方法汇总表存在
+          PY
+      - name: Upload complete evidence # 无论成功失败均上传正式结果和诊断日志
+        if: always() # 确保失败时保留诊断证据
         uses: actions/upload-artifact@v4 # 使用官方制品上传动作
         with: # 配置上传范围
-          name: cross-passage-torsion-five-method-evidence # 定义制品名称
-          path: | # 列出需要保留的证据路径
-            experiments/cross_passage_torsion_benchmark/results/ # 上传参考解、候选求解、表格、图和结论
+          name: cross-passage-torsion-episodic-dqn-evidence # 定义本次正式训练制品名称
+          path: | # 列出需要保留的证据
+            experiments/cross_passage_torsion_benchmark/results/ # 上传正式评测求解、表格、图和训练摘要
             /tmp/cross-passage-torsion.log # 上传完整实验日志
             /tmp/apt-install.log # 上传 CalculiX 安装日志
-          if-no-files-found: warn # 早期失败无文件时保留原始错误
+          if-no-files-found: warn # 早期失败时保留原始错误
           retention-days: 14 # 保留完整证据十四天
-      - name: Commit reproducible results # 将成功实验结果提交回当前实验分支
-        if: success() # 仅在完整求解和契约验证通过后提交
+      - name: Commit episodic implementation and results # 将正式源码与复算结果提交回实验分支
+        if: success() # 仅在完整训练、评测和验证成功后提交
         shell: bash # 使用 Bash 执行 Git 操作
         run: | # 开始结果提交命令
           set -euo pipefail # 任一提交或推送错误立即停止
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark/results # 暂存全部可复现实验结果和求解收据
-          if git diff --cached --quiet; then exit 0; fi # 结果未变化时跳过空提交
-          git commit -m 'results: rerun cross-passage torsion five-method benchmark' # 创建明确的实验结果提交
-          git push origin HEAD:${{ github.ref_name }} # 将结果推送回人工启动工作流的当前分支
+          git add experiments/cross_passage_torsion_benchmark/run_benchmark.py experiments/cross_passage_torsion_benchmark/results # 暂存正式 DQN 源码和全部复算结果
+          git commit -m 'results: train and evaluate episodic GCN-DQN' # 创建正式训练结果提交
+          git push origin HEAD:${{ github.ref_name }} # 推送回当前实验分支
