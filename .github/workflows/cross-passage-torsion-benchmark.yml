@@ -1,11 +1,6 @@
 name: Cross-passage torsion five-method benchmark # 定义横向通道纯扭转五方法实验工作流
 on: # 定义工作流触发条件
-  workflow_dispatch: # 允许人工确认后从 GitHub 页面完整复跑
-  push: # 临时允许目标函数修正标记触发完整复算
-    branches: # 限定目标实验分支
-      - exp/cross-passage-torsion-five-methods # 仅监听当前横向通道实验分支
-    paths: # 限定触发文件以避免结果提交循环运行
-      - experiments/cross_passage_torsion_benchmark/rerun_without_resource_objective.trigger # 仅由本次目标函数修正标记触发
+  workflow_dispatch: # 仅允许人工确认后从 GitHub 页面完整复跑
 permissions: # 定义工作流最小必要权限
   contents: write # 允许成功运行后将可复现结果提交回实验分支
 jobs: # 定义工作流作业集合
@@ -23,31 +18,6 @@ jobs: # 定义工作流作业集合
       - uses: actions/setup-python@v5 # 安装固定 Python 环境
         with: # 配置解释器版本
           python-version: '3.11' # 使用 Python 3.11
-      - name: Apply objective correction # 将资源项从目标和 DQN 奖励中移除
-        shell: bash # 使用 Bash 启动受控 Python 文本补丁
-        run: | # 开始目标函数补丁命令
-          set -euo pipefail # 任一补丁校验错误立即停止
-          python - <<'PY' # 执行具有精确旧新文本校验的幂等补丁
-          from pathlib import Path  # 导入路径工具以读取实验主程序
-          source_path = Path('experiments/cross_passage_torsion_benchmark/run_benchmark.py')  # 定位实验主程序
-          source = source_path.read_text(encoding='utf-8')  # 读取当前分支主程序全文
-          old_resource = "        resource_fraction = solution.element_count / float(self.element_cap)  # 计算最终单元预算使用率\n"  # 定义待删除资源比例计算行
-          old_objective = "        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.13 * (1.0 - hotspot_recall) + 0.02 * resource_fraction  # 使用互相独立的整体刚度、能量分布、位移场、热点和资源指标形成目标\n"  # 定义旧综合目标行
-          new_objective = "        objective = 0.40 * torque_error + 0.25 * energy_error + 0.20 * probe_error + 0.15 * (1.0 - hotspot_recall)  # 仅使用整体刚度、能量分布、位移场和热点精度指标形成目标\n"  # 定义权重和为一的新综合目标行
-          old_reward = "            reward = 8.0 * (current_objective - candidate_objective) - 0.002 * candidate_solution.element_count / float(self.benchmark.element_cap)  # 以目标改进和轻微资源代价定义奖励\n"  # 定义旧 DQN 奖励行
-          new_reward = "            reward = 8.0 * (current_objective - candidate_objective)  # 仅以精度目标改进定义奖励，单元数由硬上限约束\n"  # 定义无资源惩罚的新 DQN 奖励行
-          if old_resource in source:  # 检查旧资源比例计算是否仍存在
-              source = source.replace(old_resource, '', 1)  # 删除仅服务于旧资源目标的变量
-          if old_objective in source:  # 检查是否需要应用综合目标替换
-              source = source.replace(old_objective, new_objective, 1)  # 将资源权重转入热点召回权重
-          elif new_objective not in source:  # 检查文件是否处于未知目标定义状态
-              raise RuntimeError('objective definition did not match expected old or new form')  # 拒绝在未知源码上静默修改
-          if old_reward in source:  # 检查是否需要应用 DQN 奖励替换
-              source = source.replace(old_reward, new_reward, 1)  # 删除奖励中的额外单元数量惩罚
-          elif new_reward not in source:  # 检查文件是否处于未知奖励定义状态
-              raise RuntimeError('DQN reward did not match expected old or new form')  # 拒绝在未知源码上静默修改
-          source_path.write_text(source, encoding='utf-8')  # 保存通过校验的新目标与奖励定义
-          PY
       - name: Compile implementation # 在安装求解器前检查实验主程序语法
         shell: bash # 使用 Bash 执行编译检查
         run: | # 开始编译检查命令
@@ -101,7 +71,7 @@ jobs: # 定义工作流作业集合
           set -euo pipefail # 任一提交或推送错误立即停止
           git config user.name 'github-actions[bot]' # 配置自动提交者名称
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 配置自动提交者邮箱
-          git add experiments/cross_passage_torsion_benchmark/run_benchmark.py experiments/cross_passage_torsion_benchmark/results # 暂存修正后的实现与全部可复现实验结果
+          git add experiments/cross_passage_torsion_benchmark/results # 暂存全部可复现实验结果和求解收据
           if git diff --cached --quiet; then exit 0; fi # 结果未变化时跳过空提交
-          git commit -m 'results: rerun torsion benchmark without resource objective' # 创建明确的实验结果提交
-          git push origin HEAD:${{ github.ref_name }} # 将结果推送回触发工作流的当前分支
+          git commit -m 'results: rerun cross-passage torsion five-method benchmark' # 创建明确的实验结果提交
+          git push origin HEAD:${{ github.ref_name }} # 将结果推送回人工启动工作流的当前分支
