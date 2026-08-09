@@ -1,0 +1,60 @@
+name: 3D action-support semantics benchmark # Give the experiment a recognizable Actions name.
+on: # Define automated, pull-request, and manual entry points for the benchmark.
+  push: # Run automatically when benchmark source files change on the experiment branch.
+    branches: [experiment/action-support-3d] # Restrict automatic push execution to the isolated experiment branch.
+    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/run_experiment_v5.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Exclude generated results so the bot result commit cannot recurse.
+  pull_request: # Run the benchmark when the experiment branch is proposed for review.
+    branches: [main] # Restrict pull-request execution to proposals targeting the default main branch.
+    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/run_experiment_v5.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Keep pull-request validation tied to executable benchmark inputs.
+  workflow_dispatch: # Allow the benchmark to be rerun manually without changing source files.
+permissions: # Grant only the repository permissions required by checkout and push-event result persistence.
+  contents: write # Allow the push-event job to commit compact numerical results back to the experiment branch.
+jobs: # Define the single deterministic benchmark job.
+  run-benchmark: # Name the job that installs solvers and executes all candidate supports.
+    runs-on: ubuntu-24.04 # Pin the runner to Ubuntu 24.04 where both solver packages are available.
+    timeout-minutes: 60 # Bound accidental meshing or solver hangs without changing normal benchmark behavior.
+    steps: # Execute setup, solver installation, benchmark run, result persistence, and final status propagation in order.
+      - name: Check out repository # Materialize the experiment branch in the runner workspace.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with push credentials preserved by default.
+      - name: Install Gmsh and CalculiX # Install the two native tools used by the benchmark.
+        shell: bash # Use Bash for strict package-installation commands.
+        run: | # Start the deterministic package-installation script.
+          set -euo pipefail # Stop immediately on package or shell errors.
+          sudo apt-get update # Refresh Ubuntu package metadata before installation.
+          sudo apt-get install -y gmsh calculix-ccx # Install the Gmsh mesher and CalculiX structural solver.
+          gmsh --version # Record the exact Gmsh version in the Actions log.
+          (ccx -v || ccx_2.21 -v || true) # Record the available CalculiX executable version without failing on naming differences.
+      - name: Run benchmark and capture status # Execute the exhaustive fixed-pair common-budget benchmark while preserving diagnostics on failure.
+        shell: bash # Use Bash so the solver exit code can be captured explicitly.
+        run: | # Start the benchmark wrapper that always creates a compact status record.
+          set +e # Temporarily allow the benchmark process to return nonzero so diagnostics can still be persisted.
+          python experiments/action_support_3d/run_experiment_v5.py > experiments/action_support_3d/benchmark-console.log 2>&1 # Run all single atoms, all 120 atom pairs, and six frozen LLM supports at the common resource target.
+          status=$? # Preserve the benchmark exit status before executing any diagnostic commands.
+          set -e # Restore immediate shell failure for the persistence and publication steps.
+          mkdir -p experiments/action_support_3d/results # Ensure the compact result directory exists even after an early solver failure.
+          echo "${status}" > experiments/action_support_3d/results/exit_code.txt # Persist the benchmark exit status as repository-readable state.
+          find experiments/action_support_3d/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 80 {} \; > experiments/action_support_3d/results/diagnostics.txt 2>/dev/null || true # Preserve bounded mesher and solver log tails for immediate diagnosis.
+          tail -n 200 experiments/action_support_3d/benchmark-console.log > experiments/action_support_3d/results/console_tail.txt || true # Preserve the most relevant driver console tail without committing a large raw log.
+      - name: Commit compact results to experiment branch # Make the numerical outcome directly inspectable through the repository connector.
+        if: github.event_name == 'push' # Avoid write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic Git staging and conditional commit logic.
+        run: | # Start the result-persistence Git commands.
+          set -euo pipefail # Stop immediately on unexpected Git or shell errors.
+          git config user.name "github-actions[bot]" # Attribute generated result commits to the standard GitHub Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply address for the bot identity.
+          git add -f experiments/action_support_3d/results # Stage only compact result and diagnostic files while leaving bulky meshes untracked.
+          if git diff --cached --quiet; then echo "No result changes to commit"; else git commit -m "results: update 3D action-support benchmark"; git push origin HEAD:experiment/action-support-3d; fi # Commit and push only when result content actually changed.
+      - name: Upload compact benchmark outputs # Preserve the same compact outputs as a conventional Actions artifact.
+        if: always() # Upload available diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the uploaded artifact name, contents, and retention.
+          name: action-support-3d-results # Give the artifact a stable experiment-specific name.
+          path: experiments/action_support_3d/results/** # Upload only the compact repository-persisted result directory.
+          if-no-files-found: warn # Keep a failed run diagnosable even if result creation failed unexpectedly.
+          retention-days: 14 # Retain temporary artifact copies without creating permanent storage growth.
+      - name: Propagate benchmark failure # Mark the workflow failed after diagnostics have been committed and uploaded.
+        shell: bash # Use Bash for a direct exit-code propagation step.
+        run: | # Start the final status propagation command block.
+          set -euo pipefail # Treat missing or malformed status files as workflow failures.
+          status=$(cat experiments/action_support_3d/results/exit_code.txt) # Reload the benchmark exit status saved before persistence steps.
+          exit "${status}" # Return the original benchmark status so the Actions check reflects the numerical run.
