@@ -8,10 +8,10 @@ Resource fairness: only minimum DOF needed to reach the same QoI error target is
 
 | target relative error | global DOF | semantic-partition DOF |
 | ---: | ---: | ---: |
-| < 10.0% | 2337 | 2679 |
-| < 5.0% | 6372 | 8115 |
-| < 3.0% | 6372 | 15138 |
-| < 2.0% | 12723 | 15138 |
-| < 1.5% | 12723 | 15138 |
+| < 10.0% | 2337 | 2148 |
+| < 5.0% | 6372 | 5190 |
+| < 3.0% | 6372 | 9951 |
+| < 2.0% | 12723 | 9951 |
+| < 1.5% | 12723 | 13752 |
 
 See `region_decisions.json` for whether the background region becomes active in later rounds.
