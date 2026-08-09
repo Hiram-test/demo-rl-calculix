@@ -1,8 +1,11 @@
 name: 3D action-support semantics benchmark # Give the experiment a recognizable Actions name.
-on: # Define automated and manual entry points for the benchmark.
+on: # Define automated, pull-request, and manual entry points for the benchmark.
   push: # Run automatically when the dedicated experiment branch changes.
-    branches: [experiment/action-support-3d] # Restrict automatic execution to the isolated experiment branch.
-    paths: ["experiments/action_support_3d/**", ".github/workflows/action-support-3d.yml"] # Ignore unrelated repository changes.
+    branches: [experiment/action-support-3d] # Restrict automatic push execution to the isolated experiment branch.
+    paths: ["experiments/action_support_3d/**", ".github/workflows/action-support-3d.yml"] # Ignore unrelated repository changes on push.
+  pull_request: # Run the benchmark when the experiment branch is proposed for review.
+    branches: [main] # Restrict pull-request execution to proposals targeting the default main branch.
+    paths: ["experiments/action_support_3d/**", ".github/workflows/action-support-3d.yml"] # Ignore unrelated repository changes on pull requests.
   workflow_dispatch: # Allow the benchmark to be rerun manually without changing source files.
 permissions: # Use the minimum repository permissions required by the workflow.
   contents: read # Permit checkout while preventing workflow writes to repository contents.
