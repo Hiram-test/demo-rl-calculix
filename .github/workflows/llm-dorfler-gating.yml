@@ -1,0 +1,59 @@
+name: LLM semantic gate versus global Dorfler # Give the isolated benchmark a recognizable Actions name.
+on: # Define only source-driven entry points so generated results cannot recurse.
+  push: # Run automatically when the clean experiment branch changes.
+    branches: [experiment/llm-dorfler-gating] # Restrict automatic execution to the isolated experiment branch.
+    paths: ["experiments/llm_dorfler_3d/run.py", "experiments/llm_dorfler_3d/llm_selection.json", ".github/workflows/llm-dorfler-gating.yml"] # Ignore generated result commits and unrelated repository changes.
+  workflow_dispatch: # Allow the same benchmark to be launched manually without changing source files.
+permissions: # Grant only the repository permissions required by checkout and compact result persistence.
+  contents: write # Allow a successful or failed push run to commit compact result files back to the experiment branch.
+jobs: # Define one deterministic numerical benchmark job.
+  compare-dorfler: # Name the single job that installs tools, solves both histories, and persists results.
+    runs-on: ubuntu-24.04 # Use the current Ubuntu runner where Gmsh and CalculiX packages are available.
+    timeout-minutes: 45 # Bound accidental meshing or solver hangs without constraining normal runs.
+    steps: # Execute checkout, installation, syntax validation, numerical solve, and result publication in order.
+      - name: Check out experiment branch # Materialize the exact branch state on the runner.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with push credentials preserved.
+      - name: Install Gmsh and CalculiX # Install the two native tools required by the standalone Python driver.
+        shell: bash # Use Bash so package installation fails immediately on errors.
+        run: | # Start the strict native-tool installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installation.
+          sudo apt-get install -y gmsh calculix-ccx # Install the Gmsh tetrahedral mesher and CalculiX structural solver.
+          gmsh --version # Record the exact Gmsh version in the workflow log.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
+      - name: Validate and run benchmark # Compile-check the commented Python source and execute both adaptive histories while preserving diagnostics.
+        shell: bash # Use Bash to capture the benchmark exit status without losing result files.
+        run: | # Start the benchmark wrapper.
+          set -euo pipefail # Use strict failure handling for the syntax check and setup commands.
+          python -m py_compile experiments/llm_dorfler_3d/run.py # Reject Python syntax errors before launching any numerical work.
+          mkdir -p experiments/llm_dorfler_3d/results # Ensure a compact result directory exists even if the numerical driver fails early.
+          set +e # Temporarily allow the numerical driver to return nonzero so its diagnostics can still be published.
+          python experiments/llm_dorfler_3d/run.py > experiments/llm_dorfler_3d/results/console.log 2>&1 # Execute the reference solve plus global and LLM-gated Dorfler histories while capturing all progress text.
+          status=$? # Preserve the numerical driver exit status before any publication commands run.
+          set -e # Restore strict shell failure handling for all persistence steps.
+          echo "${status}" > experiments/llm_dorfler_3d/results/exit_code.txt # Persist the exact numerical exit status as repository-readable state.
+          find experiments/llm_dorfler_3d/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 60 {} \; > experiments/llm_dorfler_3d/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails for failed or suspicious cases.
+          tail -n 240 experiments/llm_dorfler_3d/results/console.log > experiments/llm_dorfler_3d/results/console_tail.txt || true # Preserve the most relevant driver progress and failure context in a compact text file.
+      - name: Commit compact numerical results # Make the latest benchmark outcome directly readable through the repository connector.
+        if: always() # Persist diagnostics for both successful and failed push runs.
+        shell: bash # Use Bash for deterministic Git staging and conditional commit logic.
+        run: | # Start the result-persistence commands.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated result commits to the standard GitHub Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard GitHub Actions no-reply address.
+          git add -f experiments/llm_dorfler_3d/results # Stage only compact result tables, summaries, and diagnostic text files.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update LLM-gated Dorfler benchmark"; git push origin HEAD:experiment/llm-dorfler-gating; fi # Commit and push only when result content actually changed.
+      - name: Upload compact result artifact # Preserve an immutable copy of the same compact outputs for this workflow run.
+        if: always() # Upload diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the compact numerical artifact.
+          name: llm-dorfler-gating-results # Give the artifact a stable experiment-specific name.
+          path: experiments/llm_dorfler_3d/results/** # Upload only compact tables and logs rather than transient meshes.
+          if-no-files-found: warn # Keep unexpected early failures diagnosable without masking the workflow status.
+          retention-days: 14 # Retain temporary artifacts long enough for analysis without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion equal the benchmark driver's original status.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Start the final status propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/llm_dorfler_3d/results/exit_code.txt) # Reload the exact numerical exit status captured before publication.
+          exit "${status}" # Return the numerical status so a failed solve or parser cannot appear green.
