@@ -24,14 +24,14 @@ jobs: # Define one deterministic corrected comparison job.
           sudo apt-get install -y gmsh calculix-ccx # Install Gmsh and CalculiX from the runner repositories.
           gmsh --version # Record the exact Gmsh version in the workflow log.
           (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
-      - name: Validate and run corrected benchmark # Syntax-check and execute the full-domain semantic partition experiment while preserving diagnostics.
+      - name: Validate and run corrected benchmark # Syntax-check and execute the locally normalized semantic Dörfler experiment while preserving diagnostics.
         shell: bash # Use Bash to preserve the original numerical exit status before publication.
         run: | # Start the benchmark wrapper commands.
           set -euo pipefail # Use strict shell behavior for setup and syntax validation.
-          python -m py_compile experiments/semantic_partition_dorfler_v2/run.py # Reject Python syntax errors before launching any numerical work.
+          python -m py_compile experiments/semantic_partition_dorfler_v2/run_local_target.py # Reject Python syntax errors before launching any numerical work.
           mkdir -p experiments/semantic_partition_dorfler_v2/results # Ensure compact diagnostics have a destination even after an early failure.
           set +e # Temporarily allow the numerical driver to fail so diagnostics can still be uploaded.
-          python experiments/semantic_partition_dorfler_v2/run.py > experiments/semantic_partition_dorfler_v2/results/console.log 2>&1 # Execute the reference and both adaptive histories while capturing progress output.
+          python experiments/semantic_partition_dorfler_v2/run_local_target.py > experiments/semantic_partition_dorfler_v2/results/console.log 2>&1 # Execute the reference and both adaptive histories while capturing progress output.
           status=$? # Preserve the exact numerical driver exit code before publication commands run.
           set -e # Restore strict shell behavior for persistence and upload.
           echo "${status}" > experiments/semantic_partition_dorfler_v2/results/exit_code.txt # Persist the numerical exit status as compact machine-readable state.
@@ -45,7 +45,7 @@ jobs: # Define one deterministic corrected comparison job.
           git config user.name "github-actions[bot]" # Attribute generated results to the standard Actions bot identity.
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply Actions address.
           git add -f experiments/semantic_partition_dorfler_v2/results # Stage only compact tables, summaries, and diagnostics.
-          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update full-domain semantic partition benchmark"; git push origin HEAD:experiment/semantic-partition-dorfler-v2; fi # Commit and push only when compact outputs changed.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update locally normalized semantic Dorfler benchmark"; git push origin HEAD:experiment/semantic-partition-dorfler-v2; fi # Commit and push only when compact outputs changed.
       - name: Upload compact result artifact # Preserve an immutable copy of this corrected run's compact outputs.
         if: always() # Upload diagnostics regardless of numerical success or failure.
         uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
