@@ -1,0 +1,25 @@
+{
+  "reference": {
+    "qoi": -0.012426898373109212,
+    "dof": 138519,
+    "elements": 249126,
+    "global_h": 1.5
+  },
+  "theta": 0.5,
+  "base_size_ratio_q": 0.8,
+  "minimum_local_h_mm": 2.0,
+  "reference_h_mm": 1.5,
+  "amr_rounds": 5,
+  "semantic_ranks": {
+    "root_region": 3,
+    "hole_region": 2,
+    "background_region": 1
+  },
+  "semantic_size_ratios": {
+    "root_region": 0.5120000000000001,
+    "hole_region": 0.6400000000000001,
+    "background_region": 0.8
+  },
+  "definition": "same theta in every semantic region; LLM ordinal rank controls only physical refinement size ratio; global baseline uses the same theta and one unit refinement level",
+  "fairness_rule": "interpret only true QoI error versus actual DOF and minimum DOF at common error targets"
+}
