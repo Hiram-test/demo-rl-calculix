@@ -1,25 +1,19 @@
 [run] coarse_global
-[run] reference_global
-[run] A000
-[run] A001
-[run] A010
-[run] A011
-[run] A100
-[run] A101
-[run] A110
-[run] A111
-[run] A200
-[run] A201
-[run] A210
-[run] A211
-[run] A300
-[run] A301
-[run] A310
-[run] A311
-[run] LLM_T1_root_hole_transfer
-[run] LLM_T2_root_band
-[run] LLM_T3_eccentric_load_path
-[run] LLM_H1_hole_local
-[run] LLM_H2_hole_root_coupled
-[run] LLM_H3_positive_y_transfer
-[done] wrote /home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/results/results.csv
+[fatal-v2] RuntimeError: Command failed with code 1: /usr/bin/gmsh model.geo -3 -format msh2 -o model.msh
+Traceback (most recent call last):
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/run_experiment_v2.py", line 84, in <module>
+    raise SystemExit(main())  # Run the corrected benchmark and terminate with its returned status code.
+                     ^^^^^^
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/run_experiment_v2.py", line 79, in main
+    return core.main()  # Execute the same baselines, 16 spatial atoms, six frozen LLM supports, and Pareto analysis.
+           ^^^^^^^^^^^
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/run_experiment.py", line 368, in main
+    rows.append(solve_case(case, gmsh_bin, ccx_bin))  # Mesh, solve, and extract both QoIs for the current action support.
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/run_experiment.py", line 257, in solve_case
+    run_command([gmsh_bin, str(geo_path.name), "-3", "-format", "msh2", "-o", str(msh_path.name)], case_dir, case_dir / "gmsh.log")  # Generate the volume mesh with Gmsh.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/demo-rl-calculix/demo-rl-calculix/experiments/action_support_3d/run_experiment.py", line 129, in run_command
+    raise RuntimeError(f"Command failed with code {completed.returncode}: {' '.join(command)}")  # Raise a concise error that points to the saved log.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Command failed with code 1: /usr/bin/gmsh model.geo -3 -format msh2 -o model.msh
