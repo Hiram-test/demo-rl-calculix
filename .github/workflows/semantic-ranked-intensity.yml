@@ -1,0 +1,64 @@
+name: Fixed-theta semantic ranked intensity versus global Dorfler # Name the workflow by the exact causal intervention under test.
+on: # Define isolated triggers for this dedicated experiment.
+  push: # Run automatically whenever the ranked-intensity branch changes.
+    branches: [experiment/semantic-ranked-intensity] # Restrict push execution to the isolated benchmark branch.
+    paths: ["experiments/semantic_ranked_intensity/**", ".github/workflows/semantic-ranked-intensity.yml"] # Ignore unrelated repository changes.
+  pull_request: # Validate the same experiment when proposed against its parent branch.
+    branches: [experiment/local-normalized-regions, main] # Allow either stacked or direct review without changing numerical code.
+    paths: ["experiments/semantic_ranked_intensity/**", ".github/workflows/semantic-ranked-intensity.yml"] # Restrict PR validation to this experiment.
+  workflow_dispatch: # Permit explicit reruns without modifying experiment source.
+permissions: # Grant only the repository permissions required by checkout and optional generated-result persistence.
+  contents: write # Allow push runs to commit compact generated tables and figures back to the experiment branch.
+jobs: # Define one deterministic numerical comparison job.
+  compare-ranked-intensity: # Run the reference, both adaptive histories, diagnostics, and plots in one consistent environment.
+    runs-on: ubuntu-24.04 # Use the Ubuntu runner with packaged Gmsh and CalculiX availability.
+    timeout-minutes: 60 # Bound accidental native-tool hangs while allowing the small 3D benchmark to complete.
+    steps: # Execute checkout, dependency installation, numerical solve, plotting, persistence, and status propagation in order.
+      - name: Check out experiment branch # Materialize the exact source revision selected by the workflow trigger.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with standard credentials preserved.
+      - name: Install numerical and plotting dependencies # Install every external package needed by meshing, solving, parsing, and plotting.
+        shell: bash # Use Bash so package failures propagate deterministically.
+        run: | # Begin the strict dependency installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installation.
+          sudo apt-get install -y gmsh calculix-ccx python3-pandas python3-matplotlib # Install the mesher, FE solver, table reader, and plotting library.
+          gmsh --version # Record the exact Gmsh version in the workflow log for reproducibility.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record whichever packaged CalculiX executable is present.
+      - name: Run ranked-intensity benchmark and draw plots # Execute the fixed-theta comparison and plot only actual solved states.
+        shell: bash # Use Bash to preserve the numerical exit status across diagnostic publication steps.
+        run: | # Begin the benchmark wrapper commands.
+          set -euo pipefail # Use strict shell behavior for syntax validation and setup.
+          python -m py_compile experiments/semantic_ranked_intensity/run.py # Reject Python syntax errors before starting any native numerical solve.
+          python -m py_compile experiments/semantic_ranked_intensity/plot.py # Reject plotting syntax errors before numerical work begins.
+          mkdir -p experiments/semantic_ranked_intensity/results # Ensure compact diagnostics have a destination even after early failure.
+          set +e # Temporarily allow the numerical driver to fail so logs can still be uploaded for diagnosis.
+          python experiments/semantic_ranked_intensity/run.py > experiments/semantic_ranked_intensity/results/console.log 2>&1 # Run the shared reference plus both adaptive trajectories.
+          status=$? # Preserve the exact numerical driver exit status before plotting or artifact publication.
+          set -e # Restore strict failure behavior for all remaining workflow steps.
+          echo "${status}" > experiments/semantic_ranked_intensity/results/exit_code.txt # Persist the numerical status as compact machine-readable state.
+          if [ "${status}" -eq 0 ]; then python experiments/semantic_ranked_intensity/plot.py; fi # Draw the linear error-DOF and semantic intensity figures only after successful numerical completion.
+          find experiments/semantic_ranked_intensity/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 50 {} \; > experiments/semantic_ranked_intensity/results/diagnostics.txt 2>/dev/null || true # Preserve bounded mesher and solver log tails without uploading transient meshes.
+          tail -n 260 experiments/semantic_ranked_intensity/results/console.log > experiments/semantic_ranked_intensity/results/console_tail.txt || true # Preserve the most relevant progress and failure context compactly.
+      - name: Commit compact push-run results # Keep the latest push-run tables and figures directly readable on the experiment branch.
+        if: github.event_name == 'push' # Avoid repository write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Begin the compact generated-result commit block.
+          set -euo pipefail # Stop on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated result commits to the standard Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply address for the Actions bot.
+          git add -f experiments/semantic_ranked_intensity/results # Stage only compact tables, summaries, plots, and diagnostics.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update semantic ranked-intensity benchmark"; git push origin HEAD:experiment/semantic-ranked-intensity; fi # Commit only when generated compact outputs actually changed.
+      - name: Upload compact benchmark artifact # Preserve an immutable copy of the numerical results and figures for this workflow run.
+        if: always() # Upload available diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the compact experiment artifact.
+          name: semantic-ranked-intensity-results # Give the artifact a stable experiment-specific name.
+          path: experiments/semantic_ranked_intensity/results/** # Upload only compact outputs rather than transient meshes.
+          if-no-files-found: warn # Keep early failures diagnosable without masking the final workflow status.
+          retention-days: 14 # Retain temporary workflow artifacts long enough for review without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion equal the original numerical driver status.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Begin final status propagation.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/semantic_ranked_intensity/results/exit_code.txt) # Reload the exact numerical exit status captured before plotting and upload.
+          exit "${status}" # Return the numerical status so failed meshing, solving, parsing, or marking cannot appear green.
