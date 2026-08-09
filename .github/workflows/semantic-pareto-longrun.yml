@@ -1,0 +1,64 @@
+name: Long-run semantic Pareto convergence # Name the extended convergence experiment clearly in GitHub Actions.
+on: # Define source-driven triggers so the long numerical run starts only when its experiment files change.
+  push: # Run automatically when the dedicated long-run branch is updated.
+    branches: [experiment/semantic-pareto-longrun-v4] # Restrict push execution to the isolated long-run branch.
+    paths: ["experiments/semantic_pareto_longrun/**", ".github/workflows/semantic-pareto-longrun.yml"] # Ignore unrelated repository changes and generated files outside this experiment.
+  pull_request: # Run the same long-horizon validation when the branch is proposed for review.
+    branches: [main] # Restrict pull-request validation to proposals targeting the default branch.
+    paths: ["experiments/semantic_pareto_longrun/**", ".github/workflows/semantic-pareto-longrun.yml"] # Trigger PR validation only for this experiment source or workflow.
+  workflow_dispatch: # Allow the exact same long-run experiment to be relaunched manually without changing source.
+permissions: # Grant only the repository permissions required for checkout and optional result persistence.
+  contents: write # Allow push-event runs to commit compact CSV and PNG results back to the long-run branch.
+jobs: # Define one numerical and plotting job so the graph is generated from the exact solved history.
+  longrun-pareto: # Name the job that performs Gmsh/CalculiX solves and scripted Pareto postprocessing.
+    runs-on: ubuntu-24.04 # Use the Ubuntu runner where the required native packages are available.
+    timeout-minutes: 90 # Allow the substantially longer twelve-round histories while still bounding accidental solver hangs.
+    steps: # Execute checkout, dependencies, long-run solves, plotting, persistence, and final status propagation in order.
+      - name: Check out long-run branch # Materialize the exact source state associated with this workflow run.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with credentials preserved for push-event persistence.
+      - name: Install numerical and plotting dependencies # Install Gmsh, CalculiX, Matplotlib, and a Chinese font for the script-generated figure.
+        shell: bash # Use Bash so any dependency failure propagates deterministically.
+        run: | # Start the strict package-installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installing numerical and plotting packages.
+          sudo apt-get install -y gmsh calculix-ccx python3-matplotlib fonts-noto-cjk # Install all native solver and plotting dependencies used by the long-run scripts.
+          gmsh --version # Record the exact Gmsh version in the workflow log for numerical reproducibility.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX version across common Ubuntu package executable names.
+      - name: Run twelve-round numerical histories # Execute the extended global and semantic adaptive histories and preserve the full console log.
+        shell: bash # Use Bash to capture a numerical failure while still allowing diagnostic publication.
+        run: | # Start the long-run numerical wrapper commands.
+          set -euo pipefail # Use strict behavior for syntax validation and result-directory setup.
+          python -m py_compile experiments/semantic_pareto_longrun/run.py # Reject Python syntax errors before launching expensive native numerical work.
+          python -m py_compile experiments/semantic_pareto_longrun/plot_pareto.py # Reject plotting-script syntax errors before launching expensive native numerical work.
+          mkdir -p experiments/semantic_pareto_longrun/results # Ensure compact outputs and failure diagnostics always have a destination.
+          set +e # Temporarily allow the long numerical driver to return nonzero so its diagnostics can still be uploaded.
+          python experiments/semantic_pareto_longrun/run.py > experiments/semantic_pareto_longrun/results/console.log 2>&1 # Run the finer-reference twelve-round numerical experiment and capture all progress output.
+          status=$? # Preserve the exact numerical driver exit status before running any postprocessing commands.
+          set -e # Restore strict shell behavior after the numerical status has been captured.
+          echo "${status}" > experiments/semantic_pareto_longrun/results/exit_code.txt # Persist the exact numerical status as compact machine-readable state.
+          if [ "${status}" -eq 0 ]; then python experiments/semantic_pareto_longrun/plot_pareto.py; fi # Generate the requested scatter/Pareto PNG only when the numerical history completed successfully.
+          find experiments/semantic_pareto_longrun/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 40 {} \; > experiments/semantic_pareto_longrun/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails without uploading transient meshes.
+          tail -n 260 experiments/semantic_pareto_longrun/results/console.log > experiments/semantic_pareto_longrun/results/console_tail.txt || true # Preserve the most relevant long-run progress and any failure context.
+      - name: Commit compact long-run results # Keep the latest solved history and generated PNG directly readable on push events.
+        if: github.event_name == 'push' # Avoid write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Start the compact result-persistence block.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated numerical results to the standard GitHub Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply address for generated result commits.
+          git add -f experiments/semantic_pareto_longrun/results # Stage only compact tables, fit summaries, the PNG plot, and diagnostics.
+          if git diff --cached --quiet; then echo "No compact long-run result changes to commit"; else git commit -m "results: update long-run semantic Pareto curves"; git push origin HEAD:experiment/semantic-pareto-longrun-v4; fi # Commit and push only when the generated compact results actually changed.
+      - name: Upload long-run result artifact # Preserve an immutable copy of the actual solved points and script-generated figure for this workflow run.
+        if: always() # Upload any available diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the long-run artifact contents and retention.
+          name: semantic-pareto-longrun-results # Give the artifact a stable experiment-specific name.
+          path: experiments/semantic_pareto_longrun/results/** # Upload only compact numerical tables, fitted trends, the PNG figure, and diagnostics.
+          if-no-files-found: warn # Keep an unexpected early failure diagnosable without hiding the final workflow status.
+          retention-days: 14 # Retain the immutable run artifact long enough for analysis without permanent storage growth.
+      - name: Propagate long-run numerical status # Make the final Actions conclusion equal the actual long numerical experiment status.
+        shell: bash # Use Bash for direct status-file loading and failure propagation.
+        run: | # Start the final status-propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/semantic_pareto_longrun/results/exit_code.txt) # Reload the exact numerical status captured before plotting and publication.
+          exit "${status}" # Return the original numerical status so a failed solve or parser cannot appear green.
