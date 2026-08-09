@@ -1,0 +1,21 @@
+{
+  "source": "Frozen LLM semantic prior before any estimator or solver result is inspected",
+  "base_size_ratio_q": 0.8,
+  "regions": {
+    "root_region": {
+      "rank": 3,
+      "size_ratio": 0.512,
+      "reason": "The clamped root carries the dominant bending/torsional transfer and is expected to require the deepest local resolution."
+    },
+    "hole_region": {
+      "rank": 2,
+      "size_ratio": 0.64,
+      "reason": "The hole creates a geometric stress concentration and receives intermediate-deep refinement."
+    },
+    "background_region": {
+      "rank": 1,
+      "size_ratio": 0.8,
+      "reason": "The residual material remains active but receives the weakest refinement intensity."
+    }
+  }
+}
