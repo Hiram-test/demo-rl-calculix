@@ -1,4 +1,4 @@
-name: Fixed-theta semantic ranked intensity versus global Dorfler # Name the workflow by the exact causal intervention under test.
+name: Region-level Dorfler plus semantic ranked intensity versus global Dorfler # Name the workflow by the corrected action-support intervention under test.
 on: # Define isolated triggers for this dedicated experiment.
   push: # Run automatically whenever the ranked-intensity branch changes.
     branches: [experiment/semantic-ranked-intensity] # Restrict push execution to the isolated benchmark branch.
@@ -10,7 +10,7 @@ on: # Define isolated triggers for this dedicated experiment.
 permissions: # Grant only the repository permissions required by checkout and optional generated-result persistence.
   contents: write # Allow push runs to commit compact generated tables and figures back to the experiment branch.
 jobs: # Define one deterministic numerical comparison job.
-  compare-ranked-intensity: # Run the reference, both adaptive histories, diagnostics, and plots in one consistent environment.
+  compare-region-ranked-intensity: # Run the reference, unchanged baseline, corrected semantic history, diagnostics, and plots.
     runs-on: ubuntu-24.04 # Use the Ubuntu runner with packaged Gmsh and CalculiX availability.
     timeout-minutes: 60 # Bound accidental native-tool hangs while allowing the small 3D benchmark to complete.
     steps: # Execute checkout, dependency installation, numerical solve, plotting, persistence, and status propagation in order.
@@ -24,15 +24,16 @@ jobs: # Define one deterministic numerical comparison job.
           sudo apt-get install -y gmsh calculix-ccx python3-pandas python3-matplotlib # Install the mesher, FE solver, table reader, and plotting library.
           gmsh --version # Record the exact Gmsh version in the workflow log for reproducibility.
           (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record whichever packaged CalculiX executable is present.
-      - name: Run ranked-intensity benchmark and draw plots # Execute the fixed-theta comparison and plot only actual solved states.
+      - name: Run region-ranked benchmark and draw plots # Execute the corrected region-level Dörfler comparison and plot only actual solved states.
         shell: bash # Use Bash to preserve the numerical exit status across diagnostic publication steps.
         run: | # Begin the benchmark wrapper commands.
           set -euo pipefail # Use strict shell behavior for syntax validation and setup.
-          python -m py_compile experiments/semantic_ranked_intensity/run.py # Reject Python syntax errors before starting any native numerical solve.
+          python -m py_compile experiments/semantic_ranked_intensity/run.py # Validate the reusable ranked-intensity implementation syntax.
+          python -m py_compile experiments/semantic_ranked_intensity/run_region_level.py # Validate the corrected region-level Dörfler wrapper syntax.
           python -m py_compile experiments/semantic_ranked_intensity/plot.py # Reject plotting syntax errors before numerical work begins.
           mkdir -p experiments/semantic_ranked_intensity/results # Ensure compact diagnostics have a destination even after early failure.
           set +e # Temporarily allow the numerical driver to fail so logs can still be uploaded for diagnosis.
-          python experiments/semantic_ranked_intensity/run.py > experiments/semantic_ranked_intensity/results/console.log 2>&1 # Run the shared reference plus both adaptive trajectories.
+          python experiments/semantic_ranked_intensity/run_region_level.py > experiments/semantic_ranked_intensity/results/console.log 2>&1 # Run the shared reference, unchanged global baseline, and corrected region-level semantic trajectory.
           status=$? # Preserve the exact numerical driver exit status before plotting or artifact publication.
           set -e # Restore strict failure behavior for all remaining workflow steps.
           echo "${status}" > experiments/semantic_ranked_intensity/results/exit_code.txt # Persist the numerical status as compact machine-readable state.
@@ -47,7 +48,7 @@ jobs: # Define one deterministic numerical comparison job.
           git config user.name "github-actions[bot]" # Attribute generated result commits to the standard Actions bot identity.
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply address for the Actions bot.
           git add -f experiments/semantic_ranked_intensity/results # Stage only compact tables, summaries, plots, and diagnostics.
-          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update semantic ranked-intensity benchmark"; git push origin HEAD:experiment/semantic-ranked-intensity; fi # Commit only when generated compact outputs actually changed.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update region-ranked semantic benchmark"; git push origin HEAD:experiment/semantic-ranked-intensity; fi # Commit only when generated compact outputs actually changed.
       - name: Upload compact benchmark artifact # Preserve an immutable copy of the numerical results and figures for this workflow run.
         if: always() # Upload available diagnostics regardless of numerical success or failure.
         uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
