@@ -2,10 +2,10 @@ name: 3D action-support semantics benchmark # Give the experiment a recognizable
 on: # Define automated, pull-request, and manual entry points for the benchmark.
   push: # Run automatically when benchmark source files change on the experiment branch.
     branches: [experiment/action-support-3d] # Restrict automatic push execution to the isolated experiment branch.
-    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Exclude generated results so the bot result commit cannot recurse.
+    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/run_experiment_v5.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Exclude generated results so the bot result commit cannot recurse.
   pull_request: # Run the benchmark when the experiment branch is proposed for review.
     branches: [main] # Restrict pull-request execution to proposals targeting the default main branch.
-    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Keep pull-request validation tied to executable benchmark inputs.
+    paths: ["experiments/action_support_3d/run_experiment.py", "experiments/action_support_3d/run_experiment_v2.py", "experiments/action_support_3d/run_experiment_v3.py", "experiments/action_support_3d/run_experiment_v4.py", "experiments/action_support_3d/run_experiment_v5.py", "experiments/action_support_3d/llm_regions.json", "experiments/action_support_3d/llm_prompt.md", ".github/workflows/action-support-3d.yml"] # Keep pull-request validation tied to executable benchmark inputs.
   workflow_dispatch: # Allow the benchmark to be rerun manually without changing source files.
 permissions: # Grant only the repository permissions required by checkout and push-event result persistence.
   contents: write # Allow the push-event job to commit compact numerical results back to the experiment branch.
@@ -24,11 +24,11 @@ jobs: # Define the single deterministic benchmark job.
           sudo apt-get install -y gmsh calculix-ccx # Install the Gmsh mesher and CalculiX structural solver.
           gmsh --version # Record the exact Gmsh version in the Actions log.
           (ccx -v || ccx_2.21 -v || true) # Record the available CalculiX executable version without failing on naming differences.
-      - name: Run benchmark and capture status # Execute the common-budget physical-QoI benchmark while preserving diagnostics on failure.
+      - name: Run benchmark and capture status # Execute the exhaustive fixed-pair common-budget benchmark while preserving diagnostics on failure.
         shell: bash # Use Bash so the solver exit code can be captured explicitly.
         run: | # Start the benchmark wrapper that always creates a compact status record.
           set +e # Temporarily allow the benchmark process to return nonzero so diagnostics can still be persisted.
-          python experiments/action_support_3d/run_experiment_v4.py > experiments/action_support_3d/benchmark-console.log 2>&1 # Run the resource-normalized physical-QoI benchmark and capture the complete driver console log.
+          python experiments/action_support_3d/run_experiment_v5.py > experiments/action_support_3d/benchmark-console.log 2>&1 # Run all single atoms, all 120 atom pairs, and six frozen LLM supports at the common resource target.
           status=$? # Preserve the benchmark exit status before executing any diagnostic commands.
           set -e # Restore immediate shell failure for the persistence and publication steps.
           mkdir -p experiments/action_support_3d/results # Ensure the compact result directory exists even after an early solver failure.
