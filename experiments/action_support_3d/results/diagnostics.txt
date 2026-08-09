@@ -1,0 +1,3864 @@
+experiments/action_support_3d/cases/coarse_global/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          377
+   elements:         1941
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         2385
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1038
+ number of nonzero lower triangular matrix elements
+ 16410
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.024560
+________________________________________
+experiments/action_support_3d/cases/coarse_global/gmsh.log
+Info    :  - 1182 tetrahedra created in 0.00203038 sec. (582158 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0143604s, CPU 0.014318s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.730184:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :         3 elements
+Info    : 0.20 < quality < 0.30 :        14 elements
+Info    : 0.30 < quality < 0.40 :        28 elements
+Info    : 0.40 < quality < 0.50 :        28 elements
+Info    : 0.50 < quality < 0.60 :        71 elements
+Info    : 0.60 < quality < 0.70 :       292 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       272 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : 25 edge swaps, 1 node relocations (volume = 185135): worst = 0.202936 / average = 0.742715 (Wall 0.0004332s, CPU 0.000433s)
+Info    : 26 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.743446 (Wall 0.000528658s, CPU 0.000529s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       288 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00137445s, CPU 0.001375s)
+Info    : 377 nodes 1941 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 336 nodes...
+Info    : Done tetrahedrizing 344 nodes (Wall 0.00285003s, CPU 0.00285s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00633139s, CPU 0.006331s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 2.19241 (nodes removed 0 0)
+Info    : 3D refinement terminated (377 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1182 tetrahedra created in 0.00200729 sec. (588853 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0140623s, CPU 0.014062s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.730184:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :         3 elements
+Info    : 0.20 < quality < 0.30 :        14 elements
+Info    : 0.30 < quality < 0.40 :        28 elements
+Info    : 0.40 < quality < 0.50 :        28 elements
+Info    : 0.50 < quality < 0.60 :        71 elements
+Info    : 0.60 < quality < 0.70 :       292 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       272 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : 25 edge swaps, 1 node relocations (volume = 185135): worst = 0.202936 / average = 0.742668 (Wall 0.000427158s, CPU 0.000427s)
+Info    : 26 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.743398 (Wall 0.000522296s, CPU 0.000522s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       289 elements
+Info    : 0.70 < quality < 0.80 :       331 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00136955s, CPU 0.00137s)
+Info    : 377 nodes 1941 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:15 2026 (From start: Wall 0.050172s, CPU 0.079002s)
+experiments/action_support_3d/cases/LLM_H1_hole_local/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          854
+   elements:         4670
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         7066
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 2469
+ number of nonzero lower triangular matrix elements
+ 44643
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.077238
+________________________________________
+experiments/action_support_3d/cases/LLM_H1_hole_local/gmsh.log
+Info    :  - 3524 tetrahedra created in 0.0113316 sec. (310989 tets/s)
+Info    : 1 node relocations
+Info    : Done meshing 3D (Wall 0.036385s, CPU 0.03341s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0106864 / average = 0.739069:
+Info    : 0.00 < quality < 0.10 :        14 elements
+Info    : 0.10 < quality < 0.20 :        26 elements
+Info    : 0.20 < quality < 0.30 :        40 elements
+Info    : 0.30 < quality < 0.40 :        79 elements
+Info    : 0.40 < quality < 0.50 :       147 elements
+Info    : 0.50 < quality < 0.60 :       281 elements
+Info    : 0.60 < quality < 0.70 :       556 elements
+Info    : 0.70 < quality < 0.80 :       927 elements
+Info    : 0.80 < quality < 0.90 :       959 elements
+Info    : 0.90 < quality < 1.00 :       495 elements
+Info    : 78 edge swaps, 2 node relocations (volume = 184210): worst = 0.157866 / average = 0.750939 (Wall 0.00127519s, CPU 0.001275s)
+Info    : 81 edge swaps, 3 node relocations (volume = 184210): worst = 0.264234 / average = 0.751087 (Wall 0.00159985s, CPU 0.001581s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        76 elements
+Info    : 0.40 < quality < 0.50 :       161 elements
+Info    : 0.50 < quality < 0.60 :       278 elements
+Info    : 0.60 < quality < 0.70 :       555 elements
+Info    : 0.70 < quality < 0.80 :       932 elements
+Info    : 0.80 < quality < 0.90 :       962 elements
+Info    : 0.90 < quality < 1.00 :       493 elements
+Info    : Done optimizing mesh (Wall 0.00497986s, CPU 0.00458s)
+Info    : 854 nodes 4670 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 543 nodes...
+Info    : Done tetrahedrizing 551 nodes (Wall 0.005193s, CPU 0.004169s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0118076s, CPU 0.008836s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.33851 (nodes removed 0 0)
+Info    : 3D refinement terminated (854 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 3524 tetrahedra created in 0.0115195 sec. (305916 tets/s)
+Info    : 1 node relocations
+Info    : Done meshing 3D (Wall 0.036906s, CPU 0.033807s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0106864 / average = 0.739069:
+Info    : 0.00 < quality < 0.10 :        14 elements
+Info    : 0.10 < quality < 0.20 :        26 elements
+Info    : 0.20 < quality < 0.30 :        40 elements
+Info    : 0.30 < quality < 0.40 :        79 elements
+Info    : 0.40 < quality < 0.50 :       147 elements
+Info    : 0.50 < quality < 0.60 :       281 elements
+Info    : 0.60 < quality < 0.70 :       556 elements
+Info    : 0.70 < quality < 0.80 :       927 elements
+Info    : 0.80 < quality < 0.90 :       959 elements
+Info    : 0.90 < quality < 1.00 :       495 elements
+Info    : 78 edge swaps, 2 node relocations (volume = 184210): worst = 0.157866 / average = 0.75096 (Wall 0.00127045s, CPU 0.00127s)
+Info    : 81 edge swaps, 3 node relocations (volume = 184210): worst = 0.264234 / average = 0.751108 (Wall 0.00160339s, CPU 0.001603s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        76 elements
+Info    : 0.40 < quality < 0.50 :       161 elements
+Info    : 0.50 < quality < 0.60 :       278 elements
+Info    : 0.60 < quality < 0.70 :       555 elements
+Info    : 0.70 < quality < 0.80 :       932 elements
+Info    : 0.80 < quality < 0.90 :       962 elements
+Info    : 0.90 < quality < 1.00 :       493 elements
+Info    : Done optimizing mesh (Wall 0.00480258s, CPU 0.004802s)
+Info    : 854 nodes 4670 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:23 2026 (From start: Wall 0.111697s, CPU 0.132897s)
+experiments/action_support_3d/cases/A201/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          566
+   elements:         3011
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4175
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1605
+ number of nonzero lower triangular matrix elements
+ 27489
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.044752
+________________________________________
+experiments/action_support_3d/cases/A201/gmsh.log
+Info    :  - 2093 tetrahedra created in 0.00574109 sec. (364564 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0230592s, CPU 0.02106s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0142665 / average = 0.737197:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        24 elements
+Info    : 0.30 < quality < 0.40 :        37 elements
+Info    : 0.40 < quality < 0.50 :        76 elements
+Info    : 0.50 < quality < 0.60 :       141 elements
+Info    : 0.60 < quality < 0.70 :       443 elements
+Info    : 0.70 < quality < 0.80 :       569 elements
+Info    : 0.80 < quality < 0.90 :       494 elements
+Info    : 0.90 < quality < 1.00 :       286 elements
+Info    : 45 edge swaps, 3 node relocations (volume = 185135): worst = 0.28145 / average = 0.747604 (Wall 0.000739774s, CPU 0.00074s)
+Info    : 47 edge swaps, 3 node relocations (volume = 185135): worst = 0.304769 / average = 0.748261 (Wall 0.000908379s, CPU 0.000909s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        36 elements
+Info    : 0.40 < quality < 0.50 :        77 elements
+Info    : 0.50 < quality < 0.60 :       152 elements
+Info    : 0.60 < quality < 0.70 :       445 elements
+Info    : 0.70 < quality < 0.80 :       566 elements
+Info    : 0.80 < quality < 0.90 :       505 elements
+Info    : 0.90 < quality < 1.00 :       274 elements
+Info    : Done optimizing mesh (Wall 0.00258902s, CPU 0.002589s)
+Info    : 566 nodes 3011 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 420 nodes...
+Info    : Done tetrahedrizing 428 nodes (Wall 0.0037805s, CPU 0.003781s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00818619s, CPU 0.008186s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.89339 (nodes removed 0 0)
+Info    : 3D refinement terminated (566 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2093 tetrahedra created in 0.00581153 sec. (360146 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0223259s, CPU 0.022325s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0142665 / average = 0.737198:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        24 elements
+Info    : 0.30 < quality < 0.40 :        37 elements
+Info    : 0.40 < quality < 0.50 :        76 elements
+Info    : 0.50 < quality < 0.60 :       140 elements
+Info    : 0.60 < quality < 0.70 :       444 elements
+Info    : 0.70 < quality < 0.80 :       569 elements
+Info    : 0.80 < quality < 0.90 :       494 elements
+Info    : 0.90 < quality < 1.00 :       286 elements
+Info    : 45 edge swaps, 3 node relocations (volume = 185135): worst = 0.28145 / average = 0.747605 (Wall 0.000734363s, CPU 0.000734s)
+Info    : 47 edge swaps, 3 node relocations (volume = 185135): worst = 0.304769 / average = 0.748262 (Wall 0.000903409s, CPU 0.000903s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        36 elements
+Info    : 0.40 < quality < 0.50 :        77 elements
+Info    : 0.50 < quality < 0.60 :       151 elements
+Info    : 0.60 < quality < 0.70 :       446 elements
+Info    : 0.70 < quality < 0.80 :       566 elements
+Info    : 0.80 < quality < 0.90 :       505 elements
+Info    : 0.90 < quality < 1.00 :       274 elements
+Info    : Done optimizing mesh (Wall 0.00262008s, CPU 0.00262s)
+Info    : 566 nodes 3011 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0724212s, CPU 0.099148s)
+experiments/action_support_3d/cases/A010/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          570
+   elements:         2986
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          186
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4014
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1524
+ number of nonzero lower triangular matrix elements
+ 25140
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.039567
+________________________________________
+experiments/action_support_3d/cases/A010/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2002 tetrahedra created in 0.00493986 sec. (405274 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0227112s, CPU 0.022705s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184976) with worst = 0.03688 / average = 0.734268:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        20 elements
+Info    : 0.20 < quality < 0.30 :        29 elements
+Info    : 0.30 < quality < 0.40 :        30 elements
+Info    : 0.40 < quality < 0.50 :        77 elements
+Info    : 0.50 < quality < 0.60 :       128 elements
+Info    : 0.60 < quality < 0.70 :       397 elements
+Info    : 0.70 < quality < 0.80 :       576 elements
+Info    : 0.80 < quality < 0.90 :       496 elements
+Info    : 0.90 < quality < 1.00 :       242 elements
+Info    : 53 edge swaps, 1 node relocations (volume = 184976): worst = 0.302848 / average = 0.749832 (Wall 0.000809223s, CPU 0.000809s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        75 elements
+Info    : 0.50 < quality < 0.60 :       130 elements
+Info    : 0.60 < quality < 0.70 :       393 elements
+Info    : 0.70 < quality < 0.80 :       593 elements
+Info    : 0.80 < quality < 0.90 :       502 elements
+Info    : 0.90 < quality < 1.00 :       235 elements
+Info    : Done optimizing mesh (Wall 0.00250434s, CPU 0.002505s)
+Info    : 570 nodes 2986 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 453 nodes...
+Info    : Done tetrahedrizing 461 nodes (Wall 0.00396482s, CPU 0.00298s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00891275s, CPU 0.007928s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.25754 (nodes removed 0 0)
+Info    : 3D refinement terminated (570 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2002 tetrahedra created in 0.00530209 sec. (377586 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0231543s, CPU 0.022152s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184976) with worst = 0.03688 / average = 0.734269:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        20 elements
+Info    : 0.20 < quality < 0.30 :        29 elements
+Info    : 0.30 < quality < 0.40 :        30 elements
+Info    : 0.40 < quality < 0.50 :        77 elements
+Info    : 0.50 < quality < 0.60 :       128 elements
+Info    : 0.60 < quality < 0.70 :       397 elements
+Info    : 0.70 < quality < 0.80 :       576 elements
+Info    : 0.80 < quality < 0.90 :       496 elements
+Info    : 0.90 < quality < 1.00 :       242 elements
+Info    : 53 edge swaps, 1 node relocations (volume = 184976): worst = 0.302848 / average = 0.749834 (Wall 0.000832186s, CPU 0.000832s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        75 elements
+Info    : 0.50 < quality < 0.60 :       130 elements
+Info    : 0.60 < quality < 0.70 :       393 elements
+Info    : 0.70 < quality < 0.80 :       593 elements
+Info    : 0.80 < quality < 0.90 :       502 elements
+Info    : 0.90 < quality < 1.00 :       235 elements
+Info    : Done optimizing mesh (Wall 0.00274785s, CPU 0.002748s)
+Info    : 570 nodes 2986 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:20 2026 (From start: Wall 0.0740532s, CPU 0.103634s)
+experiments/action_support_3d/cases/A101/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          562
+   elements:         2968
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4029
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1593
+ number of nonzero lower triangular matrix elements
+ 26838
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.043316
+________________________________________
+experiments/action_support_3d/cases/A101/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1979 tetrahedra created in 0.00522021 sec. (379103 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0225674s, CPU 0.020578s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185026) with worst = 0.0318744 / average = 0.738739:
+Info    : 0.00 < quality < 0.10 :         4 elements
+Info    : 0.10 < quality < 0.20 :        19 elements
+Info    : 0.20 < quality < 0.30 :        15 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        71 elements
+Info    : 0.50 < quality < 0.60 :       132 elements
+Info    : 0.60 < quality < 0.70 :       377 elements
+Info    : 0.70 < quality < 0.80 :       536 elements
+Info    : 0.80 < quality < 0.90 :       536 elements
+Info    : 0.90 < quality < 1.00 :       244 elements
+Info    : 37 edge swaps, 0 node relocations (volume = 185026): worst = 0.300053 / average = 0.749822 (Wall 0.000582259s, CPU 0.000583s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        73 elements
+Info    : 0.50 < quality < 0.60 :       132 elements
+Info    : 0.60 < quality < 0.70 :       376 elements
+Info    : 0.70 < quality < 0.80 :       544 elements
+Info    : 0.80 < quality < 0.90 :       534 elements
+Info    : 0.90 < quality < 1.00 :       244 elements
+Info    : Done optimizing mesh (Wall 0.00232322s, CPU 0.002296s)
+Info    : 558 nodes 2942 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 437 nodes...
+Info    : Done tetrahedrizing 445 nodes (Wall 0.00386987s, CPU 0.003831s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00844154s, CPU 0.00814s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.56592 (nodes removed 0 0)
+Info    : 3D refinement terminated (562 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2007 tetrahedra created in 0.00517712 sec. (387667 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0220554s, CPU 0.021665s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185026) with worst = 0.0318744 / average = 0.736718:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        20 elements
+Info    : 0.20 < quality < 0.30 :        13 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        69 elements
+Info    : 0.50 < quality < 0.60 :       149 elements
+Info    : 0.60 < quality < 0.70 :       392 elements
+Info    : 0.70 < quality < 0.80 :       535 elements
+Info    : 0.80 < quality < 0.90 :       532 elements
+Info    : 0.90 < quality < 1.00 :       246 elements
+Info    : 38 edge swaps, 0 node relocations (volume = 185026): worst = 0.300053 / average = 0.748385 (Wall 0.000578081s, CPU 0.000578s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        70 elements
+Info    : 0.50 < quality < 0.60 :       146 elements
+Info    : 0.60 < quality < 0.70 :       391 elements
+Info    : 0.70 < quality < 0.80 :       547 elements
+Info    : 0.80 < quality < 0.90 :       529 elements
+Info    : 0.90 < quality < 1.00 :       246 elements
+Info    : Done optimizing mesh (Wall 0.00238531s, CPU 0.001368s)
+Info    : 562 nodes 2968 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0723329s, CPU 0.097548s)
+experiments/action_support_3d/cases/A111/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          558
+   elements:         2934
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         3951
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1581
+ number of nonzero lower triangular matrix elements
+ 26493
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.041571
+________________________________________
+experiments/action_support_3d/cases/A111/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1971 tetrahedra created in 0.00523566 sec. (376456 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0228652s, CPU 0.022663s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184894) with worst = 0.0215041 / average = 0.73856:
+Info    : 0.00 < quality < 0.10 :         8 elements
+Info    : 0.10 < quality < 0.20 :        15 elements
+Info    : 0.20 < quality < 0.30 :        21 elements
+Info    : 0.30 < quality < 0.40 :        46 elements
+Info    : 0.40 < quality < 0.50 :        63 elements
+Info    : 0.50 < quality < 0.60 :       119 elements
+Info    : 0.60 < quality < 0.70 :       370 elements
+Info    : 0.70 < quality < 0.80 :       578 elements
+Info    : 0.80 < quality < 0.90 :       494 elements
+Info    : 0.90 < quality < 1.00 :       255 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 184894): worst = 0.300187 / average = 0.751234 (Wall 0.000671285s, CPU 0.000672s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        69 elements
+Info    : 0.50 < quality < 0.60 :       115 elements
+Info    : 0.60 < quality < 0.70 :       377 elements
+Info    : 0.70 < quality < 0.80 :       573 elements
+Info    : 0.80 < quality < 0.90 :       500 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : Done optimizing mesh (Wall 0.00235319s, CPU 0.002353s)
+Info    : 558 nodes 2934 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 440 nodes...
+Info    : Done tetrahedrizing 448 nodes (Wall 0.00398777s, CPU 0.003988s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00874641s, CPU 0.008746s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.16846 (nodes removed 0 0)
+Info    : 3D refinement terminated (558 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1971 tetrahedra created in 0.00501343 sec. (393143 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0221522s, CPU 0.022152s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184894) with worst = 0.0215041 / average = 0.73856:
+Info    : 0.00 < quality < 0.10 :         8 elements
+Info    : 0.10 < quality < 0.20 :        15 elements
+Info    : 0.20 < quality < 0.30 :        21 elements
+Info    : 0.30 < quality < 0.40 :        46 elements
+Info    : 0.40 < quality < 0.50 :        63 elements
+Info    : 0.50 < quality < 0.60 :       119 elements
+Info    : 0.60 < quality < 0.70 :       370 elements
+Info    : 0.70 < quality < 0.80 :       578 elements
+Info    : 0.80 < quality < 0.90 :       494 elements
+Info    : 0.90 < quality < 1.00 :       255 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 184894): worst = 0.300187 / average = 0.75126 (Wall 0.000639115s, CPU 0.000639s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        69 elements
+Info    : 0.50 < quality < 0.60 :       115 elements
+Info    : 0.60 < quality < 0.70 :       376 elements
+Info    : 0.70 < quality < 0.80 :       574 elements
+Info    : 0.80 < quality < 0.90 :       500 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : Done optimizing mesh (Wall 0.00241449s, CPU 0.002415s)
+Info    : 558 nodes 2934 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0729578s, CPU 0.105438s)
+experiments/action_support_3d/cases/A100/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          556
+   elements:         2933
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         3973
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1575
+ number of nonzero lower triangular matrix elements
+ 26496
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.042635
+________________________________________
+experiments/action_support_3d/cases/A100/gmsh.log
+Info    :  - 1986 tetrahedra created in 0.00502106 sec. (395534 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0221818s, CPU 0.018152s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185084) with worst = 0.0147624 / average = 0.745153:
+Info    : 0.00 < quality < 0.10 :         4 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        26 elements
+Info    : 0.30 < quality < 0.40 :        33 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       134 elements
+Info    : 0.60 < quality < 0.70 :       335 elements
+Info    : 0.70 < quality < 0.80 :       589 elements
+Info    : 0.80 < quality < 0.90 :       519 elements
+Info    : 0.90 < quality < 1.00 :       269 elements
+Info    : 44 edge swaps, 3 node relocations (volume = 185084): worst = 0.232773 / average = 0.757976 (Wall 0.000726558s, CPU 0.000726s)
+Info    : 45 edge swaps, 3 node relocations (volume = 185084): worst = 0.302546 / average = 0.758548 (Wall 0.000860308s, CPU 0.00086s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        32 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       331 elements
+Info    : 0.70 < quality < 0.80 :       586 elements
+Info    : 0.80 < quality < 0.90 :       527 elements
+Info    : 0.90 < quality < 1.00 :       272 elements
+Info    : Done optimizing mesh (Wall 0.00267347s, CPU 0.002673s)
+Info    : 556 nodes 2933 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 434 nodes...
+Info    : Done tetrahedrizing 442 nodes (Wall 0.00387342s, CPU 0.002954s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00857169s, CPU 0.006576s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.50839 (nodes removed 0 0)
+Info    : 3D refinement terminated (556 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1986 tetrahedra created in 0.00516912 sec. (384204 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0221201s, CPU 0.019137s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185084) with worst = 0.0147624 / average = 0.745153:
+Info    : 0.00 < quality < 0.10 :         4 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        26 elements
+Info    : 0.30 < quality < 0.40 :        33 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       134 elements
+Info    : 0.60 < quality < 0.70 :       335 elements
+Info    : 0.70 < quality < 0.80 :       589 elements
+Info    : 0.80 < quality < 0.90 :       519 elements
+Info    : 0.90 < quality < 1.00 :       269 elements
+Info    : 44 edge swaps, 3 node relocations (volume = 185084): worst = 0.232773 / average = 0.757976 (Wall 0.000712191s, CPU 0.000712s)
+Info    : 45 edge swaps, 3 node relocations (volume = 185084): worst = 0.302546 / average = 0.758548 (Wall 0.000842846s, CPU 0.000843s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        32 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       331 elements
+Info    : 0.70 < quality < 0.80 :       586 elements
+Info    : 0.80 < quality < 0.90 :       527 elements
+Info    : 0.90 < quality < 1.00 :       272 elements
+Info    : Done optimizing mesh (Wall 0.00250003s, CPU 0.00149s)
+Info    : 556 nodes 2933 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:20 2026 (From start: Wall 0.0722135s, CPU 0.090593s)
+experiments/action_support_3d/cases/reference_global/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:        11238
+   elements:        64943
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           75
+   single point constraints:         1014
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:       111451
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 32700
+ number of nonzero lower triangular matrix elements
+ 655023
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 2.430839
+________________________________________
+experiments/action_support_3d/cases/reference_global/gmsh.log
+Info    : 0.90 < quality < 1.00 :     10483 elements
+Info    : 1051 edge swaps, 23 node relocations (volume = 184056): worst = 0.149808 / average = 0.792493 (Wall 0.0261257s, CPU 0.026124s)
+Info    : 1058 edge swaps, 24 node relocations (volume = 184056): worst = 0.214906 / average = 0.792542 (Wall 0.0313228s, CPU 0.031322s)
+Info    : 1060 edge swaps, 24 node relocations (volume = 184056): worst = 0.300007 / average = 0.792568 (Wall 0.0356493s, CPU 0.035636s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       928 elements
+Info    : 0.40 < quality < 0.50 :      1357 elements
+Info    : 0.50 < quality < 0.60 :      2475 elements
+Info    : 0.60 < quality < 0.70 :      5688 elements
+Info    : 0.70 < quality < 0.80 :     13269 elements
+Info    : 0.80 < quality < 0.90 :     21214 elements
+Info    : 0.90 < quality < 1.00 :     10440 elements
+Info    : Done optimizing mesh (Wall 0.0947856s, CPU 0.093774s)
+Info    : 11237 nodes 64934 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 4584 nodes...
+Info    : Done tetrahedrizing 4592 nodes (Wall 0.051477s, CPU 0.050488s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.112402s, CPU 0.111413s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 8.01864 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 2.12805 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.73749 (nodes removed 0 0)
+Info    : It. 1500 - 1499 nodes created - worst tet radius 1.55443 (nodes removed 0 1)
+Info    : It. 2000 - 1999 nodes created - worst tet radius 1.4359 (nodes removed 0 1)
+Info    : It. 2500 - 2499 nodes created - worst tet radius 1.34146 (nodes removed 0 1)
+Info    : It. 3000 - 2999 nodes created - worst tet radius 1.26875 (nodes removed 0 1)
+Info    : It. 3500 - 3499 nodes created - worst tet radius 1.21411 (nodes removed 0 1)
+Info    : It. 4000 - 3999 nodes created - worst tet radius 1.16407 (nodes removed 0 1)
+Info    : It. 4500 - 4499 nodes created - worst tet radius 1.12496 (nodes removed 0 1)
+Info    : It. 5000 - 4999 nodes created - worst tet radius 1.08953 (nodes removed 0 1)
+Info    : It. 5500 - 5499 nodes created - worst tet radius 1.05886 (nodes removed 0 1)
+Info    : It. 6000 - 5999 nodes created - worst tet radius 1.03164 (nodes removed 0 1)
+Info    : It. 6500 - 6499 nodes created - worst tet radius 1.00755 (nodes removed 0 1)
+Info    : 3D refinement terminated (11238 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 1 nodes could not be inserted
+Info    :  - 56346 tetrahedra created in 0.295677 sec. (190566 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.65104s, CPU 0.650009s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184056) with worst = 0.00490691 / average = 0.780526:
+Info    : 0.00 < quality < 0.10 :       127 elements
+Info    : 0.10 < quality < 0.20 :       354 elements
+Info    : 0.20 < quality < 0.30 :       583 elements
+Info    : 0.30 < quality < 0.40 :       939 elements
+Info    : 0.40 < quality < 0.50 :      1410 elements
+Info    : 0.50 < quality < 0.60 :      2558 elements
+Info    : 0.60 < quality < 0.70 :      5729 elements
+Info    : 0.70 < quality < 0.80 :     13148 elements
+Info    : 0.80 < quality < 0.90 :     21027 elements
+Info    : 0.90 < quality < 1.00 :     10464 elements
+Info    : 1047 edge swaps, 24 node relocations (volume = 184056): worst = 0.149808 / average = 0.792509 (Wall 0.0214991s, CPU 0.021499s)
+Info    : 1054 edge swaps, 25 node relocations (volume = 184056): worst = 0.214906 / average = 0.792559 (Wall 0.0259236s, CPU 0.025925s)
+Info    : 1056 edge swaps, 25 node relocations (volume = 184056): worst = 0.300007 / average = 0.792585 (Wall 0.030197s, CPU 0.030198s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       927 elements
+Info    : 0.40 < quality < 0.50 :      1351 elements
+Info    : 0.50 < quality < 0.60 :      2492 elements
+Info    : 0.60 < quality < 0.70 :      5676 elements
+Info    : 0.70 < quality < 0.80 :     13264 elements
+Info    : 0.80 < quality < 0.90 :     21247 elements
+Info    : 0.90 < quality < 1.00 :     10423 elements
+Info    : Done optimizing mesh (Wall 0.0840943s, CPU 0.084094s)
+Info    : 11238 nodes 64943 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:17 2026 (From start: Wall 1.69935s, CPU 1.71478s)
+experiments/action_support_3d/cases/A211/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          561
+   elements:         2972
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4101
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1590
+ number of nonzero lower triangular matrix elements
+ 27123
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.042649
+________________________________________
+experiments/action_support_3d/cases/A211/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2080 tetrahedra created in 0.00555408 sec. (374499 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0223412s, CPU 0.022165s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0142982 / average = 0.728741:
+Info    : 0.00 < quality < 0.10 :        15 elements
+Info    : 0.10 < quality < 0.20 :        22 elements
+Info    : 0.20 < quality < 0.30 :        34 elements
+Info    : 0.30 < quality < 0.40 :        59 elements
+Info    : 0.40 < quality < 0.50 :        57 elements
+Info    : 0.50 < quality < 0.60 :       146 elements
+Info    : 0.60 < quality < 0.70 :       415 elements
+Info    : 0.70 < quality < 0.80 :       535 elements
+Info    : 0.80 < quality < 0.90 :       534 elements
+Info    : 0.90 < quality < 1.00 :       261 elements
+Info    : 69 edge swaps, 0 node relocations (volume = 185135): worst = 0.301389 / average = 0.748316 (Wall 0.000906645s, CPU 0.000907s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        57 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       143 elements
+Info    : 0.60 < quality < 0.70 :       411 elements
+Info    : 0.70 < quality < 0.80 :       557 elements
+Info    : 0.80 < quality < 0.90 :       529 elements
+Info    : 0.90 < quality < 1.00 :       261 elements
+Info    : Done optimizing mesh (Wall 0.00265467s, CPU 0.001654s)
+Info    : 561 nodes 2972 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 419 nodes...
+Info    : Done tetrahedrizing 427 nodes (Wall 0.00362642s, CPU 0.0007s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00804138s, CPU 0.004081s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.89279 (nodes removed 0 0)
+Info    : 3D refinement terminated (561 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2080 tetrahedra created in 0.00555182 sec. (374651 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.022034s, CPU 0.018074s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0142982 / average = 0.72876:
+Info    : 0.00 < quality < 0.10 :        15 elements
+Info    : 0.10 < quality < 0.20 :        22 elements
+Info    : 0.20 < quality < 0.30 :        34 elements
+Info    : 0.30 < quality < 0.40 :        59 elements
+Info    : 0.40 < quality < 0.50 :        57 elements
+Info    : 0.50 < quality < 0.60 :       146 elements
+Info    : 0.60 < quality < 0.70 :       416 elements
+Info    : 0.70 < quality < 0.80 :       534 elements
+Info    : 0.80 < quality < 0.90 :       534 elements
+Info    : 0.90 < quality < 1.00 :       261 elements
+Info    : 69 edge swaps, 0 node relocations (volume = 185135): worst = 0.301389 / average = 0.748404 (Wall 0.00091448s, CPU 0.000914s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        57 elements
+Info    : 0.40 < quality < 0.50 :        58 elements
+Info    : 0.50 < quality < 0.60 :       143 elements
+Info    : 0.60 < quality < 0.70 :       415 elements
+Info    : 0.70 < quality < 0.80 :       554 elements
+Info    : 0.80 < quality < 0.90 :       529 elements
+Info    : 0.90 < quality < 1.00 :       261 elements
+Info    : Done optimizing mesh (Wall 0.00255547s, CPU 0.002555s)
+Info    : 561 nodes 2972 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.071196s, CPU 0.091576s)
+experiments/action_support_3d/cases/LLM_T2_root_band/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:         1040
+   elements:         5619
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          429
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         8273
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 2691
+ number of nonzero lower triangular matrix elements
+ 47286
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.083316
+________________________________________
+experiments/action_support_3d/cases/LLM_T2_root_band/gmsh.log
+Info    :  - 4144 tetrahedra created in 0.0135775 sec. (305211 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0445158s, CPU 0.040431s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0283922 / average = 0.752597:
+Info    : 0.00 < quality < 0.10 :        14 elements
+Info    : 0.10 < quality < 0.20 :        36 elements
+Info    : 0.20 < quality < 0.30 :        58 elements
+Info    : 0.30 < quality < 0.40 :        77 elements
+Info    : 0.40 < quality < 0.50 :       120 elements
+Info    : 0.50 < quality < 0.60 :       231 elements
+Info    : 0.60 < quality < 0.70 :       707 elements
+Info    : 0.70 < quality < 0.80 :       997 elements
+Info    : 0.80 < quality < 0.90 :      1301 elements
+Info    : 0.90 < quality < 1.00 :       603 elements
+Info    : 106 edge swaps, 2 node relocations (volume = 185135): worst = 0.288005 / average = 0.768179 (Wall 0.00165052s, CPU 0.001651s)
+Info    : 107 edge swaps, 2 node relocations (volume = 185135): worst = 0.301263 / average = 0.768313 (Wall 0.0019447s, CPU 0.001945s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        74 elements
+Info    : 0.40 < quality < 0.50 :       111 elements
+Info    : 0.50 < quality < 0.60 :       233 elements
+Info    : 0.60 < quality < 0.70 :       709 elements
+Info    : 0.70 < quality < 0.80 :      1006 elements
+Info    : 0.80 < quality < 0.90 :      1311 elements
+Info    : 0.90 < quality < 1.00 :       605 elements
+Info    : Done optimizing mesh (Wall 0.00584341s, CPU 0.005843s)
+Info    : 1040 nodes 5619 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 709 nodes...
+Info    : Done tetrahedrizing 717 nodes (Wall 0.00620738s, CPU 0.006207s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0142321s, CPU 0.014231s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.51553 (nodes removed 0 0)
+Info    : 3D refinement terminated (1040 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 4144 tetrahedra created in 0.0133413 sec. (310614 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0442938s, CPU 0.044294s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0283922 / average = 0.752597:
+Info    : 0.00 < quality < 0.10 :        14 elements
+Info    : 0.10 < quality < 0.20 :        36 elements
+Info    : 0.20 < quality < 0.30 :        58 elements
+Info    : 0.30 < quality < 0.40 :        77 elements
+Info    : 0.40 < quality < 0.50 :       120 elements
+Info    : 0.50 < quality < 0.60 :       231 elements
+Info    : 0.60 < quality < 0.70 :       707 elements
+Info    : 0.70 < quality < 0.80 :       997 elements
+Info    : 0.80 < quality < 0.90 :      1301 elements
+Info    : 0.90 < quality < 1.00 :       603 elements
+Info    : 106 edge swaps, 2 node relocations (volume = 185135): worst = 0.288005 / average = 0.768179 (Wall 0.00162801s, CPU 0.001569s)
+Info    : 107 edge swaps, 2 node relocations (volume = 185135): worst = 0.301263 / average = 0.768313 (Wall 0.00194063s, CPU 0.001882s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        74 elements
+Info    : 0.40 < quality < 0.50 :       111 elements
+Info    : 0.50 < quality < 0.60 :       233 elements
+Info    : 0.60 < quality < 0.70 :       709 elements
+Info    : 0.70 < quality < 0.80 :      1006 elements
+Info    : 0.80 < quality < 0.90 :      1311 elements
+Info    : 0.90 < quality < 1.00 :       605 elements
+Info    : Done optimizing mesh (Wall 0.00571293s, CPU 0.004714s)
+Info    : 1040 nodes 5619 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:23 2026 (From start: Wall 0.130965s, CPU 0.151133s)
+experiments/action_support_3d/cases/LLM_H2_hole_root_coupled/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:         1453
+   elements:         8019
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          429
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:        12508
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 3930
+ number of nonzero lower triangular matrix elements
+ 72366
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.136049
+________________________________________
+experiments/action_support_3d/cases/LLM_H2_hole_root_coupled/gmsh.log
+Info    : 3 node relocations
+Info    : Done meshing 3D (Wall 0.0654252s, CPU 0.063454s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0124487 / average = 0.759216:
+Info    : 0.00 < quality < 0.10 :        22 elements
+Info    : 0.10 < quality < 0.20 :        43 elements
+Info    : 0.20 < quality < 0.30 :        79 elements
+Info    : 0.30 < quality < 0.40 :       108 elements
+Info    : 0.40 < quality < 0.50 :       181 elements
+Info    : 0.50 < quality < 0.60 :       376 elements
+Info    : 0.60 < quality < 0.70 :       893 elements
+Info    : 0.70 < quality < 0.80 :      1550 elements
+Info    : 0.80 < quality < 0.90 :      2007 elements
+Info    : 0.90 < quality < 1.00 :       984 elements
+Info    : 138 edge swaps, 9 node relocations (volume = 184210): worst = 0.252432 / average = 0.772803 (Wall 0.0021712s, CPU 0.002161s)
+Info    : 140 edge swaps, 11 node relocations (volume = 184210): worst = 0.300239 / average = 0.772912 (Wall 0.00264541s, CPU 0.002605s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       111 elements
+Info    : 0.40 < quality < 0.50 :       179 elements
+Info    : 0.50 < quality < 0.60 :       368 elements
+Info    : 0.60 < quality < 0.70 :       897 elements
+Info    : 0.70 < quality < 0.80 :      1549 elements
+Info    : 0.80 < quality < 0.90 :      2024 elements
+Info    : 0.90 < quality < 1.00 :       995 elements
+Info    : Done optimizing mesh (Wall 0.00890292s, CPU 0.007886s)
+Info    : 1453 nodes 8019 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 865 nodes...
+Info    : Done tetrahedrizing 873 nodes (Wall 0.00822373s, CPU 0.008224s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0188078s, CPU 0.01782s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.46931 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.04336 (nodes removed 0 0)
+Info    : 3D refinement terminated (1453 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 1 nodes could not be inserted
+Info    :  - 6243 tetrahedra created in 0.0223134 sec. (279786 tets/s)
+Info    : 3 node relocations
+Info    : Done meshing 3D (Wall 0.065487s, CPU 0.063478s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0124487 / average = 0.759215:
+Info    : 0.00 < quality < 0.10 :        22 elements
+Info    : 0.10 < quality < 0.20 :        43 elements
+Info    : 0.20 < quality < 0.30 :        79 elements
+Info    : 0.30 < quality < 0.40 :       108 elements
+Info    : 0.40 < quality < 0.50 :       181 elements
+Info    : 0.50 < quality < 0.60 :       376 elements
+Info    : 0.60 < quality < 0.70 :       893 elements
+Info    : 0.70 < quality < 0.80 :      1550 elements
+Info    : 0.80 < quality < 0.90 :      2007 elements
+Info    : 0.90 < quality < 1.00 :       984 elements
+Info    : 138 edge swaps, 9 node relocations (volume = 184210): worst = 0.252432 / average = 0.772802 (Wall 0.00215929s, CPU 0.00216s)
+Info    : 140 edge swaps, 11 node relocations (volume = 184210): worst = 0.300239 / average = 0.772911 (Wall 0.00263483s, CPU 0.002634s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       111 elements
+Info    : 0.40 < quality < 0.50 :       179 elements
+Info    : 0.50 < quality < 0.60 :       368 elements
+Info    : 0.60 < quality < 0.70 :       897 elements
+Info    : 0.70 < quality < 0.80 :      1549 elements
+Info    : 0.80 < quality < 0.90 :      2024 elements
+Info    : 0.90 < quality < 1.00 :       995 elements
+Info    : Done optimizing mesh (Wall 0.00849479s, CPU 0.008493s)
+Info    : 1453 nodes 8019 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:24 2026 (From start: Wall 0.187215s, CPU 0.213249s)
+experiments/action_support_3d/cases/A110/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          555
+   elements:         2912
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         3917
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1572
+ number of nonzero lower triangular matrix elements
+ 26313
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.042108
+________________________________________
+experiments/action_support_3d/cases/A110/gmsh.log
+Info    :  - 1972 tetrahedra created in 0.0049939 sec. (394881 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.022373s, CPU 0.021349s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184885) with worst = 0.0465979 / average = 0.730189:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        25 elements
+Info    : 0.20 < quality < 0.30 :        28 elements
+Info    : 0.30 < quality < 0.40 :        45 elements
+Info    : 0.40 < quality < 0.50 :        54 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       396 elements
+Info    : 0.70 < quality < 0.80 :       542 elements
+Info    : 0.80 < quality < 0.90 :       500 elements
+Info    : 0.90 < quality < 1.00 :       231 elements
+Info    : 60 edge swaps, 3 node relocations (volume = 184885): worst = 0.236936 / average = 0.748172 (Wall 0.000836955s, CPU 0.000837s)
+Info    : 61 edge swaps, 3 node relocations (volume = 184885): worst = 0.267441 / average = 0.748492 (Wall 0.000990602s, CPU 0.000991s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       138 elements
+Info    : 0.60 < quality < 0.70 :       400 elements
+Info    : 0.70 < quality < 0.80 :       533 elements
+Info    : 0.80 < quality < 0.90 :       506 elements
+Info    : 0.90 < quality < 1.00 :       237 elements
+Info    : Done optimizing mesh (Wall 0.00277265s, CPU 0.002773s)
+Info    : 555 nodes 2912 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 438 nodes...
+Info    : Done tetrahedrizing 446 nodes (Wall 0.00387047s, CPU 0.00387s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00863734s, CPU 0.008622s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.25672 (nodes removed 0 0)
+Info    : 3D refinement terminated (555 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1972 tetrahedra created in 0.0048058 sec. (410337 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0219364s, CPU 0.020927s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184885) with worst = 0.0465979 / average = 0.730203:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        25 elements
+Info    : 0.20 < quality < 0.30 :        28 elements
+Info    : 0.30 < quality < 0.40 :        45 elements
+Info    : 0.40 < quality < 0.50 :        54 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       396 elements
+Info    : 0.70 < quality < 0.80 :       542 elements
+Info    : 0.80 < quality < 0.90 :       500 elements
+Info    : 0.90 < quality < 1.00 :       231 elements
+Info    : 60 edge swaps, 3 node relocations (volume = 184885): worst = 0.236936 / average = 0.748099 (Wall 0.000848927s, CPU 0.000849s)
+Info    : 61 edge swaps, 3 node relocations (volume = 184885): worst = 0.267441 / average = 0.748419 (Wall 0.00100026s, CPU 0.001001s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       402 elements
+Info    : 0.70 < quality < 0.80 :       532 elements
+Info    : 0.80 < quality < 0.90 :       504 elements
+Info    : 0.90 < quality < 1.00 :       237 elements
+Info    : Done optimizing mesh (Wall 0.00263819s, CPU 0.002639s)
+Info    : 555 nodes 2912 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0726736s, CPU 0.098141s)
+experiments/action_support_3d/cases/A300/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          574
+   elements:         3023
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4105
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1629
+ number of nonzero lower triangular matrix elements
+ 27477
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.043812
+________________________________________
+experiments/action_support_3d/cases/A300/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2064 tetrahedra created in 0.00529321 sec. (389933 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0227176s, CPU 0.021604s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.00849971 / average = 0.739892:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        25 elements
+Info    : 0.30 < quality < 0.40 :        37 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       137 elements
+Info    : 0.60 < quality < 0.70 :       422 elements
+Info    : 0.70 < quality < 0.80 :       554 elements
+Info    : 0.80 < quality < 0.90 :       524 elements
+Info    : 0.90 < quality < 1.00 :       279 elements
+Info    : 51 edge swaps, 2 node relocations (volume = 185135): worst = 0.300274 / average = 0.754085 (Wall 0.000800387s, CPU 0.0008s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        40 elements
+Info    : 0.40 < quality < 0.50 :        58 elements
+Info    : 0.50 < quality < 0.60 :       144 elements
+Info    : 0.60 < quality < 0.70 :       416 elements
+Info    : 0.70 < quality < 0.80 :       548 elements
+Info    : 0.80 < quality < 0.90 :       536 elements
+Info    : 0.90 < quality < 1.00 :       279 elements
+Info    : Done optimizing mesh (Wall 0.00242151s, CPU 0.002408s)
+Info    : 574 nodes 3023 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 440 nodes...
+Info    : Done tetrahedrizing 448 nodes (Wall 0.00377214s, CPU 0.003772s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00844119s, CPU 0.008441s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.23668 (nodes removed 0 0)
+Info    : 3D refinement terminated (574 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2064 tetrahedra created in 0.00529176 sec. (390039 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0225097s, CPU 0.02251s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.00849971 / average = 0.739896:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        25 elements
+Info    : 0.30 < quality < 0.40 :        37 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       137 elements
+Info    : 0.60 < quality < 0.70 :       421 elements
+Info    : 0.70 < quality < 0.80 :       555 elements
+Info    : 0.80 < quality < 0.90 :       524 elements
+Info    : 0.90 < quality < 1.00 :       279 elements
+Info    : 51 edge swaps, 2 node relocations (volume = 185135): worst = 0.300274 / average = 0.754098 (Wall 0.000782383s, CPU 0.000782s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        40 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       142 elements
+Info    : 0.60 < quality < 0.70 :       416 elements
+Info    : 0.70 < quality < 0.80 :       549 elements
+Info    : 0.80 < quality < 0.90 :       536 elements
+Info    : 0.90 < quality < 1.00 :       279 elements
+Info    : Done optimizing mesh (Wall 0.00242083s, CPU 0.00242s)
+Info    : 574 nodes 3023 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.0722566s, CPU 0.098544s)
+experiments/action_support_3d/cases/LLM_H3_positive_y_transfer/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:         1160
+   elements:         6488
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:        10418
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 3387
+ number of nonzero lower triangular matrix elements
+ 64056
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.116874
+________________________________________
+experiments/action_support_3d/cases/LLM_H3_positive_y_transfer/gmsh.log
+Info    : 5 node relocations
+Info    : Done meshing 3D (Wall 0.050257s, CPU 0.049272s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0110638 / average = 0.751549:
+Info    : 0.00 < quality < 0.10 :        15 elements
+Info    : 0.10 < quality < 0.20 :        38 elements
+Info    : 0.20 < quality < 0.30 :        63 elements
+Info    : 0.30 < quality < 0.40 :       106 elements
+Info    : 0.40 < quality < 0.50 :       169 elements
+Info    : 0.50 < quality < 0.60 :       352 elements
+Info    : 0.60 < quality < 0.70 :       759 elements
+Info    : 0.70 < quality < 0.80 :      1390 elements
+Info    : 0.80 < quality < 0.90 :      1565 elements
+Info    : 0.90 < quality < 1.00 :       771 elements
+Info    : 114 edge swaps, 7 node relocations (volume = 184210): worst = 0.157866 / average = 0.764093 (Wall 0.00192543s, CPU 0.001926s)
+Info    : 116 edge swaps, 7 node relocations (volume = 184210): worst = 0.301189 / average = 0.764246 (Wall 0.00231671s, CPU 0.002318s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       105 elements
+Info    : 0.40 < quality < 0.50 :       166 elements
+Info    : 0.50 < quality < 0.60 :       362 elements
+Info    : 0.60 < quality < 0.70 :       754 elements
+Info    : 0.70 < quality < 0.80 :      1391 elements
+Info    : 0.80 < quality < 0.90 :      1582 elements
+Info    : 0.90 < quality < 1.00 :       769 elements
+Info    : Done optimizing mesh (Wall 0.00742341s, CPU 0.007423s)
+Info    : 1159 nodes 6483 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 614 nodes...
+Info    : Done tetrahedrizing 622 nodes (Wall 0.00585131s, CPU 0.005851s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0131167s, CPU 0.013045s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 4.66196 (nodes removed 0 0)
+Info    : It. 500 - 498 nodes created - worst tet radius 1.02779 (nodes removed 0 2)
+Info    : 3D refinement terminated (1160 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 4 nodes could not be inserted
+Info    :  - 5233 tetrahedra created in 0.0186296 sec. (280896 tets/s)
+Info    : 5 node relocations
+Info    : Done meshing 3D (Wall 0.0517318s, CPU 0.050679s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0110638 / average = 0.751687:
+Info    : 0.00 < quality < 0.10 :        15 elements
+Info    : 0.10 < quality < 0.20 :        37 elements
+Info    : 0.20 < quality < 0.30 :        63 elements
+Info    : 0.30 < quality < 0.40 :       106 elements
+Info    : 0.40 < quality < 0.50 :       169 elements
+Info    : 0.50 < quality < 0.60 :       350 elements
+Info    : 0.60 < quality < 0.70 :       756 elements
+Info    : 0.70 < quality < 0.80 :      1393 elements
+Info    : 0.80 < quality < 0.90 :      1578 elements
+Info    : 0.90 < quality < 1.00 :       766 elements
+Info    : 113 edge swaps, 4 node relocations (volume = 184210): worst = 0.157866 / average = 0.764115 (Wall 0.00187205s, CPU 0.001873s)
+Info    : 115 edge swaps, 4 node relocations (volume = 184210): worst = 0.301189 / average = 0.764267 (Wall 0.00225968s, CPU 0.002261s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       106 elements
+Info    : 0.40 < quality < 0.50 :       165 elements
+Info    : 0.50 < quality < 0.60 :       359 elements
+Info    : 0.60 < quality < 0.70 :       753 elements
+Info    : 0.70 < quality < 0.80 :      1394 elements
+Info    : 0.80 < quality < 0.90 :      1594 elements
+Info    : 0.90 < quality < 1.00 :       763 elements
+Info    : Done optimizing mesh (Wall 0.00723636s, CPU 0.006244s)
+Info    : 1160 nodes 6488 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:24 2026 (From start: Wall 0.148339s, CPU 0.17734s)
+experiments/action_support_3d/cases/A011/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          585
+   elements:         3078
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          186
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4187
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1569
+ number of nonzero lower triangular matrix elements
+ 26166
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.041438
+________________________________________
+experiments/action_support_3d/cases/A011/gmsh.log
+Info    :  - 2087 tetrahedra created in 0.00540259 sec. (386296 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0235788s, CPU 0.022576s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185124) with worst = 0.0215645 / average = 0.73581:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :        18 elements
+Info    : 0.20 < quality < 0.30 :        20 elements
+Info    : 0.30 < quality < 0.40 :        48 elements
+Info    : 0.40 < quality < 0.50 :        71 elements
+Info    : 0.50 < quality < 0.60 :       124 elements
+Info    : 0.60 < quality < 0.70 :       417 elements
+Info    : 0.70 < quality < 0.80 :       593 elements
+Info    : 0.80 < quality < 0.90 :       531 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 185124): worst = 0.245176 / average = 0.749313 (Wall 0.000669612s, CPU 0.000651s)
+Info    : 45 edge swaps, 0 node relocations (volume = 185124): worst = 0.301715 / average = 0.74966 (Wall 0.00083953s, CPU 0.000821s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        75 elements
+Info    : 0.50 < quality < 0.60 :       126 elements
+Info    : 0.60 < quality < 0.70 :       411 elements
+Info    : 0.70 < quality < 0.80 :       596 elements
+Info    : 0.80 < quality < 0.90 :       538 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : Done optimizing mesh (Wall 0.00264201s, CPU 0.002623s)
+Info    : 585 nodes 3078 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 455 nodes...
+Info    : Done tetrahedrizing 463 nodes (Wall 0.0039948s, CPU 0.003994s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00889866s, CPU 0.008899s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.23639 (nodes removed 0 0)
+Info    : 3D refinement terminated (585 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2087 tetrahedra created in 0.00551211 sec. (378621 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.023594s, CPU 0.021623s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185124) with worst = 0.0215645 / average = 0.73581:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :        18 elements
+Info    : 0.20 < quality < 0.30 :        20 elements
+Info    : 0.30 < quality < 0.40 :        48 elements
+Info    : 0.40 < quality < 0.50 :        71 elements
+Info    : 0.50 < quality < 0.60 :       124 elements
+Info    : 0.60 < quality < 0.70 :       417 elements
+Info    : 0.70 < quality < 0.80 :       593 elements
+Info    : 0.80 < quality < 0.90 :       531 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 185124): worst = 0.245176 / average = 0.749313 (Wall 0.000689619s, CPU 0.000633s)
+Info    : 45 edge swaps, 0 node relocations (volume = 185124): worst = 0.301715 / average = 0.74966 (Wall 0.000843767s, CPU 0.000774s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        75 elements
+Info    : 0.50 < quality < 0.60 :       126 elements
+Info    : 0.60 < quality < 0.70 :       411 elements
+Info    : 0.70 < quality < 0.80 :       596 elements
+Info    : 0.80 < quality < 0.90 :       538 elements
+Info    : 0.90 < quality < 1.00 :       254 elements
+Info    : Done optimizing mesh (Wall 0.00255183s, CPU 0.001519s)
+Info    : 585 nodes 3078 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:20 2026 (From start: Wall 0.0754638s, CPU 0.103254s)
+experiments/action_support_3d/cases/A200/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          567
+   elements:         3012
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4197
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1608
+ number of nonzero lower triangular matrix elements
+ 27546
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.045038
+________________________________________
+experiments/action_support_3d/cases/A200/gmsh.log
+Info    :  - 2109 tetrahedra created in 0.00583526 sec. (361423 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0226283s, CPU 0.02063s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.738918:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        15 elements
+Info    : 0.20 < quality < 0.30 :        27 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       140 elements
+Info    : 0.60 < quality < 0.70 :       404 elements
+Info    : 0.70 < quality < 0.80 :       559 elements
+Info    : 0.80 < quality < 0.90 :       542 elements
+Info    : 0.90 < quality < 1.00 :       293 elements
+Info    : 48 edge swaps, 1 node relocations (volume = 185135): worst = 0.294499 / average = 0.75199 (Wall 0.000771072s, CPU 0.000771s)
+Info    : 49 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.752243 (Wall 0.000933375s, CPU 0.000933s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        74 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       415 elements
+Info    : 0.70 < quality < 0.80 :       550 elements
+Info    : 0.80 < quality < 0.90 :       552 elements
+Info    : 0.90 < quality < 1.00 :       293 elements
+Info    : Done optimizing mesh (Wall 0.00255485s, CPU 0.002554s)
+Info    : 567 nodes 3012 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 415 nodes...
+Info    : Done tetrahedrizing 423 nodes (Wall 0.00368067s, CPU 0.002741s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00805314s, CPU 0.007092s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.80977 (nodes removed 0 0)
+Info    : 3D refinement terminated (567 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2109 tetrahedra created in 0.00579601 sec. (363871 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0223817s, CPU 0.021362s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.738894:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        15 elements
+Info    : 0.20 < quality < 0.30 :        27 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       140 elements
+Info    : 0.60 < quality < 0.70 :       404 elements
+Info    : 0.70 < quality < 0.80 :       558 elements
+Info    : 0.80 < quality < 0.90 :       543 elements
+Info    : 0.90 < quality < 1.00 :       293 elements
+Info    : 48 edge swaps, 1 node relocations (volume = 185135): worst = 0.294499 / average = 0.751995 (Wall 0.000745975s, CPU 0.000731s)
+Info    : 49 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.752248 (Wall 0.000921403s, CPU 0.000906s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        75 elements
+Info    : 0.50 < quality < 0.60 :       139 elements
+Info    : 0.60 < quality < 0.70 :       412 elements
+Info    : 0.70 < quality < 0.80 :       551 elements
+Info    : 0.80 < quality < 0.90 :       553 elements
+Info    : 0.90 < quality < 1.00 :       293 elements
+Info    : Done optimizing mesh (Wall 0.00273234s, CPU 0.002717s)
+Info    : 567 nodes 3012 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0723639s, CPU 0.098857s)
+experiments/action_support_3d/cases/LLM_T3_eccentric_load_path/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          710
+   elements:         3868
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           32
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         5786
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 2037
+ number of nonzero lower triangular matrix elements
+ 36642
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.062724
+________________________________________
+experiments/action_support_3d/cases/LLM_T3_eccentric_load_path/gmsh.log
+Info    :  - 2935 tetrahedra created in 0.00924845 sec. (317350 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0287514s, CPU 0.026749s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.735884:
+Info    : 0.00 < quality < 0.10 :        12 elements
+Info    : 0.10 < quality < 0.20 :        23 elements
+Info    : 0.20 < quality < 0.30 :        47 elements
+Info    : 0.30 < quality < 0.40 :        68 elements
+Info    : 0.40 < quality < 0.50 :       101 elements
+Info    : 0.50 < quality < 0.60 :       214 elements
+Info    : 0.60 < quality < 0.70 :       551 elements
+Info    : 0.70 < quality < 0.80 :       741 elements
+Info    : 0.80 < quality < 0.90 :       758 elements
+Info    : 0.90 < quality < 1.00 :       420 elements
+Info    : 80 edge swaps, 0 node relocations (volume = 185135): worst = 0.290281 / average = 0.752087 (Wall 0.0011305s, CPU 0.001115s)
+Info    : 81 edge swaps, 0 node relocations (volume = 185135): worst = 0.30146 / average = 0.752287 (Wall 0.00133202s, CPU 0.001292s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        63 elements
+Info    : 0.40 < quality < 0.50 :       100 elements
+Info    : 0.50 < quality < 0.60 :       211 elements
+Info    : 0.60 < quality < 0.70 :       559 elements
+Info    : 0.70 < quality < 0.80 :       755 elements
+Info    : 0.80 < quality < 0.90 :       759 elements
+Info    : 0.90 < quality < 1.00 :       416 elements
+Info    : Done optimizing mesh (Wall 0.00403269s, CPU 0.003063s)
+Info    : 712 nodes 3883 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 453 nodes...
+Info    : Done tetrahedrizing 461 nodes (Wall 0.00385916s, CPU 0.003859s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00856501s, CPU 0.007638s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.96147 (nodes removed 0 0)
+Info    : 3D refinement terminated (710 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2920 tetrahedra created in 0.00911833 sec. (320234 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0282982s, CPU 0.026302s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.736678:
+Info    : 0.00 < quality < 0.10 :        13 elements
+Info    : 0.10 < quality < 0.20 :        22 elements
+Info    : 0.20 < quality < 0.30 :        45 elements
+Info    : 0.30 < quality < 0.40 :        67 elements
+Info    : 0.40 < quality < 0.50 :        99 elements
+Info    : 0.50 < quality < 0.60 :       205 elements
+Info    : 0.60 < quality < 0.70 :       557 elements
+Info    : 0.70 < quality < 0.80 :       744 elements
+Info    : 0.80 < quality < 0.90 :       756 elements
+Info    : 0.90 < quality < 1.00 :       412 elements
+Info    : 78 edge swaps, 0 node relocations (volume = 185135): worst = 0.290281 / average = 0.753014 (Wall 0.00110919s, CPU 0.001097s)
+Info    : 79 edge swaps, 0 node relocations (volume = 185135): worst = 0.30146 / average = 0.753216 (Wall 0.0013101s, CPU 0.001275s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        62 elements
+Info    : 0.40 < quality < 0.50 :        97 elements
+Info    : 0.50 < quality < 0.60 :       201 elements
+Info    : 0.60 < quality < 0.70 :       562 elements
+Info    : 0.70 < quality < 0.80 :       760 elements
+Info    : 0.80 < quality < 0.90 :       758 elements
+Info    : 0.90 < quality < 1.00 :       408 elements
+Info    : Done optimizing mesh (Wall 0.00394533s, CPU 0.00295s)
+Info    : 710 nodes 3868 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:23 2026 (From start: Wall 0.0886257s, CPU 0.112104s)
+experiments/action_support_3d/cases/A001/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          595
+   elements:         3131
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          186
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4269
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1599
+ number of nonzero lower triangular matrix elements
+ 26646
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.043308
+________________________________________
+experiments/action_support_3d/cases/A001/gmsh.log
+Info    :  - 2148 tetrahedra created in 0.0054174 sec. (396500 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0238687s, CPU 0.01999s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185077) with worst = 0.0213707 / average = 0.734874:
+Info    : 0.00 < quality < 0.10 :        16 elements
+Info    : 0.10 < quality < 0.20 :        26 elements
+Info    : 0.20 < quality < 0.30 :        25 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       158 elements
+Info    : 0.60 < quality < 0.70 :       401 elements
+Info    : 0.70 < quality < 0.80 :       592 elements
+Info    : 0.80 < quality < 0.90 :       545 elements
+Info    : 0.90 < quality < 1.00 :       280 elements
+Info    : 67 edge swaps, 2 node relocations (volume = 185077): worst = 0.19884 / average = 0.753742 (Wall 0.00096284s, CPU 0.000962s)
+Info    : 71 edge swaps, 2 node relocations (volume = 185077): worst = 0.302306 / average = 0.755307 (Wall 0.00117427s, CPU 0.001174s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        55 elements
+Info    : 0.50 < quality < 0.60 :       155 elements
+Info    : 0.60 < quality < 0.70 :       392 elements
+Info    : 0.70 < quality < 0.80 :       598 elements
+Info    : 0.80 < quality < 0.90 :       558 elements
+Info    : 0.90 < quality < 1.00 :       283 elements
+Info    : Done optimizing mesh (Wall 0.00290277s, CPU 0.002902s)
+Info    : 595 nodes 3131 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 461 nodes...
+Info    : Done tetrahedrizing 469 nodes (Wall 0.00398581s, CPU 0.003986s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00884931s, CPU 0.007936s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.51922 (nodes removed 0 0)
+Info    : 3D refinement terminated (595 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2148 tetrahedra created in 0.00547322 sec. (392456 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0232387s, CPU 0.022283s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185077) with worst = 0.0213707 / average = 0.734874:
+Info    : 0.00 < quality < 0.10 :        16 elements
+Info    : 0.10 < quality < 0.20 :        26 elements
+Info    : 0.20 < quality < 0.30 :        25 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        59 elements
+Info    : 0.50 < quality < 0.60 :       158 elements
+Info    : 0.60 < quality < 0.70 :       401 elements
+Info    : 0.70 < quality < 0.80 :       592 elements
+Info    : 0.80 < quality < 0.90 :       545 elements
+Info    : 0.90 < quality < 1.00 :       280 elements
+Info    : 67 edge swaps, 2 node relocations (volume = 185077): worst = 0.19884 / average = 0.753751 (Wall 0.000958172s, CPU 0.000958s)
+Info    : 71 edge swaps, 2 node relocations (volume = 185077): worst = 0.302306 / average = 0.755316 (Wall 0.00117084s, CPU 0.001171s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        43 elements
+Info    : 0.40 < quality < 0.50 :        55 elements
+Info    : 0.50 < quality < 0.60 :       155 elements
+Info    : 0.60 < quality < 0.70 :       392 elements
+Info    : 0.70 < quality < 0.80 :       598 elements
+Info    : 0.80 < quality < 0.90 :       559 elements
+Info    : 0.90 < quality < 1.00 :       282 elements
+Info    : Done optimizing mesh (Wall 0.00309899s, CPU 0.003086s)
+Info    : 595 nodes 3131 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:20 2026 (From start: Wall 0.0764667s, CPU 0.097839s)
+experiments/action_support_3d/cases/A310/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          566
+   elements:         2966
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           19
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4005
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1605
+ number of nonzero lower triangular matrix elements
+ 26832
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.041265
+________________________________________
+experiments/action_support_3d/cases/A310/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2004 tetrahedra created in 0.00490703 sec. (408394 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0217549s, CPU 0.021721s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0369609 / average = 0.744337:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        17 elements
+Info    : 0.20 < quality < 0.30 :        18 elements
+Info    : 0.30 < quality < 0.40 :        34 elements
+Info    : 0.40 < quality < 0.50 :        58 elements
+Info    : 0.50 < quality < 0.60 :       127 elements
+Info    : 0.60 < quality < 0.70 :       380 elements
+Info    : 0.70 < quality < 0.80 :       564 elements
+Info    : 0.80 < quality < 0.90 :       535 elements
+Info    : 0.90 < quality < 1.00 :       264 elements
+Info    : 42 edge swaps, 0 node relocations (volume = 185135): worst = 0.302231 / average = 0.758063 (Wall 0.000615631s, CPU 0.000615s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        31 elements
+Info    : 0.40 < quality < 0.50 :        54 elements
+Info    : 0.50 < quality < 0.60 :       126 elements
+Info    : 0.60 < quality < 0.70 :       380 elements
+Info    : 0.70 < quality < 0.80 :       565 elements
+Info    : 0.80 < quality < 0.90 :       543 elements
+Info    : 0.90 < quality < 1.00 :       265 elements
+Info    : Done optimizing mesh (Wall 0.00228996s, CPU 0.001294s)
+Info    : 566 nodes 2966 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 440 nodes...
+Info    : Done tetrahedrizing 448 nodes (Wall 0.00371745s, CPU 0.003718s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00827429s, CPU 0.008274s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.19976 (nodes removed 0 0)
+Info    : 3D refinement terminated (566 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2004 tetrahedra created in 0.00509903 sec. (393015 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0217317s, CPU 0.021731s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0369609 / average = 0.744339:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        17 elements
+Info    : 0.20 < quality < 0.30 :        18 elements
+Info    : 0.30 < quality < 0.40 :        34 elements
+Info    : 0.40 < quality < 0.50 :        58 elements
+Info    : 0.50 < quality < 0.60 :       127 elements
+Info    : 0.60 < quality < 0.70 :       380 elements
+Info    : 0.70 < quality < 0.80 :       564 elements
+Info    : 0.80 < quality < 0.90 :       535 elements
+Info    : 0.90 < quality < 1.00 :       264 elements
+Info    : 42 edge swaps, 0 node relocations (volume = 185135): worst = 0.302231 / average = 0.758065 (Wall 0.000615841s, CPU 0.000616s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        31 elements
+Info    : 0.40 < quality < 0.50 :        54 elements
+Info    : 0.50 < quality < 0.60 :       126 elements
+Info    : 0.60 < quality < 0.70 :       380 elements
+Info    : 0.70 < quality < 0.80 :       565 elements
+Info    : 0.80 < quality < 0.90 :       543 elements
+Info    : 0.90 < quality < 1.00 :       265 elements
+Info    : Done optimizing mesh (Wall 0.00226803s, CPU 0.002267s)
+Info    : 566 nodes 2966 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.0700838s, CPU 0.094824s)
+experiments/action_support_3d/cases/LLM_T1_root_hole_transfer/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:         1363
+   elements:         7473
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          429
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:        11508
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 3660
+ number of nonzero lower triangular matrix elements
+ 66471
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.121870
+________________________________________
+experiments/action_support_3d/cases/LLM_T1_root_hole_transfer/gmsh.log
+Info    :  - 0 nodes could not be inserted
+Info    :  - 5724 tetrahedra created in 0.020252 sec. (282639 tets/s)
+Info    : 1 node relocations
+Info    : Done meshing 3D (Wall 0.0605386s, CPU 0.06047s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0417815 / average = 0.762809:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :        49 elements
+Info    : 0.20 < quality < 0.30 :        56 elements
+Info    : 0.30 < quality < 0.40 :       114 elements
+Info    : 0.40 < quality < 0.50 :       149 elements
+Info    : 0.50 < quality < 0.60 :       296 elements
+Info    : 0.60 < quality < 0.70 :       852 elements
+Info    : 0.70 < quality < 0.80 :      1441 elements
+Info    : 0.80 < quality < 0.90 :      1804 elements
+Info    : 0.90 < quality < 1.00 :       954 elements
+Info    : 113 edge swaps, 0 node relocations (volume = 184210): worst = 0.300094 / average = 0.774958 (Wall 0.00178416s, CPU 0.001785s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       108 elements
+Info    : 0.40 < quality < 0.50 :       141 elements
+Info    : 0.50 < quality < 0.60 :       298 elements
+Info    : 0.60 < quality < 0.70 :       859 elements
+Info    : 0.70 < quality < 0.80 :      1452 elements
+Info    : 0.80 < quality < 0.90 :      1815 elements
+Info    : 0.90 < quality < 1.00 :       950 elements
+Info    : Done optimizing mesh (Wall 0.00730891s, CPU 0.006298s)
+Info    : 1363 nodes 7473 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 842 nodes...
+Info    : Done tetrahedrizing 850 nodes (Wall 0.00799869s, CPU 0.00702s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0177758s, CPU 0.015778s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.46931 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.01036 (nodes removed 0 0)
+Info    : 3D refinement terminated (1363 nodes total):
+Info    :  - 1 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 5724 tetrahedra created in 0.0201198 sec. (284496 tets/s)
+Info    : 1 node relocations
+Info    : Done meshing 3D (Wall 0.0604474s, CPU 0.057463s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184210) with worst = 0.0417815 / average = 0.762809:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :        49 elements
+Info    : 0.20 < quality < 0.30 :        56 elements
+Info    : 0.30 < quality < 0.40 :       114 elements
+Info    : 0.40 < quality < 0.50 :       149 elements
+Info    : 0.50 < quality < 0.60 :       296 elements
+Info    : 0.60 < quality < 0.70 :       852 elements
+Info    : 0.70 < quality < 0.80 :      1441 elements
+Info    : 0.80 < quality < 0.90 :      1804 elements
+Info    : 0.90 < quality < 1.00 :       954 elements
+Info    : 113 edge swaps, 0 node relocations (volume = 184210): worst = 0.300094 / average = 0.774958 (Wall 0.00175448s, CPU 0.001755s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       108 elements
+Info    : 0.40 < quality < 0.50 :       141 elements
+Info    : 0.50 < quality < 0.60 :       298 elements
+Info    : 0.60 < quality < 0.70 :       859 elements
+Info    : 0.70 < quality < 0.80 :      1452 elements
+Info    : 0.80 < quality < 0.90 :      1815 elements
+Info    : 0.90 < quality < 1.00 :       950 elements
+Info    : Done optimizing mesh (Wall 0.00686892s, CPU 0.006857s)
+Info    : 1363 nodes 7473 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.172681s, CPU 0.198829s)
+experiments/action_support_3d/cases/A311/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          580
+   elements:         3066
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           20
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4206
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1647
+ number of nonzero lower triangular matrix elements
+ 27918
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.044940
+________________________________________
+experiments/action_support_3d/cases/A311/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2105 tetrahedra created in 0.00561671 sec. (374774 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0229716s, CPU 0.018872s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0143888 / average = 0.745654:
+Info    : 0.00 < quality < 0.10 :         5 elements
+Info    : 0.10 < quality < 0.20 :        13 elements
+Info    : 0.20 < quality < 0.30 :        27 elements
+Info    : 0.30 < quality < 0.40 :        36 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       130 elements
+Info    : 0.60 < quality < 0.70 :       396 elements
+Info    : 0.70 < quality < 0.80 :       583 elements
+Info    : 0.80 < quality < 0.90 :       564 elements
+Info    : 0.90 < quality < 1.00 :       291 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 185135): worst = 0.304338 / average = 0.759007 (Wall 0.000713575s, CPU 0.000714s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        31 elements
+Info    : 0.40 < quality < 0.50 :        56 elements
+Info    : 0.50 < quality < 0.60 :       128 elements
+Info    : 0.60 < quality < 0.70 :       400 elements
+Info    : 0.70 < quality < 0.80 :       595 elements
+Info    : 0.80 < quality < 0.90 :       563 elements
+Info    : 0.90 < quality < 1.00 :       291 elements
+Info    : Done optimizing mesh (Wall 0.00227559s, CPU 0.002276s)
+Info    : 580 nodes 3066 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 440 nodes...
+Info    : Done tetrahedrizing 448 nodes (Wall 0.00373489s, CPU 0.002734s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0082214s, CPU 0.007219s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.22995 (nodes removed 0 0)
+Info    : 3D refinement terminated (580 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2105 tetrahedra created in 0.00553771 sec. (380121 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0223544s, CPU 0.021341s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0143888 / average = 0.74565:
+Info    : 0.00 < quality < 0.10 :         5 elements
+Info    : 0.10 < quality < 0.20 :        13 elements
+Info    : 0.20 < quality < 0.30 :        27 elements
+Info    : 0.30 < quality < 0.40 :        36 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       130 elements
+Info    : 0.60 < quality < 0.70 :       397 elements
+Info    : 0.70 < quality < 0.80 :       582 elements
+Info    : 0.80 < quality < 0.90 :       564 elements
+Info    : 0.90 < quality < 1.00 :       291 elements
+Info    : 44 edge swaps, 0 node relocations (volume = 185135): worst = 0.304338 / average = 0.759003 (Wall 0.000692305s, CPU 0.000693s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        31 elements
+Info    : 0.40 < quality < 0.50 :        56 elements
+Info    : 0.50 < quality < 0.60 :       128 elements
+Info    : 0.60 < quality < 0.70 :       401 elements
+Info    : 0.70 < quality < 0.80 :       594 elements
+Info    : 0.80 < quality < 0.90 :       563 elements
+Info    : 0.90 < quality < 1.00 :       291 elements
+Info    : Done optimizing mesh (Wall 0.00257055s, CPU 0.00257s)
+Info    : 580 nodes 3066 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.0724286s, CPU 0.096975s)
+experiments/action_support_3d/cases/A301/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          581
+   elements:         3072
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4203
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1650
+ number of nonzero lower triangular matrix elements
+ 28002
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.043460
+________________________________________
+experiments/action_support_3d/cases/A301/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2117 tetrahedra created in 0.00551418 sec. (383919 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0230691s, CPU 0.023064s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.736487:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        21 elements
+Info    : 0.20 < quality < 0.30 :        23 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       124 elements
+Info    : 0.60 < quality < 0.70 :       435 elements
+Info    : 0.70 < quality < 0.80 :       580 elements
+Info    : 0.80 < quality < 0.90 :       531 elements
+Info    : 0.90 < quality < 1.00 :       275 elements
+Info    : 50 edge swaps, 0 node relocations (volume = 185135): worst = 0.301419 / average = 0.751305 (Wall 0.000706851s, CPU 0.000707s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        39 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       124 elements
+Info    : 0.60 < quality < 0.70 :       431 elements
+Info    : 0.70 < quality < 0.80 :       581 elements
+Info    : 0.80 < quality < 0.90 :       544 elements
+Info    : 0.90 < quality < 1.00 :       273 elements
+Info    : Done optimizing mesh (Wall 0.0024091s, CPU 0.002409s)
+Info    : 581 nodes 3072 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 440 nodes...
+Info    : Done tetrahedrizing 448 nodes (Wall 0.00374903s, CPU 0.003749s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0082318s, CPU 0.008232s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.2524 (nodes removed 0 0)
+Info    : 3D refinement terminated (581 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2117 tetrahedra created in 0.00572329 sec. (369892 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0225295s, CPU 0.022529s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.736474:
+Info    : 0.00 < quality < 0.10 :         6 elements
+Info    : 0.10 < quality < 0.20 :        21 elements
+Info    : 0.20 < quality < 0.30 :        23 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       124 elements
+Info    : 0.60 < quality < 0.70 :       435 elements
+Info    : 0.70 < quality < 0.80 :       580 elements
+Info    : 0.80 < quality < 0.90 :       531 elements
+Info    : 0.90 < quality < 1.00 :       275 elements
+Info    : 50 edge swaps, 0 node relocations (volume = 185135): worst = 0.301419 / average = 0.751248 (Wall 0.000730717s, CPU 0.000731s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        39 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       125 elements
+Info    : 0.60 < quality < 0.70 :       430 elements
+Info    : 0.70 < quality < 0.80 :       581 elements
+Info    : 0.80 < quality < 0.90 :       544 elements
+Info    : 0.90 < quality < 1.00 :       273 elements
+Info    : Done optimizing mesh (Wall 0.00277091s, CPU 0.002675s)
+Info    : 581 nodes 3072 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:22 2026 (From start: Wall 0.0732891s, CPU 0.09789s)
+experiments/action_support_3d/cases/A000/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          579
+   elements:         3060
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:          186
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4165
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1551
+ number of nonzero lower triangular matrix elements
+ 25941
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.054307
+________________________________________
+experiments/action_support_3d/cases/A000/gmsh.log
+Info    :  - 2085 tetrahedra created in 0.00527235 sec. (395459 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0236822s, CPU 0.021729s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185339) with worst = 0.0190883 / average = 0.737208:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        23 elements
+Info    : 0.20 < quality < 0.30 :        23 elements
+Info    : 0.30 < quality < 0.40 :        55 elements
+Info    : 0.40 < quality < 0.50 :        57 elements
+Info    : 0.50 < quality < 0.60 :       132 elements
+Info    : 0.60 < quality < 0.70 :       381 elements
+Info    : 0.70 < quality < 0.80 :       584 elements
+Info    : 0.80 < quality < 0.90 :       546 elements
+Info    : 0.90 < quality < 1.00 :       273 elements
+Info    : 54 edge swaps, 3 node relocations (volume = 185339): worst = 0.168027 / average = 0.752808 (Wall 0.000801018s, CPU 0.000801s)
+Info    : 58 edge swaps, 3 node relocations (volume = 185339): worst = 0.303657 / average = 0.754132 (Wall 0.000995541s, CPU 0.000995s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        51 elements
+Info    : 0.40 < quality < 0.50 :        63 elements
+Info    : 0.50 < quality < 0.60 :       134 elements
+Info    : 0.60 < quality < 0.70 :       375 elements
+Info    : 0.70 < quality < 0.80 :       573 elements
+Info    : 0.80 < quality < 0.90 :       551 elements
+Info    : 0.90 < quality < 1.00 :       286 elements
+Info    : Done optimizing mesh (Wall 0.002641s, CPU 0.001574s)
+Info    : 579 nodes 3059 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 451 nodes...
+Info    : Done tetrahedrizing 459 nodes (Wall 0.00393876s, CPU 0.002949s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00882146s, CPU 0.007812s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.24615 (nodes removed 0 0)
+Info    : 3D refinement terminated (579 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2084 tetrahedra created in 0.00537987 sec. (387370 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0231051s, CPU 0.022097s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185339) with worst = 0.0190883 / average = 0.737763:
+Info    : 0.00 < quality < 0.10 :        10 elements
+Info    : 0.10 < quality < 0.20 :        23 elements
+Info    : 0.20 < quality < 0.30 :        21 elements
+Info    : 0.30 < quality < 0.40 :        56 elements
+Info    : 0.40 < quality < 0.50 :        56 elements
+Info    : 0.50 < quality < 0.60 :       132 elements
+Info    : 0.60 < quality < 0.70 :       382 elements
+Info    : 0.70 < quality < 0.80 :       580 elements
+Info    : 0.80 < quality < 0.90 :       550 elements
+Info    : 0.90 < quality < 1.00 :       273 elements
+Info    : 52 edge swaps, 3 node relocations (volume = 185339): worst = 0.168027 / average = 0.752745 (Wall 0.00077019s, CPU 0.00077s)
+Info    : 56 edge swaps, 3 node relocations (volume = 185339): worst = 0.303657 / average = 0.754068 (Wall 0.000964193s, CPU 0.000964s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        52 elements
+Info    : 0.40 < quality < 0.50 :        62 elements
+Info    : 0.50 < quality < 0.60 :       134 elements
+Info    : 0.60 < quality < 0.70 :       377 elements
+Info    : 0.70 < quality < 0.80 :       570 elements
+Info    : 0.80 < quality < 0.90 :       554 elements
+Info    : 0.90 < quality < 1.00 :       285 elements
+Info    : Done optimizing mesh (Wall 0.00275879s, CPU 0.002759s)
+Info    : 579 nodes 3060 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:20 2026 (From start: Wall 0.074908s, CPU 0.097048s)
+experiments/action_support_3d/cases/A210/ccx.log
+
+************************************************************
+
+CalculiX Version 2.21, Copyright(C) 1998-2023 Guido Dhondt
+CalculiX comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under
+certain conditions, see gpl.htm
+
+************************************************************
+
+You are using an executable made on Sat Jul 29 10:52:01 CEST 2023
+
+  The numbers below are estimated upper bounds
+
+  number of:
+
+   nodes:          567
+   elements:         3014
+   one-dimensional elements:            0
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:            5
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            5
+   terms in all sets:         4197
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            3
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1608
+ number of nonzero lower triangular matrix elements
+ 27537
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.044476
+________________________________________
+experiments/action_support_3d/cases/A210/gmsh.log
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2115 tetrahedra created in 0.00586242 sec. (360772 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0226517s, CPU 0.02164s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0206344 / average = 0.736083:
+Info    : 0.00 < quality < 0.10 :        13 elements
+Info    : 0.10 < quality < 0.20 :        10 elements
+Info    : 0.20 < quality < 0.30 :        30 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       155 elements
+Info    : 0.60 < quality < 0.70 :       412 elements
+Info    : 0.70 < quality < 0.80 :       520 elements
+Info    : 0.80 < quality < 0.90 :       568 elements
+Info    : 0.90 < quality < 1.00 :       284 elements
+Info    : 53 edge swaps, 3 node relocations (volume = 185135): worst = 0.285439 / average = 0.751212 (Wall 0.000796068s, CPU 0.000792s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        41 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       159 elements
+Info    : 0.60 < quality < 0.70 :       412 elements
+Info    : 0.70 < quality < 0.80 :       517 elements
+Info    : 0.80 < quality < 0.90 :       575 elements
+Info    : 0.90 < quality < 1.00 :       283 elements
+Info    : Done optimizing mesh (Wall 0.00263638s, CPU 0.002632s)
+Info    : 567 nodes 3014 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 416 nodes...
+Info    : Done tetrahedrizing 424 nodes (Wall 0.00360268s, CPU 0.002875s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00797764s, CPU 0.006997s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.78509 (nodes removed 0 0)
+Info    : 3D refinement terminated (567 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2115 tetrahedra created in 0.0058459 sec. (361791 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0223777s, CPU 0.021397s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0206344 / average = 0.736083:
+Info    : 0.00 < quality < 0.10 :        13 elements
+Info    : 0.10 < quality < 0.20 :        10 elements
+Info    : 0.20 < quality < 0.30 :        30 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       155 elements
+Info    : 0.60 < quality < 0.70 :       412 elements
+Info    : 0.70 < quality < 0.80 :       520 elements
+Info    : 0.80 < quality < 0.90 :       568 elements
+Info    : 0.90 < quality < 1.00 :       284 elements
+Info    : 53 edge swaps, 3 node relocations (volume = 185135): worst = 0.285439 / average = 0.751169 (Wall 0.000820845s, CPU 0.000821s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        41 elements
+Info    : 0.40 < quality < 0.50 :        78 elements
+Info    : 0.50 < quality < 0.60 :       160 elements
+Info    : 0.60 < quality < 0.70 :       411 elements
+Info    : 0.70 < quality < 0.80 :       517 elements
+Info    : 0.80 < quality < 0.90 :       575 elements
+Info    : 0.90 < quality < 1.00 :       283 elements
+Info    : Done optimizing mesh (Wall 0.00265511s, CPU 0.002652s)
+Info    : 567 nodes 3014 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 17:38:21 2026 (From start: Wall 0.0719872s, CPU 0.096088s)
