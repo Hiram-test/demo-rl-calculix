@@ -1,0 +1,62 @@
+name: Full-domain semantic partition versus global Dorfler # Name the corrected benchmark clearly in GitHub Actions.
+on: # Define source-driven triggers only so result commits cannot recurse.
+  push: # Run automatically when the corrected experiment branch changes.
+    branches: [experiment/semantic-partition-dorfler-v2] # Restrict push execution to the isolated corrected branch.
+    paths: ["experiments/semantic_partition_dorfler_v2/**", ".github/workflows/semantic-partition-dorfler-v2.yml"] # Ignore unrelated repository changes and generated files outside this experiment.
+  pull_request: # Validate the same benchmark when proposed against main.
+    branches: [main] # Restrict pull-request validation to the default branch target.
+    paths: ["experiments/semantic_partition_dorfler_v2/**", ".github/workflows/semantic-partition-dorfler-v2.yml"] # Ignore unrelated pull-request changes.
+  workflow_dispatch: # Allow explicit reruns without changing the experiment source.
+permissions: # Grant only checkout and push-run result persistence permissions.
+  contents: write # Allow push events to commit compact numerical outputs back to the experiment branch.
+jobs: # Define one deterministic corrected comparison job.
+  compare-full-partition: # Run reference, global Dörfler, and exhaustive semantic-partition Dörfler histories.
+    runs-on: ubuntu-24.04 # Use the Ubuntu runner where Gmsh and CalculiX packages are available.
+    timeout-minutes: 60 # Bound accidental native-tool hangs while allowing five adaptive rounds per method.
+    steps: # Execute checkout, installation, validation, solve, and compact publication in order.
+      - name: Check out experiment branch # Materialize the exact source state being validated.
+        uses: actions/checkout@v4 # Use the maintained checkout action with push credentials preserved.
+      - name: Install Gmsh and CalculiX # Install the same mesher and finite-element solver used by prior validated runs.
+        shell: bash # Use Bash so installation failures propagate deterministically.
+        run: | # Start the strict native-tool installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installing numerical tools.
+          sudo apt-get install -y gmsh calculix-ccx # Install Gmsh and CalculiX from the runner repositories.
+          gmsh --version # Record the exact Gmsh version in the workflow log.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
+      - name: Validate and run corrected benchmark # Syntax-check and execute the full-domain semantic partition experiment while preserving diagnostics.
+        shell: bash # Use Bash to preserve the original numerical exit status before publication.
+        run: | # Start the benchmark wrapper commands.
+          set -euo pipefail # Use strict shell behavior for setup and syntax validation.
+          python -m py_compile experiments/semantic_partition_dorfler_v2/run.py # Reject Python syntax errors before launching any numerical work.
+          mkdir -p experiments/semantic_partition_dorfler_v2/results # Ensure compact diagnostics have a destination even after an early failure.
+          set +e # Temporarily allow the numerical driver to fail so diagnostics can still be uploaded.
+          python experiments/semantic_partition_dorfler_v2/run.py > experiments/semantic_partition_dorfler_v2/results/console.log 2>&1 # Execute the reference and both adaptive histories while capturing progress output.
+          status=$? # Preserve the exact numerical driver exit code before publication commands run.
+          set -e # Restore strict shell behavior for persistence and upload.
+          echo "${status}" > experiments/semantic_partition_dorfler_v2/results/exit_code.txt # Persist the numerical exit status as compact machine-readable state.
+          find experiments/semantic_partition_dorfler_v2/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 60 {} \; > experiments/semantic_partition_dorfler_v2/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails without storing transient meshes.
+          tail -n 260 experiments/semantic_partition_dorfler_v2/results/console.log > experiments/semantic_partition_dorfler_v2/results/console_tail.txt || true # Preserve the most relevant progress and failure context.
+      - name: Commit compact numerical results # Keep the latest push-run corrected tables directly readable in the branch.
+        if: github.event_name == 'push' # Avoid write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Start the compact result commit block.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated results to the standard Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply Actions address.
+          git add -f experiments/semantic_partition_dorfler_v2/results # Stage only compact tables, summaries, and diagnostics.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update full-domain semantic partition benchmark"; git push origin HEAD:experiment/semantic-partition-dorfler-v2; fi # Commit and push only when compact outputs changed.
+      - name: Upload compact result artifact # Preserve an immutable copy of this corrected run's compact outputs.
+        if: always() # Upload diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure artifact contents and retention.
+          name: semantic-partition-dorfler-v2-results # Give the corrected artifact a stable experiment-specific name.
+          path: experiments/semantic_partition_dorfler_v2/results/** # Upload only compact outputs rather than transient meshes.
+          if-no-files-found: warn # Keep unexpected early failures diagnosable without masking the final status.
+          retention-days: 14 # Retain temporary artifacts long enough for inspection without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion match the original benchmark result.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Start the final status propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/semantic_partition_dorfler_v2/results/exit_code.txt) # Reload the exact numerical status captured before publication.
+          exit "${status}" # Return the numerical status so a failed solve or parser cannot appear green.
