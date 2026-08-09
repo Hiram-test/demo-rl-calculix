@@ -1,0 +1,15 @@
+{
+  "atom_grid": {
+    "x_edges_mm": [0, 30, 60, 90, 120],
+    "y_edges_mm": [-20, 0, 20],
+    "z_edges_mm": [-20, 0, 20],
+    "id_rule": "A{ix}{iy}{iz}"
+  },
+  "qoi": "vertical displacement at the fixed material point (110, 0, 0) mm",
+  "selected_atom_count": 6,
+  "selected_atoms": ["A000", "A001", "A010", "A011", "A110", "A111"],
+  "semantic_description": "full clamped-root cross-section plus the positive-y half of the x=30..60 mm slab containing the through-hole",
+  "rationale": "The root transmits the largest bending and torsional reactions, while the through-hole perturbs the stiffness field near x=35 mm. Because the end load is applied on the positive-y half of the free end, the positive-y hole-side corridor is retained as the most likely coupled transfer region under a six-atom budget.",
+  "llm_visibility": ["geometry", "material", "boundary condition", "load position and direction", "QoI", "six-atom budget"],
+  "llm_hidden_information": ["element error indicators", "stress contours", "fine reference solution", "Dorfler ranking", "future adaptive meshes"]
+}
