@@ -1,31 +1,39 @@
 # 3D action-support semantics benchmark
 
-This experiment isolates one question: when the refinement objective is reduced to QoI accuracy versus computational resource, can an LLM propose better *objects of action* than element-scale or fixed spatial partitions?
+This pilot isolates one question: once refinement quality is reduced to a common accuracy-versus-resource objective, can a small LLM-generated action-support dictionary concentrate search on useful physical regions better than a fixed spatial patch dictionary?
 
 ## Mechanical model
 
-The benchmark is a 120 mm long, 40 mm × 40 mm three-dimensional cantilever with a radius-8 mm transverse through-hole centred at x = 35 mm. The x = 0 face is fully clamped. A total -1000 N z-direction load is distributed over an eccentric patch on the x = 120 mm end, producing bending plus torsion. The material is linear elastic with E = 210 GPa and ν = 0.30. Gmsh generates first-order tetrahedra and CalculiX solves one linear-static step.
+The model is a 120 mm long, 40 mm × 40 mm three-dimensional cantilever with a transverse radius-8 mm through-hole centred at x = 35 mm. The x = 0 face is fully clamped. A total -1000 N z-direction load is applied through two fixed free-end CAD corner nodes on the positive-y side, producing bending plus torsion. The material is linear elastic with E = 210 GPa and ν = 0.30. Gmsh generates first-order tetrahedra and CalculiX solves one linear-static step.
 
-Two QoIs are evaluated from every identical solve. `tip_displacement` is the mean z-displacement of the eccentric load patch. `hole_opening` is the mean z-displacement of the upper hole arc minus the mean z-displacement of the lower hole arc. The first is global/compliance-like; the second is local and tied directly to the hole neighborhood.
+The final v0.5 evaluation uses two mesh-invariant physical-point QoIs. The global QoI is vertical displacement `u_z` at the fixed material point (110, 0, 0) mm, away from the point-load singularities. The local QoI is the axial displacement difference `u_x(35,0,10)-u_x(35,0,-10)` across two fixed material points immediately above and below the hole. Both values are obtained by C3D4 barycentric interpolation, so the QoI sampling location does not change when the mesh changes.
 
-## What the LLM is allowed to see
+## Frozen LLM supports
 
-The frozen proposals in `llm_regions.json` were generated from geometry, material, boundary conditions, load, QoI and the fact that only one local refinement action is allowed. No stress contour, element-wise error indicator, oracle ranking, fine-mesh solution or element numbering is part of the semantic input. Each proposal is expressed as one or more overlapping mesh-independent geometric boxes plus a confidence and a physical rationale.
+`llm_regions.json` contains six proposals generated before the numerical ranking was known: three originally conditioned on a global tip-displacement task and three on a local hole-deformation task. The model was given geometry, material, boundary conditions, loading, QoI wording and a one-action refinement budget. It was not given stress contours, element-wise error indicators, oracle rankings, the fine reference solution or element numbering. Each proposal is a mesh-independent union of one or more physical boxes plus a confidence and rationale. These six support geometries were kept frozen through all later numerical corrections.
 
-This separation is deliberate. If the LLM were given a stress/error map, success could collapse to reading a posterior hotspot. Here the test is whether task-conditioned structural relations can concentrate the candidate action space before an element-wise posterior selector is used.
+The original selection prompt is retained in `llm_prompt.md` for provenance. The final physical-point QoIs differ slightly from the original nodal-average wording because v0.1 revealed that changing node sets confounded action-support quality with QoI sampling. The final benchmark therefore tests the robustness of the already-frozen region prior rather than claiming a clean estimate of QoI-conditioned LLM calibration.
 
-## Baselines and numerical reference
+## Common-resource comparison
 
-The initial background target size is 10 mm. Every local action uses the same 4 mm target size inside its support. A globally fine 2.5 mm mesh supplies the numerical reference QoIs. Sixteen `oracle_atom` cases divide the full beam into a 4 × 2 × 2 Cartesian grid and refine one atom at a time; these atoms are evaluation probes and are never shown to the LLM.
+The beam is divided into sixteen fixed 4 × 2 × 2 Cartesian atoms. v0.5 evaluates every single atom, all 120 unordered two-atom unions, and the same six frozen LLM supports. Before structural solution, every local support independently adjusts its local target mesh size until the generated mesh is as close as possible to a common target of 3000 translational DOF. The resulting candidate meshes are approximately resource matched; `results/budget_calibration.csv` records the local size and achieved DOF for every case. A globally fine 2.5 mm mesh with 33714 DOF supplies the numerical reference.
 
-The current v0.1 deliberately studies only one action at a time. The 16 atoms therefore provide a structured non-semantic sanity baseline, not a proof of the globally optimal subset over the full element power set. A later extension can enumerate atom pairs/triples or use branch-and-bound to approximate the budget-constrained support oracle.
+This design separates support geometry from refinement intensity. A large LLM region must use a coarser local target size than a small fixed patch to receive approximately the same resource budget.
 
-## Output
+## Current result
 
-`run_experiment.py` writes `results/results.csv`, `results/manifest.json` and `results/summary.md`. Every candidate reports node count, tetrahedron count, a three-DOF-per-node resource proxy, both QoIs, reference-relative errors and two Pareto flags. The useful first question is whether QoI-conditioned LLM proposals appear on or close to the error–DOF Pareto frontier more often than the spatial atoms, and whether the two QoIs induce different preferred supports.
+For the global interior vertical-displacement QoI, the best single fixed atom has relative error 0.1299, the best of all 120 fixed atom pairs has relative error 0.0910 at 2961 DOF, and `LLM_H2_hole_root_coupled` has relative error 0.0580 at 2994 DOF. The best frozen LLM support ranks first among the 120 exhaustive pairs plus six semantic candidates.
 
-A positive result is intentionally weaker than “the LLM found the optimal mesh.” It means that a small semantic candidate dictionary increased the chance of presenting a useful action support to a downstream AFEM, RL or explicit-search selector. A negative result is equally informative because the proposals are frozen before the numerical ranking is known.
+For the local axial-difference QoI, the best single fixed atom has relative error 0.0740, the best fixed atom pair has relative error 0.0286 at 3027 DOF, and `LLM_T2_root_band` has relative error 0.0249 at 2982 DOF. The best frozen LLM support again ranks first in the pair-plus-semantic comparison. Only 3 of 120 fixed pairs lie within 10% of the best fixed-pair error for the global QoI, and only 1 of 120 does so for the local QoI, indicating that high-value joint supports are sparse even in this small fixed dictionary.
 
-## Reproduce locally
+The more interesting negative result is task calibration. The local-QoI winner is a proposal originally generated for the tip-displacement task, while the highest-confidence local proposal `LLM_H1_hole_local` performs substantially worse. The pilot therefore supports the weaker hypothesis that LLM structural priors can concentrate candidate supports toward useful coupled regions; it does not support the stronger claim that the model reliably understands which region is optimal for a stated QoI or that its self-reported confidence is calibrated.
 
-On Ubuntu, install Gmsh and CalculiX, then run `python experiments/action_support_3d/run_experiment.py` from any working directory. The GitHub Actions workflow performs the same command on `ubuntu-24.04` and uploads only the compact results plus solver logs needed for diagnosis.
+## Interpretation and limits
+
+The strongest recurring supports cover the root and the hole/transfer neighborhood jointly. Purely local hole refinement and the downstream eccentric-load-path candidate are less effective under the same DOF budget. In this example, the useful information appears to be a coarse relation about mechanically coupled action support, not simply hotspot location.
+
+This remains a pilot. The fixed atom dictionary is coarse, the LLM regions use continuous box boundaries unavailable to that dictionary, only one geometry and load case is tested, and six frozen proposals are insufficient to estimate a true probability of near-optimal support recall. A probability claim requires repeated independent LLM sampling across perturbed but mechanically equivalent prompts and multiple geometries, followed by hit-rate estimation against an exhaustive or approximate support oracle.
+
+## Files and reproduction
+
+`run_experiment.py` is the original v0.1 driver. `run_experiment_v2.py` removes mesh-dependent QoI-node sets, `run_experiment_v3.py` defines the final fixed physical-point QoIs, `run_experiment_v4.py` normalizes every local support to a common DOF budget, and `run_experiment_v5.py` adds the exhaustive 120 two-atom controls. The current GitHub Actions workflow executes v0.5. Run `python experiments/action_support_3d/run_experiment_v5.py` on an Ubuntu environment with Gmsh and CalculiX installed to reproduce the final experiment. Compact numerical outputs are committed under `experiments/action_support_3d/results/`, including `results.csv`, `budget_calibration.csv`, `summary.md`, `manifest.json` and `pair_oracle_analysis.md`.
