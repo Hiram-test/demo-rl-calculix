@@ -1,0 +1,64 @@
+name: Independent semantic normalization versus global Dorfler # Name the GitHub Actions benchmark by its exact marking intervention.
+on: # Define source-driven triggers so generated results cannot recursively restart the workflow.
+  push: # Run automatically when the dedicated experiment branch changes.
+    branches: [experiment/local-normalized-regions] # Restrict push execution to this isolated benchmark branch.
+    paths: ["experiments/local_normalized_regions/**", ".github/workflows/local-normalized-regions.yml"] # Trigger only when this experiment or its workflow changes.
+  pull_request: # Validate the same benchmark when the experiment is proposed against main.
+    branches: [main] # Restrict pull-request validation to the repository default branch.
+    paths: ["experiments/local_normalized_regions/**", ".github/workflows/local-normalized-regions.yml"] # Ignore unrelated changes during PR validation.
+  workflow_dispatch: # Allow explicit reruns without modifying numerical source files.
+permissions: # Grant only the repository permissions needed by checkout and optional push-result persistence.
+  contents: write # Allow push-event runs to commit compact generated outputs back to the experiment branch.
+jobs: # Define one deterministic numerical-and-plotting comparison job.
+  compare-local-normalization: # Name the job that runs the reference, both AMR histories, and the linear-axis figure script.
+    runs-on: ubuntu-24.04 # Use the current Ubuntu runner where Gmsh and CalculiX packages are available.
+    timeout-minutes: 60 # Bound accidental native-tool hangs while allowing the small seven-state histories to complete.
+    steps: # Execute checkout, dependency installation, numerical solve, plotting, persistence, and status propagation in order.
+      - name: Check out experiment branch # Materialize the exact experiment source state on the Actions runner.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with standard credentials preserved.
+      - name: Install numerical and plotting dependencies # Install the mesher, finite-element solver, and script plotting packages.
+        shell: bash # Use Bash so installation failures propagate deterministically.
+        run: | # Start the strict package installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installing numerical dependencies.
+          sudo apt-get install -y gmsh calculix-ccx python3-pandas python3-matplotlib # Install Gmsh, CalculiX, pandas, and matplotlib from Ubuntu repositories.
+          gmsh --version # Record the exact Gmsh version in the workflow log for reproducibility.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
+      - name: Run numerical benchmark and draw linear plot # Execute the accepted local-normalization algorithm and then draw its actual solved points.
+        shell: bash # Use Bash to preserve the numerical exit status before publication steps.
+        run: | # Start the benchmark and plotting wrapper commands.
+          set -euo pipefail # Use strict shell behavior for syntax validation and setup commands.
+          python -m py_compile experiments/local_normalized_regions/run.py # Reject Python syntax errors before any meshing or solving work begins.
+          python -m py_compile experiments/local_normalized_regions/plot.py # Reject plotting-script syntax errors before the numerical run begins.
+          mkdir -p experiments/local_normalized_regions/results # Ensure compact diagnostics and plots have a destination even after an early failure.
+          set +e # Temporarily allow the numerical driver to fail so logs can still be uploaded for diagnosis.
+          python experiments/local_normalized_regions/run.py > experiments/local_normalized_regions/results/console.log 2>&1 # Execute the reference solve plus global and independently normalized semantic AMR histories.
+          status=$? # Preserve the exact numerical driver exit code before plotting or publication commands execute.
+          set -e # Restore strict shell failure behavior for plotting and result publication.
+          echo "${status}" > experiments/local_normalized_regions/results/exit_code.txt # Persist the numerical exit status as compact machine-readable state.
+          if [ "${status}" -eq 0 ]; then python experiments/local_normalized_regions/plot.py; fi # Draw the linear-axis error–DOF figure only when the numerical history completed successfully.
+          find experiments/local_normalized_regions/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 50 {} \; > experiments/local_normalized_regions/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails without uploading transient meshes.
+          tail -n 220 experiments/local_normalized_regions/results/console.log > experiments/local_normalized_regions/results/console_tail.txt || true # Preserve the most relevant progress and failure context in a compact text file.
+      - name: Commit compact push-run results # Keep the latest successful or failed push-run tables and plot directly readable on the experiment branch.
+        if: github.event_name == 'push' # Avoid repository write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Start the compact result commit block.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated result commits to the standard GitHub Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply email address for the Actions bot.
+          git add -f experiments/local_normalized_regions/results # Stage only compact tables, summaries, plot, and diagnostics rather than transient meshes.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update independent semantic normalization benchmark"; git push origin HEAD:experiment/local-normalized-regions; fi # Commit and push only when compact generated outputs actually changed.
+      - name: Upload compact benchmark artifact # Preserve an immutable copy of the numerical tables, diagnostics, and script-generated figure for this run.
+        if: always() # Upload available diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the compact benchmark artifact contents and retention.
+          name: local-normalized-regions-results # Give the artifact a stable experiment-specific name.
+          path: experiments/local_normalized_regions/results/** # Upload only compact outputs and the requested PNG figure.
+          if-no-files-found: warn # Keep unexpected early failures diagnosable without masking the final workflow status.
+          retention-days: 14 # Retain temporary artifacts long enough for inspection without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion equal the numerical benchmark driver's original status.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Start the final status propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/local_normalized_regions/results/exit_code.txt) # Reload the exact numerical exit status captured before plotting and upload.
+          exit "${status}" # Return the numerical status so a failed solve or parser cannot appear green.

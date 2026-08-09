@@ -1,0 +1,64 @@
+name: Semantic variable-theta versus global Dorfler # Name the GitHub Actions benchmark by the exact regional allocation mechanism.
+on: # Define source-driven triggers so generated result commits cannot recursively restart the workflow.
+  push: # Run automatically whenever the dedicated variable-theta experiment branch changes.
+    branches: [experiment/semantic-variable-theta] # Restrict push execution to the isolated benchmark branch.
+    paths: ["experiments/semantic_variable_theta/**", ".github/workflows/semantic-variable-theta.yml"] # Trigger only when this experiment source or workflow changes.
+  pull_request: # Validate the same benchmark when the experiment is proposed against main.
+    branches: [main] # Restrict pull-request validation to the repository default branch.
+    paths: ["experiments/semantic_variable_theta/**", ".github/workflows/semantic-variable-theta.yml"] # Ignore unrelated changes during PR validation.
+  workflow_dispatch: # Allow explicit reruns without changing numerical source files.
+permissions: # Grant only the repository permissions needed by checkout and optional push-result persistence.
+  contents: write # Allow push-event runs to commit compact generated outputs back to the experiment branch.
+jobs: # Define one deterministic numerical-and-plotting comparison job.
+  compare-variable-theta: # Run the reference solve, both AMR histories, regional diagnostics, and script-generated plots.
+    runs-on: ubuntu-24.04 # Use the current Ubuntu runner where Gmsh and CalculiX packages are available.
+    timeout-minutes: 60 # Bound accidental native-tool hangs while allowing the small seven-state histories to complete.
+    steps: # Execute checkout, dependency installation, numerical solve, plotting, persistence, and status propagation in order.
+      - name: Check out experiment branch # Materialize the exact experiment source state on the Actions runner.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action with standard credentials preserved.
+      - name: Install numerical and plotting dependencies # Install the mesher, finite-element solver, and script plotting packages.
+        shell: bash # Use Bash so installation failures propagate deterministically.
+        run: | # Start the strict package installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installing numerical dependencies.
+          sudo apt-get install -y gmsh calculix-ccx python3-pandas python3-matplotlib # Install Gmsh, CalculiX, pandas, and matplotlib from Ubuntu repositories.
+          gmsh --version # Record the exact Gmsh version in the workflow log for reproducibility.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
+      - name: Run variable-theta benchmark and draw plots # Execute the region-detected variable-theta algorithm and draw actual solved results.
+        shell: bash # Use Bash to preserve the numerical exit status before publication steps.
+        run: | # Start the benchmark and plotting wrapper commands.
+          set -euo pipefail # Use strict shell behavior for syntax validation and setup commands.
+          python -m py_compile experiments/semantic_variable_theta/run.py # Reject numerical-script syntax errors before any meshing or solving work begins.
+          python -m py_compile experiments/semantic_variable_theta/plot.py # Reject plotting-script syntax errors before the numerical run begins.
+          mkdir -p experiments/semantic_variable_theta/results # Ensure compact diagnostics and plots have a destination even after an early failure.
+          set +e # Temporarily allow the numerical driver to fail so logs can still be uploaded for diagnosis.
+          python experiments/semantic_variable_theta/run.py > experiments/semantic_variable_theta/results/console.log 2>&1 # Execute the reference solve plus global and semantic variable-theta AMR histories.
+          status=$? # Preserve the exact numerical driver exit code before plotting or publication commands execute.
+          set -e # Restore strict shell failure behavior for plotting and result publication.
+          echo "${status}" > experiments/semantic_variable_theta/results/exit_code.txt # Persist the numerical exit status as compact machine-readable state.
+          if [ "${status}" -eq 0 ]; then python experiments/semantic_variable_theta/plot.py; fi # Draw the linear precision-resource and regional-theta figures only after successful numerical completion.
+          find experiments/semantic_variable_theta/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 50 {} \; > experiments/semantic_variable_theta/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails without uploading transient meshes.
+          tail -n 260 experiments/semantic_variable_theta/results/console.log > experiments/semantic_variable_theta/results/console_tail.txt || true # Preserve the most relevant progress and failure context in a compact text file.
+      - name: Commit compact push-run results # Keep the latest successful or failed push-run tables and plots directly readable on the experiment branch.
+        if: github.event_name == 'push' # Avoid repository write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Start the compact result commit block.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated result commits to the standard GitHub Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply email address for the Actions bot.
+          git add -f experiments/semantic_variable_theta/results # Stage only compact tables, summaries, plots, and diagnostics rather than transient meshes.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update semantic variable-theta benchmark"; git push origin HEAD:experiment/semantic-variable-theta; fi # Commit and push only when compact generated outputs actually changed.
+      - name: Upload compact benchmark artifact # Preserve an immutable copy of numerical tables, diagnostics, and script-generated figures for this run.
+        if: always() # Upload available diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the compact benchmark artifact contents and retention.
+          name: semantic-variable-theta-results # Give the artifact a stable experiment-specific name.
+          path: experiments/semantic_variable_theta/results/** # Upload only compact outputs and the two requested PNG figures.
+          if-no-files-found: warn # Keep unexpected early failures diagnosable without masking the final workflow status.
+          retention-days: 14 # Retain temporary artifacts long enough for inspection without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion equal the numerical benchmark driver's original status.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Start the final status propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/semantic_variable_theta/results/exit_code.txt) # Reload the exact numerical exit status captured before plotting and upload.
+          exit "${status}" # Return the numerical status so a failed solve or parser cannot appear green.

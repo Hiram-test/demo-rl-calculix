@@ -1,0 +1,1586 @@
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r2/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           22
+   single point constraints:          543
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        20451
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 5829
+ number of nonzero lower triangular matrix elements
+ 108276
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.241401
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r2/gmsh.log
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       169 elements
+Info    : 0.40 < quality < 0.50 :       230 elements
+Info    : 0.50 < quality < 0.60 :       479 elements
+Info    : 0.60 < quality < 0.70 :      1182 elements
+Info    : 0.70 < quality < 0.80 :      2392 elements
+Info    : 0.80 < quality < 0.90 :      3176 elements
+Info    : 0.90 < quality < 1.00 :      1434 elements
+Info    : Done optimizing mesh (Wall 0.0102574s, CPU 0.010257s)
+Info    : 2124 nodes 11780 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 1261 nodes...
+Info    : Done tetrahedrizing 1269 nodes (Wall 0.012343s, CPU 0.010347s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.026917s, CPU 0.024921s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 4.02634 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.15858 (nodes removed 0 0)
+Info    : 3D refinement terminated (2124 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 9245 tetrahedra created in 0.0390896 sec. (236508 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.104402s, CPU 0.102407s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184251) with worst = 0.0208813 / average = 0.764707:
+Info    : 0.00 < quality < 0.10 :        19 elements
+Info    : 0.10 < quality < 0.20 :        57 elements
+Info    : 0.20 < quality < 0.30 :       126 elements
+Info    : 0.30 < quality < 0.40 :       173 elements
+Info    : 0.40 < quality < 0.50 :       250 elements
+Info    : 0.50 < quality < 0.60 :       477 elements
+Info    : 0.60 < quality < 0.70 :      1183 elements
+Info    : 0.70 < quality < 0.80 :      2377 elements
+Info    : 0.80 < quality < 0.90 :      3141 elements
+Info    : 0.90 < quality < 1.00 :      1442 elements
+Info    : 200 edge swaps, 0 node relocations (volume = 184251): worst = 0.300567 / average = 0.778127 (Wall 0.00281547s, CPU 0.002816s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       169 elements
+Info    : 0.40 < quality < 0.50 :       230 elements
+Info    : 0.50 < quality < 0.60 :       479 elements
+Info    : 0.60 < quality < 0.70 :      1182 elements
+Info    : 0.70 < quality < 0.80 :      2392 elements
+Info    : 0.80 < quality < 0.90 :      3176 elements
+Info    : 0.90 < quality < 1.00 :      1434 elements
+Info    : Done optimizing mesh (Wall 0.0105849s, CPU 0.01056s)
+Info    : 2124 nodes 11780 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:42 2026 (From start: Wall 0.321025s, CPU 0.339866s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r1/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           17
+   single point constraints:          243
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:         5892
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1905
+ number of nonzero lower triangular matrix elements
+ 32019
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.059359
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r1/gmsh.log
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        64 elements
+Info    : 0.50 < quality < 0.60 :       136 elements
+Info    : 0.60 < quality < 0.70 :       468 elements
+Info    : 0.70 < quality < 0.80 :       680 elements
+Info    : 0.80 < quality < 0.90 :       774 elements
+Info    : 0.90 < quality < 1.00 :       372 elements
+Info    : Done optimizing mesh (Wall 0.00280966s, CPU 0.001855s)
+Info    : 716 nodes 3783 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 553 nodes...
+Info    : Done tetrahedrizing 561 nodes (Wall 0.0049744s, CPU 0.003434s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0107158s, CPU 0.008827s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 2.44179 (nodes removed 0 0)
+Info    : 3D refinement terminated (716 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2584 tetrahedra created in 0.00647593 sec. (399015 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0287737s, CPU 0.026772s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184966) with worst = 0.0239697 / average = 0.755066:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        16 elements
+Info    : 0.20 < quality < 0.30 :        29 elements
+Info    : 0.30 < quality < 0.40 :        45 elements
+Info    : 0.40 < quality < 0.50 :        65 elements
+Info    : 0.50 < quality < 0.60 :       129 elements
+Info    : 0.60 < quality < 0.70 :       484 elements
+Info    : 0.70 < quality < 0.80 :       672 elements
+Info    : 0.80 < quality < 0.90 :       767 elements
+Info    : 0.90 < quality < 1.00 :       370 elements
+Info    : 51 edge swaps, 3 node relocations (volume = 184966): worst = 0.210263 / average = 0.766975 (Wall 0.000761961s, CPU 0.000763s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :        44 elements
+Info    : 0.40 < quality < 0.50 :        64 elements
+Info    : 0.50 < quality < 0.60 :       136 elements
+Info    : 0.60 < quality < 0.70 :       468 elements
+Info    : 0.70 < quality < 0.80 :       680 elements
+Info    : 0.80 < quality < 0.90 :       774 elements
+Info    : 0.90 < quality < 1.00 :       372 elements
+Info    : Done optimizing mesh (Wall 0.00274907s, CPU 0.002749s)
+Info    : 716 nodes 3783 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:50 2026 (From start: Wall 0.0923776s, CPU 0.114235s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r0/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           17
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:         2747
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1038
+ number of nonzero lower triangular matrix elements
+ 16410
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.027883
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r0/gmsh.log
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       288 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00134427s, CPU 0.001344s)
+Info    : 377 nodes 1941 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 336 nodes...
+Info    : Done tetrahedrizing 344 nodes (Wall 0.00287996s, CPU 0.00288s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.00651016s, CPU 0.005549s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 2.19241 (nodes removed 0 0)
+Info    : 3D refinement terminated (377 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1182 tetrahedra created in 0.00190203 sec. (621440 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0144801s, CPU 0.013493s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.730184:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :         3 elements
+Info    : 0.20 < quality < 0.30 :        14 elements
+Info    : 0.30 < quality < 0.40 :        28 elements
+Info    : 0.40 < quality < 0.50 :        28 elements
+Info    : 0.50 < quality < 0.60 :        71 elements
+Info    : 0.60 < quality < 0.70 :       292 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       272 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : 25 edge swaps, 1 node relocations (volume = 185135): worst = 0.202936 / average = 0.742668 (Wall 0.000404458s, CPU 0.000404s)
+Info    : 26 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.743398 (Wall 0.000489036s, CPU 0.000489s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       289 elements
+Info    : 0.70 < quality < 0.80 :       331 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00138589s, CPU 0.001386s)
+Info    : 377 nodes 1941 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:49 2026 (From start: Wall 0.0496008s, CPU 0.07626s)
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r5/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:          105
+   single point constraints:          666
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        51933
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 14460
+ number of nonzero lower triangular matrix elements
+ 279969
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.791522
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r5/gmsh.log
+Info    : 0.60 < quality < 0.70 :      2685 elements
+Info    : 0.70 < quality < 0.80 :      5713 elements
+Info    : 0.80 < quality < 0.90 :      8626 elements
+Info    : 0.90 < quality < 1.00 :      4075 elements
+Info    : Done optimizing mesh (Wall 0.0310136s, CPU 0.031013s)
+Info    : 5042 nodes 28584 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 2509 nodes...
+Info    : Done tetrahedrizing 2517 nodes (Wall 0.0255639s, CPU 0.024569s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.055095s, CPU 0.054094s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 6.07562 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.5826 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.30567 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.17067 (nodes removed 0 0)
+Info    : It. 2000 - 2000 nodes created - worst tet radius 1.06987 (nodes removed 0 0)
+Info    : It. 2500 - 2500 nodes created - worst tet radius 1.00534 (nodes removed 0 0)
+Info    : 3D refinement terminated (5042 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 23698 tetrahedra created in 0.305363 sec. (77606 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.457227s, CPU 0.456165s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184118) with worst = 0.00293839 / average = 0.772972:
+Info    : 0.00 < quality < 0.10 :        62 elements
+Info    : 0.10 < quality < 0.20 :       150 elements
+Info    : 0.20 < quality < 0.30 :       251 elements
+Info    : 0.30 < quality < 0.40 :       439 elements
+Info    : 0.40 < quality < 0.50 :       642 elements
+Info    : 0.50 < quality < 0.60 :      1154 elements
+Info    : 0.60 < quality < 0.70 :      2698 elements
+Info    : 0.70 < quality < 0.80 :      5666 elements
+Info    : 0.80 < quality < 0.90 :      8545 elements
+Info    : 0.90 < quality < 1.00 :      4091 elements
+Info    : 460 edge swaps, 8 node relocations (volume = 184118): worst = 0.224065 / average = 0.785077 (Wall 0.00709736s, CPU 0.007097s)
+Info    : 463 edge swaps, 8 node relocations (volume = 184118): worst = 0.269251 / average = 0.785158 (Wall 0.00869767s, CPU 0.008698s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :       440 elements
+Info    : 0.40 < quality < 0.50 :       615 elements
+Info    : 0.50 < quality < 0.60 :      1127 elements
+Info    : 0.60 < quality < 0.70 :      2683 elements
+Info    : 0.70 < quality < 0.80 :      5715 elements
+Info    : 0.80 < quality < 0.90 :      8626 elements
+Info    : 0.90 < quality < 1.00 :      4075 elements
+Info    : Done optimizing mesh (Wall 0.0310216s, CPU 0.031021s)
+Info    : 5042 nodes 28584 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:48 2026 (From start: Wall 1.68695s, CPU 1.70204s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r5/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:          108
+   single point constraints:          666
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        50988
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 14076
+ number of nonzero lower triangular matrix elements
+ 273681
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.756208
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r5/gmsh.log
+Info    : 0.60 < quality < 0.70 :      2589 elements
+Info    : 0.70 < quality < 0.80 :      5776 elements
+Info    : 0.80 < quality < 0.90 :      8338 elements
+Info    : 0.90 < quality < 1.00 :      4013 elements
+Info    : Done optimizing mesh (Wall 0.0310689s, CPU 0.030052s)
+Info    : 4914 nodes 27939 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 2396 nodes...
+Info    : Done tetrahedrizing 2404 nodes (Wall 0.0248385s, CPU 0.02385s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0547059s, CPU 0.052712s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 5.81531 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.58122 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.30728 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.16582 (nodes removed 0 0)
+Info    : It. 2000 - 2000 nodes created - worst tet radius 1.07179 (nodes removed 0 0)
+Info    : It. 2500 - 2500 nodes created - worst tet radius 1.07397 (nodes removed 0 0)
+Info    : 3D refinement terminated (4914 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 23282 tetrahedra created in 0.235376 sec. (98913 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.389603s, CPU 0.387544s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184158) with worst = 0.00921916 / average = 0.772646:
+Info    : 0.00 < quality < 0.10 :        61 elements
+Info    : 0.10 < quality < 0.20 :       155 elements
+Info    : 0.20 < quality < 0.30 :       237 elements
+Info    : 0.30 < quality < 0.40 :       430 elements
+Info    : 0.40 < quality < 0.50 :       658 elements
+Info    : 0.50 < quality < 0.60 :      1136 elements
+Info    : 0.60 < quality < 0.70 :      2613 elements
+Info    : 0.70 < quality < 0.80 :      5706 elements
+Info    : 0.80 < quality < 0.90 :      8265 elements
+Info    : 0.90 < quality < 1.00 :      4021 elements
+Info    : 446 edge swaps, 13 node relocations (volume = 184158): worst = 0.18486 / average = 0.784919 (Wall 0.00685653s, CPU 0.006833s)
+Info    : 453 edge swaps, 13 node relocations (volume = 184158): worst = 0.300087 / average = 0.785049 (Wall 0.00851822s, CPU 0.008505s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       427 elements
+Info    : 0.40 < quality < 0.50 :       629 elements
+Info    : 0.50 < quality < 0.60 :      1100 elements
+Info    : 0.60 < quality < 0.70 :      2589 elements
+Info    : 0.70 < quality < 0.80 :      5776 elements
+Info    : 0.80 < quality < 0.90 :      8338 elements
+Info    : 0.90 < quality < 1.00 :      4013 elements
+Info    : Done optimizing mesh (Wall 0.0304699s, CPU 0.029466s)
+Info    : 4914 nodes 27939 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:55 2026 (From start: Wall 1.28916s, CPU 1.29715s)
+experiments/semantic_partition_dorfler_v2/cases/reference_global/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:          171
+   single point constraints:         1014
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:       122521
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 32700
+ number of nonzero lower triangular matrix elements
+ 655023
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 2.594454
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/reference_global/gmsh.log
+Info    : Tetrahedrizing 4584 nodes...
+Info    : Done tetrahedrizing 4592 nodes (Wall 0.0529444s, CPU 0.050955s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.117878s, CPU 0.114894s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 8.01864 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 2.12805 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.73749 (nodes removed 0 0)
+Info    : It. 1500 - 1499 nodes created - worst tet radius 1.55443 (nodes removed 0 1)
+Info    : It. 2000 - 1999 nodes created - worst tet radius 1.4359 (nodes removed 0 1)
+Info    : It. 2500 - 2499 nodes created - worst tet radius 1.34146 (nodes removed 0 1)
+Info    : It. 3000 - 2999 nodes created - worst tet radius 1.26875 (nodes removed 0 1)
+Info    : It. 3500 - 3499 nodes created - worst tet radius 1.21411 (nodes removed 0 1)
+Info    : It. 4000 - 3999 nodes created - worst tet radius 1.16407 (nodes removed 0 1)
+Info    : It. 4500 - 4499 nodes created - worst tet radius 1.12496 (nodes removed 0 1)
+Info    : It. 5000 - 4999 nodes created - worst tet radius 1.08953 (nodes removed 0 1)
+Info    : It. 5500 - 5499 nodes created - worst tet radius 1.05886 (nodes removed 0 1)
+Info    : It. 6000 - 5999 nodes created - worst tet radius 1.03164 (nodes removed 0 1)
+Info    : It. 6500 - 6499 nodes created - worst tet radius 1.00755 (nodes removed 0 1)
+Info    : 3D refinement terminated (11238 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 1 nodes could not be inserted
+Info    :  - 56346 tetrahedra created in 0.281581 sec. (200106 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.648441s, CPU 0.645423s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184056) with worst = 0.00490691 / average = 0.780526:
+Info    : 0.00 < quality < 0.10 :       127 elements
+Info    : 0.10 < quality < 0.20 :       354 elements
+Info    : 0.20 < quality < 0.30 :       583 elements
+Info    : 0.30 < quality < 0.40 :       939 elements
+Info    : 0.40 < quality < 0.50 :      1410 elements
+Info    : 0.50 < quality < 0.60 :      2558 elements
+Info    : 0.60 < quality < 0.70 :      5729 elements
+Info    : 0.70 < quality < 0.80 :     13148 elements
+Info    : 0.80 < quality < 0.90 :     21027 elements
+Info    : 0.90 < quality < 1.00 :     10464 elements
+Info    : 1047 edge swaps, 24 node relocations (volume = 184056): worst = 0.149808 / average = 0.792509 (Wall 0.0168638s, CPU 0.016864s)
+Info    : 1054 edge swaps, 25 node relocations (volume = 184056): worst = 0.214906 / average = 0.792559 (Wall 0.0210606s, CPU 0.02106s)
+Info    : 1056 edge swaps, 25 node relocations (volume = 184056): worst = 0.300007 / average = 0.792585 (Wall 0.0249163s, CPU 0.024917s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       927 elements
+Info    : 0.40 < quality < 0.50 :      1351 elements
+Info    : 0.50 < quality < 0.60 :      2492 elements
+Info    : 0.60 < quality < 0.70 :      5676 elements
+Info    : 0.70 < quality < 0.80 :     13264 elements
+Info    : 0.80 < quality < 0.90 :     21247 elements
+Info    : 0.90 < quality < 1.00 :     10423 elements
+Info    : Done optimizing mesh (Wall 0.0843056s, CPU 0.082293s)
+Info    : 11238 nodes 64943 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:38 2026 (From start: Wall 1.62445s, CPU 1.63179s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r3/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           56
+   single point constraints:          522
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        33299
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 9429
+ number of nonzero lower triangular matrix elements
+ 179790
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.457110
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r3/gmsh.log
+Info    : 0.40 < quality < 0.50 :       392 elements
+Info    : 0.50 < quality < 0.60 :       689 elements
+Info    : 0.60 < quality < 0.70 :      1871 elements
+Info    : 0.70 < quality < 0.80 :      3853 elements
+Info    : 0.80 < quality < 0.90 :      5351 elements
+Info    : 0.90 < quality < 1.00 :      2469 elements
+Info    : Done optimizing mesh (Wall 0.0190209s, CPU 0.018019s)
+Info    : 3317 nodes 18643 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 1765 nodes...
+Info    : Done tetrahedrizing 1773 nodes (Wall 0.0179158s, CPU 0.017906s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0394033s, CPU 0.038396s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 5.12695 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.37417 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.13872 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.01069 (nodes removed 0 0)
+Info    : 3D refinement terminated (3317 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 15130 tetrahedra created in 0.0778682 sec. (194302 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.175942s, CPU 0.174927s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184158) with worst = 0.0168239 / average = 0.771006:
+Info    : 0.00 < quality < 0.10 :        37 elements
+Info    : 0.10 < quality < 0.20 :        91 elements
+Info    : 0.20 < quality < 0.30 :       159 elements
+Info    : 0.30 < quality < 0.40 :       255 elements
+Info    : 0.40 < quality < 0.50 :       412 elements
+Info    : 0.50 < quality < 0.60 :       691 elements
+Info    : 0.60 < quality < 0.70 :      1870 elements
+Info    : 0.70 < quality < 0.80 :      3836 elements
+Info    : 0.80 < quality < 0.90 :      5306 elements
+Info    : 0.90 < quality < 1.00 :      2473 elements
+Info    : 283 edge swaps, 6 node relocations (volume = 184158): worst = 0.294366 / average = 0.782727 (Wall 0.00410704s, CPU 0.004107s)
+Info    : 284 edge swaps, 6 node relocations (volume = 184158): worst = 0.300484 / average = 0.782767 (Wall 0.00502758s, CPU 0.005028s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       251 elements
+Info    : 0.40 < quality < 0.50 :       392 elements
+Info    : 0.50 < quality < 0.60 :       689 elements
+Info    : 0.60 < quality < 0.70 :      1871 elements
+Info    : 0.70 < quality < 0.80 :      3853 elements
+Info    : 0.80 < quality < 0.90 :      5351 elements
+Info    : 0.90 < quality < 1.00 :      2469 elements
+Info    : Done optimizing mesh (Wall 0.0197843s, CPU 0.019784s)
+Info    : 3317 nodes 18643 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:51 2026 (From start: Wall 0.54373s, CPU 0.562921s)
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r3/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           62
+   single point constraints:          666
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        43477
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 12057
+ number of nonzero lower triangular matrix elements
+ 232809
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.591744
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r3/gmsh.log
+Info    : 0.50 < quality < 0.60 :       946 elements
+Info    : 0.60 < quality < 0.70 :      2266 elements
+Info    : 0.70 < quality < 0.80 :      4896 elements
+Info    : 0.80 < quality < 0.90 :      7217 elements
+Info    : 0.90 < quality < 1.00 :      3340 elements
+Info    : Done optimizing mesh (Wall 0.0252715s, CPU 0.024253s)
+Info    : 4241 nodes 23999 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 2136 nodes...
+Info    : Done tetrahedrizing 2144 nodes (Wall 0.02061s, CPU 0.019621s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.045967s, CPU 0.04496s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 5.33669 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.50353 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.24365 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.10408 (nodes removed 0 0)
+Info    : It. 2000 - 2000 nodes created - worst tet radius 1.01659 (nodes removed 0 0)
+Info    : 3D refinement terminated (4241 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 19856 tetrahedra created in 0.140745 sec. (141078 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.267652s, CPU 0.266648s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184134) with worst = 0.00936058 / average = 0.772246:
+Info    : 0.00 < quality < 0.10 :        48 elements
+Info    : 0.10 < quality < 0.20 :       147 elements
+Info    : 0.20 < quality < 0.30 :       220 elements
+Info    : 0.30 < quality < 0.40 :       357 elements
+Info    : 0.40 < quality < 0.50 :       489 elements
+Info    : 0.50 < quality < 0.60 :       956 elements
+Info    : 0.60 < quality < 0.70 :      2283 elements
+Info    : 0.70 < quality < 0.80 :      4866 elements
+Info    : 0.80 < quality < 0.90 :      7146 elements
+Info    : 0.90 < quality < 1.00 :      3344 elements
+Info    : 412 edge swaps, 10 node relocations (volume = 184134): worst = 0.26644 / average = 0.785385 (Wall 0.00596773s, CPU 0.005968s)
+Info    : 416 edge swaps, 10 node relocations (volume = 184134): worst = 0.267886 / average = 0.785516 (Wall 0.00729829s, CPU 0.007294s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         1 elements
+Info    : 0.30 < quality < 0.40 :       353 elements
+Info    : 0.40 < quality < 0.50 :       457 elements
+Info    : 0.50 < quality < 0.60 :       946 elements
+Info    : 0.60 < quality < 0.70 :      2266 elements
+Info    : 0.70 < quality < 0.80 :      4896 elements
+Info    : 0.80 < quality < 0.90 :      7217 elements
+Info    : 0.90 < quality < 1.00 :      3340 elements
+Info    : Done optimizing mesh (Wall 0.0261831s, CPU 0.026178s)
+Info    : 4241 nodes 23999 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:43 2026 (From start: Wall 0.836482s, CPU 0.855936s)
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r4/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           99
+   single point constraints:          672
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        51248
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 14253
+ number of nonzero lower triangular matrix elements
+ 276108
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.739418
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r4/gmsh.log
+Info    : 0.60 < quality < 0.70 :      2667 elements
+Info    : 0.70 < quality < 0.80 :      5869 elements
+Info    : 0.80 < quality < 0.90 :      8422 elements
+Info    : 0.90 < quality < 1.00 :      3920 elements
+Info    : Done optimizing mesh (Wall 0.0316301s, CPU 0.02963s)
+Info    : 4975 nodes 28213 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 2478 nodes...
+Info    : Done tetrahedrizing 2486 nodes (Wall 0.0255236s, CPU 0.023532s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0545617s, CPU 0.050563s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 5.89656 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.57 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.29695 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.15927 (nodes removed 0 0)
+Info    : It. 2000 - 2000 nodes created - worst tet radius 1.06956 (nodes removed 0 0)
+Info    : 3D refinement terminated (4975 nodes total):
+Info    :  - 1 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 23379 tetrahedra created in 0.220012 sec. (106262 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.369798s, CPU 0.364795s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184120) with worst = 0.017079 / average = 0.772795:
+Info    : 0.00 < quality < 0.10 :        48 elements
+Info    : 0.10 < quality < 0.20 :       149 elements
+Info    : 0.20 < quality < 0.30 :       244 elements
+Info    : 0.30 < quality < 0.40 :       402 elements
+Info    : 0.40 < quality < 0.50 :       639 elements
+Info    : 0.50 < quality < 0.60 :      1135 elements
+Info    : 0.60 < quality < 0.70 :      2651 elements
+Info    : 0.70 < quality < 0.80 :      5829 elements
+Info    : 0.80 < quality < 0.90 :      8356 elements
+Info    : 0.90 < quality < 1.00 :      3926 elements
+Info    : 438 edge swaps, 11 node relocations (volume = 184120): worst = 0.166994 / average = 0.784641 (Wall 0.00654893s, CPU 0.00654s)
+Info    : 445 edge swaps, 14 node relocations (volume = 184120): worst = 0.284091 / average = 0.784781 (Wall 0.00817404s, CPU 0.008165s)
+Info    : 446 edge swaps, 14 node relocations (volume = 184120): worst = 0.300103 / average = 0.784815 (Wall 0.00962701s, CPU 0.009617s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       388 elements
+Info    : 0.40 < quality < 0.50 :       610 elements
+Info    : 0.50 < quality < 0.60 :      1099 elements
+Info    : 0.60 < quality < 0.70 :      2667 elements
+Info    : 0.70 < quality < 0.80 :      5869 elements
+Info    : 0.80 < quality < 0.90 :      8422 elements
+Info    : 0.90 < quality < 1.00 :      3920 elements
+Info    : Done optimizing mesh (Wall 0.0298836s, CPU 0.028868s)
+Info    : 4975 nodes 28213 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:45 2026 (From start: Wall 1.28293s, CPU 1.29108s)
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r0/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           17
+   single point constraints:           93
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:         2747
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 1038
+ number of nonzero lower triangular matrix elements
+ 16410
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.027814
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r0/gmsh.log
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       288 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00136157s, CPU 0.000649s)
+Info    : 377 nodes 1941 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 336 nodes...
+Info    : Done tetrahedrizing 344 nodes (Wall 0.00296506s, CPU 0.002965s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.006477s, CPU 0.0064s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 2.19241 (nodes removed 0 0)
+Info    : 3D refinement terminated (377 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 1182 tetrahedra created in 0.00192005 sec. (615607 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0145364s, CPU 0.0144s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185135) with worst = 0.0147624 / average = 0.730184:
+Info    : 0.00 < quality < 0.10 :         9 elements
+Info    : 0.10 < quality < 0.20 :         3 elements
+Info    : 0.20 < quality < 0.30 :        14 elements
+Info    : 0.30 < quality < 0.40 :        28 elements
+Info    : 0.40 < quality < 0.50 :        28 elements
+Info    : 0.50 < quality < 0.60 :        71 elements
+Info    : 0.60 < quality < 0.70 :       292 elements
+Info    : 0.70 < quality < 0.80 :       332 elements
+Info    : 0.80 < quality < 0.90 :       272 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : 25 edge swaps, 1 node relocations (volume = 185135): worst = 0.202936 / average = 0.742668 (Wall 0.000410441s, CPU 0.00041s)
+Info    : 26 edge swaps, 1 node relocations (volume = 185135): worst = 0.302506 / average = 0.743398 (Wall 0.000493388s, CPU 0.000493s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        29 elements
+Info    : 0.40 < quality < 0.50 :        30 elements
+Info    : 0.50 < quality < 0.60 :        69 elements
+Info    : 0.60 < quality < 0.70 :       289 elements
+Info    : 0.70 < quality < 0.80 :       331 elements
+Info    : 0.80 < quality < 0.90 :       280 elements
+Info    : 0.90 < quality < 1.00 :       131 elements
+Info    : Done optimizing mesh (Wall 0.00138827s, CPU 0.001383s)
+Info    : 377 nodes 1941 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:41 2026 (From start: Wall 0.0504992s, CPU 0.073277s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r2/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           21
+   single point constraints:          522
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        16387
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 4668
+ number of nonzero lower triangular matrix elements
+ 85506
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.172627
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r2/gmsh.log
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       124 elements
+Info    : 0.40 < quality < 0.50 :       195 elements
+Info    : 0.50 < quality < 0.60 :       377 elements
+Info    : 0.60 < quality < 0.70 :      1051 elements
+Info    : 0.70 < quality < 0.80 :      1861 elements
+Info    : 0.80 < quality < 0.90 :      2435 elements
+Info    : 0.90 < quality < 1.00 :      1188 elements
+Info    : Done optimizing mesh (Wall 0.00893678s, CPU 0.008936s)
+Info    : 1730 nodes 9518 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 1053 nodes...
+Info    : Done tetrahedrizing 1061 nodes (Wall 0.00956966s, CPU 0.008602s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0217366s, CPU 0.020725s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 3.9353 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.08848 (nodes removed 0 0)
+Info    : 3D refinement terminated (1730 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 7392 tetrahedra created in 0.0287338 sec. (257258 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0801982s, CPU 0.079187s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 185060) with worst = 0.0153885 / average = 0.761919:
+Info    : 0.00 < quality < 0.10 :        19 elements
+Info    : 0.10 < quality < 0.20 :        66 elements
+Info    : 0.20 < quality < 0.30 :        88 elements
+Info    : 0.30 < quality < 0.40 :       127 elements
+Info    : 0.40 < quality < 0.50 :       217 elements
+Info    : 0.50 < quality < 0.60 :       370 elements
+Info    : 0.60 < quality < 0.70 :      1056 elements
+Info    : 0.70 < quality < 0.80 :      1857 elements
+Info    : 0.80 < quality < 0.90 :      2410 elements
+Info    : 0.90 < quality < 1.00 :      1182 elements
+Info    : 171 edge swaps, 1 node relocations (volume = 185060): worst = 0.260021 / average = 0.776814 (Wall 0.00225323s, CPU 0.002253s)
+Info    : 172 edge swaps, 1 node relocations (volume = 185060): worst = 0.301444 / average = 0.776868 (Wall 0.00266766s, CPU 0.002668s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       124 elements
+Info    : 0.40 < quality < 0.50 :       195 elements
+Info    : 0.50 < quality < 0.60 :       377 elements
+Info    : 0.60 < quality < 0.70 :      1051 elements
+Info    : 0.70 < quality < 0.80 :      1861 elements
+Info    : 0.80 < quality < 0.90 :      2435 elements
+Info    : 0.90 < quality < 1.00 :      1188 elements
+Info    : Done optimizing mesh (Wall 0.00864109s, CPU 0.008641s)
+Info    : 1730 nodes 9518 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:50 2026 (From start: Wall 0.244191s, CPU 0.265979s)
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r4/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           93
+   single point constraints:          666
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:        47219
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 13086
+ number of nonzero lower triangular matrix elements
+ 253332
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.669889
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/semantic_partition_dorfler_r4/gmsh.log
+Info    : 0.50 < quality < 0.60 :       981 elements
+Info    : 0.60 < quality < 0.70 :      2452 elements
+Info    : 0.70 < quality < 0.80 :      5267 elements
+Info    : 0.80 < quality < 0.90 :      7758 elements
+Info    : 0.90 < quality < 1.00 :      3766 elements
+Info    : Done optimizing mesh (Wall 0.0272833s, CPU 0.026262s)
+Info    : 4584 nodes 25957 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 2265 nodes...
+Info    : Done tetrahedrizing 2273 nodes (Wall 0.0236738s, CPU 0.021688s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0534986s, CPU 0.050501s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 5.59146 (nodes removed 0 0)
+Info    : It. 500 - 500 nodes created - worst tet radius 1.53326 (nodes removed 0 0)
+Info    : It. 1000 - 1000 nodes created - worst tet radius 1.26912 (nodes removed 0 0)
+Info    : It. 1500 - 1500 nodes created - worst tet radius 1.13523 (nodes removed 0 0)
+Info    : It. 2000 - 2000 nodes created - worst tet radius 1.04756 (nodes removed 0 0)
+Info    : 3D refinement terminated (4584 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 21507 tetrahedra created in 0.163087 sec. (131874 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.310726s, CPU 0.307683s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184158) with worst = 0.0291281 / average = 0.774795:
+Info    : 0.00 < quality < 0.10 :        41 elements
+Info    : 0.10 < quality < 0.20 :       119 elements
+Info    : 0.20 < quality < 0.30 :       239 elements
+Info    : 0.30 < quality < 0.40 :       386 elements
+Info    : 0.40 < quality < 0.50 :       560 elements
+Info    : 0.50 < quality < 0.60 :       997 elements
+Info    : 0.60 < quality < 0.70 :      2472 elements
+Info    : 0.70 < quality < 0.80 :      5218 elements
+Info    : 0.80 < quality < 0.90 :      7703 elements
+Info    : 0.90 < quality < 1.00 :      3772 elements
+Info    : 392 edge swaps, 15 node relocations (volume = 184158): worst = 0.299132 / average = 0.78614 (Wall 0.00601816s, CPU 0.006019s)
+Info    : 393 edge swaps, 15 node relocations (volume = 184158): worst = 0.300272 / average = 0.786144 (Wall 0.00739807s, CPU 0.007379s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :       384 elements
+Info    : 0.40 < quality < 0.50 :       552 elements
+Info    : 0.50 < quality < 0.60 :       981 elements
+Info    : 0.60 < quality < 0.70 :      2452 elements
+Info    : 0.70 < quality < 0.80 :      5267 elements
+Info    : 0.80 < quality < 0.90 :      7758 elements
+Info    : 0.90 < quality < 1.00 :      3766 elements
+Info    : Done optimizing mesh (Wall 0.0278726s, CPU 0.026862s)
+Info    : 4584 nodes 25957 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:53 2026 (From start: Wall 0.959744s, CPU 0.97232s)
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r1/ccx.log
+   two-dimensional elements:            0
+   integration points per element:            1
+   degrees of freedom per node:            3
+   layers per element:            1
+
+   distributed facial loads:            0
+   distributed volumetric loads:            0
+   concentrated loads:           17
+   single point constraints:          243
+   multiple point constraints:            1
+   terms in all multiple point constraints:            1
+   tie constraints:            0
+   dependent nodes tied by cyclic constraints:            0
+   dependent nodes in pre-tension constraints:            0
+
+   sets:            4
+   terms in all sets:         6565
+
+   materials:            1
+   constants per material and temperature:            2
+   temperature points per material:            1
+   plastic data points per material:            0
+
+   orientations:            0
+   amplitudes:            2
+   data points in all amplitudes:            2
+   print requests:            2
+   transformations:            0
+   property cards:            0
+
+
+ STEP            1
+
+ Static analysis was selected
+
+ Decascading the MPC's
+
+ Determining the structure of the matrix:
+ Using up to 1 cpu(s) for setting up the structure of the matrix.
+ number of equations
+ 2094
+ number of nonzero lower triangular matrix elements
+ 35772
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+ Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.
+
+ Factoring the system of equations using the symmetric spooles solver
+ Using up to 1 cpu(s) for spooles.
+
+ Using up to 1 cpu(s) for the stress calculation.
+
+
+ Job finished
+
+________________________________________
+
+Total CalculiX Time: 0.068225
+________________________________________
+experiments/semantic_partition_dorfler_v2/cases/global_dorfler_r1/gmsh.log
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        41 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       138 elements
+Info    : 0.60 < quality < 0.70 :       443 elements
+Info    : 0.70 < quality < 0.80 :       755 elements
+Info    : 0.80 < quality < 0.90 :       921 elements
+Info    : 0.90 < quality < 1.00 :       486 elements
+Info    : Done optimizing mesh (Wall 0.00319276s, CPU 0.003193s)
+Info    : 779 nodes 4152 elements
+Info    : Done reading 'model.geo'
+Info    : Meshing 3D...
+Info    : 3D Meshing 1 volume with 1 connected component
+Info    : Tetrahedrizing 583 nodes...
+Info    : Done tetrahedrizing 591 nodes (Wall 0.00530094s, CPU 0.005301s)
+Info    : Reconstructing mesh...
+Info    :  - Creating surface mesh
+Info    :  - Identifying boundary edges
+Info    :  - Recovering boundary
+Info    : Done reconstructing mesh (Wall 0.0113311s, CPU 0.01133s)
+Info    : Found volume 1
+Info    : It. 0 - 0 nodes created - worst tet radius 2.55875 (nodes removed 0 0)
+Info    : 3D refinement terminated (779 nodes total):
+Info    :  - 0 Delaunay cavities modified for star shapeness
+Info    :  - 0 nodes could not be inserted
+Info    :  - 2905 tetrahedra created in 0.00802571 sec. (361961 tets/s)
+Info    : 0 node relocations
+Info    : Done meshing 3D (Wall 0.0324536s, CPU 0.032454s)
+Info    : Optimizing mesh...
+Info    : Optimizing volume 1
+Info    : Optimization starts (volume = 184629) with worst = 0.0233749 / average = 0.76518:
+Info    : 0.00 < quality < 0.10 :         7 elements
+Info    : 0.10 < quality < 0.20 :        31 elements
+Info    : 0.20 < quality < 0.30 :        27 elements
+Info    : 0.30 < quality < 0.40 :        42 elements
+Info    : 0.40 < quality < 0.50 :        66 elements
+Info    : 0.50 < quality < 0.60 :       143 elements
+Info    : 0.60 < quality < 0.70 :       442 elements
+Info    : 0.70 < quality < 0.80 :       752 elements
+Info    : 0.80 < quality < 0.90 :       912 elements
+Info    : 0.90 < quality < 1.00 :       483 elements
+Info    : 65 edge swaps, 0 node relocations (volume = 184629): worst = 0.202198 / average = 0.77945 (Wall 0.000846248s, CPU 0.000847s)
+Info    : 66 edge swaps, 0 node relocations (volume = 184629): worst = 0.301383 / average = 0.779668 (Wall 0.0010171s, CPU 0.001018s)
+Info    : No ill-shaped tets in the mesh :-)
+Info    : 0.00 < quality < 0.10 :         0 elements
+Info    : 0.10 < quality < 0.20 :         0 elements
+Info    : 0.20 < quality < 0.30 :         0 elements
+Info    : 0.30 < quality < 0.40 :        41 elements
+Info    : 0.40 < quality < 0.50 :        60 elements
+Info    : 0.50 < quality < 0.60 :       138 elements
+Info    : 0.60 < quality < 0.70 :       443 elements
+Info    : 0.70 < quality < 0.80 :       754 elements
+Info    : 0.80 < quality < 0.90 :       922 elements
+Info    : 0.90 < quality < 1.00 :       486 elements
+Info    : Done optimizing mesh (Wall 0.00317802s, CPU 0.003178s)
+Info    : 779 nodes 4152 elements
+Info    : Writing 'model.msh'...
+Info    : Done writing 'model.msh'
+Info    : Stopped on Sun Aug  9 19:21:41 2026 (From start: Wall 0.104834s, CPU 0.126771s)
