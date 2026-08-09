@@ -1,0 +1,62 @@
+name: Curve-region semantic gate versus global Dorfler # Give the continuous-region benchmark a distinct Actions name.
+on: # Define source-driven triggers only so generated results cannot recurse.
+  push: # Run whenever the dedicated curve-region experiment branch changes.
+    branches: [experiment/curve-region-dorfler] # Restrict push execution to the isolated experiment branch.
+    paths: ["experiments/curve_region_dorfler_3d/**", ".github/workflows/curve-region-dorfler.yml"] # Trigger only for this experiment source or workflow changes.
+  pull_request: # Validate the same experiment when its branch is proposed for review.
+    branches: [main] # Restrict pull-request validation to proposals targeting the default branch.
+    paths: ["experiments/curve_region_dorfler_3d/**", ".github/workflows/curve-region-dorfler.yml"] # Ignore unrelated repository changes during PR validation.
+  workflow_dispatch: # Allow an explicit rerun without modifying the frozen semantic drawing.
+permissions: # Grant only the permissions needed for checkout and push-run result persistence.
+  contents: write # Allow push events to commit compact numerical outputs back to the experiment branch.
+jobs: # Define the single deterministic comparison job.
+  compare-curve-region: # Name the job that executes reference, global Dörfler, and curve-region Dörfler histories.
+    runs-on: ubuntu-24.04 # Use the Ubuntu runner where Gmsh and CalculiX packages are available.
+    timeout-minutes: 45 # Bound accidental native-tool hangs without constraining the small benchmark.
+    steps: # Execute checkout, installation, syntax validation, numerical solve, and compact publication in order.
+      - name: Check out experiment branch # Materialize the exact source state being tested.
+        uses: actions/checkout@v4 # Use the maintained checkout action with push credentials preserved by default.
+      - name: Install Gmsh and CalculiX # Install the native mesher and finite-element solver used by the benchmark.
+        shell: bash # Use Bash so package failures propagate deterministically.
+        run: | # Start the strict native-tool installation block.
+          set -euo pipefail # Stop on command failure, undefined variables, or failed pipelines.
+          sudo apt-get update # Refresh Ubuntu package metadata before installing numerical tools.
+          sudo apt-get install -y gmsh calculix-ccx # Install Gmsh and CalculiX from the runner package repositories.
+          gmsh --version # Record the exact Gmsh version in the Actions log.
+          (ccx -v || ccx_2.23 -v || ccx_2.22 -v || ccx_2.21 -v || true) # Record the available CalculiX executable version across common package names.
+      - name: Validate and run benchmark # Syntax-check the wrapper and execute both adaptive histories while preserving diagnostics.
+        shell: bash # Use Bash to capture the original numerical status before publication.
+        run: | # Start the benchmark wrapper commands.
+          set -euo pipefail # Use strict shell behavior for setup and syntax validation.
+          python -m py_compile experiments/curve_region_dorfler_3d/run.py # Reject Python syntax errors before any meshing or solving work begins.
+          mkdir -p experiments/curve_region_dorfler_3d/results # Ensure compact diagnostics have a destination even after an early failure.
+          set +e # Temporarily allow the numerical driver to fail so its logs can still be uploaded.
+          python experiments/curve_region_dorfler_3d/run.py > experiments/curve_region_dorfler_3d/results/console.log 2>&1 # Execute the reference and both Dörfler histories while capturing all progress output.
+          status=$? # Preserve the exact numerical driver exit code before any publication commands run.
+          set -e # Restore strict shell behavior for result persistence and upload.
+          echo "${status}" > experiments/curve_region_dorfler_3d/results/exit_code.txt # Persist the numerical exit status as compact machine-readable state.
+          find experiments/curve_region_dorfler_3d/cases -type f \( -name 'gmsh.log' -o -name 'ccx.log' \) -print -exec tail -n 60 {} \; > experiments/curve_region_dorfler_3d/results/diagnostics.txt 2>/dev/null || true # Preserve bounded native-tool log tails for diagnosis without storing meshes.
+          tail -n 240 experiments/curve_region_dorfler_3d/results/console.log > experiments/curve_region_dorfler_3d/results/console_tail.txt || true # Preserve the most relevant driver progress and failure context.
+      - name: Commit compact numerical results # Keep the latest push-run tables and region SVG directly readable in the branch.
+        if: github.event_name == 'push' # Avoid write attempts from pull-request validation contexts.
+        shell: bash # Use Bash for deterministic conditional Git persistence.
+        run: | # Start the compact result commit block.
+          set -euo pipefail # Stop immediately on unexpected Git or shell failures.
+          git config user.name "github-actions[bot]" # Attribute generated results to the standard Actions bot identity.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com" # Use the standard no-reply address for the Actions bot.
+          git add -f experiments/curve_region_dorfler_3d/results # Stage only compact tables, summaries, SVG, and diagnostics.
+          if git diff --cached --quiet; then echo "No compact result changes to commit"; else git commit -m "results: update curve-region Dorfler benchmark"; git push origin HEAD:experiment/curve-region-dorfler; fi # Commit and push only when compact numerical outputs changed.
+      - name: Upload compact result artifact # Preserve an immutable copy of this run's compact outputs.
+        if: always() # Upload diagnostics regardless of numerical success or failure.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the experiment artifact contents and retention.
+          name: curve-region-dorfler-results # Give the artifact a stable experiment-specific name.
+          path: experiments/curve_region_dorfler_3d/results/** # Upload only compact results rather than transient meshes or solver binaries.
+          if-no-files-found: warn # Keep unexpected early failures diagnosable without masking the final workflow status.
+          retention-days: 14 # Retain temporary run artifacts long enough for inspection without permanent storage growth.
+      - name: Propagate numerical status # Make the final Actions conclusion match the benchmark driver's original result.
+        shell: bash # Use Bash for direct status-file loading and exit propagation.
+        run: | # Start the final status propagation commands.
+          set -euo pipefail # Treat a missing or malformed status file as a workflow failure.
+          status=$(cat experiments/curve_region_dorfler_3d/results/exit_code.txt) # Reload the exact numerical exit status captured before publication.
+          exit "${status}" # Return the numerical status so a failed solve or parser cannot appear green.
