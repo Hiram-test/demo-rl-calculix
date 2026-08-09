@@ -1,0 +1,27 @@
+{
+  "experiment_version": "v0.1",
+  "qoi": "vertical displacement at the fixed material point (110, 0, 0) mm",
+  "selection_mode": "freeform geometric semantic regions drawn before numerical evaluation",
+  "selected_regions": [
+    {
+      "id": "root_band",
+      "type": "root_band",
+      "xmin_mm": 0.0,
+      "xmax_mm": 18.0,
+      "description": "A full-cross-section band surrounding the clamped root."
+    },
+    {
+      "id": "hole_circle",
+      "type": "hole_annulus",
+      "center_x_mm": 35.0,
+      "center_z_mm": 0.0,
+      "outer_radius_mm": 18.0,
+      "axis": "y",
+      "description": "A hand-drawn circular envelope around the through-hole, extruded through the beam width."
+    }
+  ],
+  "semantic_description": "The LLM draws one root band and one circular envelope around the through-hole; their union is the semantic candidate support given to Dörfler.",
+  "rationale": "The root carries the dominant bending and torsional reactions, while the through-hole perturbs stiffness and creates a local stress-transfer disturbance. These two regions are treated as one joint candidate support without mechanically partitioning the rest of the beam.",
+  "llm_visibility": ["geometry", "material", "boundary condition", "load position and direction", "QoI", "finite refinement budget"],
+  "llm_hidden_information": ["element error indicators", "stress contours", "fine reference solution", "Dörfler ranking", "future adaptive meshes"]
+}

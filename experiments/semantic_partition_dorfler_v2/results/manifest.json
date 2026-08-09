@@ -1,0 +1,22 @@
+{
+  "reference": {
+    "qoi": -0.012270369667559834,
+    "dof": 33714,
+    "elements": 55387,
+    "mesh_size": 2.5
+  },
+  "theta": 0.5,
+  "region_theta": 0.5,
+  "amr_rounds": 5,
+  "qoi_point_mm": [
+    110.0,
+    0.0,
+    0.0
+  ],
+  "partition": {
+    "root_region": "x <= 18.0 mm outside hole priority",
+    "hole_region": "circle radius 18.0 mm around hole centre",
+    "background_region": "all remaining material"
+  },
+  "fairness_rule": "compare minimum DOF needed to reach the same QoI relative-error target; never infer superiority from unequal final-round DOF"
+}
