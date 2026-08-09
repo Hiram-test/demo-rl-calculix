@@ -1,0 +1,39 @@
+name: 3D action-support semantics benchmark # Give the experiment a recognizable Actions name.
+on: # Define automated and manual entry points for the benchmark.
+  push: # Run automatically when the dedicated experiment branch changes.
+    branches: [experiment/action-support-3d] # Restrict automatic execution to the isolated experiment branch.
+    paths: ["experiments/action_support_3d/**", ".github/workflows/action-support-3d.yml"] # Ignore unrelated repository changes.
+  workflow_dispatch: # Allow the benchmark to be rerun manually without changing source files.
+permissions: # Use the minimum repository permissions required by the workflow.
+  contents: read # Permit checkout while preventing workflow writes to repository contents.
+jobs: # Define the single deterministic benchmark job.
+  run-benchmark: # Name the job that installs solvers and executes all candidate supports.
+    runs-on: ubuntu-24.04 # Pin the runner to Ubuntu 24.04 where both solver packages are available.
+    timeout-minutes: 60 # Bound accidental meshing or solver hangs without changing normal benchmark behavior.
+    steps: # Execute setup, solver installation, benchmark run, and artifact publication in order.
+      - name: Check out repository # Materialize the experiment branch in the runner workspace.
+        uses: actions/checkout@v4 # Use the maintained GitHub checkout action.
+      - name: Install Gmsh and CalculiX # Install the two native tools used by the benchmark.
+        shell: bash # Use Bash for strict package-installation commands.
+        run: | # Start the deterministic package-installation script.
+          set -euo pipefail # Stop immediately on package or shell errors.
+          sudo apt-get update # Refresh Ubuntu package metadata before installation.
+          sudo apt-get install -y gmsh calculix-ccx # Install the Gmsh mesher and CalculiX structural solver.
+          gmsh --version # Record the exact Gmsh version in the Actions log.
+          (ccx -v || ccx_2.21 -v || true) # Record the available CalculiX executable version without failing on naming differences.
+      - name: Run benchmark # Execute every baseline, spatial atom, and frozen LLM support case.
+        shell: bash # Use Bash for strict Python invocation and path handling.
+        run: | # Start the benchmark command block.
+          set -euo pipefail # Stop immediately if the Python benchmark returns a nonzero status.
+          python experiments/action_support_3d/run_experiment.py # Run the deterministic Gmsh-plus-CalculiX experiment driver.
+      - name: Upload compact benchmark outputs # Preserve tables, summaries, and diagnostic logs for review.
+        if: always() # Upload available diagnostics even when one mesh or solver case fails.
+        uses: actions/upload-artifact@v4 # Use the maintained GitHub artifact uploader.
+        with: # Configure the uploaded artifact name, contents, and retention.
+          name: action-support-3d-results # Give the artifact a stable experiment-specific name.
+          path: | # Upload compact results and text logs while excluding bulky meshes and solver binaries.
+            experiments/action_support_3d/results/** # Preserve CSV, JSON, and Markdown result summaries.
+            experiments/action_support_3d/cases/**/gmsh.log # Preserve Gmsh logs for failed or suspicious cases.
+            experiments/action_support_3d/cases/**/ccx.log # Preserve CalculiX logs for failed or suspicious cases.
+          if-no-files-found: warn # Keep a failed run diagnosable even if no result table was produced.
+          retention-days: 14 # Retain temporary experiment artifacts long enough for analysis without permanent storage growth.
