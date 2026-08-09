@@ -9,7 +9,7 @@
   "base_size_ratio_q": 0.8,
   "minimum_local_h_mm": 2.0,
   "reference_h_mm": 1.5,
-  "amr_rounds": 5,
+  "amr_rounds": 4,
   "semantic_ranks": {
     "root_region": 3,
     "hole_region": 2,
@@ -20,6 +20,6 @@
     "hole_region": 0.6400000000000001,
     "background_region": 0.8
   },
-  "definition": "same theta in every semantic region; LLM ordinal rank controls only physical refinement size ratio; global baseline uses the same theta and one unit refinement level",
+  "definition": "same theta for baseline and semantic marking; baseline Dörfler action units are elements, semantic Dörfler action units are LLM-defined regions; selected semantic regions are refined wholesale using frozen LLM ordinal size-ratio ranks",
   "fairness_rule": "interpret only true QoI error versus actual DOF and minimum DOF at common error targets"
 }
