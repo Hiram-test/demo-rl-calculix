@@ -1,0 +1,67 @@
+{
+  "benchmark_version": "v0.1",
+  "selection_protocol": "Frozen LLM proposals generated from geometry, material, boundary conditions, load, QoI and refinement budget only; no stress contour, element indicator or oracle ranking was shown.",
+  "qois": {
+    "tip_displacement": {
+      "definition": "Mean z-displacement of the eccentric free-end load patch.",
+      "proposals": [
+        {
+          "id": "LLM_T1_root_hole_transfer",
+          "confidence": 0.88,
+          "rationale": "The global compliance-like displacement should be sensitive to the high-curvature bending/torsion transfer zone between the clamp and the through-hole, so refine these coupled regions together rather than ranking isolated elements.",
+          "regions": [
+            {"type": "box", "xmin": 0.0, "xmax": 18.0, "ymin": -20.0, "ymax": 20.0, "zmin": -20.0, "zmax": 20.0},
+            {"type": "box", "xmin": 20.0, "xmax": 52.0, "ymin": -20.0, "ymax": 20.0, "zmin": -16.0, "zmax": 16.0}
+          ]
+        },
+        {
+          "id": "LLM_T2_root_band",
+          "confidence": 0.73,
+          "rationale": "The clamp carries the largest bending moment and a substantial torsional reaction, so a compact root volume is a lower-cost candidate when the refinement budget is tight.",
+          "regions": [
+            {"type": "box", "xmin": 0.0, "xmax": 26.0, "ymin": -20.0, "ymax": 20.0, "zmin": -20.0, "zmax": 20.0}
+          ]
+        },
+        {
+          "id": "LLM_T3_eccentric_load_path",
+          "confidence": 0.61,
+          "rationale": "The eccentric nodal load introduces local traction discretization error and torsional transfer on the positive-y side, so retain a lower-confidence load-path candidate instead of discarding it.",
+          "regions": [
+            {"type": "box", "xmin": 78.0, "xmax": 120.0, "ymin": 0.0, "ymax": 20.0, "zmin": -14.0, "zmax": 14.0}
+          ]
+        }
+      ]
+    },
+    "hole_opening": {
+      "definition": "Mean upper-hole z-displacement minus mean lower-hole z-displacement.",
+      "proposals": [
+        {
+          "id": "LLM_H1_hole_local",
+          "confidence": 0.95,
+          "rationale": "The QoI is defined directly on opposite arcs of the through-hole, so the first candidate concentrates resolution around the hole and its two vertical ligaments.",
+          "regions": [
+            {"type": "box", "xmin": 20.0, "xmax": 52.0, "ymin": -20.0, "ymax": 20.0, "zmin": -16.0, "zmax": 16.0}
+          ]
+        },
+        {
+          "id": "LLM_H2_hole_root_coupled",
+          "confidence": 0.82,
+          "rationale": "Hole deformation is driven by the local concentration plus the bending/torsion field supplied from the clamp, so a second candidate couples the hole neighborhood with the short upstream transfer zone.",
+          "regions": [
+            {"type": "box", "xmin": 0.0, "xmax": 18.0, "ymin": -20.0, "ymax": 20.0, "zmin": -20.0, "zmax": 20.0},
+            {"type": "box", "xmin": 18.0, "xmax": 54.0, "ymin": -20.0, "ymax": 20.0, "zmin": -17.0, "zmax": 17.0}
+          ]
+        },
+        {
+          "id": "LLM_H3_positive_y_transfer",
+          "confidence": 0.58,
+          "rationale": "Because the end load is eccentric in y, retain a lower-confidence asymmetric corridor from the hole toward the positive-y load side to test whether torsional coupling matters for this local QoI.",
+          "regions": [
+            {"type": "box", "xmin": 20.0, "xmax": 52.0, "ymin": -20.0, "ymax": 20.0, "zmin": -16.0, "zmax": 16.0},
+            {"type": "box", "xmin": 48.0, "xmax": 98.0, "ymin": 0.0, "ymax": 20.0, "zmin": -12.0, "zmax": 12.0}
+          ]
+        }
+      ]
+    }
+  }
+}
