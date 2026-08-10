@@ -1,0 +1,92 @@
+name: Future-hit reasoning-aware live LLM delegation # 定义修复 reasoning-token 截断后的真实机制委派实验。
+on: # 定义当前 P-H 实验分支和草稿 PR 的触发条件。
+  push: # 在 reasoning-aware 实验代码或工作流变化时自动启动。
+    branches: # 限制可信 push 只来自当前实验分支。
+      - experiment/ph-routing-matrix # 指向当前论文方法实验分支。
+    paths: # 只监听 V3 主体和工作流自身避免无关重复运行。
+      - experiments/future_hit_delegation/run_live_sparse_v3.py # 监听 reasoning-aware 真实模型实验脚本。
+      - .github/workflows/future-hit-live-sparse-v3.yml # 监听本工作流协议自身。
+  pull_request: # 让当前草稿 PR 暴露可读取的运行状态、日志和 Artifact。
+    branches: # 对照已有真实 CalculiX 横向通道基准分支执行。
+      - exp/cross-passage-torsion-five-methods # 指向 PR24 的验证基线分支。
+    paths: # 仅在 V3 实验协议变化时触发 PR 运行。
+      - experiments/future_hit_delegation/run_live_sparse_v3.py # 监听 V3 机制委派实现。
+      - .github/workflows/future-hit-live-sparse-v3.yml # 监听工作流自身。
+  workflow_dispatch: # 允许后续人工复跑完全相同的冻结协议。
+permissions: # 定义读取仓库和上传实验制品所需最小权限。
+  contents: read # 本快速验证不自动修改仓库结果文件。
+concurrency: # 防止同一 PR 或分支同时消耗重复模型预算。
+  group: future-hit-live-sparse-v3-${{ github.event.pull_request.number || github.ref }} # 按 PR 或分支建立唯一并发组。
+  cancel-in-progress: true # 新 V3 提交出现时取消同协议旧运行。
+jobs: # 定义 reasoning-aware 真实模型与 CalculiX 验证作业。
+  sparse-live-v3: # 执行动态 Dörfler、真实模型委派、deterministic compiler 与物理审计。
+    runs-on: ubuntu-24.04 # 固定与既有正式基准一致的 Ubuntu 24.04 环境。
+    environment: ds # 复用仓库已有 DeepSeek 受保护 Environment。
+    timeout-minutes: 35 # 为较高 reasoning token 预算和真实 CalculiX 留出三十五分钟上限。
+    env: # 冻结模型、绘图后端和线性代数线程数。
+      MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端兼容既有基准导入。
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发提高数值重复性。
+      MKL_NUM_THREADS: '1' # 限制 MKL 并发降低运行间波动。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }} # 从受保护 Environment 中选择首个可用模型凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro # 保持与此前接口故障实验相同的推理模型以隔离修复效果。
+    steps: # 定义检出、依赖、真实调用、科学合同验证和 Artifact 上传流程。
+      - uses: actions/checkout@v4 # 检出当前 push 或 PR 的真实头分支代码。
+        with: # 配置实验代码来源。
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }} # PR 时明确读取 experiment/ph-routing-matrix 头分支。
+      - uses: actions/setup-python@v5 # 配置固定 Python 3.11 运行环境。
+        with: # 指定已有基准验证过的解释器版本。
+          python-version: '3.11' # 使用 Python 3.11。
+      - name: Compile reasoning-aware experiment # 在真实调用前检查 V3 和依赖模块语法。
+        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/run_live_sparse.py experiments/future_hit_delegation/run_live_sparse_v3.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译本轮所有执行模块。
+      - name: Install solver and API dependencies # 安装真实 CalculiX、PyTorch、NumPy、Matplotlib 与 API 客户端。
+        shell: bash # 使用 Bash 执行固定依赖安装流程。
+        run: | # 顺序安装 Python 和系统级求解器依赖。
+          set -euo pipefail # 任一安装失败立即停止。
+          python -m pip install --upgrade pip --quiet # 更新 pip 以避免旧依赖解析问题。
+          python -m pip install numpy matplotlib openai --quiet # 安装数组、绘图与 DeepSeek 兼容客户端。
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装已有正式基准导入所需 CPU PyTorch。
+          sudo apt-get update -qq >/tmp/future-hit-v3-apt-update.log 2>&1 # 更新 Ubuntu 软件包索引并保存诊断日志。
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-v3-apt-install.log 2>&1 # 安装真实 CalculiX 求解器。
+      - name: Locate CalculiX executable # 定位标准或版本化真实 ccx 可执行文件。
+        id: solver # 保存求解器路径供 V3 实验步骤引用。
+        shell: bash # 使用 Bash 完成求解器定位和验证。
+        run: | # 先查标准命令再回退搜索版本化文件。
+          set -euo pipefail # 找不到真实求解器时立即停止。
+          CCX_BIN="$(command -v ccx || true)" # 首先搜索标准 ccx 命令。
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 标准名称缺失时回退版本化文件。
+          test -x "$CCX_BIN" # 验证定位结果确实可执行。
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 保存实际 CalculiX 路径供后续步骤读取。
+      - name: Confirm protected model credential # 在消耗模型调用预算前确认受保护凭据存在。
+        run: test -n "$DEEPSEEK_API_KEY" # 只检查凭据非空且绝不输出其内容。
+      - name: Run reasoning-aware mechanism delegation # 使用4096到8192的自适应 completion 预算获取最终公开委派并执行真实网格审计。
+        shell: bash # 使用 Bash 保存完整标准输出和真实退出码。
+        run: | # 清理旧 V3 结果后执行冻结协议。
+          set -euo pipefail # 任一求解、模型接口或 deterministic compiler 失败立即停止。
+          rm -rf experiments/future_hit_delegation/sparse_live_v3_results # 删除旧 V3 结果防止历史状态污染。
+          python experiments/future_hit_delegation/run_live_sparse_v3.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/sparse_live_v3_results --theta 0.50 --max-rounds 5 2>&1 | tee /tmp/future-hit-live-sparse-v3.log # 执行完整 reasoning-aware 资源重投实验。
+      - name: Validate scientific result contract # 验证接口成功、最终公开答案、稀疏委派和真实物理审计均存在。
+        shell: bash # 使用 Bash 启动只读机器结果检查。
+        run: | # 对 V3 结果执行硬科学合同验证。
+          set -euo pipefail # 任一核心证据缺失立即拒绝本轮结果。
+          python - <<'PY' # 使用内联 Python 检查机器可读结果结构。
+          import json  # 读取 V3 真实模型实验结果。
+          from pathlib import Path  # 稳定定位 V3 独立结果目录。
+          root = Path('experiments/future_hit_delegation/sparse_live_v3_results')  # 定义本轮结果根目录。
+          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取真实机制委派与物理审计结果。
+          assert data['interface_valid'] is True  # 验证本轮已经真正获得可解析最终公开答案。
+          assert len(data['prediction']) == 16  # 验证 deterministic compiler 形成完整区域动作。
+          assert len(data['api_audit']) >= 1  # 验证公开 reasoning-token 使用与完成状态已记录。
+          assert (root / 'public_prompt.txt').is_file()  # 验证实际机制判断提示被保存供无泄漏复核。
+          assert any(root.glob('raw_final_answer_attempt_*.txt'))  # 验证至少一个最终公开模型答案被原样保存。
+          PY
+      - name: Upload reasoning-aware evidence # 无论成功失败都保存模型接口、CalculiX、公开 token 统计和结果证据。
+        if: always() # 确保科学失败或接口失败时仍可完整诊断。
+        uses: actions/upload-artifact@v4 # 使用官方 Artifact 上传全部 V3 结果。
+        with: # 配置制品名称、上传路径和保留期限。
+          name: future-hit-live-sparse-v3-evidence # 使用独立名称避免与 V1/V2 接口故障结果混淆。
+          path: | # 上传结果目录、运行日志和系统依赖日志。
+            experiments/future_hit_delegation/sparse_live_v3_results/
+            /tmp/future-hit-live-sparse-v3.log
+            /tmp/future-hit-v3-apt-install.log
+          if-no-files-found: warn # 早期失败时仍上传可获得的诊断文件。
+          retention-days: 14 # 保留十四天供方法复核和后续比较。

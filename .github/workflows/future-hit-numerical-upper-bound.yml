@@ -1,0 +1,84 @@
+name: Future-hit numerical compression upper bound # 定义不依赖模型 API 的真实 CalculiX 轮次压缩上界实验。
+on: # 定义当前实验 PR 和分支触发条件。
+  push: # 在 P-H 实验分支新增或修改快速数值实验时自动运行。
+    branches: # 限制只在当前独立实验分支运行。
+      - experiment/ph-routing-matrix # 指向当前论文方法分支。
+    paths: # 只监听快速数值实验和工作流本身。
+      - experiments/future_hit_delegation/run_numerical_only.py # 监听经典与 future-hit oracle 比较脚本。
+      - .github/workflows/future-hit-numerical-upper-bound.yml # 监听工作流协议自身。
+  pull_request: # 暴露当前草稿 PR 的可读取运行、日志和 Artifact。
+    branches: # 只对 PR24 真实 CalculiX 基线目标分支运行。
+      - exp/cross-passage-torsion-five-methods # 指向当前 PR 的正式数值基线。
+    paths: # 仅在快速数值实验变化时执行。
+      - experiments/future_hit_delegation/run_numerical_only.py # 监听上界实验脚本。
+      - .github/workflows/future-hit-numerical-upper-bound.yml # 监听工作流自身。
+  workflow_dispatch: # 允许人工复跑完全相同的冻结数值协议。
+permissions: # 定义只读数值实验所需最小权限。
+  contents: read # 快速实验只上传 Artifact 而不自动提交结果。
+concurrency: # 防止同一 PR 重复运行相同快速数值试验。
+  group: future-hit-upper-bound-${{ github.event.pull_request.number || github.ref }} # 按 PR 或分支建立唯一并发组。
+  cancel-in-progress: true # 新提交出现时取消旧快速试验。
+jobs: # 定义唯一真实 CalculiX 上界实验作业。
+  numerical-upper-bound: # 执行五轮动态 Dörfler、future-hit oracle 和当前强度重投对照。
+    runs-on: ubuntu-24.04 # 固定与正式横向通道实验一致的 Ubuntu 环境。
+    timeout-minutes: 45 # 限制少量真实 CalculiX 求解的最大运行时间。
+    env: # 冻结无头绘图和线性代数线程数。
+      MPLBACKEND: Agg # 保持已有模块的无头绘图兼容性。
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发提高复现性。
+      MKL_NUM_THREADS: '1' # 限制 MKL 并发减少数值波动。
+    steps: # 定义代码检出、依赖安装、真实求解和制品上传流程。
+      - uses: actions/checkout@v4 # 检出当前 push 或 PR 头分支代码。
+        with: # 配置实际实验分支引用。
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }} # PR 时明确读取实验头分支而非合并引用。
+      - uses: actions/setup-python@v5 # 配置固定 Python 3.11 环境。
+        with: # 指定与正式基准一致的解释器版本。
+          python-version: '3.11' # 使用 Python 3.11。
+      - name: Compile numerical upper-bound implementation # 在安装真实求解器前检查脚本语法和已有基准导入。
+        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/run_numerical_only.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译全部本次会执行的 Python 模块。
+      - name: Install real solver dependencies # 安装真实 CalculiX 与已有基准导入所需数值依赖。
+        shell: bash # 使用 Bash 完成固定依赖安装。
+        run: | # 顺序安装 Python 和系统包。
+          set -euo pipefail # 任一依赖失败立即停止。
+          python -m pip install --upgrade pip --quiet # 更新 pip。
+          python -m pip install numpy matplotlib openai --quiet # 安装数组、绘图及 run.py 导入所需 API 包但本试验不发模型请求。
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装正式基准模块导入所需 CPU PyTorch。
+          sudo apt-get update -qq >/tmp/future-hit-upper-apt-update.log 2>&1 # 更新系统软件包索引并保留日志。
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-upper-apt-install.log 2>&1 # 安装真实 CalculiX 求解器。
+      - name: Locate CalculiX executable # 定位标准或版本化真实 ccx 命令。
+        id: solver # 保存路径供下一真实求解步骤使用。
+        shell: bash # 使用 Bash 完成可执行文件定位。
+        run: | # 尝试标准命令后回退到版本化路径。
+          set -euo pipefail # 找不到求解器立即停止。
+          CCX_BIN="$(command -v ccx || true)" # 首先搜索标准 ccx 命令。
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退查找版本化可执行文件。
+          test -x "$CCX_BIN" # 验证真实求解器可执行。
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 保存实际求解器路径。
+      - name: Run five-round Dörfler and future-hit macro upper bound # 直接测试完美未来命中深度能否减少真实 solve–mark–refine 轮次。
+        shell: bash # 使用 Bash 保存完整真实求解日志。
+        run: | # 清理旧输出后执行冻结数值协议。
+          set -euo pipefail # 任一真实求解或结果解析失败立即停止。
+          rm -rf experiments/future_hit_delegation/numerical_results # 删除旧数值上界结果避免缓存污染。
+          python experiments/future_hit_delegation/run_numerical_only.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/numerical_results --theta 0.50 --max-rounds 5 --max-corrections 2 2>&1 | tee /tmp/future-hit-upper.log # 执行经典反馈、future-hit oracle 和当前指标重投三条路线。
+      - name: Validate numerical compression contract # 检查上界实验确实比较真实 H、最终目标和相同资源约束。
+        shell: bash # 使用 Bash 启动只读机器结果检查。
+        run: | # 对 JSON 和 CSV 结果执行最小科学合同验证。
+          set -euo pipefail # 任一证据缺失立即停止。
+          python - <<'PY' # 使用内联 Python 检查三条路线。
+          import csv  # 读取方法级反馈压缩结果表。
+          from pathlib import Path  # 稳定定位快速实验结果目录。
+          root = Path('experiments/future_hit_delegation/numerical_results')  # 定义数值上界结果目录。
+          rows = list(csv.DictReader((root / 'summary.csv').open(encoding='utf-8')))  # 读取经典、oracle 和规则三条方法结果。
+          assert {row['method'] for row in rows} == {'dynamic_dorfler', 'oracle_future_hit_macro', 'current_evidence_rank_macro'}  # 验证三条预注册路线全部完成。
+          assert (root / 'results.json').is_file()  # 验证完整逐轮和逐区域结果存在。
+          PY
+      - name: Upload numerical upper-bound evidence # 保存快速真实 CalculiX 结果与日志供当前对话读取。
+        if: always() # 即使失败也保留可用诊断证据。
+        uses: actions/upload-artifact@v4 # 使用官方 Artifact 上传完整结果。
+        with: # 配置唯一制品名称和上传路径。
+          name: future-hit-numerical-upper-bound-evidence # 定义可区分 live LLM 运行的制品名称。
+          path: | # 上传结果目录、运行日志和安装日志。
+            experiments/future_hit_delegation/numerical_results/
+            /tmp/future-hit-upper.log
+            /tmp/future-hit-upper-apt-install.log
+          if-no-files-found: warn # 早期失败时仍保留诊断日志。
+          retention-days: 14 # 保留十四天供复核。
