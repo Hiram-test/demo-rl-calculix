@@ -1,104 +1,112 @@
 name: Future-hit resource delegation with live LLM # 定义当前热点证据到跨轮次资源重投的真实实验工作流。
-on: # 定义可信实验分支上的自动触发条件。
-  push: # 每次未来命中实验代码更新后自动启动真实 CalculiX 与模型调用。
-    branches: # 限制工作流只在独立 P-H 实验分支运行。
+on: # 定义可信实验分支和当前草稿 PR 的触发条件。
+  push: # 在独立实验分支直接更新代码时启动真实实验。
+    branches: # 限制 push 事件只来自当前 P-H 实验分支。
       - experiment/ph-routing-matrix # 指向当前论文方法实验分支。
-    paths: # 只监听本实验主体、启动器和工作流自身以避免结果提交循环。
-      - experiments/future_hit_delegation/run.py # 监听核心 Dörfler 轨迹与 LLM 资源重投程序。
-      - experiments/future_hit_delegation/launch.py # 监听稳定仓库模块启动器。
-      - .github/workflows/future-hit-delegation.yml # 监听工作流协议自身变化。
-  workflow_dispatch: # 允许后续从 GitHub 界面人工复跑相同冻结协议。
-permissions: # 定义本实验保存结果所需最小仓库权限。
-  contents: write # 允许成功运行后将机器可读结果提交回实验分支。
-concurrency: # 防止连续代码提交重复消耗真实模型和 FEA 预算。
-  group: future-hit-delegation-${{ github.ref }} # 按当前实验分支建立唯一并发组。
-  cancel-in-progress: true # 新实验提交出现时取消同分支仍在执行的旧运行。
-jobs: # 定义未来命中资源重投的唯一正式作业。
-  live-calculix: # 执行真实 CalculiX 基线、三次真实模型预测与物理审计。
-    runs-on: ubuntu-24.04 # 固定 Ubuntu 24.04 以复用已有 CalculiX 验证环境。
-    environment: ds # 复用仓库既有 DeepSeek 受保护凭据 Environment。
-    timeout-minutes: 90 # 限制真实求解和三次模型调用的总运行时间。
-    env: # 冻结无头绘图、线程数和模型配置。
-      MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端生成脚本图。
-      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发以提高重复性。
-      MKL_NUM_THREADS: '1' # 限制 MKL 并发以减少运行间数值波动。
-      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }} # 选择仓库历史兼容名称中的首个可用 DeepSeek 凭据。
-      DEEPSEEK_MODEL: deepseek-v4-pro # 与已有真实 DeepSeek 实验保持同一固定模型名称。
-    steps: # 定义从静态检查到真实结果冻结的顺序步骤。
-      - uses: actions/checkout@v4 # 检出触发本次实验的确切代码版本。
-        with: # 配置完整历史以便成功后提交结果。
-          fetch-depth: 0 # 获取完整 Git 历史支持结果回写。
-      - uses: actions/setup-python@v5 # 配置稳定 Python 运行环境。
-        with: # 指定仓库已有实验使用的解释器版本。
-          python-version: '3.11' # 使用 Python 3.11 执行数值与 API 程序。
-      - name: Compile future-hit implementation # 在安装与真实调用前先做 Python 语法检查。
-        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/launch.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译核心实验、启动器和已有正式基准脚本。
-      - name: Install numerical solver and model client # 安装真实 CalculiX、PyTorch、数组、绘图和 DeepSeek 兼容客户端。
-        shell: bash # 使用 Bash 执行固定依赖安装流程。
-        run: | # 顺序安装 Python 与系统级真实求解器依赖。
-          set -euo pipefail # 任一依赖安装失败立即停止本次实验。
-          python -m pip install --upgrade pip --quiet # 更新 pip 以避免旧解析器问题。
-          python -m pip install numpy matplotlib openai --quiet # 安装数组、脚本绘图与兼容 API 客户端。
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装正式基准导入所需 CPU PyTorch。
-          sudo apt-get update -qq >/tmp/future-hit-apt-update.log 2>&1 # 更新 Ubuntu 软件包索引并保留诊断日志。
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-apt-install.log 2>&1 # 安装真实 CalculiX 2.x 求解器并保留安装日志。
-      - name: Locate CalculiX executable # 定位 Ubuntu 包可能带版本后缀的真实 ccx 可执行文件。
-        id: solver # 保存求解器路径供真实实验步骤引用。
-        shell: bash # 使用 Bash 完成可执行文件定位与校验。
-        run: | # 依次尝试标准名称与版本化名称。
-          set -euo pipefail # 找不到真实求解器时立即停止实验。
-          CCX_BIN="$(command -v ccx || true)" # 首先检查标准 ccx 命令是否存在。
-          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 标准名称缺失时回退搜索版本化可执行文件。
-          test -x "$CCX_BIN" # 验证找到的 CalculiX 文件确实可执行。
-          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 将真实求解器路径写入后续步骤输出。
-          "$CCX_BIN" -v || true # 将 CalculiX 版本信息写入 Actions 日志用于复现。
-      - name: Confirm protected live-model credential # 在消耗任何模型调用前确认可信 Environment 已注入凭据。
-        run: test -n "$DEEPSEEK_API_KEY" # 仅检查凭据非空且绝不打印任何密钥内容。
-      - name: Run dynamic Dörfler and live future-hit delegation # 执行经典逐轮反馈、future-hit oracle、当前强度对照和三次真实 LLM 重投实验。
-        shell: bash # 使用 Bash 捕获完整实验日志并保持真实退出码。
-        run: | # 清理旧结果后运行冻结的有限视界实验协议。
-          set -euo pipefail # 任一真实求解、模型调用或后处理失败立即停止。
-          rm -rf experiments/future_hit_delegation/results # 清除历史结果以禁止跨运行缓存污染当前结论。
-          python experiments/future_hit_delegation/launch.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/results --theta 0.50 --max-rounds 5 --llm-trials 3 --max-corrections 2 2>&1 | tee /tmp/future-hit-delegation.log # 在相同粗网格和预算下执行五轮经典反馈目标与三次真实模型预测。
-      - name: Validate feedback-compression evidence contract # 检查实验是否真的输出动态轨迹、future-hit 标签、真实 LLM 预测和脚本图。
-        shell: bash # 使用 Bash 启动只读机器结果验证器。
-        run: | # 对结果 JSON 和 CSV 执行最小科学合同检查。
-          set -euo pipefail # 任一证据缺失立即拒绝发布本轮结果。
-          python - <<'PY' # 使用内联 Python 验证机器可读实验合同。
-          import json  # 读取完整未来命中实验结果 JSON。
-          from pathlib import Path  # 稳定定位本次冻结结果目录。
-          root = Path('experiments/future_hit_delegation/results')  # 定义本次真实实验结果根目录。
-          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取全部方法轨迹和真实模型响应。
-          methods = data['methods']  # 提取经典、oracle、规则和真实 LLM 方法列表。
-          assert methods[0]['method'] == 'dynamic_dorfler'  # 验证第一条方法确实是经典逐轮真实反馈基线。
-          assert len(methods[0]['future_hits']) == 16  # 验证十六个结构区域均有离线未来重复命中真值。
-          llm = [item for item in methods if item['method'].startswith('llm_future_hit_macro_')]  # 提取三次真实大模型资源重投结果。
-          assert len(llm) == 3  # 验证冻结协议完成三次独立真实模型调用。
-          assert all(len(item['prediction']) == 16 for item in llm)  # 验证每次模型都对全部结构区域给出累计资源深度。
-          assert (root / 'method_summary.csv').is_file()  # 验证反馈深度与最终误差方法汇总表存在。
-          assert (root / 'region_future_hits.csv').is_file()  # 验证当前热点、未来命中和预测区域配对表存在。
-          assert (root / 'objective_vs_feedback_depth.png').is_file()  # 验证 H—最终精度脚本图成功生成。
-          assert (root / 'future_hit_prediction.png').is_file()  # 验证 future-hit 深度预测脚本图成功生成。
+    paths: # 只监听实验主体、启动器和工作流自身避免结果提交循环。
+      - experiments/future_hit_delegation/run.py # 监听未来命中实验主体。
+      - experiments/future_hit_delegation/launch.py # 监听稳定模块启动器。
+      - .github/workflows/future-hit-delegation.yml # 监听工作流协议自身。
+  pull_request: # 让同仓库草稿 PR 暴露可读取的 Actions 运行、日志与 Artifact。
+    branches: # 只在当前实验 PR 的正式数值基线目标分支上运行。
+      - exp/cross-passage-torsion-five-methods # 对照 PR24 已验证的真实 CalculiX 基准分支。
+    paths: # 仅在当前实验实现变化时触发 PR 同步运行。
+      - experiments/future_hit_delegation/run.py # 监听未来命中实验主体。
+      - experiments/future_hit_delegation/launch.py # 监听稳定模块启动器。
+      - .github/workflows/future-hit-delegation.yml # 监听工作流协议自身。
+  workflow_dispatch: # 允许后续从 GitHub 界面人工复跑冻结协议。
+permissions: # 定义读取代码、上传制品和可信 push 结果回写所需权限。
+  contents: write # 允许 push 事件成功后将真实结果提交回实验分支。
+concurrency: # 防止同一 PR 或分支同时消耗重复模型与 FEA 预算。
+  group: future-hit-delegation-${{ github.event.pull_request.number || github.ref }} # 按 PR 号或分支引用建立唯一并发组。
+  cancel-in-progress: true # 新实验同步出现时取消仍在执行的旧运行。
+jobs: # 定义真实 CalculiX 与大模型实验作业。
+  live-calculix: # 执行经典 Dörfler 轨迹、三次模型预测、宏动作和物理审计。
+    runs-on: ubuntu-24.04 # 固定 Ubuntu 24.04 复用已有 CalculiX 验证环境。
+    environment: ds # 复用仓库既有 DeepSeek 受保护 Environment。
+    timeout-minutes: 90 # 限制数值求解和三次模型调用总时间。
+    env: # 冻结无头绘图、线性代数线程和模型配置。
+      MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端。
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发提高重复性。
+      MKL_NUM_THREADS: '1' # 限制 MKL 并发减少运行间波动。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }} # 从历史兼容名称中选择首个可用模型凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro # 与仓库已有真实模型实验保持相同固定模型名称。
+    steps: # 定义从代码检出到结果冻结的完整顺序。
+      - uses: actions/checkout@v4 # 检出当前 push 分支或 PR 真实头分支而不是合并测试引用。
+        with: # 配置实验代码来源与完整历史。
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }} # PR 时明确检出 experiment/ph-routing-matrix 头分支。
+          fetch-depth: 0 # 获取完整历史支持真实结果审计与 push 回写。
+      - uses: actions/setup-python@v5 # 配置稳定 Python 环境。
+        with: # 指定仓库已有数值实验使用的解释器版本。
+          python-version: '3.11' # 使用 Python 3.11。
+      - name: Compile future-hit implementation # 在安装与真实调用前检查 Python 语法。
+        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/launch.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译实验主体、启动器和正式基准。
+      - name: Install numerical solver and model client # 安装真实 CalculiX、PyTorch、NumPy、绘图和 API 客户端。
+        shell: bash # 使用 Bash 执行固定依赖安装。
+        run: | # 顺序安装 Python 与系统依赖。
+          set -euo pipefail # 任一安装错误立即停止。
+          python -m pip install --upgrade pip --quiet # 更新 pip 避免旧依赖解析问题。
+          python -m pip install numpy matplotlib openai --quiet # 安装数组、绘图和 DeepSeek 兼容客户端。
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装正式 GCN-DQN 基准模块导入所需 CPU PyTorch。
+          sudo apt-get update -qq >/tmp/future-hit-apt-update.log 2>&1 # 更新 Ubuntu 包索引并保留诊断日志。
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-apt-install.log 2>&1 # 安装真实 CalculiX 并保留安装日志。
+      - name: Locate CalculiX executable # 定位标准或版本化 ccx 可执行文件。
+        id: solver # 保存真实求解器路径供后续步骤使用。
+        shell: bash # 使用 Bash 完成定位和验证。
+        run: | # 依次尝试标准命令和版本化文件名。
+          set -euo pipefail # 找不到真实求解器时立即停止。
+          CCX_BIN="$(command -v ccx || true)" # 首先搜索标准 ccx 命令。
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退搜索版本后缀命令。
+          test -x "$CCX_BIN" # 验证求解器可执行。
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 保存求解器路径供实验步骤读取。
+          "$CCX_BIN" -v || true # 在日志记录 CalculiX 版本。
+      - name: Confirm protected live-model credential # 在任何模型调用前确认受保护凭据已注入。
+        run: test -n "$DEEPSEEK_API_KEY" # 只检查非空且绝不输出密钥内容。
+      - name: Run dynamic Dörfler and live future-hit delegation # 执行五轮动态反馈目标、future-hit oracle、当前强度对照和三次真实模型资源重投。
+        shell: bash # 使用 Bash 保留真实程序退出码和完整日志。
+        run: | # 清理历史结果后执行当前冻结实验协议。
+          set -euo pipefail # 任一求解、模型调用或后处理失败立即停止。
+          rm -rf experiments/future_hit_delegation/results # 删除旧结果避免历史缓存污染。
+          python experiments/future_hit_delegation/launch.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/results --theta 0.50 --max-rounds 5 --llm-trials 3 --max-corrections 2 2>&1 | tee /tmp/future-hit-delegation.log # 在相同粗网格、指标和最终资源上限下运行完整实验。
+      - name: Validate feedback-compression evidence contract # 验证动态轨迹、未来命中标签、三次模型预测和脚本图均存在。
+        shell: bash # 使用 Bash 调用只读结果检查器。
+        run: | # 对机器结果执行最小科学合同检查。
+          set -euo pipefail # 任一证据缺失立即拒绝本轮实验。
+          python - <<'PY' # 使用内联 Python 检查 JSON 和图文件。
+          import json  # 读取完整实验机器结果。
+          from pathlib import Path  # 稳定定位冻结结果目录。
+          root = Path('experiments/future_hit_delegation/results')  # 定义本轮真实实验结果目录。
+          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取全部方法轨迹与模型响应。
+          methods = data['methods']  # 提取经典、oracle、规则和大模型方法集合。
+          assert methods[0]['method'] == 'dynamic_dorfler'  # 验证经典逐轮真实反馈基线存在。
+          assert len(methods[0]['future_hits']) == 16  # 验证十六区域均有未来重复命中真值。
+          llm = [item for item in methods if item['method'].startswith('llm_future_hit_macro_')]  # 提取真实模型宏动作路线。
+          assert len(llm) == 3  # 验证三次独立模型调用均完成。
+          assert all(len(item['prediction']) == 16 for item in llm)  # 验证每次模型都覆盖全部区域资源深度。
+          assert (root / 'method_summary.csv').is_file()  # 验证方法级反馈节省表存在。
+          assert (root / 'region_future_hits.csv').is_file()  # 验证区域级当前证据与未来命中表存在。
+          assert (root / 'objective_vs_feedback_depth.png').is_file()  # 验证 H—最终质量脚本图存在。
+          assert (root / 'future_hit_prediction.png').is_file()  # 验证未来命中预测脚本图存在。
           PY
-      - name: Upload complete future-hit evidence # 无论成功或失败都保存当前真实数值与模型调用诊断。
-        if: always() # 确保模型或求解失败时仍可检查已生成证据。
-        uses: actions/upload-artifact@v4 # 使用官方 Artifact 保存完整结果目录和运行日志。
-        with: # 配置实验制品名称、路径和保留期限。
-          name: future-hit-resource-delegation-evidence # 使用明确名称区分旧 P-H Stage-0 结果。
-          path: | # 上传机器结果、脚本图、原始模型输出和依赖日志。
+      - name: Upload complete future-hit evidence # 无论成功失败都保存可用结果、脚本图与诊断日志。
+        if: always() # 确保任何失败都不会丢失已生成证据。
+        uses: actions/upload-artifact@v4 # 使用官方 Artifact 保存完整实验输出。
+        with: # 配置制品名称、路径和保留期限。
+          name: future-hit-resource-delegation-evidence # 使用唯一名称区分 Stage-0B 和旧实验。
+          path: | # 上传结果目录、真实运行日志和 CalculiX 安装日志。
             experiments/future_hit_delegation/results/
             /tmp/future-hit-delegation.log
             /tmp/future-hit-apt-install.log
-          if-no-files-found: warn # 在早期失败时保留可用日志而不隐藏故障。
-          retention-days: 14 # 保留两周供人工复核与下载。
-      - name: Commit successful real experiment results # 仅在全部合同通过后把真实结果冻结回当前实验分支。
-        if: success() # 防止失败或不完整结果被误认为正式证据。
-        shell: bash # 使用 Bash 执行可审计 Git 提交流程。
-        run: | # 只提交本实验生成的结果目录。
-          set -euo pipefail # 任一 Git 写入失败立即停止结果冻结。
-          git config user.name 'github-actions[bot]' # 设置 GitHub Actions 官方机器人提交身份。
+          if-no-files-found: warn # 早期失败时保留已有诊断信息。
+          retention-days: 14 # 保留完整证据十四天。
+      - name: Commit successful push-triggered results # 仅在可信 push 事件成功时把真实结果提交回分支。
+        if: success() && github.event_name == 'push' # PR 运行只上传 Artifact 以避免递归同步事件。
+        shell: bash # 使用 Bash 执行 Git 结果冻结。
+        run: | # 只提交当前实验结果目录。
+          set -euo pipefail # 任一 Git 写入失败立即停止。
+          git config user.name 'github-actions[bot]' # 设置官方机器人提交身份。
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com' # 设置机器人 noreply 邮箱。
-          git add experiments/future_hit_delegation/results # 仅暂存未来命中实验的真实输出证据。
-          if git diff --cached --quiet; then exit 0; fi # 若重复运行结果完全相同则避免创建空提交。
-          git commit -m 'results: record live future-hit delegation experiment' # 创建明确标识真实实验结果的提交。
-          git push origin HEAD:experiment/ph-routing-matrix # 将冻结结果推回当前 P-H 实验分支且不会重新触发本工作流。
+          git add experiments/future_hit_delegation/results # 仅暂存当前真实实验结果。
+          if git diff --cached --quiet; then exit 0; fi # 重复结果完全相同时跳过空提交。
+          git commit -m 'results: record live future-hit delegation experiment' # 创建清晰的真实实验结果提交。
+          git push origin HEAD:experiment/ph-routing-matrix # 推送回当前实验分支且结果路径不会重新触发工作流。
