@@ -1,35 +1,41 @@
-# 机制推理、热点分区与 P–H 路由：Skill 和实验 V2
+# 当前误差证据、跨轮次资源重投与 P–H 路由：Skill 和实验 V3
 
-## 科学问题
+## 1. 核心科学问题
 
-论文只解决四个卡点：LLM 如何在明确边界下融合理论推导和粗网格证据形成可证伪机制模型；如何对每条候选路线评估先验压缩 P、物理反馈 H、成功概率与尾部风险；如何从机制模型得到有限预算下真正值得共同干预、会被后续多轮持续命中的热点区域；动态 P–H 路由能否提高系统效率，并在机制偏移、证据退化和模型失配下可靠回退。Agent、MCP、消息传递和日志属于工程执行层。
+局部误差估计与 Dörfler marking 继续承担可靠的当前状态判断：它回答“这一轮哪里值得投入资源”。LLM 不重新发明误差估计器，也不以几何视觉替代数值热点；LLM 的主要任务是利用理论、粗网格解、当前 Dörfler 支持、任务 QoI 与跨问题先验，预测这些当前热点在后续自适应轨迹中是否会持续被命中、最终大约需要多少累计加密深度，并把原本分散在若干轮 `solve → estimate → mark → refine` 中的资源提前委派为区域级 macro-action。本文真正检验的是：在相同当前局部误差证据下，先验驱动的资源重投能否用更少真实 FEA 反馈达到相近的最终精度—资源状态，同时在先验错误时通过审计、刷新与回退维持可靠性。
 
-## 核心 Skill 链
+## 2. 人工智力过程的可执行化
 
-`compile_task_contract → derive_theory_evidence + extract_coarse_evidence → infer_mechanism_graph → assess_ph → select_hotspot_partition → route_by_ph → execute_regional_method → audit_execution → calibrate_ph_gap`
+人工专家的功能过程被写成：`粗网格真实求解 → 当前局部误差与 Dörfler 支持 → 将离散标记聚合为共同干预区域 → 判断热点持续性与未来重复命中次数 → 估计累计资源深度 → 选择一次性重投或设置中间审计点 → 执行真实 FEA → 刷新误差支持 → 修正持续性模型或停止`。LLM 只承担持续性、机制归因、累计动作结构和反馈购买策略；PSO、MILP、动态规划或 DQN 负责区域内部的数值定解；有限元求解器和后验估计器负责最终裁决。
 
-`derive_theory_evidence` 把解析解、局部渐近展开、奇异阶、尺度律、能量估计或伴随敏感性转成具有假设、空间签名、动作响应、适用域和证伪条件的结构化证据；`extract_coarse_evidence` 从共同粗网格 FEA 提取 Dörfler 支持、指标密度、恢复梯度、QoI 影响、网格质量和粗网格分辨率警告；`infer_mechanism_graph` 融合两类证据，输出区域、误差成因链、竞争机制、未来持续性、允许动作、响应模型结构、置信区间和最小辨识探针，任何区域都必须绑定数值证据和证伪条件，几何显著性不能单独通过证据门。
+## 3. 核心 Skill 链
 
-`assess_ph` 对 `DM_D`、`DM_PSO`、`DM_DQN`、`LM_D`、`LM_PSO`、`LM_DQN`、`SL_ONE_SHOT` 分别输出四维 P 分量、预计 H、N_FE、W_phys、成功概率和区间。P 不等于模型规模，采用 `P_support=1-K/N`、`P_action=1-log(1+n_candidate_hat)/log(1+A_retained)`、`P_trajectory=max(0,1-H_hat/H_ref)`、`P_solve=max(0,1-N_FE_hat/N_FE_ref)`；绘图投影固定为 `P_plot=1-[(1-P_support)(1-P_action)(1-P_trajectory)(1-P_solve)]^(1/4)`，路由仍读取完整向量。H 正式记录 `(H_seq,N_FE,W_phys)`，二维图纵轴只使用 `H_plot=min(H_seq/H_cap,1)`，点大小显示 N_FE 或 W_phys，避免把大量 PSO 并行求解隐藏在低顺序深度内。
+`compile_task_contract → solve_coarse_and_mark → aggregate_current_support → derive_mechanism_evidence → predict_future_hits_and_depth → assess_ph → delegate_resources → execute_and_audit → refresh_support_or_stop → calibrate_ph_gap`
 
-`select_hotspot_partition` 同时输出 Dörfler marking 数值分区、LLM 机制分区和证据门控融合分区。热点真值不能只等同当前 Dörfler 集合，使用当前指标高值区、长程动态 AFEM 的未来重复命中区、预算内离散 oracle 或局部灵敏度边际收益区并行审计。`route_by_ph` 在成功概率、H、资源、Skill 适用域和 CVaR 约束下选择路线；所有高压缩路线不满足约束时必须回退动态 Dörfler。`audit_execution` 从完整执行轨迹重新计算 P_exec 和 H_exec，发生回退时按各路线实际物理工作加权 P，累加 H 和 N_FE；输出 ΔP、ΔH、PH 欧氏差距、反馈低估、过度压缩和回退建议。`calibrate_ph_gap` 按方法、机制、QoI、预算和 OOD 类型学习偏差与置信区间，下一批路由使用校准后的保守 P/H，而非继续相信未经校准的 LLM 评估。
+`solve_coarse_and_mark` 在共同初始网格上完成真实 FEA，计算局部指标并生成当前 Dörfler 支持；`aggregate_current_support` 将离散标记按连通性、尺度和共同作用机制聚合为少量资源区域，但不得删除未被解释的高指标单元；`derive_mechanism_evidence` 利用局部正则性、奇异阶、材料/界面尺度、边界层宽度、QoI 敏感性或粗网格场演化，给出为什么某一区域可能持续被命中的可证伪解释；`predict_future_hits_and_depth` 对每个当前资源区域输出未来命中次数分布、累计加密深度区间、区域扩张概率、预计收益饱和点、置信度与中间审计需求；`delegate_resources` 将预测转换成深加密、浅加密、保持、背景粗化或两阶段 macro-action；`execute_and_audit` 比较预测误差下降、实际误差下降、热点迁移和资源增长；`refresh_support_or_stop` 在真实证据显示出现新热点、原热点消失或重投过深时重新计算 Dörfler 支持；`calibrate_ph_gap` 使用执行轨迹校正下一批任务的 P、H 与失效风险评估。
 
-## 实验块
+## 4. 边界与限制门
 
-E1 机制证据实验比较 G 几何文本、T 理论证据、C 粗网格证据、TC 理论加粗网格、TC-no-gate 无限制门五种条件。评价机制 macro-F1、区域 IoU、未来持续热点召回、诱饵误报、动作响应排序相关、Brier/ECE、区间覆盖和超域 abstain；TC 至少在机制分类、未来热点或动作响应中的两个指标显著优于 G，才能支持机制推理主张。
+LLM 不允许仅凭“孔、圆角、高应力颜色”直接宣告持续热点，不允许直接给出未经计算的精确尺寸，也不允许绕过当前局部误差证据。每个资源重投建议必须绑定当前 Dörfler 支持、理论或粗网格机制证据、未来响应假设和证伪条件。当前支持不足以覆盖未来轨迹时，系统必须保留中间真实 FEA 审计，不能把高 P 当作无条件 one-shot。限制门包括任务完整性门、当前证据门、理论适用域门、未来热点可辨识门、数值定解门、过度重投风险门、新热点发现门和物理验收门。
 
-E2 PH 评估实验在执行前对每个任务和路线冻结 PHAssessment，执行后从轨迹重算 PH，逐算例记录 ΔP、ΔH、Gap、H 低估率、P 高估率、回退率和额外物理工作；比较未校准方法卡、偏差校准、保守分位校准和在线批次更新。核心检验是校准后 routing regret、高压缩失败率和 H 低估率是否下降。
+## 5. 方法池
 
-E3 热点分区实验形成 `partition source × executor` 两因素设计：DPartition、LPartition、FusedPartition 分别连接 Dörfler、PSO、DQN。报告当前支持召回、未来重复命中区召回、边际收益加权召回、支持大小、诱饵资源浪费、同预算误差、E–C Pareto 距离和达到容限所需 H；使用混合模型检验分区主效应、执行器主效应及交互。
+固定方法池采用：`DORFLER_H2` 与 `DORFLER_H3`，代表相同 Dörfler 规则在两次或三次有限反馈下的经典基线；`INDICATOR_DELEGATE`，仅依据当前指标强度把多轮动作提前合并；`LLM_DELEGATE`，依据冻结机制合同预测当前热点的累计加密深度并一次重投；`LLM_DELEGATE_GUARDED`，在高风险任务上重投后回退到一次动态 Dörfler 校正；`LLM_TWO_STAGE`，先对当前持续热点重投，再用一次真实 FEA 刷新 Dörfler 支持并处理后来显现的热点；`D_SUPPORT_PSO`，在相同当前 Dörfler 支持内由 PSO 搜索区域深度；`LLM_PSO`，以 LLM 预测深度为搜索中心进行低维 PSO 定解；`D_SUPPORT_DQN` 与 `LLM_DQN` 将在现有 GCN-DQN 接口中分别使用纯数值支持和机制重投支持；`SL_ONE_SHOT` 代表高 P 终态预测；`PH_ROUTER` 根据校准后的成功概率、P、H、N_FE、W_phys、风险和剩余预算选择路线。
 
-E4 动态路由实验比较固定 DM_D、固定最高 P、固定验证集最优、简单阈值路由、无 PH 校准 LLM 路由、完整校准路由和逐实例 oracle。成功判据预先固定：总体和 OOD 成功率不得比最可靠固定路线低超过 2 个百分点；成功样本中中位 H 或 W_phys 至少一个相对 DM_D 降低 20%；routing regret 中位数接近零且 90% 分位受控；高 P 失败时完整系统的检测和回退恢复率显著提高。
+## 6. 两个必要 Oracle
 
-E5 鲁棒性实验从主测试库分层抽取 120 例，每例加入六类单因素扰动：粗网格变化、指标噪声/漏报、LLM 漏热点或诱饵区、理论 Skill 超域、DQN/监督模型 OOD、PSO 预算截断或求解器/网格失败，共 720 个鲁棒性任务。报告错误路线率、错误接受率、失效检测率、回退率、恢复率、额外 H/N_FE/W_phys 和 CVaR90/95。
+`ORACLE_CURRENT_SUPPORT` 使用长程动态 Dörfler 的真实未来命中次数，但只能在第一次粗网格得到的当前支持内分配深度，用于测量“只解决重投多少”能够达到的理论上限；`ORACLE_FULL_TRAJECTORY` 同时知道后续轮次中新出现的热点和最终区域深度，用于测量完整轨迹压缩上限。两者之间的差距直接量化“初始热点深度预测”和“后来热点发现”各自贡献多少，因此能够判断 LLM 是否可以完全 one-shot，还是必须保留少量物理刷新。
 
-## 算例库
+## 7. 主要评价量
 
-二维 CalculiX 主库为 720 例：10 个机制家族×6 个几何实例×2 个载荷×2 个 QoI×3 个预算。前八个单机制家族的实例 0–2 用于训练，实例 3 用于验证，实例 4–5 用于参数外推测试；各向异性家族全部作为新机制测试，mixed_shift 全部作为组合机制 OOD 测试。三维迁移库为 96 例：6 个结构模板×4 个参数实例×2 个载荷×2 个预算。PSO 五个种子，DQN 五个独立训练种子，监督模型三个训练种子；120 个高歧义任务采用至少三个 LLM、每个模型五次调用。
+核心结果不以当前热点 IoU 为主，而报告达到 `E≤ε` 且 `C≤B` 所需的最小 H、相同 H 下的误差与 Pareto 距离、成功率、`success | reference-feasible`、累计真实 FEA 次数 N_FE、物理工作 W_phys、最终资源、未来命中次数 MAE/校准、预测累计深度与长程 AFEM 累计深度偏差、成功样本节省轮次、重投过深率、新热点漏检率、回退率和 CVaR。PH 图中空心点为执行前评估，实心点为实际执行，箭头表示 P/H 偏差，点大小表示 N_FE 或 W_phys。
 
-## 输出与主图
+## 8. Stage-0B 已启动结果
 
-每个任务输出 TaskContract、TheoryEvidence、CoarseEvidence、MechanismGraph、PHAssessment、Partitions、RouteDecision、ExecutionTrace、ExecutionAudit 和求解器收据。聚合输出 `ph_gap_case.csv` 与 `ph_gap_aggregate.csv`。主图中空心点是执行前评估 PH，实心点是实际执行 PH，箭头表示偏差，误差条表示跨算例/种子置信区间，点大小表示在线真实 FEA 调用，颜色表示方法家族，虚线是由实际执行点拟合的 P–H 描述性下降趋势。图形同时输出 PNG 和 PDF；差距图是校准工具，不只是示意图。
+已在 384 个参数化一维变系数椭圆有限元任务上完成三算法种子运行，严格使用同一物理测试集；测试集 174 例，其中 139 例可由长程动态 Dörfler 在给定资源上限内达到误差容限。`DORFLER_H2` 总体成功率为 0.310、条件成功率为 0.388、平均 H 为 1.83；`DORFLER_H3` 为 0.431、0.540、H=2.52；`INDICATOR_DELEGATE` 为 0.299、0.353、H=2.00；`LLM_DELEGATE` 为 0.351、0.417、H=2.00；`LLM_TWO_STAGE` 达到 0.678、0.791、H=2.64，并在成功样本中相对长程动态 Dörfler平均节省 0.62 轮；`SL_ONE_SHOT` 为 0.477、0.583、H=2.00；`ORACLE_CURRENT_SUPPORT` 的条件成功率只有 0.583，而 `ORACLE_FULL_TRAJECTORY` 达到 1.000。该差距表明只把初始 Dörfler 热点加得更深具有明确上限，后来显现的热点使至少一次真实物理刷新具有结构性必要；当前最有价值的路线是“机制重投 + 一次支持刷新”，而不是无审计 one-shot。
+
+当前 PH 路由器仅达到约 0.444 总体成功率并过度调用 PSO，保留为负结果；下一步必须把 N_FE、W_phys、后来热点风险和 PH 评估偏差直接纳入路线价值模型。Stage-0B 使用冻结机制合同验证算法结构，不构成在线 LLM 推理能力的最终证据，DQN 和真实二维/三维 CalculiX 矩阵仍需接入。
+
+## 9. 正式实验推进顺序
+
+先在现有 Stage-0B 中完成 D_SUPPORT_DQN、LLM_DQN 和保守 PH 路由校准；随后迁移到二维板孔、L 形域、界面、边界层、多热点、诱饵 QoI 与复合机制 CalculiX 参数化库；最后在桥梁三维构件上验证 transfer。每个阶段都先比较相同当前 Dörfler 支持下的“一级逐轮投入、指标重投、机制重投、PSO/DQN 数值定解”，再检验动态 P–H 路由，避免把收益错误归因于重新寻找热点。
