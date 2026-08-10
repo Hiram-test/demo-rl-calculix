@@ -9,6 +9,7 @@ from typing import Any  # 为模型 JSON 稀疏动作提供通用类型注解。
 import numpy as np  # 处理区域优先级、邻接关系和资源重投向量。
 from openai import OpenAI  # 通过 OpenAI 兼容接口调用真实 DeepSeek 服务。
 ROOT = Path(__file__).resolve().parents[2]  # 从当前实验目录返回仓库根目录。
+PROTOCOL_VERSION = "sparse-delegation-v1"  # 冻结稀疏机制委派接口版本并触发已注册 Actions 工作流。
 sys.path.insert(0, str(ROOT))  # 允许稳定导入已有真实 CalculiX 横向通道基准与 future-hit 工具函数。
 from experiments.cross_passage_torsion_benchmark import run_benchmark as base_module  # 导入 PR24 已验证的真实 CalculiX 横向通道实现。
 from experiments.future_hit_delegation import run as core  # 导入动态 Dörfler、宏动作执行和轨迹评价函数。
