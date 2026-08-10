@@ -1,0 +1,90 @@
+name: Future-hit live LLM quick test # 定义单次真实模型 future-hit 资源重投快速实验。
+on: # 定义当前 P-H 实验 PR 与分支触发条件。
+  push: # 在快速真实模型脚本或工作流变化时运行。
+    branches: # 限制 push 只来自当前实验分支。
+      - experiment/ph-routing-matrix # 指向当前论文方法分支。
+    paths: # 只监听快速真实模型实验相关文件。
+      - experiments/future_hit_delegation/run_live_quick.py # 监听单次真实模型 future-hit 脚本。
+      - .github/workflows/future-hit-live-quick.yml # 监听快速工作流自身。
+  pull_request: # 让草稿 PR 暴露可读取的状态、日志与 Artifact。
+    branches: # 只对当前正式 CalculiX 基线目标分支运行。
+      - exp/cross-passage-torsion-five-methods # 指向 PR24 已验证基线。
+    paths: # 仅在快速真实模型协议变化时触发。
+      - experiments/future_hit_delegation/run_live_quick.py # 监听单次模型脚本。
+      - .github/workflows/future-hit-live-quick.yml # 监听工作流自身。
+  workflow_dispatch: # 允许后续人工复跑同一冻结实验。
+permissions: # 定义读取代码和上传制品所需权限。
+  contents: read # 快速实验不自动回写结果以避免递归事件。
+concurrency: # 防止同一 PR 重复消耗模型预算。
+  group: future-hit-live-quick-${{ github.event.pull_request.number || github.ref }} # 按 PR 或分支建立唯一并发组。
+  cancel-in-progress: true # 新提交出现时取消旧快速模型运行。
+jobs: # 定义唯一真实模型与 CalculiX 作业。
+  quick-live: # 执行动态 Dörfler、一次真实模型预测和物理审计。
+    runs-on: ubuntu-24.04 # 固定与正式数值基准一致的 Ubuntu 环境。
+    environment: ds # 复用仓库既有 DeepSeek 受保护 Environment。
+    timeout-minutes: 30 # 将单次模型和少量真实求解总时间限制在三十分钟内。
+    env: # 冻结模型、绘图和线性代数环境。
+      MPLBACKEND: Agg # 强制 Matplotlib 无头模式兼容已有基准导入。
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发提高复现性。
+      MKL_NUM_THREADS: '1' # 限制 MKL 并发减少数值波动。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }} # 从受保护 Environment 中选择首个可用真实模型凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro # 与仓库既有真实模型实验保持同一模型名称。
+    steps: # 定义代码检出、依赖安装、真实运行和制品上传过程。
+      - uses: actions/checkout@v4 # 检出当前 push 或 PR 真实头分支。
+        with: # 配置实验代码来源。
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }} # PR 时明确读取 experiment/ph-routing-matrix。
+      - uses: actions/setup-python@v5 # 配置固定 Python 3.11 环境。
+        with: # 指定解释器版本。
+          python-version: '3.11' # 使用 Python 3.11。
+      - name: Compile quick live experiment # 在安装与真实调用前检查脚本语法。
+        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/run_live_quick.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译当前会执行的全部模块。
+      - name: Install solver and API dependencies # 安装真实 CalculiX、PyTorch、数值库与模型客户端。
+        shell: bash # 使用 Bash 完成固定依赖安装。
+        run: | # 顺序安装 Python 和系统包。
+          set -euo pipefail # 任一安装失败立即停止。
+          python -m pip install --upgrade pip --quiet # 更新 pip。
+          python -m pip install numpy matplotlib openai --quiet # 安装数组、绘图和真实模型兼容客户端。
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装已有正式基准导入所需 CPU PyTorch。
+          sudo apt-get update -qq >/tmp/future-hit-quick-apt-update.log 2>&1 # 更新系统软件包索引并保存日志。
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-quick-apt-install.log 2>&1 # 安装真实 CalculiX 求解器。
+      - name: Locate CalculiX executable # 定位标准或版本化 ccx 路径。
+        id: solver # 保存求解器路径供真实实验使用。
+        shell: bash # 使用 Bash 定位可执行文件。
+        run: | # 先查标准命令再回退版本化路径。
+          set -euo pipefail # 找不到求解器时立即停止。
+          CCX_BIN="$(command -v ccx || true)" # 首先搜索标准 ccx 命令。
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退搜索版本化文件名。
+          test -x "$CCX_BIN" # 验证真实求解器可执行。
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 保存实际 CalculiX 路径。
+      - name: Confirm protected model credential # 在任何模型调用前确认受保护凭据非空。
+        run: test -n "$DEEPSEEK_API_KEY" # 只检查凭据存在且绝不打印内容。
+      - name: Run one-call live future-hit delegation # 用45秒API硬超时执行一次真实模型资源重投和真实 CalculiX 审计。
+        shell: bash # 使用 Bash 保存完整 stdout 和 stderr。
+        run: | # 清理旧结果后执行冻结快速协议。
+          set -euo pipefail # 任一真实求解、模型调用或结果解析失败立即停止。
+          rm -rf experiments/future_hit_delegation/quick_live_results # 删除旧快速模型结果避免污染。
+          python experiments/future_hit_delegation/run_live_quick.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/quick_live_results --theta 0.50 --max-rounds 5 2>&1 | tee /tmp/future-hit-live-quick.log # 执行动态轨迹、一次真实模型预测、宏动作和最多两次物理纠错。
+      - name: Validate quick live evidence # 检查真实模型输出、机器结果和 future-hit 指标存在。
+        shell: bash # 使用 Bash 启动只读结果验证。
+        run: | # 对快速结果执行最小科学合同检查。
+          set -euo pipefail # 任一证据缺失立即拒绝本轮实验。
+          python - <<'PY' # 使用内联 Python 检查结果结构。
+          import json  # 读取快速真实模型机器结果。
+          from pathlib import Path  # 稳定定位结果目录。
+          root = Path('experiments/future_hit_delegation/quick_live_results')  # 定义单次真实模型实验结果目录。
+          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取真实模型执行与动态基线结果。
+          assert len(data['prediction']) == 16  # 验证模型对全部结构区域给出资源重投深度。
+          assert (root / 'raw_llm_response.txt').is_file()  # 验证未经改写的真实模型响应被保存。
+          assert (root / 'evidence_packet.json').is_file()  # 验证发送给模型的无标签在线证据包被保存。
+          PY
+      - name: Upload quick live evidence # 无论成功失败都保存真实模型与 CalculiX 证据。
+        if: always() # 确保失败时仍保留可用日志和部分结果。
+        uses: actions/upload-artifact@v4 # 使用官方 Artifact 上传完整快速实验制品。
+        with: # 配置唯一制品名称和上传路径。
+          name: future-hit-live-quick-evidence # 定义单次真实模型制品名称。
+          path: | # 上传机器结果、原始模型响应、真实运行日志和安装日志。
+            experiments/future_hit_delegation/quick_live_results/
+            /tmp/future-hit-live-quick.log
+            /tmp/future-hit-quick-apt-install.log
+          if-no-files-found: warn # 早期失败时仍保留诊断信息。
+          retention-days: 14 # 保留十四天供复核。
