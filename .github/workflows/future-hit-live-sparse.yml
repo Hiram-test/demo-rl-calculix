@@ -1,0 +1,91 @@
+name: Future-hit sparse live LLM delegation # 定义稀疏机制委派—确定性编译—真实 CalculiX 审计快速实验。
+on: # 定义当前实验分支和草稿 PR 的触发条件。
+  push: # 在稀疏真实模型实现或工作流变化时自动运行。
+    branches: # 限制只在当前 P-H 实验分支执行。
+      - experiment/ph-routing-matrix # 指向当前论文方法分支。
+    paths: # 只监听稀疏实验主体和工作流自身。
+      - experiments/future_hit_delegation/run_live_sparse.py # 监听稀疏 LLM 机制委派脚本。
+      - .github/workflows/future-hit-live-sparse.yml # 监听工作流协议自身。
+  pull_request: # 让当前草稿 PR 暴露可读取的 Actions 状态、日志和 Artifact。
+    branches: # 对照 PR24 的真实 CalculiX 数值基线分支运行。
+      - exp/cross-passage-torsion-five-methods # 指向当前 PR 的正式基线目标。
+    paths: # 仅在稀疏实验协议变化时触发 PR 运行。
+      - experiments/future_hit_delegation/run_live_sparse.py # 监听稀疏委派实现。
+      - .github/workflows/future-hit-live-sparse.yml # 监听工作流自身。
+  workflow_dispatch: # 允许后续人工复跑同一冻结稀疏协议。
+permissions: # 定义只读代码和 Artifact 上传所需最小权限。
+  contents: read # 快速真实模型实验不自动回写结果。
+concurrency: # 防止同一 PR 同时消耗重复真实模型预算。
+  group: future-hit-live-sparse-${{ github.event.pull_request.number || github.ref }} # 按 PR 或分支建立唯一并发组。
+  cancel-in-progress: true # 新提交出现时取消旧稀疏实验。
+jobs: # 定义唯一稀疏真实模型与 CalculiX 作业。
+  sparse-live: # 执行动态 Dörfler、一次稀疏机制委派、确定性编译与物理审计。
+    runs-on: ubuntu-24.04 # 固定与正式横向通道实验一致的 Ubuntu 环境。
+    environment: ds # 复用仓库已有 DeepSeek 受保护 Environment。
+    timeout-minutes: 30 # 将单次模型调用与少量真实求解限制在三十分钟内。
+    env: # 冻结模型、绘图和线性代数运行条件。
+      MPLBACKEND: Agg # 强制 Matplotlib 使用无头后端兼容已有基准导入。
+      OMP_NUM_THREADS: '1' # 限制 OpenMP 并发提高复现性。
+      MKL_NUM_THREADS: '1' # 限制 MKL 并发减少数值波动。
+      DEEPSEEK_API_KEY: ${{ secrets.D || secrets.DEEPSEEK_API_KEY || secrets.DEEPSEEK_KEY || secrets.DEEPSEEK || secrets.API_KEY || secrets.API || secrets.KEY || secrets.TOKEN || secrets.DS || secrets.DS_KEY || secrets.DS_API_KEY || vars.D || vars.DEEPSEEK_API_KEY || vars.DEEPSEEK_KEY || vars.DEEPSEEK || vars.API_KEY || vars.API || vars.KEY || vars.TOKEN || vars.DS || vars.DS_KEY || vars.DS_API_KEY }} # 从受保护 Environment 中选择首个可用真实模型凭据。
+      DEEPSEEK_MODEL: deepseek-v4-pro # 与仓库既有真实模型实验保持同一模型名称。
+    steps: # 定义代码检出、依赖安装、真实运行与制品上传流程。
+      - uses: actions/checkout@v4 # 检出当前 push 或 PR 真实头分支代码。
+        with: # 配置实际实验代码来源。
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }} # PR 时明确读取 experiment/ph-routing-matrix 头分支。
+      - uses: actions/setup-python@v5 # 配置固定 Python 环境。
+        with: # 指定仓库已有实验使用的解释器版本。
+          python-version: '3.11' # 使用 Python 3.11。
+      - name: Compile sparse live experiment # 在安装和真实调用前检查实验代码语法。
+        run: python -m py_compile experiments/future_hit_delegation/run.py experiments/future_hit_delegation/run_live_sparse.py experiments/cross_passage_torsion_benchmark/run_benchmark.py # 编译本轮会执行的全部 Python 模块。
+      - name: Install solver and API dependencies # 安装真实 CalculiX、PyTorch、数值库和模型客户端。
+        shell: bash # 使用 Bash 完成固定依赖安装。
+        run: | # 顺序安装 Python 和系统依赖。
+          set -euo pipefail # 任一安装失败立即停止。
+          python -m pip install --upgrade pip --quiet # 更新 pip。
+          python -m pip install numpy matplotlib openai --quiet # 安装数组、绘图和 DeepSeek 兼容客户端。
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --quiet # 安装已有正式基准导入所需 CPU PyTorch。
+          sudo apt-get update -qq >/tmp/future-hit-sparse-apt-update.log 2>&1 # 更新 Ubuntu 软件包索引并保存日志。
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx >/tmp/future-hit-sparse-apt-install.log 2>&1 # 安装真实 CalculiX 求解器。
+      - name: Locate CalculiX executable # 定位标准或版本化真实 ccx 可执行文件。
+        id: solver # 保存求解器路径供真实实验步骤引用。
+        shell: bash # 使用 Bash 完成可执行文件定位。
+        run: | # 先查标准命令再回退版本化文件。
+          set -euo pipefail # 找不到求解器时立即停止。
+          CCX_BIN="$(command -v ccx || true)" # 首先搜索标准 ccx 命令。
+          if [[ -z "$CCX_BIN" ]]; then CCX_BIN="$(find /usr/bin -maxdepth 1 -type f -name 'ccx*' | sort | head -n 1)"; fi # 回退搜索带版本后缀的 ccx 文件。
+          test -x "$CCX_BIN" # 验证真实求解器可执行。
+          echo "ccx=$CCX_BIN" >> "$GITHUB_OUTPUT" # 保存实际 CalculiX 路径供后续步骤使用。
+      - name: Confirm protected model credential # 在任何模型调用前确认受保护凭据已注入。
+        run: test -n "$DEEPSEEK_API_KEY" # 仅检查凭据非空且绝不输出其内容。
+      - name: Run sparse mechanism delegation and physical audit # 仅让大模型选择少量持续热点及深度，再由确定性 compiler 扩展为完整动作。
+        shell: bash # 使用 Bash 保存真实实验完整 stdout 与 stderr。
+        run: | # 清理旧结果后执行冻结稀疏委派协议。
+          set -euo pipefail # 任一真实求解、模型调用或 compiler 验证失败立即停止。
+          rm -rf experiments/future_hit_delegation/sparse_live_results # 删除旧结果避免历史状态污染。
+          python experiments/future_hit_delegation/run_live_sparse.py --ccx '${{ steps.solver.outputs.ccx }}' --output experiments/future_hit_delegation/sparse_live_results --theta 0.50 --max-rounds 5 2>&1 | tee /tmp/future-hit-live-sparse.log # 执行动态轨迹、稀疏 LLM 委派、完整动作编译和真实物理审计。
+      - name: Validate sparse live evidence # 检查真实模型原始响应、紧凑证据包、编译后动作和最终物理结果存在。
+        shell: bash # 使用 Bash 启动只读结果验证。
+        run: | # 对机器结果执行最小科学合同检查。
+          set -euo pipefail # 任一证据缺失立即拒绝本轮实验。
+          python - <<'PY' # 使用内联 Python 检查结果结构。
+          import json  # 读取机器可读稀疏真实模型结果。
+          from pathlib import Path  # 稳定定位结果目录。
+          root = Path('experiments/future_hit_delegation/sparse_live_results')  # 定义稀疏真实模型实验结果目录。
+          data = json.loads((root / 'results.json').read_text(encoding='utf-8'))  # 读取编译后资源动作与真实物理执行结果。
+          assert len(data['prediction']) == 16  # 验证确定性 compiler 已生成完整十六区域动作。
+          assert data['compiled_from_sparse'] is True  # 验证动作确实来自稀疏模型委派而非直接逐区域填表。
+          assert (root / 'raw_llm_response.txt').is_file()  # 验证未经改写的真实模型输出被保留。
+          assert (root / 'compact_evidence_packet.json').is_file()  # 验证实际发送的紧凑无标签证据包被保留。
+          PY
+      - name: Upload sparse live evidence # 无论成功失败都保存模型、compiler 和 CalculiX 证据。
+        if: always() # 确保失败时仍保留可用原始响应与数值日志。
+        uses: actions/upload-artifact@v4 # 使用官方 Artifact 上传完整稀疏实验制品。
+        with: # 配置唯一制品名称与上传路径。
+          name: future-hit-live-sparse-evidence # 定义当前稀疏真实模型制品名称。
+          path: | # 上传结果目录、真实实验日志和依赖安装日志。
+            experiments/future_hit_delegation/sparse_live_results/
+            /tmp/future-hit-live-sparse.log
+            /tmp/future-hit-sparse-apt-install.log
+          if-no-files-found: warn # 早期失败时仍保存可用诊断信息。
+          retention-days: 14 # 保留十四天供复核。
