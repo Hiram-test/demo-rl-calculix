@@ -1,0 +1,39 @@
+name: PH gap report  # 定义 GitHub Actions 工作流显示名称
+on:  # 定义工作流触发条件
+  workflow_dispatch: {}  # 允许从 Actions 页面手动运行完整验证
+  push:  # 在相关文件被推送时自动验证
+    paths:  # 仅监听 PH 路由实验目录相关文件
+      - "experiments/ph_routing_matrix/**"  # 监听方法协议、脚本、清单和结果模板变化
+jobs:  # 定义工作流包含的作业
+  validate-and-plot:  # 定义脚本验证和图形生成作业
+    runs-on: ubuntu-24.04  # 使用固定 Ubuntu 版本保证环境可复现
+    steps:  # 定义作业顺序执行步骤
+      - uses: actions/checkout@v4  # 检出当前分支完整仓库内容
+      - uses: actions/setup-python@v5  # 安装固定 Python 运行环境
+        with:  # 配置 Python 版本参数
+          python-version: "3.11"  # 使用稳定 Python 3.11 执行实验脚本
+      - name: Install plotting dependencies  # 安装数值和绘图依赖
+        run: python -m pip install --upgrade pip numpy matplotlib  # 安装脚本所需最小依赖
+      - name: Compile commented Python scripts  # 检查全部 Python 文件语法
+        run: python -m py_compile experiments/ph_routing_matrix/scripts/*.py  # 编译脚本并在语法错误时失败
+      - name: Verify every non-empty Python line has a comment  # 执行用户要求的逐行注释检查
+        run: |  # 使用多行 shell 脚本遍历 Python 文件
+          for file in experiments/ph_routing_matrix/scripts/*.py; do  # 遍历全部实验 Python 文件
+            if awk 'NF && index($0,"#")==0 {print FNR ":" $0; bad=1} END {exit bad}' "$file"; then  # 检查每个非空行是否包含注释符号
+              echo "comment check passed: $file"  # 输出当前文件通过注释检查
+            else  # 处理发现无注释代码行的情况
+              echo "comment check failed: $file"  # 输出失败文件并终止工作流
+              exit 1  # 使用非零状态阻止未注释代码进入实验分支
+            fi  # 结束当前文件检查条件
+          done  # 结束全部 Python 文件遍历
+      - name: Generate the 720-case manifest  # 生成预注册二维主实验算例清单
+        run: python experiments/ph_routing_matrix/scripts/generate_case_manifest_v2.py --output experiments/ph_routing_matrix/generated/case_manifest_v2.csv  # 运行算例生成器并触发数量与泄漏硬验证
+      - name: Generate assessed-versus-executed PH figure  # 从提交的 Stage-0 聚合数据生成脚本图
+        run: python experiments/ph_routing_matrix/scripts/plot_ph_assessed_vs_executed.py --input experiments/ph_routing_matrix/results/ph_gap_aggregate_stage0.csv --output-png experiments/ph_routing_matrix/generated/ph_assessed_vs_executed_stage0.png --output-pdf experiments/ph_routing_matrix/generated/ph_assessed_vs_executed_stage0.pdf  # 输出 PNG 和矢量 PDF
+      - uses: actions/upload-artifact@v4  # 上传清单和图形供审计与下载
+        with:  # 配置上传工件参数
+          name: ph-routing-v2-design-evidence  # 定义可识别的工作流工件名称
+          path: |  # 指定需要上传的生成文件
+            experiments/ph_routing_matrix/generated/case_manifest_v2.csv  # 上传七百二十算例清单
+            experiments/ph_routing_matrix/generated/ph_assessed_vs_executed_stage0.png  # 上传脚本生成的高分辨率 PNG
+            experiments/ph_routing_matrix/generated/ph_assessed_vs_executed_stage0.pdf  # 上传脚本生成的矢量 PDF
