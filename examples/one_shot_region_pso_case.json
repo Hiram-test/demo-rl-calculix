@@ -1,0 +1,104 @@
+{
+  "background_error": 0.03,
+  "background_resource": 70.0,
+  "targets": {
+    "error_limit": 0.105,
+    "resource_budget": 194.0
+  },
+  "config": {
+    "pso_generations": 2,
+    "random_seed": 17,
+    "pso_scale_radius": 0.02,
+    "pso_transfer_radius": 0.03
+  },
+  "regions": [
+    {
+      "region_id": "R1",
+      "reference_size": 1.4,
+      "delegated_size": 0.95,
+      "minimum_size": 0.65,
+      "maximum_size": 1.8,
+      "reference_error": 0.04,
+      "reference_resource": 18.0,
+      "error_order": 1.8,
+      "resource_dimension": 2.0,
+      "target_error": 0.02,
+      "target_resource": 38.0,
+      "confidence": 0.95,
+      "neighbors": [
+        "R2"
+      ]
+    },
+    {
+      "region_id": "R2",
+      "reference_size": 1.5,
+      "delegated_size": 1.05,
+      "minimum_size": 0.7,
+      "maximum_size": 2.0,
+      "reference_error": 0.032,
+      "reference_resource": 16.0,
+      "error_order": 1.7,
+      "resource_dimension": 2.0,
+      "target_error": 0.018,
+      "target_resource": 30.0,
+      "confidence": 0.9,
+      "neighbors": [
+        "R1",
+        "R3"
+      ]
+    },
+    {
+      "region_id": "R3",
+      "reference_size": 1.7,
+      "delegated_size": 1.2,
+      "minimum_size": 0.8,
+      "maximum_size": 2.3,
+      "reference_error": 0.024,
+      "reference_resource": 14.0,
+      "error_order": 1.6,
+      "resource_dimension": 2.0,
+      "target_error": 0.016,
+      "target_resource": 24.0,
+      "confidence": 0.85,
+      "neighbors": [
+        "R2",
+        "R4"
+      ]
+    },
+    {
+      "region_id": "R4",
+      "reference_size": 1.9,
+      "delegated_size": 1.45,
+      "minimum_size": 0.95,
+      "maximum_size": 2.6,
+      "reference_error": 0.016,
+      "reference_resource": 12.0,
+      "error_order": 1.5,
+      "resource_dimension": 2.0,
+      "target_error": 0.012,
+      "target_resource": 18.0,
+      "confidence": 0.85,
+      "neighbors": [
+        "R3",
+        "R5"
+      ]
+    },
+    {
+      "region_id": "R5",
+      "reference_size": 2.1,
+      "delegated_size": 1.75,
+      "minimum_size": 1.1,
+      "maximum_size": 3.0,
+      "reference_error": 0.01,
+      "reference_resource": 10.0,
+      "error_order": 1.4,
+      "resource_dimension": 2.0,
+      "target_error": 0.009,
+      "target_resource": 14.0,
+      "confidence": 0.8,
+      "neighbors": [
+        "R4"
+      ]
+    }
+  ]
+}
