@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "beam_id": "G01",
+  "indicator": "zz",
+  "stop": "hard_cap",
+  "n_refines": 1,
+  "uz_ref": -3.9674027272727272,
+  "atom": "gmsh conformal remesh, per-element Ball+Min size field",
+  "not": [
+    "X0-X5",
+    "split_x_stations",
+    "hanging 8-split",
+    "six-zone"
+  ],
+  "cycles": [
+    {
+      "cycle": 0,
+      "kind": "c3d8",
+      "element_type": "C3D8",
+      "N": 2592,
+      "e_u": 0.1609537084371434,
+      "n_el": 540,
+      "n_nodes": 912,
+      "n_marked": 33,
+      "mean_tip_uz": -3.328834545454545,
+      "success": true
+    },
+    {
+      "cycle": 1,
+      "kind": "c3d10",
+      "element_type": "C3D10",
+      "N": 6150,
+      "e_u": 0.0092366359214169,
+      "n_el": 957,
+      "n_nodes": 2097,
+      "n_marked": 74,
+      "mean_tip_uz": -4.004048181818182,
+      "success": true
+    }
+  ]
+}

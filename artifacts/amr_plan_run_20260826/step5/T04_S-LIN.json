@@ -1,0 +1,241 @@
+{
+  "beam_id": "T04",
+  "case_id": "S-LIN",
+  "vector": [
+    [
+      "clamp_face",
+      40.0,
+      42.0
+    ],
+    [
+      "flange_web_junction",
+      120.0,
+      50.0
+    ],
+    [
+      "midspan_web",
+      1000.0,
+      58.0
+    ],
+    [
+      "tip_flange_load",
+      1960.0,
+      64.0
+    ]
+  ],
+  "revise": {
+    "eta_sum": 184192356182.21344,
+    "voronoi_error": {
+      "clamp_face": 836240798.8782085,
+      "flange_web_junction": 25283894808.351654,
+      "midspan_web": 38777789685.146706,
+      "tip_flange_load": 119294430889.83688
+    },
+    "voronoi_background": 0.0,
+    "voronoi_resource": {
+      "clamp_face": 60.0,
+      "flange_web_junction": 270.0,
+      "midspan_web": 480.0,
+      "tip_flange_load": 270.0
+    },
+    "lengths": {
+      "clamp_face": 80.0,
+      "flange_web_junction": 480.0,
+      "midspan_web": 920.0,
+      "tip_flange_load": 520.0
+    },
+    "rev1_sizes": {
+      "clamp_face": 54.899945875786344,
+      "flange_web_junction": 50.49895908967126,
+      "midspan_web": 64.60363330079278,
+      "tip_flange_load": 47.412366123629944
+    },
+    "pso_sizes": {
+      "clamp_face": 52.74728820748966,
+      "flange_web_junction": 48.51886658154136,
+      "midspan_web": 62.07048860627104,
+      "tip_flange_load": 45.55330065680702
+    },
+    "s": -0.04,
+    "kappa": 0.0,
+    "fitness_base": 5.495741985536253,
+    "fitness_pso": 2.648343201382234,
+    "pso_extra_evaluations": 9
+  },
+  "N": {
+    "delegated": 5184,
+    "rev1": 5184,
+    "pso": 5328
+  },
+  "N_distinct": false,
+  "stages": {
+    "delegated": {
+      "job_name": "t04_s-lin_delegated",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 0.137265510042198,
+      "note": "ran",
+      "n_equations": 5184,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated/t04_s-lin_delegated.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated/t04_s-lin_delegated.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated/t04_s-lin_delegated.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated/t04_s-lin_delegated.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_delegated/t04_s-lin_delegated.ccx.log",
+      "sha256": {
+        "inp": "45190a55942e9b57ac6952265cb5ce08f13e6d03978805ca5f6c27563b52f1d0",
+        "frd": "3fa5569b1d1c744740040c70d2df5a10f9d6489357965689895a20754dccbe4b",
+        "sta": "01e324ec0ea28f4d1fd7f5e2da1277af53812b873e218be1604c17a4c8e4990d",
+        "cvg": "65086dedb4572132b815ace04b294909c7f6f337111f9704fc310b02320f67f7"
+      },
+      "mean_tip_uz": -3.696644545454545,
+      "peak_abs_tip_uz": null,
+      "allse": 9241.608090582,
+      "rf": {
+        "n": 48,
+        "RF1": -0.02442000000155531,
+        "RF2": -4.1317321120004635e-07,
+        "RF3": 5000.002759999994
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 5.519999987882329e-07,
+      "rf_expected": 5000.0,
+      "n_disp_nodes": 1776,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t04_s-lin_delegated",
+        "beam_id": "T04",
+        "case_id": "S-LIN",
+        "element_type": "C3D8",
+        "n_nodes": 1776,
+        "n_elements": 1080,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -5000.0,
+        "estimated_equations": 5184,
+        "physics": "s_lin"
+      },
+      "beam_id": "T04",
+      "case_id": "S-LIN",
+      "n_hex": 1080,
+      "n_nodes": 1776,
+      "n_x_cells": 36,
+      "force_n": -5000.0,
+      "volume_mm3": 16508193.403877469,
+      "e_u": 0.05012066475288087
+    },
+    "rev1": {
+      "job_name": "t04_s-lin_rev1",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 0.12210666795726866,
+      "note": "ran",
+      "n_equations": 5184,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1/t04_s-lin_rev1.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1/t04_s-lin_rev1.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1/t04_s-lin_rev1.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1/t04_s-lin_rev1.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_rev1/t04_s-lin_rev1.ccx.log",
+      "sha256": {
+        "inp": "9b1d0fc988018aedbcee4737a37f8232fd61017af28b97539b4136f29ee9b14f",
+        "frd": "d995e5804daf49786b80c94ec0a07b20a1fcd3d55194c074df269bf75adf860b",
+        "sta": "01e324ec0ea28f4d1fd7f5e2da1277af53812b873e218be1604c17a4c8e4990d",
+        "cvg": "65086dedb4572132b815ace04b294909c7f6f337111f9704fc310b02320f67f7"
+      },
+      "mean_tip_uz": -3.611494545454546,
+      "peak_abs_tip_uz": null,
+      "allse": 9028.737577644,
+      "rf": {
+        "n": 48,
+        "RF1": -0.005899999976463732,
+        "RF2": 3.2151547202374786e-07,
+        "RF3": 4999.9938999999995
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 1.2200000001030275e-06,
+      "rf_expected": 5000.0,
+      "n_disp_nodes": 1776,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t04_s-lin_rev1",
+        "beam_id": "T04",
+        "case_id": "S-LIN",
+        "element_type": "C3D8",
+        "n_nodes": 1776,
+        "n_elements": 1080,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -5000.0,
+        "estimated_equations": 5184,
+        "physics": "s_lin"
+      },
+      "beam_id": "T04",
+      "case_id": "S-LIN",
+      "n_hex": 1080,
+      "n_nodes": 1776,
+      "n_x_cells": 36,
+      "force_n": -5000.0,
+      "volume_mm3": 16508112.463563269,
+      "e_u": 0.07200056810895158
+    },
+    "pso": {
+      "job_name": "t04_s-lin_pso",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 0.1291573730413802,
+      "note": "ran",
+      "n_equations": 5328,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso/t04_s-lin_pso.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso/t04_s-lin_pso.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso/t04_s-lin_pso.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso/t04_s-lin_pso.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t04_s-lin_pso/t04_s-lin_pso.ccx.log",
+      "sha256": {
+        "inp": "d54453dc6eb1b5f30a4803c4b53fffcf3ecd6e65e1fe29f1b58d1caa20561f8b",
+        "frd": "9ca383bba2c50bc712b79179e8c3f421cd8ffefb5eb1374db1f8ab0a8471d4c7",
+        "sta": "01e324ec0ea28f4d1fd7f5e2da1277af53812b873e218be1604c17a4c8e4990d",
+        "cvg": "65086dedb4572132b815ace04b294909c7f6f337111f9704fc310b02320f67f7"
+      },
+      "mean_tip_uz": -3.6326009090909093,
+      "peak_abs_tip_uz": null,
+      "allse": 9081.50424112,
+      "rf": {
+        "n": 48,
+        "RF1": 0.009999999977480911,
+        "RF2": -9.06479726836551e-08,
+        "RF3": 5000.0017
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 3.3999999996012775e-07,
+      "rf_expected": 5000.0,
+      "n_disp_nodes": 1824,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t04_s-lin_pso",
+        "beam_id": "T04",
+        "case_id": "S-LIN",
+        "element_type": "C3D8",
+        "n_nodes": 1824,
+        "n_elements": 1110,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -5000.0,
+        "estimated_equations": 5328,
+        "physics": "s_lin"
+      },
+      "beam_id": "T04",
+      "case_id": "S-LIN",
+      "n_hex": 1110,
+      "n_nodes": 1824,
+      "n_x_cells": 37,
+      "force_n": -5000.0,
+      "volume_mm3": 16508287.45369153,
+      "e_u": 0.06657713655802124
+    }
+  },
+  "s": -0.04,
+  "kappa": 0.0,
+  "ok": true
+}

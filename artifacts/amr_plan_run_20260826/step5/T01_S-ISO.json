@@ -1,0 +1,251 @@
+{
+  "beam_id": "T01",
+  "case_id": "S-ISO",
+  "vector": [
+    [
+      "clamp_face",
+      40.0,
+      36.0
+    ],
+    [
+      "root_soffit_haunch",
+      50.0,
+      48.0
+    ],
+    [
+      "plastic_root_web",
+      80.0,
+      40.0
+    ],
+    [
+      "flange_web_junction",
+      120.0,
+      52.0
+    ],
+    [
+      "tip_flange_load",
+      1960.0,
+      68.0
+    ]
+  ],
+  "revise": {
+    "eta_sum": 179018846986.1822,
+    "voronoi_error": {
+      "clamp_face": 83144254.92170973,
+      "root_soffit_haunch": 80137367.4266843,
+      "plastic_root_web": 65717717.16962589,
+      "flange_web_junction": 16014160562.700293,
+      "tip_flange_load": 162775687083.96393
+    },
+    "voronoi_background": 0.0,
+    "voronoi_resource": {
+      "clamp_face": 30.0,
+      "root_soffit_haunch": 30.0,
+      "plastic_root_web": 30.0,
+      "flange_web_junction": 510.0,
+      "tip_flange_load": 450.0
+    },
+    "lengths": {
+      "clamp_face": 45.0,
+      "root_soffit_haunch": 20.0,
+      "plastic_root_web": 35.0,
+      "flange_web_junction": 940.0,
+      "tip_flange_load": 960.0
+    },
+    "rev1_sizes": {
+      "clamp_face": 48.594917072736116,
+      "root_soffit_haunch": 64.79322276364815,
+      "plastic_root_web": 53.99435230304013,
+      "flange_web_junction": 62.227174135712474,
+      "tip_flange_load": 50.37563900635681
+    },
+    "pso_sizes": {
+      "clamp_face": 48.10255322907865,
+      "root_soffit_haunch": 64.14415380539866,
+      "plastic_root_web": 53.48675686212691,
+      "flange_web_junction": 61.129124789980736,
+      "tip_flange_load": 49.10851690160895
+    },
+    "s": -0.021559786981873722,
+    "kappa": 0.012114420840634656,
+    "fitness_base": 0.3634908890375937,
+    "fitness_pso": 0.10129511210716496,
+    "pso_extra_evaluations": 9
+  },
+  "N": {
+    "delegated": 5040,
+    "rev1": 5184,
+    "pso": 5328
+  },
+  "N_distinct": true,
+  "stages": {
+    "delegated": {
+      "job_name": "t01_s-iso_delegated",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 3.043318090029061,
+      "note": "ran",
+      "n_equations": 5040,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated/t01_s-iso_delegated.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated/t01_s-iso_delegated.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated/t01_s-iso_delegated.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated/t01_s-iso_delegated.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_delegated/t01_s-iso_delegated.ccx.log",
+      "sha256": {
+        "inp": "1adfed336bda03f5860f6ef02adf9d14a591170f9f77b5734a1de37e670f50c9",
+        "frd": "abb5ed1c0d00e9aa7048e7904db71e13dc2d4f30a803472d39c7f63dee67b566",
+        "sta": "b8990acd30cdf78ec73de3a1e55ee21c355d51ca67dadd07b70d8d44a0a3ffc5",
+        "cvg": "f7287164f8c683bc461f9c7228e2fb58bf27b51f6257a5e087a5551e3e993462"
+      },
+      "mean_tip_uz": -22.274445454545454,
+      "peak_abs_tip_uz": null,
+      "allse": 1022.65385334,
+      "rf": {
+        "n": 48,
+        "RF1": 0.01400000001740409,
+        "RF2": 4.934008757118136e-09,
+        "RF3": 39550.49854
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 3.691483039397949e-08,
+      "rf_expected": 39550.5,
+      "n_disp_nodes": 1728,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t01_s-iso_delegated",
+        "beam_id": "T01",
+        "case_id": "S-ISO",
+        "element_type": "C3D8",
+        "n_nodes": 1728,
+        "n_elements": 1050,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -39550.5,
+        "estimated_equations": 5040,
+        "physics": "s_iso"
+      },
+      "beam_id": "T01",
+      "case_id": "S-ISO",
+      "n_hex": 1050,
+      "n_nodes": 1728,
+      "n_x_cells": 35,
+      "force_n": -39550.5,
+      "volume_mm3": 15199999.999999985,
+      "e_u": null
+    },
+    "rev1": {
+      "job_name": "t01_s-iso_rev1",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 3.0797312999493442,
+      "note": "ran",
+      "n_equations": 5184,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1/t01_s-iso_rev1.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1/t01_s-iso_rev1.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1/t01_s-iso_rev1.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1/t01_s-iso_rev1.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_rev1/t01_s-iso_rev1.ccx.log",
+      "sha256": {
+        "inp": "b6dd9793f43fcec6279010713cfc99b9cfb1b7875d02560b3cd273671e55aa2a",
+        "frd": "8fc2cec4f5dc0b94a0c2a3fb0167f86c5d35ce52c77017fc914e7f5717d066e3",
+        "sta": "70afcd0453b16e0b6875319749015f26d33f074af58e026828b316a5044c77e6",
+        "cvg": "74f5740f440b0e5a38d3a9585c032b5096c03ac386ef06bb55e2252e4de9581a"
+      },
+      "mean_tip_uz": -22.164972727272726,
+      "peak_abs_tip_uz": null,
+      "allse": 1022.76589775,
+      "rf": {
+        "n": 48,
+        "RF1": -0.02200000009179348,
+        "RF2": 7.308699423447251e-09,
+        "RF3": 39550.51809999999
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 4.5764276018227214e-07,
+      "rf_expected": 39550.5,
+      "n_disp_nodes": 1776,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t01_s-iso_rev1",
+        "beam_id": "T01",
+        "case_id": "S-ISO",
+        "element_type": "C3D8",
+        "n_nodes": 1776,
+        "n_elements": 1080,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -39550.5,
+        "estimated_equations": 5184,
+        "physics": "s_iso"
+      },
+      "beam_id": "T01",
+      "case_id": "S-ISO",
+      "n_hex": 1080,
+      "n_nodes": 1776,
+      "n_x_cells": 36,
+      "force_n": -39550.5,
+      "volume_mm3": 15199999.999999983,
+      "e_u": null
+    },
+    "pso": {
+      "job_name": "t01_s-iso_pso",
+      "job_dir": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso",
+      "success": true,
+      "exit_code": 0,
+      "wall_seconds": 3.296232600987423,
+      "note": "ran",
+      "n_equations": 5328,
+      "frd": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso/t01_s-iso_pso.frd",
+      "sta": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso/t01_s-iso_pso.sta",
+      "dat": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso/t01_s-iso_pso.dat",
+      "cvg": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso/t01_s-iso_pso.cvg",
+      "log": "/workspace/demo-rl-calculix-tbeam/artifacts/amr_plan_run/step5/t01_s-iso_pso/t01_s-iso_pso.ccx.log",
+      "sha256": {
+        "inp": "31a86abefbe5721e42478ab7f1eaa95da288c5c91eabc090f0a17f64637d606d",
+        "frd": "2213cd6eeb06c6bddf6a98b80350a57fb7ef8f5b7c1d6ed539edf866aff9de9b",
+        "sta": "70afcd0453b16e0b6875319749015f26d33f074af58e026828b316a5044c77e6",
+        "cvg": "bacc90f05436b28be4f744084a2f5dc70b29d36152c64d05bd219ae257758034"
+      },
+      "mean_tip_uz": -22.226972727272727,
+      "peak_abs_tip_uz": null,
+      "allse": 1024.5642192044,
+      "rf": {
+        "n": 48,
+        "RF1": -0.000999999969280907,
+        "RF2": -1.5963451005518436e-08,
+        "RF3": 39550.479000000014
+      },
+      "rf_balance_ok": true,
+      "rf_rel": 5.309667383746949e-07,
+      "rf_expected": 39550.5,
+      "n_disp_nodes": 1824,
+      "disp_path_note": "last FRD frame; dynamics also store peak",
+      "meta": {
+        "job_name": "t01_s-iso_pso",
+        "beam_id": "T01",
+        "case_id": "S-ISO",
+        "element_type": "C3D8",
+        "n_nodes": 1824,
+        "n_elements": 1110,
+        "n_clamp": 48,
+        "n_tip_top": 11,
+        "force_n": -39550.5,
+        "estimated_equations": 5328,
+        "physics": "s_iso"
+      },
+      "beam_id": "T01",
+      "case_id": "S-ISO",
+      "n_hex": 1110,
+      "n_nodes": 1824,
+      "n_x_cells": 37,
+      "force_n": -39550.5,
+      "volume_mm3": 15199999.999999985,
+      "e_u": null
+    }
+  },
+  "s": -0.021559786981873722,
+  "kappa": 0.012114420840634656,
+  "ok": true
+}

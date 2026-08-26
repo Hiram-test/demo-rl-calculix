@@ -1,0 +1,136 @@
+{
+  "conformal": [
+    {
+      "name": "clamp_web",
+      "eid": 2,
+      "centroid": [
+        55.55555555555556,
+        -5.0,
+        42.0
+      ],
+      "n_patch": 5,
+      "coarse_potential": 599.5769889767118,
+      "coarse_allse": 599.5769889767118,
+      "inproc_allse_c3d8": 599.5769889767118,
+      "allse_rel": 0.0,
+      "p_n_free": 9,
+      "p_delta_E": 1.354677496426234,
+      "p_finite": true,
+      "h_inproc_delta_E": 0.9050624927109538,
+      "h_ccx": {
+        "success": true,
+        "potential": 598.6719957823381,
+        "allse": 598.6719957823381,
+        "n_free": 9,
+        "note": "ok"
+      },
+      "h_rel": 1.1575343035019202e-07
+    },
+    {
+      "name": "reentrant",
+      "eid": 49,
+      "centroid": [
+        166.66666666666666,
+        -5.0,
+        145.0
+      ],
+      "n_patch": 7,
+      "coarse_potential": 63.66806720470554,
+      "coarse_allse": 63.66806720470554,
+      "inproc_allse_c3d8": 63.66806720470554,
+      "allse_rel": 0.0,
+      "p_n_free": 13,
+      "p_delta_E": 0.25601506650682637,
+      "p_finite": true,
+      "h_inproc_delta_E": 0.15876233565625597,
+      "h_ccx": {
+        "success": true,
+        "potential": 63.509133356242536,
+        "allse": 63.509133356242536,
+        "n_free": 13,
+        "note": "ok"
+      },
+      "h_rel": 2.7006006487677293e-06
+    },
+    {
+      "name": "midspan",
+      "eid": 243,
+      "centroid": [
+        944.4444444444443,
+        -5.0,
+        70.0
+      ],
+      "n_patch": 6,
+      "coarse_potential": 115.05301060741232,
+      "coarse_allse": 115.05301060741232,
+      "inproc_allse_c3d8": 115.05301060741232,
+      "allse_rel": 0.0,
+      "p_n_free": 11,
+      "p_delta_E": 0.3023109972640725,
+      "p_finite": true,
+      "h_inproc_delta_E": 0.1827699940860299,
+      "h_ccx": {
+        "success": true,
+        "potential": 114.86450257789306,
+        "allse": 114.86450257789306,
+        "n_free": 11,
+        "note": "ok"
+      },
+      "h_rel": 4.9954818977552526e-05
+    },
+    {
+      "name": "tip_flange",
+      "eid": 532,
+      "centroid": [
+        1944.4444444444443,
+        5.0,
+        155.0
+      ],
+      "n_patch": 5,
+      "coarse_potential": -6035.7326891042585,
+      "coarse_allse": 3.9536745321049995,
+      "inproc_allse_c3d8": 3.9536745321049995,
+      "allse_rel": 0.0,
+      "p_n_free": 9,
+      "p_delta_E": 0.19642519439548778,
+      "p_finite": true,
+      "h_inproc_delta_E": 0.12049246743117692,
+      "h_ccx": {
+        "success": true,
+        "potential": 3.835315797899992,
+        "allse": 3.835315797899992,
+        "n_free": 9,
+        "note": "ok"
+      },
+      "h_rel": 1574.7565039302867
+    }
+  ],
+  "hanging": {
+    "success": true,
+    "note": "ran",
+    "eid": 19,
+    "n_hanging_face_neighbours": 4,
+    "patch": [
+      5,
+      17,
+      19,
+      20,
+      21,
+      49,
+      50,
+      51,
+      52
+    ],
+    "p_n_free": 18,
+    "p_potential": 50.533266153277516,
+    "h_potential": 50.63065706178605,
+    "p_finite": true,
+    "h_finite": true
+  },
+  "seeds": {
+    "clamp_web": 2,
+    "reentrant": 49,
+    "midspan": 243,
+    "tip_flange": 532
+  }
+}
