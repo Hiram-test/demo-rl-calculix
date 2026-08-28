@@ -242,6 +242,18 @@ def test_a2prime_discloses_dorfler_budget_and_learned_columns():
             assert row[k]["dorfler_n"] is not None
 
 
+def test_e1_does_not_claim_v2_lp_is_monotonic():
+    """Honesty lock: v2 7-solve LP also rebounds; do not call it 单调."""
+
+    from pathlib import Path
+
+    from visionamr.report import build_all_tables, render_results_md
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "report.py").read_text()
+    assert "单调进平台" not in src
+    assert "单调进平台" not in render_results_md(build_all_tables())
+
+
 def test_ood_samplers_draw_outside_training_support():
     """E3 validity: every OOD parameter must sit outside the sampler range."""
 

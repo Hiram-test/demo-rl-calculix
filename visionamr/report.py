@@ -901,8 +901,8 @@ def render_results_md(tables: dict) -> str:
         lines += [
             "### E1 局部预测·朴素部署振荡（§3.3.1 失稳模式复现）",
             "",
-            "同一逐单元预测循环，改用文献朴素配方：指数 p=1、粗化界放宽到 [1/6, 3.0]",
-            "（v2 锁定值为 p=(d+2)/2、粗化界 1.8）。",
+            "同一逐单元预测循环，改用文献朴素配方：指数 p=1、尺寸比界 [1/6, 3.0]",
+            "（v2 锁定值为 p=(d+2)/2、尺寸比界 [1/6, 1.8]）。",
             "",
             "| family | solve | N | N/B | e_E |",
             "|---|---:|---:|---:|---:|",
@@ -913,15 +913,19 @@ def render_results_md(tables: dict) -> str:
                     f"| {fam} | {r['solve']} | {r['n_eq']} | "
                     f"{_fmt(r['frac'], 2)} | {_fmt(r['e_energy'])} |"
                 )
+        v2diag = tables.get("lp_rounds_diag") or {}
         for fam, info in naive.items():
             deg = info.get("rel_degradation_after_best")
+            v2_deg = (v2diag.get(fam) or {}).get("rel_degradation_after_best")
             lines.append("")
             lines.append(
                 f"- {fam}：最优 e={_fmt(info.get('e_best'))}（第 {info.get('k_best')} 次），"
                 f"末轮 e={_fmt(info.get('e_final'))}，最优后恶化 "
                 f"{_fmt(100 * deg if deg is not None else None, 1)}%；"
                 f"回弹：{'是' if info.get('uptick_after_best') else '否'}。"
-                "对照：v2 修正版（上节）单调进平台。"
+                f"对照：v2 修正版（上节）最优后恶化 "
+                f"{_fmt(100 * v2_deg if v2_deg is not None else None, 1)}%"
+                f"{'（亦有回弹）' if (v2diag.get(fam) or {}).get('uptick_after_best') else ''}。"
             )
         lines.append("")
     dev = tables.get("budget_deviation") or {}
