@@ -461,13 +461,15 @@ def _rim_mean_h(problem, mesh, band: float) -> float | None:
 def run_failure_probe_families(families=FP_FAMILIES, keys=FP_KEYS) -> None:
     """Weakness evidence on purpose-built families.
 
-    The hole/opening exists on the drawing but is barely resolved on the
-    h0 probe, so an element-wise indicator under-flags its rim (LP
-    blindness); the parent-family supervised model never saw the feature
-    (topology-level distribution shift).  All three deployments run on
-    the same instances; the VLA scripted head gets the rim only through
-    its structural anchor.  Parent models are deployed as-is: no
-    retraining, that is the point.
+    The hole/opening is on the drawing but barely present in the h0
+    probe indicator (rim η² share of a few percent).  A one-shot map
+    from that probe cannot invent rim grading; capacity on the parent
+    measure does not create the missing information.  Covering the new
+    topology in the expert bank would mean running Dörfler-to-cap on it
+    first — the oracle is the baseline being replaced.  Parent models
+    are frozen to isolate the deploy-time bottleneck, not to claim a
+    network cannot learn holes.  VLA sees the rim through the drawing
+    anchor, not a larger bank.
     """
 
     from .baselines.supervised import SizeMLP, SupervisedConfig, deploy_supervised

@@ -254,6 +254,26 @@ def test_e1_does_not_claim_v2_lp_is_monotonic():
     assert "单调进平台" not in render_results_md(build_all_tables())
 
 
+def test_supervised_weakness_is_not_unseen_coverage():
+    """Honesty lock: infinite supervised would swallow unseen-topology coverage.
+
+    The scientific contradiction is label circularity (experts are Dörfler)
+    plus deploy-time probe blindness — not 'the model never saw this hole'.
+    """
+
+    from pathlib import Path
+
+    from visionamr.report import build_all_tables, render_results_md
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "report.py").read_text()
+    md = render_results_md(build_all_tables())
+    for text in (src, md):
+        assert "这正是要测的" not in text
+        assert "标签预言机" in text
+        assert "一步回归发明不了" in text or "一步回归从这根探针发明不了" in text
+        assert "不是「没见过的孔所以监督差」" in text or "禁止把「未见拓扑 / 冻结母族」写成科学结论" in text
+
+
 def test_ood_samplers_draw_outside_training_support():
     """E3 validity: every OOD parameter must sit outside the sampler range."""
 
