@@ -169,6 +169,7 @@ def test_eye_vs_lp_script_is_one_step_and_not_old_a2prime():
     assert "e_qoi" in src
     assert "n_over_budget" in src
     assert "drawing_rank" in src
+    assert "scale_drawings_to_elem_budget" not in src
     assert "max-solves\", type=int, default=2" in src or "default=2" in src
 
 

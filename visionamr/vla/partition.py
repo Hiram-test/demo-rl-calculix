@@ -103,16 +103,20 @@ class ScriptedVisionPartitioner:
             used.add(name)
             view = view_for_feature(f, problem)
             rad = max(float(f.r), 0.05 * diam) * 1.4
-            frac = self._drawing_frac(f)
+            grade = self._kind_grade(f)
+            from .grades import prior_h
+
             drawings.append(
                 halo_drawing(
-                    name, f.xyz, float(frac * problem.h0), problem,
-                    view=view, radius=rad,
+                    name, f.xyz, prior_h(grade, problem.h0), problem,
+                    view=view, radius=rad, grade=grade,
                 )
             )
             seed_pts.append(f.xyz)
 
-        field_h = float(self.h_remainder * problem.h0)
+        from .grades import prior_h
+
+        field_h = prior_h(5, problem.h0)
         field_pt = _bbox_center(problem)
         seeds = [
             Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings
@@ -120,33 +124,30 @@ class ScriptedVisionPartitioner:
         seeds.append(Seed("field", field_pt, field_h, origin="coarse"))
         if not drawings:
             drawings = [
-                halo_drawing("field", np.array(field_pt), field_h, problem, origin="coarse")
+                halo_drawing(
+                    "field", np.array(field_pt), field_h, problem,
+                    origin="coarse", grade=5,
+                )
             ]
             seeds = [Seed("field", field_pt, field_h, origin="coarse")]
         self.last_drawings = drawings
-        from .grades import grade_from_frac
-
         self.last_grades = {
-            d.name: (d.grade if d.grade is not None else grade_from_frac(d.h / problem.h0))
-            for d in drawings
+            d.name: (d.grade if d.grade is not None else 4) for d in drawings
         }
-        self.last_grades["field"] = grade_from_frac(self.h_remainder)
+        self.last_grades["field"] = 5
         return seeds
 
-    def _drawing_frac(self, feature) -> float:
-        """Size from the drawing: kind + edge vs center.  Not a solved field."""
+    def _kind_grade(self, feature) -> int:
+        """Judge coarseness from the drawing, not a size."""
 
-        lo, hi = self.h_remainder, self.h_remainder
-        for name, a, b in self.kind_frac:
-            if name == feature.kind:
-                lo, hi = float(a), float(b)
-                break
         tag = feature.name.lower()
-        if any(w in tag for w in ("edge", "rim", "corner")):
-            return lo
-        if "center" in tag:
-            return hi
-        return 0.5 * (lo + hi)
+        if feature.kind == "load" or any(w in tag for w in ("edge", "rim", "corner")):
+            return 1
+        if feature.kind == "hole":
+            return 2
+        if feature.kind in ("support", "clamp"):
+            return 3
+        return 4
 
     @staticmethod
     def _name(problem: Problem, pt: np.ndarray, rank: int, used: set[str]) -> str:

@@ -269,7 +269,7 @@ def test_pipeline_has_no_error_surrogate():
     assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
     assert "drawings_size_fn" in src
     scripted = (root / "visionamr" / "vla" / "partition.py").read_text()
-    propose_body = scripted.split("def propose")[1].split("def _drawing_frac")[0]
+    propose_body = scripted.split("def propose")[1].split("def _kind_grade")[0]
     assert "vm_node" not in propose_body
     assert "del post, eta2" in propose_body
     cfg = VLAConfig()

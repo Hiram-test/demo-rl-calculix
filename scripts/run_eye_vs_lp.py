@@ -1,11 +1,11 @@
 """Walk the vla-real-workflow skill on one 3-D instance.
 
-  1. load the agent eye drawing (no solve)
-  2. scale the drawn sizes to the element budget (Gmsh only; ranking fixed)
-  3. run_vla: vision grades + PSO sizes + solve; then again
-  4. one-step LP: probe + one predicted remesh
-  5. compare e_E, e_qoi, N/B, and whether the drawing ranking survived
+  1. load the agent judgment (regions + grades; no sizes)
+  2. run_vla: judge → one-shot tool tweak → mesh → solve → judge → tweak
+  3. one-step LP: probe + one predicted remesh
+  4. compare e_E, e_qoi, N/B, and whether the grade ranking survived
 
+No Gmsh size-search loop.  The eye does not assign parameters.
 Does not write into results/campaign/.
 """
 
@@ -25,7 +25,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from visionamr.baselines.local_prediction import run_local_prediction
 from visionamr.experiment import FemRunner
 from visionamr.geometry import PROBLEM_FACTORIES
-from visionamr.vla.drawing import scale_drawings_to_elem_budget
 from visionamr.vla.partition import CachedDrawingPartitioner
 from visionamr.vla.pipeline import VLAConfig, run_vla
 
@@ -45,6 +44,8 @@ def _row(r, n_eq_budget: int) -> dict:
         "sum_eta2": r.extra.get("sum_eta2"),
         "budget_ok": r.n_equations <= n_eq_budget,
         "regions": r.extra.get("regions"),
+        "grades": r.extra.get("grades"),
+        "pso_evals": (r.extra.get("pso") or {}).get("evals"),
     }
 
 
@@ -62,9 +63,11 @@ def _table(recs, n_eq_budget: int) -> str:
         f"{'k':>2} {'stage':18s} {'N_eq':>8} {'N/B':>6} {'e_E':>8} {'e_qoi':>8} {'Ση²':>10}"
     ]
     for r in recs:
-        e = r.e_energy if r.e_energy is not None else float("nan")
-        q = r.e_qoi if r.e_qoi is not None else float("nan")
+        e = r.e_energy if r.e_energy is None else float(r.e_energy)
+        q = r.e_qoi if r.e_qoi is None else float(r.e_qoi)
         eta = r.extra.get("sum_eta2", float("nan"))
+        e = float("nan") if e is None else e
+        q = float("nan") if q is None else q
         lines.append(
             f"{r.solve_index:2d} {r.stage:18s} {r.n_equations:8d} "
             f"{r.n_equations / n_eq_budget:6.2f} {e:8.4f} {q:8.4f} {eta:10.3f}"
@@ -79,7 +82,7 @@ def main() -> int:
     ap.add_argument(
         "--revise",
         default="tests/fixtures/bearing_block_eye_revise1.json",
-        help="agent's next decision after the first solve (no API)",
+        help="next judgment after the first solve (grades only, no API)",
     )
     ap.add_argument("--n-eq-budget", type=int, default=8000)
     ap.add_argument("--max-solves", type=int, default=2)
@@ -100,41 +103,15 @@ def main() -> int:
 
     problem = PROBLEM_FACTORIES[args.problem]()
     n_elem = int(round(args.n_eq_budget / EQ_PER_ELEM[problem.dim]))
-    raw = CachedDrawingPartitioner(args.eye)
-    seeds = raw.propose(problem)
-    drawings = list(raw.last_drawings)
-    rem = next(s.h for s in seeds if s.origin == "coarse")
-    print(f"[eye] loaded {len(drawings)} drawings remainder={rem:.2f}", flush=True)
-    scaled, rem, n_mesh = scale_drawings_to_elem_budget(
-        drawings, rem, problem, n_elem
-    )
-    spec_path = out / "eye_budget_scaled.json"
-    spec_path.write_text(
-        json.dumps(
-            {
-                "remainder_fineness_fraction": rem / problem.h0,
-                "regions": [
-                    {
-                        "name": d.name,
-                        "view": d.view,
-                        "fineness_fraction": d.h / problem.h0,
-                        "polygon": [list(p) for p in d.polygon],
-                        **({} if d.plane is None else {"plane": d.plane}),
-                        **({} if d.cut is None else {"cut": d.cut}),
-                        **({} if d.slab is None else {"slab": d.slab}),
-                    }
-                    for d in scaled
-                ],
-            },
-            indent=1,
-        )
-    )
-    print(f"[eye] budget-scaled mesh n_elem={n_mesh} target={n_elem}", flush=True)
-    h_eye = {d.name: d.h for d in scaled}
-    h_eye["field"] = rem
-
     revisions = [args.revise] if args.revise else []
-    head = CachedDrawingPartitioner(str(spec_path), revisions=revisions)
+    head = CachedDrawingPartitioner(args.eye, revisions=revisions)
+    seeds = head.propose(problem)
+    grades0 = dict(head.last_grades)
+    print(
+        f"[judge] {len(head.last_drawings)} regions grades={grades0}",
+        flush=True,
+    )
+
     runner = FemRunner(problem, work, ccx_timeout=1800.0)
     ref_rec = runner.ensure_reference()
     print(f"[ref] N={ref_rec.n_equations} U={ref_rec.U_total:.6g}", flush=True)
@@ -151,20 +128,22 @@ def main() -> int:
     for r in lp_recs:
         r.extra.setdefault("n_eq_budget", args.n_eq_budget)
 
-    h_final = {
-        n: h for n, h in zip(vla.seeds_final, vla.sizes_final) if n in h_eye
-    }
-    names = [n for n in h_eye if n in h_final]
-    rho = _spearman([h_eye[n] for n in names], [h_final[n] for n in names])
-    rem_h = h_final.get("field") or rem
-    rims = [h_final[n] for n in names if "rim" in n or "patch" in n]
-    rank_ok = bool(rims) and rem_h > 0 and min(rims) < rem_h
+    names = [s.name for s in seeds]
+    g_final = dict(getattr(head, "last_grades", {}) or {})
+    rho = _spearman(
+        [float(grades0.get(n, 5)) for n in names if n in g_final],
+        [float(g_final[n]) for n in names if n in g_final],
+    )
+    rem_g = g_final.get("field", 5)
+    rim_g = [g_final[n] for n in names if n in g_final and ("rim" in n or "patch" in n)]
+    rank_ok = bool(rim_g) and max(rim_g) < rem_g
 
     print("\n[VLA eye]\n" + _table(vla_recs, args.n_eq_budget), flush=True)
     print("\n[LP one-step]\n" + _table(lp_recs, args.n_eq_budget), flush=True)
     print(
-        f"[rank] spearman(h_eye, h_final)={rho}  "
-        f"rims_finer_than_remainder={rank_ok}",
+        f"[rank] spearman(grades0, grades_final)={rho}  "
+        f"rims_finer_than_remainder={rank_ok}  "
+        f"thoughts={ (vla.info or {}).get('thoughts') }",
         flush=True,
     )
 
@@ -178,7 +157,7 @@ def main() -> int:
             "allow_communication": cfg.allow_communication,
             "allow_split": cfg.allow_split,
         },
-        "first_mesh_elems": n_mesh,
+        "grades0": grades0,
         "thoughts": (vla.info or {}).get("thoughts"),
         "vla": asdict(vla),
         "vla_records": [_row(r, args.n_eq_budget) for r in vla_recs],
@@ -186,8 +165,8 @@ def main() -> int:
         "drawing_rank": {
             "spearman": rho,
             "rims_finer_than_remainder": rank_ok,
-            "h_eye": h_eye,
-            "h_final": h_final,
+            "grades0": grades0,
+            "grades_final": g_final,
         },
         "note": "new-protocol trial; do not paste into old A2′ tables",
     }
