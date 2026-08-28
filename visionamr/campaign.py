@@ -47,12 +47,16 @@ BUDGETS_EQ = {
     "deck_panel": (10000, 20000, 40000),
     "lbracket": (4000, 8000, 16000),
     "plate_holes": (4000, 8000, 16000),
+    "bearing_hole": (4000, 8000, 16000),
+    "deck_opening": (10000, 20000, 40000),
 }
 PILOT_EQ = {
     "bearing_block": 8000,
     "deck_panel": 20000,
     "lbracket": 8000,
     "plate_holes": 8000,
+    "bearing_hole": 8000,
+    "deck_opening": 20000,
 }
 FAMILIES_3D = ("bearing_block", "deck_panel")
 FAMILIES_2D = ("lbracket", "plate_holes")
@@ -415,6 +419,137 @@ def run_ood_generalization(families=FAMILIES_3D, seeds=None) -> None:
                 print(f"[OOD] {fam}/{key} local_prediction done")
 
             _run_vla_one(fam, key, b, head="scripted")
+
+
+# ---------------------------------------------------------------------------
+# Failure-probe families (audit): drawing feature invisible to the probe
+# ---------------------------------------------------------------------------
+
+FP_FAMILIES = ("bearing_hole", "deck_opening")
+FP_PARENT = {"bearing_hole": "bearing_block", "deck_opening": "deck_panel"}
+FP_KEYS = ("canonical", "fp_9600", "fp_9601")
+
+
+def _rim_distance(problem, pts: np.ndarray) -> np.ndarray:
+    """Distance of points to the family's hole rim surface."""
+
+    p = problem.params
+    if problem.name == "bearing_hole":
+        a, _ = p["patch"]
+        px0 = p["W"] / 2.0 + p["offset"][0] - a / 2.0
+        hx = px0 - p["hole_gap"] - p["hole_r"]
+        hz = p["H"] / 2.0
+        rad = np.sqrt((pts[:, 0] - hx) ** 2 + (pts[:, 2] - hz) ** 2)
+        return np.abs(rad - p["hole_r"])
+    if problem.name == "deck_opening":
+        _, wb = p["wheel"]
+        wx, wy = p["wheel_pos"]
+        ocx, ocy = wx, wy - wb / 2.0 - p["open_gap"] - p["open_r"]
+        rad = np.sqrt((pts[:, 0] - ocx) ** 2 + (pts[:, 1] - ocy) ** 2)
+        return np.abs(rad - p["open_r"])
+    raise ValueError(problem.name)
+
+
+def _rim_mean_h(problem, mesh, band: float) -> float | None:
+    d = _rim_distance(problem, mesh.centroids)
+    m = d <= band
+    if not m.any():
+        return None
+    return float(np.exp(np.mean(np.log(mesh.cell_sizes[m]))))
+
+
+def run_failure_probe_families(families=FP_FAMILIES, keys=FP_KEYS) -> None:
+    """Weakness evidence on purpose-built families.
+
+    The hole/opening exists on the drawing but is barely resolved on the
+    h0 probe, so an element-wise indicator under-flags its rim (LP
+    blindness); the parent-family supervised model never saw the feature
+    (topology-level distribution shift).  All three deployments run on
+    the same instances; the VLA scripted head gets the rim only through
+    its structural anchor.  Parent models are deployed as-is: no
+    retraining, that is the point.
+    """
+
+    from .baselines.supervised import SizeMLP, SupervisedConfig, deploy_supervised
+    from .experiment import initial_mesh
+    from .indicators import zz_indicator
+
+    for fam in families:
+        b = PILOT_EQ[fam]
+        parent = FP_PARENT[fam]
+        model_path = CAMPAIGN / parent / "supervised" / "model.pt"
+        model = None
+        if model_path.exists():
+            model = SizeMLP(SupervisedConfig())
+            model.load(model_path)
+        for key in keys:
+            d = instance_dir(fam, key)
+            diag_path = d / "fp_diag.json"
+            if diag_path.exists():
+                print(f"[FP] {fam}/{key} cached")
+                continue
+            problem = instance_key_problem(fam, key)
+            band = 0.75 * float(problem.params.get("hole_r") or problem.params.get("open_r"))
+            diag: dict = {"family": fam, "key": key, "parent_model": parent,
+                          "rim_band": band, "n_eq_budget": b}
+
+            runner = make_runner(problem, d, timeout=1800.0)
+            ref = runner.ensure_reference()
+            diag["reference_n_eq"] = ref.n_equations
+            print(f"[FP] {fam}/{key} reference N={ref.n_equations}")
+
+            # probe: what the coarse indicator actually sees at the rim
+            probe_path = d / "records_fp_probe.json"
+            runner.reset_counter()
+            mesh0 = initial_mesh(problem)
+            post0, rec0 = runner.solve_mesh(mesh0, method="fp_probe", stage="probe")
+            eta2 = zz_indicator(problem, post0)
+            rim_mask = _rim_distance(problem, mesh0.centroids) <= band
+            rec0.extra["sum_eta2"] = float(eta2.sum())
+            rec0.extra["rim_eta2_share"] = float(eta2[rim_mask].sum() / max(eta2.sum(), 1e-30))
+            diag["probe_rim_eta2_share"] = rec0.extra["rim_eta2_share"]
+            diag["rim_h_probe"] = _rim_mean_h(problem, mesh0, band)
+            _dump_slice(runner, "fp_probe", probe_path)
+
+            if model is not None:
+                runner = make_runner(problem, d, timeout=1800.0)
+                runner.ensure_reference()
+                runner.reset_counter()
+                deploy_supervised(runner, model, n_elem_budget=elem_budget(b, problem.dim))
+                diag["rim_h_supervised"] = _rim_mean_h(problem, runner.last_mesh, band)
+                _dump_slice(runner, "supervised", d / "records_supervised.json")
+
+            runner = make_runner(problem, d, timeout=1800.0)
+            runner.ensure_reference()
+            runner.reset_counter()
+            run_local_prediction(runner, budgets=[elem_budget(b, problem.dim)], rounds=2)
+            diag["rim_h_lp"] = _rim_mean_h(problem, runner.last_mesh, band)
+            _dump_slice(runner, "local_prediction", d / "records_local_prediction.json")
+
+            runner = make_runner(problem, d, timeout=1800.0)
+            runner.ensure_reference()
+            runner.reset_counter()
+            partitioner = ScriptedVisionPartitioner()
+            cfg = VLAConfig(n_eq_budget=b, max_solves=4, pso=VLAConfig().pso)
+            res = run_vla(runner, partitioner, cfg, method="vla")
+            recs = [r for r in runner.records if r.method == "vla"]
+            for r in recs:
+                r.extra.setdefault("n_eq_budget", b)
+                r.extra.setdefault("head", "scripted")
+            (d / f"records_vla_scripted_b{b}.json").write_text(json.dumps({
+                "vla_result": asdict(res),
+                "problem": problem.instance_id,
+                "params": problem.params,
+                "method": "vla",
+                "head": "scripted",
+                "n_eq_budget": b,
+                "vision": getattr(partitioner, "last_info", {}),
+                "records": [asdict(r) for r in recs],
+            }, indent=1, default=str))
+            diag["rim_h_vla"] = _rim_mean_h(problem, runner.last_mesh, band)
+
+            diag_path.write_text(json.dumps(diag, indent=1))
+            print(f"[FP] {fam}/{key} done: {diag}")
 
 
 # ---------------------------------------------------------------------------

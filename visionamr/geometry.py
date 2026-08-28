@@ -438,15 +438,242 @@ def sample_plate_holes(rng: np.random.Generator) -> Problem:
     return make_plate_holes(holes=holes, tension=tension)
 
 
+def make_bearing_hole(
+    W: float = 400.0,
+    D: float = 400.0,
+    H: float = 120.0,
+    patch: tuple[float, float] = (140.0, 140.0),
+    offset: tuple[float, float] = (40.0, 0.0),
+    pressure: float = 12.0,
+    hole_r: float = 24.0,
+    hole_gap: float = 25.0,
+) -> Problem:
+    """Failure-probe family: bearing block with a transverse duct hole.
+
+    A through-going horizontal duct (grout/anchor sleeve) runs along y at
+    mid-height, ``hole_gap`` clear of the loaded patch edge.  The rim
+    concentration lines (Kirsch extremes at x = hx ± r) exist on the
+    drawing but are barely visible to a ZZ indicator on the h0 probe —
+    the probe-blindness target.  Load and constraints match the parent
+    ``bearing_block`` family, so the parent's supervised model applies
+    syntactically while the topology is outside its training support.
+    """
+
+    a, b = patch
+    ox, oy = offset
+    cx, cy = W / 2.0 + ox, D / 2.0 + oy
+    px0, px1 = cx - a / 2.0, cx + a / 2.0
+    py0, py1 = cy - b / 2.0, cy + b / 2.0
+    hx = px0 - hole_gap - hole_r
+    hz = H / 2.0
+
+    def build() -> None:
+        import gmsh
+
+        occ = gmsh.model.occ
+        box = occ.addBox(0.0, 0.0, 0.0, W, D, H)
+        duct = occ.addCylinder(hx, 0.0, hz, 0.0, D, 0.0, hole_r)
+        occ.cut([(3, box)], [(3, duct)])
+        patch_face = occ.addRectangle(px0, py0, H, a, b)
+        occ.fragment([(3, box)], [(2, patch_face)])
+
+    bottom = Constraint(lambda n: n[:, 2] < 1e-9, (1, 2, 3), "bottom_fixed")
+    patch_pred = _box_pred((px0, py0, H - 1e-6), (px1, py1, H + 1e-6))
+    tr = TractionSpec(patch_pred, (0.0, 0.0, -pressure), "girder_patch")
+
+    zt = H
+    segs = [
+        ((px0, py0, zt), (px1, py0, zt)),
+        ((px1, py0, zt), (px1, py1, zt)),
+        ((px1, py1, zt), (px0, py1, zt)),
+        ((px0, py1, zt), (px0, py0, zt)),
+        ((0, 0, 0), (W, 0, 0)),
+        ((W, 0, 0), (W, D, 0)),
+        ((W, D, 0), (0, D, 0)),
+        ((0, D, 0), (0, 0, 0)),
+        # duct rim concentration lines (Kirsch extremes, along the axis)
+        ((hx - hole_r, 0.0, hz), (hx - hole_r, D, hz)),
+        ((hx + hole_r, 0.0, hz), (hx + hole_r, D, hz)),
+    ]
+    features = [
+        FeatureAnchor("patch_center", cx, cy, H, "load"),
+        FeatureAnchor("patch_edge_x0", px0, cy, H, "load"),
+        FeatureAnchor("patch_edge_x1", px1, cy, H, "load"),
+        FeatureAnchor("patch_edge_y0", cx, py0, H, "load"),
+        FeatureAnchor("patch_edge_y1", cx, py1, H, "load"),
+        FeatureAnchor("bottom_center", W / 2, D / 2, 0.0, "clamp"),
+        FeatureAnchor("bottom_edge_y0", W / 2, 0.0, 0.0, "support"),
+        FeatureAnchor("bottom_edge_y1", W / 2, D, 0.0, "support"),
+        FeatureAnchor("bottom_edge_x0", 0.0, D / 2, 0.0, "support"),
+        FeatureAnchor("bottom_edge_x1", W, D / 2, 0.0, "support"),
+        # r=0: the x-y radial hole grading does not fit a horizontal duct;
+        # the rim lines above carry the reference grading instead.
+        FeatureAnchor("duct_hole", hx, D / 2, hz, "hole", r=0.0),
+    ]
+    return Problem(
+        name="bearing_hole",
+        dim=3,
+        build_geometry=build,
+        constraints=[bottom],
+        tractions=[tr],
+        qoi_facet_predicate=patch_pred,
+        material=Material(),
+        h0=H / 2.4,
+        h_ref=H / 10.0,
+        h_min=H / 40.0,
+        bbox=(0, 0, 0, W, D, H),
+        features=features,
+        singular_points=[],
+        singular_segments=segs,
+        params={"W": W, "D": D, "H": H, "patch": patch, "offset": offset,
+                "pressure": pressure, "hole_r": hole_r, "hole_gap": hole_gap},
+    )
+
+
+def sample_bearing_hole(rng: np.random.Generator) -> Problem:
+    """Load parameters inside the parent training support; only the duct
+    (absent from the parent family) varies — isolates the topology shift."""
+
+    a = float(rng.uniform(130.0, 170.0))
+    b = float(rng.uniform(130.0, 170.0))
+    ox = float(rng.uniform(10.0, 50.0))
+    oy = float(rng.uniform(-40.0, 40.0))
+    return make_bearing_hole(
+        patch=(a, b),
+        offset=(ox, oy),
+        pressure=float(rng.uniform(9.0, 15.0)),
+        hole_r=float(rng.uniform(22.0, 28.0)),
+    )
+
+
+def make_deck_opening(
+    L: float = 2400.0,
+    B: float = 1600.0,
+    T: float = 200.0,
+    strip_w: float = 220.0,
+    strip_off: float = 300.0,
+    wheel: tuple[float, float] = (400.0, 250.0),
+    wheel_pos: tuple[float, float] = (1200.0, 800.0),
+    pressure: float = 1.0,
+    open_r: float = 80.0,
+    open_gap: float = 40.0,
+) -> Problem:
+    """Failure-probe family: deck panel with a circular service opening.
+
+    A through-thickness opening sits between the wheel patch and the near
+    support strip, cutting the load path.  In-plane flow concentrates on
+    the rim's x-extremes (vertical lines at x = ox ± r).  Same load and
+    strip layout as the parent ``deck_panel`` family.
+    """
+
+    y1, y2 = strip_off, B - strip_off
+    wa, wb = wheel
+    wx, wy = wheel_pos
+    wx0, wx1 = wx - wa / 2.0, wx + wa / 2.0
+    wy0, wy1 = wy - wb / 2.0, wy + wb / 2.0
+    ocx = wx
+    ocy = wy0 - open_gap - open_r
+
+    def build() -> None:
+        import gmsh
+
+        occ = gmsh.model.occ
+        box = occ.addBox(0.0, 0.0, 0.0, L, B, T)
+        opening = occ.addCylinder(ocx, ocy, 0.0, 0.0, 0.0, T, open_r)
+        occ.cut([(3, box)], [(3, opening)])
+        wheel_face = occ.addRectangle(wx0, wy0, T, wa, wb)
+        s1_face = occ.addRectangle(0.0, y1 - strip_w / 2.0, 0.0, L, strip_w)
+        s2_face = occ.addRectangle(0.0, y2 - strip_w / 2.0, 0.0, L, strip_w)
+        occ.fragment([(3, box)], [(2, wheel_face), (2, s1_face), (2, s2_face)])
+
+    def strip_nodes(n: np.ndarray) -> np.ndarray:
+        on_bot = n[:, 2] < 1e-9
+        s1 = np.abs(n[:, 1] - y1) <= strip_w / 2.0 + 1e-9
+        s2 = np.abs(n[:, 1] - y2) <= strip_w / 2.0 + 1e-9
+        return on_bot & (s1 | s2)
+
+    def strip1_lateral(n: np.ndarray) -> np.ndarray:
+        return (n[:, 2] < 1e-9) & (np.abs(n[:, 1] - y1) <= strip_w / 2.0 + 1e-9)
+
+    constraints = [
+        Constraint(strip_nodes, (3,), "girder_strips_uz"),
+        Constraint(strip1_lateral, (1, 2), "strip1_lateral"),
+    ]
+    wheel_pred = _box_pred((wx0, wy0, T - 1e-6), (wx1, wy1, T + 1e-6))
+    tr = TractionSpec(wheel_pred, (0.0, 0.0, -pressure), "wheel_patch")
+
+    zt = T
+    segs = [
+        ((wx0, wy0, zt), (wx1, wy0, zt)),
+        ((wx1, wy0, zt), (wx1, wy1, zt)),
+        ((wx1, wy1, zt), (wx0, wy1, zt)),
+        ((wx0, wy1, zt), (wx0, wy0, zt)),
+        ((0, y1 + strip_w / 2, 0), (L, y1 + strip_w / 2, 0)),
+        ((0, y1 - strip_w / 2, 0), (L, y1 - strip_w / 2, 0)),
+        ((0, y2 - strip_w / 2, 0), (L, y2 - strip_w / 2, 0)),
+        ((0, y2 + strip_w / 2, 0), (L, y2 + strip_w / 2, 0)),
+        # opening rim concentration lines (through thickness)
+        ((ocx - open_r, ocy, 0.0), (ocx - open_r, ocy, T)),
+        ((ocx + open_r, ocy, 0.0), (ocx + open_r, ocy, T)),
+    ]
+    features = [
+        FeatureAnchor("wheel_center", wx, wy, T, "load"),
+        FeatureAnchor("wheel_edge_x0", wx0, wy, T, "load"),
+        FeatureAnchor("wheel_edge_x1", wx1, wy, T, "load"),
+        FeatureAnchor("wheel_edge_y0", wx, wy0, T, "load"),
+        FeatureAnchor("wheel_edge_y1", wx, wy1, T, "load"),
+        FeatureAnchor("midspan", L / 2, B / 2, T / 2, "corner"),
+        FeatureAnchor("service_opening", ocx, ocy, T, "hole", r=open_r),
+    ]
+    for si, ys in ((1, y1), (2, y2)):
+        for tag, xs in (("a", L / 6), ("mid", L / 2), ("b", 5 * L / 6)):
+            features.append(
+                FeatureAnchor(f"girder_strip_{si}_{tag}", xs, ys, 0.0, "support")
+            )
+    return Problem(
+        name="deck_opening",
+        dim=3,
+        build_geometry=build,
+        constraints=constraints,
+        tractions=[tr],
+        qoi_facet_predicate=wheel_pred,
+        material=Material(E=34e3, nu=0.2),
+        h0=T / 1.6,
+        h_ref=T / 4.5,
+        h_min=T / 20.0,
+        bbox=(0, 0, 0, L, B, T),
+        features=features,
+        singular_points=[],
+        singular_segments=segs,
+        params={"L": L, "B": B, "T": T, "strip_w": strip_w, "strip_off": strip_off,
+                "wheel": wheel, "wheel_pos": wheel_pos, "pressure": pressure,
+                "open_r": open_r, "open_gap": open_gap},
+    )
+
+
+def sample_deck_opening(rng: np.random.Generator) -> Problem:
+    """Load parameters inside the parent training support; only the opening
+    (absent from the parent family) varies."""
+
+    wx = float(rng.uniform(1000.0, 1400.0))
+    wy = float(rng.uniform(820.0, 900.0))
+    return make_deck_opening(
+        wheel_pos=(wx, wy),
+        wheel=(float(rng.uniform(350.0, 450.0)), float(rng.uniform(220.0, 300.0))),
+        pressure=float(rng.uniform(0.9, 1.3)),
+        open_r=float(rng.uniform(70.0, 90.0)),
+    )
+
+
 def analytic_load_resultant(problem: Problem) -> np.ndarray:
     """Nominal traction resultant p×A (2-D: × thickness).  Gate G7 target."""
 
     p = problem.params
     t = problem.material.thickness
-    if problem.name == "bearing_block":
+    if problem.name in ("bearing_block", "bearing_hole"):
         a, b = p["patch"]
         return np.array([0.0, 0.0, -float(p["pressure"]) * a * b])
-    if problem.name == "deck_panel":
+    if problem.name in ("deck_panel", "deck_opening"):
         wa, wb = p["wheel"]
         return np.array([0.0, 0.0, -float(p["pressure"]) * wa * wb])
     if problem.name == "lbracket":
@@ -466,6 +693,8 @@ PROBLEM_FACTORIES = {
     "deck_panel": make_deck_panel,
     "lbracket": make_lbracket,
     "plate_holes": make_plate_holes,
+    "bearing_hole": make_bearing_hole,
+    "deck_opening": make_deck_opening,
 }
 
 def sample_bearing_block_ood(rng: np.random.Generator) -> Problem:
@@ -500,6 +729,8 @@ SAMPLERS = {
     "deck_panel": sample_deck_panel,
     "lbracket": sample_lbracket,
     "plate_holes": sample_plate_holes,
+    "bearing_hole": sample_bearing_hole,
+    "deck_opening": sample_deck_opening,
 }
 
 OOD_SAMPLERS = {

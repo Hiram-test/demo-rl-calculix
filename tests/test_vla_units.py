@@ -298,6 +298,69 @@ def test_weakness_evidence_tables_are_populated():
         assert ood[fam]["median_gap_sup_minus_vla_test"] is not None
 
 
+def test_failure_probe_families_are_geometrically_valid():
+    """E4 validity: hole clear of patch/walls, opening clear of strip/wheel."""
+
+    import numpy as np
+
+    from visionamr.geometry import (
+        PROBLEM_FACTORIES,
+        SAMPLERS,
+        analytic_load_resultant,
+    )
+
+    for maker in (
+        lambda: PROBLEM_FACTORIES["bearing_hole"](),
+        lambda: SAMPLERS["bearing_hole"](np.random.default_rng(9600)),
+        lambda: SAMPLERS["bearing_hole"](np.random.default_rng(9601)),
+    ):
+        p = maker().params
+        a, _ = p["patch"]
+        px0 = p["W"] / 2 + p["offset"][0] - a / 2
+        hx = px0 - p["hole_gap"] - p["hole_r"]
+        assert hx - p["hole_r"] > 10.0            # clear of the x=0 wall
+        assert px0 - (hx + p["hole_r"]) == p["hole_gap"]
+        assert p["H"] / 2 + p["hole_r"] < p["H"]  # inside the block height
+
+    for maker in (
+        lambda: PROBLEM_FACTORIES["deck_opening"](),
+        lambda: SAMPLERS["deck_opening"](np.random.default_rng(9600)),
+        lambda: SAMPLERS["deck_opening"](np.random.default_rng(9601)),
+    ):
+        prob = maker()
+        p = prob.params
+        _, wb = p["wheel"]
+        wy0 = p["wheel_pos"][1] - wb / 2
+        ocy = wy0 - p["open_gap"] - p["open_r"]
+        strip_top = p["strip_off"] + p["strip_w"] / 2
+        assert ocy - p["open_r"] > strip_top + 20.0   # clear of the strip
+        assert wy0 - (ocy + p["open_r"]) == p["open_gap"]
+        F = analytic_load_resultant(prob)
+        assert F[2] < 0
+
+    # the scripted head must receive the hole anchor (drawing knowledge)
+    for fam in ("bearing_hole", "deck_opening"):
+        prob = PROBLEM_FACTORIES[fam]()
+        assert any(f.kind == "hole" for f in prob.features)
+
+
+def test_failure_probe_table_is_backed_by_records():
+    """E4 audit lock: the report table reads dumped CalculiX records."""
+
+    from visionamr.report import failure_probe_table
+
+    fp = failure_probe_table()
+    assert "bearing_hole" in fp
+    info = fp["bearing_hole"]
+    assert len(info["rows"]) == 3
+    for r in info["rows"]:
+        assert r["supervised_e"] is not None
+        assert r["vla_e"] is not None
+        assert r["rim_h_supervised"] is not None
+    assert info["median_gap_sup_minus_vla_fp"] is not None
+    assert info["median_rim_h_ratio_sup_over_vla"] is not None
+
+
 def test_lp_rounds_diag_stays_out_of_the_main_lp_series():
     """G6: the 7-solve diagnostic must not join the plan-locked short run."""
 

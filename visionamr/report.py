@@ -543,6 +543,84 @@ def budget_deviation_stats(families=FAMILIES_3D) -> dict:
 
 OOD_SEEDS = list(range(9500, 9504))
 
+FP_FAMILIES = ("bearing_hole", "deck_opening")
+FP_PARENT = {"bearing_hole": "bearing_block", "deck_opening": "deck_panel"}
+FP_KEYS = ("canonical", "fp_9600", "fp_9601")
+
+
+def failure_probe_table() -> dict:
+    """E4: purpose-built families expose the failure mechanisms.
+
+    The hole/opening is on the drawing but barely visible to the h0
+    probe.  The parent family's supervised model deploys unmodified
+    (topology-level shift); rim mean sizes show who actually resolves
+    the concentrator.
+    """
+
+    out: dict = {}
+    for fam in FP_FAMILIES:
+        b = PILOT_EQ.get(fam)
+        if b is None:
+            continue
+        rows = []
+        gaps_fp = []
+        for key in FP_KEYS:
+            diag_path = instance_dir(fam, key) / "fp_diag.json"
+            if not diag_path.exists():
+                continue
+            diag = json.loads(diag_path.read_text())
+            sup = _series(fam, key, "records_supervised.json")
+            lp = _series(fam, key, "records_local_prediction.json")
+            pick = vla_deliverable(_vla_file(fam, key, "scripted", b), 99, b)
+            if not (sup and lp and pick):
+                continue
+            e_s, e_v = sup[-1].get("e_energy"), pick.get("e_energy")
+            rows.append(
+                {
+                    "key": key,
+                    "probe_rim_eta2_share": diag.get("probe_rim_eta2_share"),
+                    "rim_h_probe": diag.get("rim_h_probe"),
+                    "supervised_e": e_s,
+                    "supervised_frac": (sup[-1].get("n_equations") or 0) / b,
+                    "rim_h_supervised": diag.get("rim_h_supervised"),
+                    "lp3_e": lp[-1].get("e_energy"),
+                    "lp3_frac": (lp[-1].get("n_equations") or 0) / b,
+                    "rim_h_lp": diag.get("rim_h_lp"),
+                    "vla_e": e_v,
+                    "vla_frac": (pick.get("n_equations") or 0) / b,
+                    "rim_h_vla": diag.get("rim_h_vla"),
+                }
+            )
+            if e_s is not None and e_v is not None:
+                gaps_fp.append(e_s - e_v)
+        if not rows:
+            continue
+        parent = FP_PARENT[fam]
+        pb = PILOT_EQ[parent]
+        gaps_parent = []
+        for s in TEST_SEEDS:
+            sup = _series(parent, f"test_{s}", "records_supervised.json")
+            pick = vla_deliverable(_vla_file(parent, f"test_{s}", "scripted", pb), 99, pb)
+            if sup and pick and sup[-1].get("e_energy") is not None and pick.get("e_energy") is not None:
+                gaps_parent.append(sup[-1]["e_energy"] - pick["e_energy"])
+        rim_ratios = [
+            r["rim_h_supervised"] / r["rim_h_vla"]
+            for r in rows
+            if r.get("rim_h_supervised") and r.get("rim_h_vla")
+        ]
+        out[fam] = {
+            "parent": parent,
+            "rows": rows,
+            "median_gap_sup_minus_vla_fp": float(np.median(gaps_fp)) if gaps_fp else None,
+            "median_gap_sup_minus_vla_parent_test": (
+                float(np.median(gaps_parent)) if gaps_parent else None
+            ),
+            "median_rim_h_ratio_sup_over_vla": (
+                float(np.median(rim_ratios)) if rim_ratios else None
+            ),
+        }
+    return out
+
 
 def ood_generalization_table(families=FAMILIES_3D) -> dict:
     """Weakness evidence: learned size field under distribution shift.
@@ -732,6 +810,7 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "lp_naive_diag": lp_naive_diagnostic(),
         "budget_deviation": budget_deviation_stats(),
         "ood_generalization": ood_generalization_table(),
+        "failure_probe": failure_probe_table(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
     }
@@ -972,6 +1051,36 @@ def render_results_md(tables: dict) -> str:
                 f"{_fmt(info.get('median_gap_sup_minus_vla_ood'))}。"
             )
         lines.append("")
+    fp = tables.get("failure_probe") or {}
+    if fp:
+        lines += [
+            "### E4 失效探针族（bearing_hole 横向套管孔 / deck_opening 检修开口）",
+            "",
+            "图纸上存在、h0 探针几乎不显影的孔/开口；荷载与母族同支撑集，只有拓扑变了。",
+            "监督用母族模型零迁移部署（不重训，这正是要测的）；LP/VLA 免训练同场。",
+            "rim_h = 孔缘带内单元尺寸几何平均（mm）；probe share = 探针上孔缘带 η² 份额。",
+            "",
+            "| family | key | probe share | supervised e (N/B, rim_h) | lp3 e (N/B, rim_h) | VLA e (N/B, rim_h) |",
+            "|---|---|---:|---:|---:|---:|",
+        ]
+        for fam, info in fp.items():
+            for r in info.get("rows", []):
+                lines.append(
+                    f"| {fam} | {r['key']} | {_fmt(r['probe_rim_eta2_share'], 3)} | "
+                    f"{_fmt(r['supervised_e'])} ({_fmt(r['supervised_frac'], 2)}, {_fmt(r['rim_h_supervised'], 1)}) | "
+                    f"{_fmt(r['lp3_e'])} ({_fmt(r['lp3_frac'], 2)}, {_fmt(r['rim_h_lp'], 1)}) | "
+                    f"{_fmt(r['vla_e'])} ({_fmt(r['vla_frac'], 2)}, {_fmt(r['rim_h_vla'], 1)}) |"
+                )
+        for fam, info in fp.items():
+            lines.append("")
+            lines.append(
+                f"- {fam}（母族 {info.get('parent')}）：监督−VLA 中位差距，母族测试集 "
+                f"{_fmt(info.get('median_gap_sup_minus_vla_parent_test'))} → 探针族 "
+                f"{_fmt(info.get('median_gap_sup_minus_vla_fp'))}；"
+                f"监督孔缘尺寸 / VLA 孔缘尺寸中位比 "
+                f"{_fmt(info.get('median_rim_h_ratio_sup_over_vla'), 2)}。"
+            )
+        lines.append("")
     lines += [
         "",
         "## 诚实边界",
@@ -981,6 +1090,7 @@ def render_results_md(tables: dict) -> str:
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
         "- VLA 第 2 次求解的初始尺寸复用同一逐单元等分布预测（按区几何平均，§3.6），故 k=2 处两者相近是结构性的；其后 VLA 走实测指数/漂移反馈/硬帽投影/就地认证（AB5/AB6/AB9–AB11 量化各自贡献），局部预测走再等分布（轮数诊断见上）。",
         "- 监督专家库由训练实例上的 Dörfler-到帽循环蒸馏（离线求解已计入 A4）；其部署无预算帽语义，canonical 交付停在 44–52% 档位。",
+        "- 失效探针族（bearing_hole/deck_opening）只用于失效实证：不进主表、不参与 H1–H4 判定；参考解含孔缘分级线，G3 扫描覆盖其全部记录。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
         "- 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。",
