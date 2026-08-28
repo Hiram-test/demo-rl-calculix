@@ -52,6 +52,9 @@ def main() -> int:
         if args.instances else None
     )
     learn = tuple(s.strip() for s in args.learn_families.split(",") if s.strip())
+    rl_seeds = None
+    if args.rl_seeds:
+        rl_seeds = tuple(int(x.strip()) for x in args.rl_seeds.split(",") if x.strip())
     run_steps(
         steps,
         families=families,
@@ -62,6 +65,8 @@ def main() -> int:
         learn_families=learn,
         n_experts=args.n_experts,
         rl_episodes=args.rl_episodes,
+        n_seeds=args.n_seeds,
+        rl_seeds=rl_seeds,
     )
     return 0
 
