@@ -154,10 +154,15 @@ def test_gate_g2_fails_when_handwritten_cell_inserts_found():
 def test_s8_whitelist_figure_helpers_are_wired():
     """Plan §8 bars/boxplots must stay callable without remeshing."""
 
+    from pathlib import Path
+
     import pytest
 
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "viz.py").read_text()
+    for token in ("def plot_training_cost_bars", "def plot_test_boxplots"):
+        assert token in src
+
     pytest.importorskip("matplotlib")
-    from pathlib import Path
 
     from visionamr.viz import plot_test_boxplots, plot_training_cost_bars
 
