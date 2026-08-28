@@ -138,6 +138,51 @@ def test_vla_deliverable_holds_certified_after_early_stop():
     assert pick3["e_energy"] == pick6["e_energy"] == 0.198
 
 
+def test_gate_g2_fails_when_handwritten_cell_inserts_found():
+    """Review lock: G2 pass is false iff add_cells/insert_cells hits exist."""
+
+    from pathlib import Path
+
+    from visionamr.campaign import gate_g2
+
+    g = gate_g2()
+    assert g["pass"] == (len(g["hits"]) == 0)
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "campaign.py").read_text()
+    assert "len(hits) == 0" in src
+
+
+def test_s8_whitelist_figure_helpers_are_wired():
+    """Plan §8 bars/boxplots must stay callable without remeshing."""
+
+    from pathlib import Path
+
+    from visionamr.viz import plot_test_boxplots, plot_training_cost_bars
+
+    out = Path("/tmp/visionamr_s8_figs")
+    out.mkdir(exist_ok=True)
+    plot_training_cost_bars(
+        [
+            {"family": "bearing_block", "kind": "supervised_experts", "n_experts": 24},
+            {"family": "bearing_block", "kind": "rl_s0", "train_solves": 240, "episodes": 120},
+        ],
+        out / "training_cost.png",
+        title="A4",
+    )
+    plot_test_boxplots(
+        {
+            "bearing_block": [
+                {"key": "test_9000", "k": {2: {"dorfler": 0.4, "vla": 0.3},
+                                            3: {"dorfler": 0.3, "vla": 0.25},
+                                            4: {"dorfler": 0.2, "vla": 0.22}}},
+            ]
+        },
+        out / "test_boxplots.png",
+        title="IQR",
+    )
+    assert (out / "training_cost.png").stat().st_size > 0
+    assert (out / "test_boxplots.png").stat().st_size > 0
+
+
 def test_s7_keeps_plan_ablations_ab7_and_ab9_to_ab11():
     """Review lock: AB7 rows and plan §5 AB9–AB11 must stay wired."""
 

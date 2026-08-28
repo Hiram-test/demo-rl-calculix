@@ -17,6 +17,7 @@ from .campaign import (
     FAMILIES_2D,
     FAMILIES_3D,
     PILOT_EQ,
+    RESULTS,
     TEST_SEEDS,
     elem_budget,
     instance_dir,
@@ -612,6 +613,23 @@ def render_results_md(tables: dict) -> str:
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
         "- 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。",
+        "- 图政策（§8）：局部预测按预算档分列，不跨档拼线；k* 画在误差@k 主图上。",
         "",
     ]
+    gates_path = RESULTS / "gates.json"
+    if gates_path.exists():
+        try:
+            gates = json.loads(gates_path.read_text())
+        except json.JSONDecodeError:
+            gates = {}
+        lines += [
+            "## S3 验收门",
+            "",
+            "| gate | pass |",
+            "|---|---|",
+        ]
+        for name in ("G1", "G2", "G3", "G4", "G5", "G7"):
+            g = gates.get(name) or {}
+            lines.append(f"| {name} | {'PASS' if g.get('pass') else 'FAIL'} |")
+        lines.append("")
     return "\n".join(lines) + "\n"

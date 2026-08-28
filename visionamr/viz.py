@@ -291,3 +291,67 @@ def plot_ablation_bars(rows: list[dict], path: Path, title: str = "") -> None:
     fig.tight_layout()
     fig.savefig(path, dpi=170)
     plt.close(fig)
+
+
+def plot_training_cost_bars(rows: list[dict], path: Path, title: str = "") -> None:
+    """A4: offline training cost. Never mixed into the deploy k-axis."""
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    labels, heights, colors = [], [], []
+    for r in rows:
+        fam = r.get("family", "?")
+        kind = r.get("kind", "?")
+        if r.get("train_solves") is not None:
+            labels.append(f"{fam}\n{kind}")
+            heights.append(float(r["train_solves"]))
+            colors.append("tab:purple")
+        elif r.get("n_experts") is not None:
+            labels.append(f"{fam}\n{kind}")
+            heights.append(float(r["n_experts"]))
+            colors.append("tab:orange")
+    ax.bar(range(len(labels)), heights, color=colors, alpha=0.85)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=35, ha="right", fontsize=7)
+    ax.set_ylabel("offline solves (RL) / expert count (supervised)")
+    ax.set_title(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+
+
+def plot_test_boxplots(test_raw: dict, path: Path, title: str = "") -> None:
+    """Test-set e_E at k=2/3/4. One panel per family (plan §4 / §8)."""
+
+    families = list(test_raw.keys())
+    if not families:
+        fig, ax = plt.subplots(figsize=(4.0, 3.0))
+        ax.set_title(title or "test set empty")
+        fig.savefig(path, dpi=170)
+        plt.close(fig)
+        return
+    fig, axes = plt.subplots(1, len(families), figsize=(4.2 * len(families), 4.2), squeeze=False)
+    ks = (2, 3, 4)
+    for ax, fam in zip(axes[0], families):
+        raw = test_raw[fam]
+        data, labels, colors = [], [], []
+        for k in ks:
+            for method, color in (("dorfler", "tab:blue"), ("vla", "tab:red")):
+                vals = [
+                    p["k"][k][method]
+                    for p in raw
+                    if p.get("k", {}).get(k, {}).get(method) is not None
+                ]
+                data.append(vals)
+                labels.append(f"{method[0]}{k}")
+                colors.append(color)
+        bp = ax.boxplot(data, tick_labels=labels, patch_artist=True, showfliers=True)
+        for patch, color in zip(bp["boxes"], colors):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.55)
+        ax.set_title(fam)
+        ax.set_ylabel("energy error")
+        ax.grid(True, axis="y", alpha=0.3)
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=170)
+    plt.close(fig)

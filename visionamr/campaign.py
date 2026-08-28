@@ -776,6 +776,56 @@ def _method_series(records: list[dict], method: str) -> list[dict]:
     return [r for r in records if r.get("method") == method]
 
 
+def write_whitelist_mesh_figures(figdir: Path) -> list[str]:
+    """Plan §8: partition tri-views and certified-mesh tri-views.
+
+    Seed locations come from a fresh scripted probe (same head as S4).
+    Certified sizes are taken from the stored campaign dump by seed name
+    so the figure matches the tabulated deliverable, not a new VLA loop.
+    """
+
+    from .indicators import zz_indicator
+    from .mesher import generate_mesh, generate_uniform
+    from .vla.regions import Partition, Seed
+    from .viz import plot_mesh, plot_partition
+
+    written: list[str] = []
+    for fam in FAMILIES_3D:
+        problem = PROBLEM_FACTORIES[fam]()
+        budget = PILOT_EQ[fam]
+        dump = instance_dir(fam, "canonical") / f"records_vla_scripted_b{budget}.json"
+        if not dump.exists():
+            continue
+        payload = json.loads(dump.read_text())
+        pick = None
+        for rec in payload.get("records", []):
+            if rec.get("extra", {}).get("certified_pick"):
+                pick = rec
+        regions = ((pick or (payload.get("records") or [{}])[-1]).get("extra") or {}).get("regions") or {}
+        workdir = figdir / "_meshes" / fam
+        runner = make_runner(problem, workdir, timeout=180.0)
+        mesh0 = generate_uniform(problem, problem.h0)
+        post, _ = runner.solve_mesh(mesh0, method="vla_evidence", stage="probe")
+        eta2 = zz_indicator(problem, post)
+        seeds = ScriptedVisionPartitioner().propose(problem, post, eta2)
+        sized = [
+            Seed(s.name, s.xyz, float(regions.get(s.name, s.h)), s.origin) for s in seeds
+        ]
+        part = Partition(sized, problem)
+        labels = part.assign(post.mesh)
+        part_path = figdir / f"{fam}_partition.png"
+        plot_partition(
+            problem, post, labels, part.seeds, part_path,
+            title=f"{fam}: geodesic partition (scripted seeds)",
+        )
+        written.append(part_path.name)
+        cert = generate_mesh(problem, part.size_field(post.mesh, labels))
+        mesh_path = figdir / f"{fam}_certified_mesh.png"
+        plot_mesh(cert, mesh_path, title=f"{fam}: certified size-field mesh")
+        written.append(mesh_path.name)
+    return written
+
+
 def step_s8() -> dict:
     from . import report
     from .viz import (
@@ -783,6 +833,8 @@ def step_s8() -> dict:
         plot_budget_scatter,
         plot_error_curves,
         plot_error_vs_solves,
+        plot_test_boxplots,
+        plot_training_cost_bars,
     )
 
     tables = report.build_all_tables(CAMPAIGN)
@@ -829,6 +881,24 @@ def step_s8() -> dict:
         if ab:
             plot_ablation_bars(ab, figdir / f"{fam}_ablation.png",
                                title=f"{fam} ablations (canonical, pilot budget)")
+    cost_rows = [r for r in tables.get("training_cost") or [] if r.get("family") in FAMILIES_3D]
+    if cost_rows:
+        plot_training_cost_bars(
+            cost_rows, figdir / "training_cost.png",
+            title="A4 training cost (3D; offline only)",
+        )
+    test_raw = (tables.get("error_at_k") or {}).get("test_raw") or {}
+    test_raw = {fam: test_raw[fam] for fam in FAMILIES_3D if fam in test_raw}
+    if test_raw:
+        plot_test_boxplots(
+            test_raw, figdir / "test_boxplots.png",
+            title="test-set energy error at k=2/3/4",
+        )
+    try:
+        mesh_figs = write_whitelist_mesh_figures(figdir)
+        print(f"[S8] whitelist mesh figures: {mesh_figs}")
+    except Exception as exc:
+        print(f"[S8] whitelist mesh figures skipped: {exc}")
     (RESULTS / "s8_tables.json").write_text(json.dumps(tables, indent=1, default=str))
     print(f"[S8] tables and figures in {RESULTS}")
     return tables
