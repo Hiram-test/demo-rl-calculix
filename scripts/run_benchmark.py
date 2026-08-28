@@ -47,7 +47,7 @@ def main() -> int:
     ap.add_argument("--problem", default="bearing_block", choices=list(PROBLEM_FACTORIES))
     ap.add_argument("--out", default=None)
     ap.add_argument("--n-eq-budget", type=int, default=8000)
-    ap.add_argument("--vla-max-solves", type=int, default=4)
+    ap.add_argument("--vla-max-solves", type=int, default=2)
     ap.add_argument("--with-learned", action="store_true")
     ap.add_argument("--rl-episodes", type=int, default=40)
     ap.add_argument("--sup-experts", type=int, default=6)

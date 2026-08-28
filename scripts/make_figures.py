@@ -50,7 +50,7 @@ def figures_for(problem_name: str, bench_dir: Path, out_dir: Path) -> None:
 
     res = run_vla(
         runner, partitioner,
-        VLAConfig(n_eq_budget=BUDGETS[problem_name], max_solves=4),
+        VLAConfig(n_eq_budget=BUDGETS[problem_name], max_solves=2),
     )
     plot_mesh(
         runner.last_mesh,

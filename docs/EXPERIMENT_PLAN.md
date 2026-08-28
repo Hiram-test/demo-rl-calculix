@@ -177,8 +177,8 @@ solve 2  certified
 | AB1 视觉头 | LLM vs Scripted vs 随机种子（同数量） | 视觉质量贡献；随机=下界 |
 | AB2 分区形状 | 测地线种子分区 vs 轴对齐盒（旧 v1 实现） | "区域绝不能是盒子"的定量依据 |
 | AB3 结构锚点 | 含 vs 只用场峰值 | 图纸知识的价值（支座试点：无底缘锚点时 k=4 从 0.180 退化到 0.21 且预算超支） |
-| AB4 区域分裂 | 开 vs 关 | 类人"重画小圈"的价值 |
-| AB5 通信轮 | 开 vs 关（均衡初始直接进 PSO） | 一轮邻域/父级协商的价值 |
+| AB4 区域分裂 | 主方法关；消融打开（`vla_ab4_split`） | 类人"重画小圈"的价值 |
+| AB5 通信轮 | 主方法关；消融打开（`vla_ab5_comm`） | 按 η 份额重谈 vs 图纸先验直进 PSO |
 | AB6 PSO 认证 | 开 vs 关（agent 输出直接求解） | 校准的误差/预算收益 |
 | AB7 求解预算 | max_solves ∈ {3,4,5,6} | 误差@k 曲线的形状与 k* |
 | AB8 PSO 维度 | (s,κ) vs 仅 s vs 逐区 Nelder–Mead | 低维校准是否足够 |
@@ -206,7 +206,7 @@ solve 2  certified
 | S1 | 3D 两族参考解（canonical+测试 8+训练 24 按需） | S0 |
 | S2 | 均匀+Dörfler 全曲线+局部预测三档（canonical+测试集×预算档） | S1 |
 | S3 | 门 G1/G3/G7 判定 | S2 |
-| S4 | VLA：Scripted 头全量（测试集×3 预算档×max_solves 4）；LLM 头 canonical+测试集（试点档） | S1 |
+| S4 | VLA：Scripted 头全量（测试集×3 预算档×max_solves 2）；LLM 头 canonical+测试集（试点档）；通信/分裂只走 S7 AB4/AB5 | S1 |
 | S5 | 监督线（2D 全量；3D 试点档） | S1 |
 | S6 | RL 线（2D 300eps×3 种子；3D 120eps×3 种子，规模如实报告） | S1 |
 | S7 | 消融 AB1–AB8 | S4 |

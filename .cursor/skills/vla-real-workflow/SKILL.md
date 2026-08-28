@@ -53,7 +53,7 @@ PSO 已经写好了。适应度 = 上次实测 η² 份额 + 单元数缩放 N ~
 - 提示词写图纸，不写响应场 / 应力场。没画到的给 `remainder_fineness_fraction`。允许 `view=section`。
 - 区域是不规则多边形，默认不是盒子。盒子只留 AB2。
 - 第一次求解计入 k=1，可以成为交付解。不要把第一张网当成可丢的均匀探针。
-- 主方法：`allow_communication=False`，`allow_split=False`，`max_solves=2`。通信/分裂只留 AB。
+- 主方法：`allow_communication=False`，`allow_split=False`，`max_solves=2`。分裂只留 AB4（`vla_ab4_split`），通信只留 AB5（`vla_ab5_comm`）。
 - 修订 PSO 的 `h+` 必须是眼睛尺寸，不是通信轮输出，也不是「按 η 重新给的尺寸」。
 - 重网格用 `drawings_size_fn`（同一批多边形），不要用旧网标签把图画糊掉。
 - `run_vla` 只调用 `calibrate_measured`。`fit_surrogate` / `calibrate(` 不得出现在 `pipeline.py`。

@@ -532,7 +532,7 @@ def run_failure_probe_families(families=FP_FAMILIES, keys=FP_KEYS) -> None:
             runner.ensure_reference()
             runner.reset_counter()
             partitioner = ScriptedVisionPartitioner()
-            cfg = VLAConfig(n_eq_budget=b, max_solves=4, pso=VLAConfig().pso)
+            cfg = VLAConfig(n_eq_budget=b, max_solves=2, pso=VLAConfig().pso)
             res = run_vla(runner, partitioner, cfg, method="vla")
             recs = [r for r in runner.records if r.method == "vla"]
             for r in recs:
@@ -779,7 +779,7 @@ def _run_vla_one(
     else:
         partitioner = ScriptedVisionPartitioner()
 
-    cfg = VLAConfig(n_eq_budget=n_eq, max_solves=4, pso=VLAConfig().pso)
+    cfg = VLAConfig(n_eq_budget=n_eq, max_solves=2, pso=VLAConfig().pso)
     # PSO seed is already 17 in PSOConfig
     if cfg_kwargs:
         for k, v in cfg_kwargs.items():
@@ -951,13 +951,14 @@ def step_s7(families=FAMILIES_3D) -> None:
         _run_vla_one(
             fam, key, b, head="scripted_no_anchor", method="vla_ab3_no_anchor",
         )
+        # Main method already has split/comm off. AB4/AB5 turn them on.
         _run_vla_one(
-            fam, key, b, head="scripted", method="vla_ab4_nosplit",
-            cfg_kwargs={"allow_split": False},
+            fam, key, b, head="scripted", method="vla_ab4_split",
+            cfg_kwargs={"allow_split": True},
         )
         _run_vla_one(
-            fam, key, b, head="scripted", method="vla_ab5_nocomm",
-            cfg_kwargs={"allow_communication": False},
+            fam, key, b, head="scripted", method="vla_ab5_comm",
+            cfg_kwargs={"allow_communication": True},
         )
         _run_vla_one(
             fam, key, b, head="scripted", method="vla_ab6_nopso",

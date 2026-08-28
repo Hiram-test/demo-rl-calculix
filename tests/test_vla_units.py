@@ -588,6 +588,32 @@ def test_s7_keeps_plan_ablations_ab7_and_ab9_to_ab11():
         assert token in text
 
 
+def test_s4_two_solves_and_ab4_ab5_turn_split_comm_on():
+    """Main method is two solves, no split/comm. AB4/AB5 are the on variants."""
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "visionamr" / "campaign.py").read_text()
+    assert 'method="vla_ab4_split"' in text
+    assert '{"allow_split": True}' in text
+    assert 'method="vla_ab5_comm"' in text
+    assert '{"allow_communication": True}' in text
+    assert "vla_ab4_nosplit" not in text
+    assert "vla_ab5_nocomm" not in text
+    assert "max_solves=2" in text
+    assert "max_solves=4" not in text
+    report = (root / "visionamr" / "report.py").read_text()
+    assert '("vla_ab4_split", "AB4 split")' in report
+    assert '("vla_ab5_comm", "AB5 comm")' in report
+    assert '("vla_ab4_nosplit"' not in report
+    assert '("vla_ab5_nocomm"' not in report
+    plan = (root / "docs" / "EXPERIMENT_PLAN.md").read_text()
+    assert "max_solves 2" in plan
+    assert "vla_ab4_split" in plan
+    assert "vla_ab5_comm" in plan
+
+
 def test_reference_floor_honours_lbracket_corner_grading():
     """G3: reference mesh floor must be at least as fine as h_ref/48."""
 
