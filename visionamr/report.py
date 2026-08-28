@@ -447,12 +447,12 @@ def learned_scale() -> dict:
     return out
 
 
-def lp_rounds_diagnostic(families=FAMILIES_3D) -> dict:
-    """Audit table: local prediction rerun past its 3-solve short run."""
+def _lp_diag_table(fname: str, families=FAMILIES_3D) -> dict:
+    """Per-solve table + convergence stats for one LP diagnostic dump."""
 
     out = {}
     for fam in families:
-        recs = _series(fam, "canonical", "records_lp_rounds_diag.json")
+        recs = _series(fam, "canonical", fname)
         if not recs:
             continue
         b = PILOT_EQ[fam]
@@ -474,11 +474,125 @@ def lp_rounds_diagnostic(families=FAMILIES_3D) -> dict:
             "e_at_3_solves": e3,
             "e_best": e_best,
             "k_best": k_best,
+            "e_final": es[-1] if es else None,
             "rel_gain_after_3": (1.0 - e_best / e3) if (e3 and e_best) else None,
+            "rel_degradation_after_best": (
+                (es[-1] / e_best - 1.0) if (es and e_best) else None
+            ),
             "uptick_after_best": bool(
                 k_best is not None
                 and any(es[i] > es[i - 1] for i in range(k_best, len(es)))
             ),
+        }
+    return out
+
+
+def lp_rounds_diagnostic(families=FAMILIES_3D) -> dict:
+    """Audit table: local prediction rerun past its 3-solve short run."""
+
+    return _lp_diag_table("records_lp_rounds_diag.json", families)
+
+
+def lp_naive_diagnostic(families=FAMILIES_3D) -> dict:
+    """Weakness evidence: literature deployment (p=1, wide coarsening)."""
+
+    return _lp_diag_table("records_lp_naive_diag.json", families)
+
+
+def budget_deviation_stats(families=FAMILIES_3D) -> dict:
+    """A3/H2 evidence: uncertified methods drift from the budget.
+
+    Fractions are in each method's own contract space: LP and supervised
+    promise an element count, VLA promises an equation cap.
+    """
+
+    out = {}
+    for fam in families:
+        b_eq = PILOT_EQ[fam]
+        dim = 3 if fam in FAMILIES_3D else 2
+        fracs: dict[str, list[float]] = {
+            "local_prediction": [],
+            "supervised": [],
+            "vla": [],
+        }
+        for key in ["canonical"] + [f"test_{s}" for s in TEST_SEEDS]:
+            groups: dict[int, list] = {}
+            for rec in _series(fam, key, "records_local_prediction.json"):
+                groups.setdefault(int(rec.get("extra", {}).get("budget", 0)), []).append(rec)
+            for bb, rr in groups.items():
+                if bb > 0 and rr[-1].get("n_elems"):
+                    fracs["local_prediction"].append(rr[-1]["n_elems"] / bb)
+            sup = _series(fam, key, "records_supervised.json")
+            if sup and sup[-1].get("n_elems"):
+                fracs["supervised"].append(sup[-1]["n_elems"] / elem_budget(b_eq, dim))
+            pick = vla_deliverable(_vla_file(fam, key, "scripted", b_eq), 99, b_eq)
+            if pick and pick.get("n_equations"):
+                fracs["vla"].append(pick["n_equations"] / b_eq)
+        out[fam] = {
+            m: {
+                "n": len(v),
+                "median": float(np.median(v)) if v else None,
+                "min": float(np.min(v)) if v else None,
+                "max": float(np.max(v)) if v else None,
+                "n_in_band_90_105": int(sum(0.90 <= f <= 1.05 for f in v)),
+            }
+            for m, v in fracs.items()
+        }
+    return out
+
+
+OOD_SEEDS = list(range(9500, 9504))
+
+
+def ood_generalization_table(families=FAMILIES_3D) -> dict:
+    """Weakness evidence: learned size field under distribution shift.
+
+    Same three deployments on instances drawn outside the training
+    sampler's support; the sup-vs-vla gap shift isolates the shift effect
+    (both see a new instance; only supervised carries trained weights).
+    """
+
+    out = {}
+    for fam in families:
+        b = PILOT_EQ[fam]
+        dim = 3 if fam in FAMILIES_3D else 2
+        rows = []
+        gaps_ood = []
+        for seed in OOD_SEEDS:
+            key = f"ood_{seed}"
+            sup = _series(fam, key, "records_supervised.json")
+            lp = _series(fam, key, "records_local_prediction.json")
+            pick = vla_deliverable(_vla_file(fam, key, "scripted", b), 99, b)
+            if not (sup and lp and pick):
+                continue
+            e_s, e_v = sup[-1].get("e_energy"), pick.get("e_energy")
+            rows.append(
+                {
+                    "key": key,
+                    "supervised_e": e_s,
+                    "supervised_frac": (sup[-1].get("n_elems") or 0) / elem_budget(b, dim),
+                    "lp3_e": lp[-1].get("e_energy"),
+                    "lp3_frac": (lp[-1].get("n_elems") or 0) / elem_budget(b, dim),
+                    "vla_e": e_v,
+                    "vla_frac": (pick.get("n_equations") or 0) / b,
+                }
+            )
+            if e_s is not None and e_v is not None:
+                gaps_ood.append(e_s - e_v)
+        if not rows:
+            continue
+        # in-distribution contrast on the 8 test instances
+        gaps_test = []
+        for s in TEST_SEEDS:
+            key = f"test_{s}"
+            sup = _series(fam, key, "records_supervised.json")
+            pick = vla_deliverable(_vla_file(fam, key, "scripted", b), 99, b)
+            if sup and pick and sup[-1].get("e_energy") is not None and pick.get("e_energy") is not None:
+                gaps_test.append(sup[-1]["e_energy"] - pick["e_energy"])
+        out[fam] = {
+            "rows": rows,
+            "median_gap_sup_minus_vla_ood": float(np.median(gaps_ood)) if gaps_ood else None,
+            "median_gap_sup_minus_vla_test": float(np.median(gaps_test)) if gaps_test else None,
         }
     return out
 
@@ -615,6 +729,9 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "learned_test": learned_test_summary(),
         "training_cost": training_cost_rows(),
         "lp_rounds_diag": lp_rounds_diagnostic(),
+        "lp_naive_diag": lp_naive_diagnostic(),
+        "budget_deviation": budget_deviation_stats(),
+        "ood_generalization": ood_generalization_table(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
     }
@@ -778,6 +895,79 @@ def render_results_md(tables: dict) -> str:
             f"{r.get('n_eq')} | {_fmt(r.get('e_energy'))} | "
             f"{_fmt(frac)} | {'yes' if r.get('over_cap') else 'no'} |"
         )
+    lines += ["", "## 审核补充：对照方法缺点实证（全部为真实 CalculiX 求解）", ""]
+    naive = tables.get("lp_naive_diag") or {}
+    if naive:
+        lines += [
+            "### E1 局部预测·朴素部署振荡（§3.3.1 失稳模式复现）",
+            "",
+            "同一逐单元预测循环，改用文献朴素配方：指数 p=1、粗化界放宽到 [1/6, 3.0]",
+            "（v2 锁定值为 p=(d+2)/2、粗化界 1.8）。",
+            "",
+            "| family | solve | N | N/B | e_E |",
+            "|---|---:|---:|---:|---:|",
+        ]
+        for fam, info in naive.items():
+            for r in info.get("rows", []):
+                lines.append(
+                    f"| {fam} | {r['solve']} | {r['n_eq']} | "
+                    f"{_fmt(r['frac'], 2)} | {_fmt(r['e_energy'])} |"
+                )
+        for fam, info in naive.items():
+            deg = info.get("rel_degradation_after_best")
+            lines.append("")
+            lines.append(
+                f"- {fam}：最优 e={_fmt(info.get('e_best'))}（第 {info.get('k_best')} 次），"
+                f"末轮 e={_fmt(info.get('e_final'))}，最优后恶化 "
+                f"{_fmt(100 * deg if deg is not None else None, 1)}%；"
+                f"回弹：{'是' if info.get('uptick_after_best') else '否'}。"
+                "对照：v2 修正版（上节）单调进平台。"
+            )
+        lines.append("")
+    dev = tables.get("budget_deviation") or {}
+    if dev:
+        lines += [
+            "### E2 无认证语义的预算偏差（canonical+测试 8，按各自契约空间）",
+            "",
+            "LP/监督承诺单元数（frac=单元数/单元预算）；VLA 承诺方程帽（frac=N/预算）。",
+            "",
+            "| family | method | n | median | min | max | in [0.90,1.05] |",
+            "|---|---|---:|---:|---:|---:|---:|",
+        ]
+        for fam, methods in dev.items():
+            for m, s in methods.items():
+                lines.append(
+                    f"| {fam} | {m} | {s['n']} | {_fmt(s['median'], 2)} | "
+                    f"{_fmt(s['min'], 2)} | {_fmt(s['max'], 2)} | "
+                    f"{s['n_in_band_90_105']}/{s['n']} |"
+                )
+        lines.append("")
+    ood = tables.get("ood_generalization") or {}
+    if ood:
+        lines += [
+            "### E3 监督·分布偏移（OOD 实例：全部参数在训练采样器支撑集外）",
+            "",
+            "同场部署：监督（2 次求解）、LP 短跑（3 次）、VLA scripted。",
+            "免训练方法对新实例本来就是零样本；差距变化隔离偏移效应。",
+            "",
+            "| family | key | supervised e (frac) | lp3 e (frac) | VLA e (frac) |",
+            "|---|---|---:|---:|---:|",
+        ]
+        for fam, info in ood.items():
+            for r in info.get("rows", []):
+                lines.append(
+                    f"| {fam} | {r['key']} | {_fmt(r['supervised_e'])} ({_fmt(r['supervised_frac'], 2)}) | "
+                    f"{_fmt(r['lp3_e'])} ({_fmt(r['lp3_frac'], 2)}) | "
+                    f"{_fmt(r['vla_e'])} ({_fmt(r['vla_frac'], 2)}) |"
+                )
+        for fam, info in ood.items():
+            lines.append("")
+            lines.append(
+                f"- {fam}：监督−VLA 中位差距，分布内 "
+                f"{_fmt(info.get('median_gap_sup_minus_vla_test'))} → OOD "
+                f"{_fmt(info.get('median_gap_sup_minus_vla_ood'))}。"
+            )
+        lines.append("")
     lines += [
         "",
         "## 诚实边界",

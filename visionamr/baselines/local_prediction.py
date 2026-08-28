@@ -83,17 +83,28 @@ def run_local_prediction(
     gradation: float = 0.9,
     method: str = "local_prediction",
     require_reference: bool = True,
+    p: float | None = None,
+    ratio_bounds: tuple[float, float] | None = None,
 ) -> None:
     """Few-shot predicted-size remeshing at each element budget.
 
     For every budget: one probe solve, then ``rounds`` predicted
     remeshes (the second corrects the first with fresh indicators at the
     same budget).  Every solve is counted: rounds+1 per budget.
+
+    ``p`` / ``ratio_bounds`` override the v2-corrected prediction exponent
+    and clipping; the naive literature deployment (p=1, wide coarsening)
+    is used only by the failure-mode diagnostic.
     """
 
     problem = runner.problem
     if require_reference:
         runner.ensure_reference()
+    pred_kw: dict = {}
+    if p is not None:
+        pred_kw["p"] = p
+    if ratio_bounds is not None:
+        pred_kw["ratio_bounds"] = ratio_bounds
     for budget in budgets:
         mesh = initial_mesh(problem)
         for r in range(rounds + 1):
@@ -104,7 +115,7 @@ def run_local_prediction(
             rec.extra["sum_eta2"] = float(eta2.sum())
             if r >= rounds:
                 break
-            h_elem = predicted_sizes(mesh, eta2, n_target=budget)
+            h_elem = predicted_sizes(mesh, eta2, n_target=budget, **pred_kw)
             target = element_to_node_sizes(mesh, h_elem)
             field = NodalSizeField(
                 mesh, target, gradation=gradation, h_min=problem.h_min, h_max=problem.h0

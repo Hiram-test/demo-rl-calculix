@@ -242,6 +242,50 @@ def test_a2prime_discloses_dorfler_budget_and_learned_columns():
             assert row[k]["dorfler_n"] is not None
 
 
+def test_ood_samplers_draw_outside_training_support():
+    """E3 validity: every OOD parameter must sit outside the sampler range."""
+
+    import numpy as np
+
+    from visionamr.geometry import OOD_SAMPLERS
+
+    for seed in (9500, 9501, 9502, 9503):
+        p = OOD_SAMPLERS["bearing_block"](np.random.default_rng(seed)).params
+        assert min(p["patch"]) > 180.0
+        assert min(abs(p["offset"][0]), abs(p["offset"][1])) > 70.0
+        assert p["pressure"] > 16.0
+        q = OOD_SAMPLERS["deck_panel"](np.random.default_rng(seed)).params
+        assert q["wheel_pos"][0] > 1700.0 and q["wheel_pos"][1] > 1100.0
+        assert q["wheel"][0] > 500.0 and q["wheel"][1] > 320.0
+        assert q["pressure"] > 1.4
+
+
+def test_weakness_evidence_tables_are_populated():
+    """E1/E2/E3 audit tables must be backed by dumped records."""
+
+    from visionamr.report import (
+        budget_deviation_stats,
+        lp_naive_diagnostic,
+        ood_generalization_table,
+    )
+
+    naive = lp_naive_diagnostic()
+    for fam in ("bearing_block", "deck_panel"):
+        assert len(naive[fam]["rows"]) == 7
+        assert naive[fam]["uptick_after_best"] is True
+
+    dev = budget_deviation_stats()
+    for fam in ("bearing_block", "deck_panel"):
+        for m in ("local_prediction", "supervised", "vla"):
+            assert dev[fam][m]["n"] > 0 and dev[fam][m]["median"] is not None
+
+    ood = ood_generalization_table()
+    for fam in ("bearing_block", "deck_panel"):
+        assert len(ood[fam]["rows"]) == 4
+        assert ood[fam]["median_gap_sup_minus_vla_ood"] is not None
+        assert ood[fam]["median_gap_sup_minus_vla_test"] is not None
+
+
 def test_lp_rounds_diag_stays_out_of_the_main_lp_series():
     """G6: the 7-solve diagnostic must not join the plan-locked short run."""
 

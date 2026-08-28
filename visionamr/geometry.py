@@ -468,9 +468,41 @@ PROBLEM_FACTORIES = {
     "plate_holes": make_plate_holes,
 }
 
+def sample_bearing_block_ood(rng: np.random.Generator) -> Problem:
+    """Out-of-distribution bearing instance: every parameter lies outside
+    the training sampler's support (patch 100–180, offset ±70, p 8–16)."""
+
+    a = float(rng.uniform(190.0, 205.0))
+    b = float(rng.uniform(190.0, 205.0))
+    ox = float(rng.choice([-1.0, 1.0])) * float(rng.uniform(75.0, 82.0))
+    oy = float(rng.choice([-1.0, 1.0])) * float(rng.uniform(75.0, 82.0))
+    return make_bearing_block(
+        patch=(a, b), offset=(ox, oy), pressure=float(rng.uniform(18.0, 22.0))
+    )
+
+
+def sample_deck_panel_ood(rng: np.random.Generator) -> Problem:
+    """Out-of-distribution deck instance: wheel position, footprint, and
+    pressure all outside the training support (x 700–1700, y 500–1100,
+    wheel 300–500 × 200–320, p 0.7–1.4)."""
+
+    wx = float(rng.uniform(1850.0, 2000.0))
+    wy = float(rng.uniform(1150.0, 1250.0))
+    return make_deck_panel(
+        wheel_pos=(wx, wy),
+        wheel=(float(rng.uniform(510.0, 560.0)), float(rng.uniform(330.0, 360.0))),
+        pressure=float(rng.uniform(1.6, 2.0)),
+    )
+
+
 SAMPLERS = {
     "bearing_block": sample_bearing_block,
     "deck_panel": sample_deck_panel,
     "lbracket": sample_lbracket,
     "plate_holes": sample_plate_holes,
+}
+
+OOD_SAMPLERS = {
+    "bearing_block": sample_bearing_block_ood,
+    "deck_panel": sample_deck_panel_ood,
 }

@@ -23,6 +23,7 @@ from .baselines.uniform import run_uniform_ladder
 from .calculix import assemble_nodal_forces, default_ccx_cmd
 from .experiment import FemRunner, SolveRecord
 from .geometry import (
+    OOD_SAMPLERS,
     PROBLEM_FACTORIES,
     SAMPLERS,
     analytic_load_resultant,
@@ -70,6 +71,8 @@ def instance_key_problem(family: str, key: str):
     kind, _, raw = key.partition("_")
     seed = int(raw)
     rng = np.random.default_rng(seed)
+    if kind == "ood":
+        return OOD_SAMPLERS[family](rng)
     return SAMPLERS[family](rng)
 
 
@@ -329,6 +332,89 @@ def run_lp_rounds_diagnostic(families=FAMILIES_3D, rounds: int = 6) -> None:
         )
         _dump_slice(runner, "local_prediction_r6", out)
         print(f"[LPdiag] {fam} done")
+
+
+def run_lp_naive_diagnostic(families=FAMILIES_3D, rounds: int = 6) -> None:
+    """Weakness evidence (plan §3.3.1): the literature deployment oscillates.
+
+    Runs the element-wise prediction loop with the *uncorrected* exponent
+    (p=1) and the wide coarsening bound instead of the v2-locked
+    (p=(d+2)/2, clip 1.8).  Dumped separately; never joins the S2 series.
+    """
+
+    for fam in families:
+        b = PILOT_EQ[fam]
+        d = instance_dir(fam, "canonical")
+        out = d / "records_lp_naive_diag.json"
+        if _records_exist(out):
+            print(f"[LPnaive] {fam} cached")
+            continue
+        problem = instance_key_problem(fam, "canonical")
+        runner = make_runner(problem, d)
+        runner.ensure_reference()
+        runner.reset_counter()
+        run_local_prediction(
+            runner,
+            budgets=[elem_budget(b, problem.dim)],
+            rounds=rounds,
+            method="local_prediction_naive",
+            p=1.0,
+            ratio_bounds=(1.0 / 6.0, 3.0),
+        )
+        _dump_slice(runner, "local_prediction_naive", out)
+        print(f"[LPnaive] {fam} done")
+
+
+OOD_SEEDS = list(range(9500, 9504))
+
+
+def run_ood_generalization(families=FAMILIES_3D, seeds=None) -> None:
+    """Weakness evidence: supervised is family-sampler-bound.
+
+    Deploys the trained supervised model, the LP short run, and the VLA
+    scripted loop on instances drawn *outside* the training sampler's
+    support.  Training-free methods see a new instance either way; the
+    learned size field faces distribution shift.
+    """
+
+    from .baselines.supervised import SizeMLP, SupervisedConfig, deploy_supervised
+
+    seeds = list(seeds) if seeds is not None else OOD_SEEDS
+    for fam in families:
+        b = PILOT_EQ[fam]
+        model_path = CAMPAIGN / fam / "supervised" / "model.pt"
+        model = None
+        if model_path.exists():
+            model = SizeMLP(SupervisedConfig())
+            model.load(model_path)
+        for seed in seeds:
+            key = f"ood_{seed}"
+            d = instance_dir(fam, key)
+            problem = instance_key_problem(fam, key)
+
+            sup_out = d / "records_supervised.json"
+            if model is not None and not _records_exist(sup_out):
+                runner = make_runner(problem, d)
+                runner.ensure_reference()
+                runner.reset_counter()
+                deploy_supervised(
+                    runner, model, n_elem_budget=elem_budget(b, problem.dim)
+                )
+                _dump_slice(runner, "supervised", sup_out)
+                print(f"[OOD] {fam}/{key} supervised done")
+
+            lp_out = d / "records_local_prediction.json"
+            if not _records_exist(lp_out):
+                runner = make_runner(problem, d)
+                runner.ensure_reference()
+                runner.reset_counter()
+                run_local_prediction(
+                    runner, budgets=[elem_budget(b, problem.dim)], rounds=2
+                )
+                _dump_slice(runner, "local_prediction", lp_out)
+                print(f"[OOD] {fam}/{key} local_prediction done")
+
+            _run_vla_one(fam, key, b, head="scripted")
 
 
 # ---------------------------------------------------------------------------
