@@ -82,6 +82,7 @@ def run_local_prediction(
     rounds: int = 2,
     gradation: float = 0.9,
     method: str = "local_prediction",
+    require_reference: bool = True,
 ) -> None:
     """Few-shot predicted-size remeshing at each element budget.
 
@@ -91,7 +92,8 @@ def run_local_prediction(
     """
 
     problem = runner.problem
-    runner.ensure_reference()
+    if require_reference:
+        runner.ensure_reference()
     for budget in budgets:
         mesh = initial_mesh(problem)
         for r in range(rounds + 1):

@@ -45,6 +45,12 @@ class VLAConfig:
     min_predicted_gain: float = 0.15   # else certify the current mesh in place
     inplace_min_use: float = 0.88      # in-place certification needs a
                                        # nearly exhausted budget
+    partition_mode: str = "geodesic"   # geodesic | linf_box (AB2)
+    allow_communication: bool = True   # AB5
+    allow_pso: bool = True             # AB6
+    pso_mode: str = "sk"               # sk | s_only | nelder (AB8)
+    use_measured_exponents: bool = True  # AB9
+    use_resource_drift: bool = True    # AB10
     agent: AgentConfig = field(default_factory=AgentConfig)
     pso: PSOConfig = field(default_factory=PSOConfig)
 
@@ -111,7 +117,9 @@ def run_vla(
 
     # ---- vision partition + region-level equidistribution init ----------
     seeds = partitioner.propose(problem, post, eta2)
-    part = Partition(seeds, problem, gradation=cfg.gradation)
+    part = Partition(
+        seeds, problem, gradation=cfg.gradation, assign_mode=cfg.partition_mode
+    )
     labels = part.assign(mesh)
     elems_budget = cfg.n_eq_budget / eq_per_elem
     h_elem = predicted_sizes(
@@ -134,21 +142,30 @@ def run_vla(
         (np.full(len(seeds), problem.h0), feats.err_sum.copy())
     ]
     sur = fit_surrogate(part, feats, np.full(len(seeds), problem.h0), [], cfg.pso)
-    h_agent, round_info = communication_round(
-        part, feats, adjacency,
-        n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
-        p_vec=sur.q,
-    )
-    # blend: equidistribution magnitudes with the negotiated correction
-    h_plus = np.clip(
-        np.sqrt(h_init * h_agent), problem.h_min, problem.h0
-    )
+    p_vec = sur.q if cfg.use_measured_exponents else None
+    if cfg.allow_communication:
+        h_agent, round_info = communication_round(
+            part, feats, adjacency,
+            n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
+            p_vec=p_vec,
+        )
+        # blend: equidistribution magnitudes with the negotiated correction
+        h_plus = np.clip(
+            np.sqrt(h_init * h_agent), problem.h_min, problem.h0
+        )
+    else:
+        round_info = {"skipped": True}
+        h_plus = h_init
     A = part.adjacency_matrix(mesh, labels)
-    h_cal, pso_info = calibrate(
-        part, h_plus, sur, A,
-        err_limit=err_limit, n_eq_budget=cfg.n_eq_budget,
-        eq_per_elem=eq_per_elem, cfg=cfg.pso,
-    )
+    if cfg.allow_pso:
+        h_cal, pso_info = calibrate(
+            part, h_plus, sur, A,
+            err_limit=err_limit, n_eq_budget=cfg.n_eq_budget,
+            eq_per_elem=eq_per_elem, cfg=cfg.pso, mode=cfg.pso_mode,
+        )
+    else:
+        h_cal = h_plus
+        pso_info = {"s": 0.0, "kappa": 0.0, "R_pred_elems": None, "E_pred": float("nan")}
     part = part.with_sizes(h_cal)
 
     stopped_early = False
@@ -197,17 +214,22 @@ def run_vla(
         # measured resource drift: realized elements vs the surrogate's
         # prediction for this mesh (gradation-band overhead correction)
         drift = 1.0
-        if pso_info.get("R_pred_elems"):
+        if cfg.use_resource_drift and pso_info.get("R_pred_elems"):
             drift = rec.n_elems / max(pso_info["R_pred_elems"], 1.0)
 
         adjacency = part.adjacency(mesh, labels)
         sur_pre = fit_surrogate(part, feats, anchor_h, history, cfg.pso)
-        h_agent, round_info = communication_round(
-            part, feats, adjacency,
-            n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
-            p_vec=sur_pre.q,
-        )
-        part_next = part.with_sizes(h_agent)
+        p_vec = sur_pre.q if cfg.use_measured_exponents else None
+        if cfg.allow_communication:
+            h_agent, round_info = communication_round(
+                part, feats, adjacency,
+                n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
+                p_vec=p_vec,
+            )
+            part_next = part.with_sizes(h_agent)
+        else:
+            round_info = {"skipped": True}
+            part_next = part
 
         anchor_vec = anchor_h
         if cfg.allow_split and cfg.max_solves - solve_idx >= 1:
@@ -239,22 +261,32 @@ def run_vla(
         )
         sur = fit_surrogate(part_next, feats, anchor_vec, history, cfg.pso)
         A = part_next.adjacency_matrix(mesh, labels)
-        h_cal, pso_info = calibrate(
-            part_next, part_next.sizes(), sur, A,
-            err_limit=err_limit, n_eq_budget=cfg.n_eq_budget,
-            eq_per_elem=eq_per_elem, resource_drift=drift, cfg=pso_cfg,
-        )
+        if cfg.allow_pso:
+            h_cal, pso_info = calibrate(
+                part_next, part_next.sizes(), sur, A,
+                err_limit=err_limit, n_eq_budget=cfg.n_eq_budget,
+                eq_per_elem=eq_per_elem, resource_drift=drift, cfg=pso_cfg,
+                mode=cfg.pso_mode,
+            )
+        else:
+            h_cal = part_next.sizes()
+            pso_info = {
+                "s": 0.0, "kappa": 0.0, "R_pred_elems": None, "E_pred": float("nan")
+            }
         s_last, k_last = pso_info["s"], pso_info["kappa"]
 
         # certify in place: the budget is nearly exhausted by a compliant
         # mesh and the surrogate predicts too little gain for another solve
         E_now = float(eta2.sum())
+        e_pred = pso_info.get("E_pred")
         if (
             cfg.early_stop
             and cfg.inplace_min_use * cfg.n_eq_budget
             <= rec.n_equations
             <= cfg.n_eq_budget
-            and pso_info["E_pred"] > (1.0 - cfg.min_predicted_gain) * E_now
+            and e_pred is not None
+            and np.isfinite(e_pred)
+            and e_pred > (1.0 - cfg.min_predicted_gain) * E_now
         ):
             rec.extra["certified_inplace"] = True
             stopped_early = True

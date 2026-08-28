@@ -1,0 +1,92 @@
+{
+ "G1": {
+  "gate": "G1",
+  "pass": true,
+  "checked": 6,
+  "fails": []
+ },
+ "G3": {
+  "gate": "G3",
+  "pass": false,
+  "n_records": 188,
+  "n_above_reference": 2,
+  "paths": [
+   "/workspace/visionamr_pr36_grok/repo/results/campaign/deck_panel/canonical/records_classical.json",
+   "/workspace/visionamr_pr36_grok/repo/results/campaign/deck_panel/canonical/records_dorfler.json"
+  ]
+ },
+ "G7": {
+  "gate": "G7",
+  "pass": true,
+  "rows": [
+   {
+    "family": "bearing_block",
+    "mesh": "coarse",
+    "n_elems": 912,
+    "F": [
+     0.0,
+     0.0,
+     -235199.99999999997
+    ],
+    "target": [
+     0.0,
+     0.0,
+     -235200.0
+    ],
+    "rel_err": 1.237407757514188e-16,
+    "pass": true
+   },
+   {
+    "family": "bearing_block",
+    "mesh": "fine",
+    "n_elems": 3188,
+    "F": [
+     0.0,
+     0.0,
+     -235200.0
+    ],
+    "target": [
+     0.0,
+     0.0,
+     -235200.0
+    ],
+    "rel_err": 0.0,
+    "pass": true
+   },
+   {
+    "family": "deck_panel",
+    "mesh": "coarse",
+    "n_elems": 2128,
+    "F": [
+     0.0,
+     0.0,
+     -99999.99999999997
+    ],
+    "target": [
+     0.0,
+     0.0,
+     -100000.0
+    ],
+    "rel_err": 2.9103830456733706e-16,
+    "pass": true
+   },
+   {
+    "family": "deck_panel",
+    "mesh": "fine",
+    "n_elems": 8047,
+    "F": [
+     0.0,
+     0.0,
+     -99999.99999999999
+    ],
+    "target": [
+     0.0,
+     0.0,
+     -100000.0
+    ],
+    "rel_err": 1.4551915228366853e-16,
+    "pass": true
+   }
+  ]
+ }
+}

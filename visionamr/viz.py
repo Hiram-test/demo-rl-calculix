@@ -179,12 +179,23 @@ METHOD_STYLE = {
 
 def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
                       y: str = "e_energy", title: str = "") -> None:
+    """e_E vs N.  Local-prediction budgets are separate series (G6)."""
+
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
     by_method: dict[str, list] = {}
     for r in records:
         by_method.setdefault(r.method, []).append(r)
     for method, recs in by_method.items():
-        style = METHOD_STYLE.get(method, dict(marker="."))
+        style = dict(METHOD_STYLE.get(method, dict(marker=".")))
+        if method == "local_prediction":
+            groups: dict[int, list] = {}
+            for r in recs:
+                groups.setdefault(int(r.extra.get("budget", 0)), []).append(r)
+            for b, rr in sorted(groups.items()):
+                xs = [getattr(r, x) for r in rr]
+                ys = [getattr(r, y) for r in rr]
+                ax.loglog(xs, ys, label=f"local_prediction b{b}", **style)
+            continue
         xs = [getattr(r, x) for r in recs]
         ys = [getattr(r, y) for r in recs]
         ax.loglog(xs, ys, label=method, **style)
@@ -198,13 +209,16 @@ def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
     plt.close(fig)
 
 
-def plot_error_vs_solves(records: list, path: Path, title: str = "") -> None:
+def plot_error_vs_solves(
+    records: list, path: Path, title: str = "", *, n_eq_budget: int | None = None
+) -> None:
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
     by_method: dict[str, list] = {}
     for r in records:
         by_method.setdefault(r.method, []).append(r)
+    series = {}
     for method, recs in by_method.items():
-        style = METHOD_STYLE.get(method, dict(marker="."))
+        style = dict(METHOD_STYLE.get(method, dict(marker=".")))
         if method == "local_prediction":
             best: dict[int, list] = {}
             for r in recs:
@@ -212,11 +226,67 @@ def plot_error_vs_solves(records: list, path: Path, title: str = "") -> None:
             recs = max(best.values(), key=lambda rr: rr[-1].n_equations)
         xs = list(range(1, len(recs) + 1))
         ys = [r.e_energy for r in recs]
+        series[method] = (xs, ys)
         ax.semilogy(xs, ys, label=method, **style)
+    # H4: first k where Dörfler undercuts VLA, if both present
+    if "dorfler_zz" in series and "vla" in series:
+        d_ys = series["dorfler_zz"][1]
+        v_ys = series["vla"][1]
+        k_star = None
+        for k in range(1, min(len(d_ys), len(v_ys)) + 1):
+            if d_ys[k - 1] is None or v_ys[k - 1] is None:
+                continue
+            if d_ys[k - 1] < v_ys[k - 1]:
+                k_star = k
+                break
+        if k_star is not None:
+            ax.axvline(k_star, color="0.4", ls=":", lw=1.0)
+            ax.text(k_star + 0.05, ax.get_ylim()[1], f" $k^*={k_star}$",
+                    va="top", fontsize=8, color="0.3")
     ax.set_xlabel("global solves (cumulative)")
     ax.set_ylabel("relative energy error")
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=8)
+    ax.set_title(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+
+
+def plot_budget_scatter(rows: list[dict], path: Path, title: str = "") -> None:
+    """rows: {method, family, n_eq, budget, e_energy}."""
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.4))
+    colors = {
+        "vla": "tab:red", "local_prediction": "tab:green",
+        "dorfler_zz": "tab:blue", "supervised": "tab:orange", "rl_dqn": "tab:purple",
+    }
+    for method in sorted({r["method"] for r in rows}):
+        mrows = [r for r in rows if r["method"] == method]
+        xs = [r["n_eq"] / max(r["budget"], 1) for r in mrows]
+        ys = [r["e_energy"] for r in mrows]
+        ax.scatter(xs, ys, label=method, c=colors.get(method, "0.3"), s=36)
+    ax.axvspan(0.90, 1.05, color="tab:red", alpha=0.08, label="VLA H2 band")
+    ax.axvline(1.0, color="0.5", ls="--", lw=0.8)
+    ax.set_xlabel("N / budget")
+    ax.set_ylabel("energy error")
+    ax.legend(fontsize=8)
+    ax.set_title(title)
+    fig.tight_layout()
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+
+
+def plot_ablation_bars(rows: list[dict], path: Path, title: str = "") -> None:
+    """rows: {name, e_energy, n_eq}."""
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    names = [r["name"] for r in rows]
+    es = [r["e_energy"] for r in rows]
+    ax.bar(range(len(names)), es, color="tab:red", alpha=0.85)
+    ax.set_xticks(range(len(names)))
+    ax.set_xticklabels(names, rotation=35, ha="right", fontsize=8)
+    ax.set_ylabel("energy error (deliverable)")
     ax.set_title(title)
     fig.tight_layout()
     fig.savefig(path, dpi=170)

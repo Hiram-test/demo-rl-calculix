@@ -97,15 +97,18 @@ def generate_expert_dataset(
     for i, problem in enumerate(problems):
         inst_dir = workdir / f"expert_{i:03d}"
         runner = FemRunner(problem, inst_dir)
-        runner.ensure_reference()
+        # expert labels are the final nodal sizes; energy-error vs
+        # reference is not required to manufacture the dataset.
 
         mesh0 = initial_mesh(problem)
         post0, _ = runner.solve_mesh(mesh0, method="expert_probe", stage="probe")
         eta2_0 = zz_indicator(problem, post0)
         feats = node_features(problem, mesh0, post0, eta2_0)
 
-        run_dorfler(runner, theta=theta, max_rounds=max_rounds, n_eq_cap=n_eq_cap,
-                    method="expert_dorfler")
+        run_dorfler(
+            runner, theta=theta, max_rounds=max_rounds, n_eq_cap=n_eq_cap,
+            method="expert_dorfler", require_reference=False,
+        )
         expert_mesh: Mesh = runner.last_mesh  # final Doerfler mesh
         h_expert = expert_mesh.node_sizes
         interp = NodalSizeField(

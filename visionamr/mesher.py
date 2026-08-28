@@ -167,10 +167,14 @@ class Mesh:
         return h.hexdigest()[:16]
 
 
-def generate_mesh(problem, size_fn, *, model_name: str = "model") -> Mesh:
+def generate_mesh(
+    problem, size_fn, *, model_name: str = "model", h_floor: float | None = None
+) -> Mesh:
     """Build the problem geometry and mesh it with the given size field.
 
     ``size_fn(x, y, z) -> float`` is evaluated by Gmsh's size callback.
+    ``h_floor`` overrides ``problem.h_min`` (used by the graded reference,
+    whose singular-line floor is h_ref/8 and may be finer than the method h_min).
     """
 
     import gmsh
@@ -190,7 +194,7 @@ def generate_mesh(problem, size_fn, *, model_name: str = "model") -> Mesh:
             gmsh.option.setNumber("Mesh.OptimizeNetgen", 0)
         gmsh.option.setNumber("Mesh.Optimize", 1)
 
-        h_floor = float(problem.h_min)
+        h_floor = float(problem.h_min if h_floor is None else h_floor)
 
         def cb(dim, tag, x, y, z, lc):
             return max(float(size_fn(x, y, z)), h_floor)

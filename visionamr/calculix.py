@@ -98,6 +98,18 @@ def write_inp(path: Path, mesh: Mesh, problem: Problem, heading: str) -> None:
 _EQ_RE = re.compile(r"number of equations\s*\n?\s*(\d+)", re.IGNORECASE)
 
 
+def default_ccx_cmd() -> str:
+    """Prefer CCX_CMD, then the in-repo wrapper, then PATH."""
+
+    env = os.environ.get("CCX_CMD")
+    if env:
+        return env
+    bundled = Path(__file__).resolve().parents[1] / "tools" / "ccx"
+    if bundled.exists():
+        return str(bundled)
+    return "ccx"
+
+
 def run_ccx(
     workdir: Path,
     jobname: str,
@@ -107,7 +119,7 @@ def run_ccx(
 ) -> tuple[str, int]:
     """Run CalculiX; return (stdout, n_equations)."""
 
-    ccx = ccx_cmd or os.environ.get("CCX_CMD", "ccx")
+    ccx = ccx_cmd or default_ccx_cmd()
     t0 = time.perf_counter()
     proc = subprocess.run(
         [ccx, "-i", jobname],
@@ -115,7 +127,7 @@ def run_ccx(
         capture_output=True,
         text=True,
         timeout=timeout,
-        env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "4")},
+        env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "2")},
     )
     wall = time.perf_counter() - t0
     out = proc.stdout + proc.stderr

@@ -43,10 +43,14 @@ def run_dorfler(
     n_eq_cap: int | None = None,
     gradation: float = 0.9,
     method: str = "dorfler_zz",
+    require_reference: bool = True,
 ) -> None:
     problem = runner.problem
-    runner.ensure_reference()
+    if require_reference:
+        runner.ensure_reference()
     if n_eq_cap is None:
+        if runner.reference is None:
+            raise ValueError("n_eq_cap required when no reference is loaded")
         n_eq_cap = runner.reference.n_equations
 
     mesh = initial_mesh(problem)

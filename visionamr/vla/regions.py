@@ -67,6 +67,7 @@ class Partition:
     seeds: list[Seed]
     problem: Problem
     gradation: float = 0.9
+    assign_mode: str = "geodesic"  # "geodesic" | "linf_box" (AB2)
 
     # ------------------------------------------------------------------
     def sizes(self) -> np.ndarray:
@@ -74,13 +75,29 @@ class Partition:
 
     def with_sizes(self, sizes: np.ndarray) -> "Partition":
         seeds = [replace(s, h=float(h)) for s, h in zip(self.seeds, sizes)]
-        return Partition(seeds, self.problem, self.gradation)
+        return Partition(seeds, self.problem, self.gradation, self.assign_mode)
 
     def add_seed(self, seed: Seed) -> "Partition":
-        return Partition(list(self.seeds) + [seed], self.problem, self.gradation)
+        return Partition(list(self.seeds) + [seed], self.problem, self.gradation, self.assign_mode)
 
     # ------------------------------------------------------------------
     def assign(self, mesh: Mesh) -> np.ndarray:
+        """Element labels: geodesic Voronoi, or L∞ boxes for the AB2 ablation."""
+
+        if self.assign_mode == "linf_box":
+            return self._assign_linf_box(mesh)
+        if self.assign_mode != "geodesic":
+            raise ValueError(f"unknown assign_mode {self.assign_mode!r}")
+        return self._assign_geodesic(mesh)
+
+    def _assign_linf_box(self, mesh: Mesh) -> np.ndarray:
+        """Axis-aligned (Chebyshev) Voronoi: the v1-style box ablation."""
+
+        seed_pts = np.array([s.point() for s in self.seeds])
+        d = np.max(np.abs(mesh.centroids[:, None, :] - seed_pts[None, :, :]), axis=2)
+        return np.asarray(np.argmin(d, axis=1), dtype=np.int64)
+
+    def _assign_geodesic(self, mesh: Mesh) -> np.ndarray:
         """Element labels by geodesic Voronoi over the cell-adjacency graph."""
 
         cen = mesh.centroids

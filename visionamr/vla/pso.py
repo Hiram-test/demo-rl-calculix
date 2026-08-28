@@ -120,8 +120,14 @@ def calibrate(
     eq_per_elem: float,
     resource_drift: float = 1.0,
     cfg: PSOConfig | None = None,
+    mode: str = "sk",
 ) -> tuple[np.ndarray, dict]:
-    """PSO over (s, kappa) around the proposal h_plus; returns (sizes, info).
+    """Calibrate region sizes around the proposal h_plus; returns (sizes, info).
+
+    ``mode``:
+      * ``sk``     -- (s, κ) PSO (default, the paper method)
+      * ``s_only`` -- AB8: global log-scale only (κ ≡ 0)
+      * ``nelder`` -- AB8: per-region Nelder–Mead on log sizes
 
     ``resource_drift`` is the measured realized/predicted element ratio of
     the previous round (Gmsh gradation bands and mesh-generator behaviour
@@ -142,12 +148,8 @@ def calibrate(
     def decode(s: float, k: float) -> np.ndarray:
         return np.clip(h_plus * np.exp(s + k * tau), problem.h_min, problem.h0)
 
-    def fitness(s: float, k: float) -> float:
-        h = decode(s, k)
+    def score_h(h: np.ndarray, *, s_pen: float = 0.0, k_pen: float = 0.0) -> float:
         E, R = sur.predict(h)
-        # accuracy: quadratic pull toward the limit when feasible, plus an
-        # always-on monotone drive so an infeasible limit cannot leverage
-        # the swarm across the (hard) resource cap
         e_plus = min(max(np.log(E / max(err_limit, 1e-30)), 0.0), 1.0)
         e_lin = float(np.clip(np.log(E / max(err_limit, 1e-30)), -4.0, 4.0))
         r_log = np.log(R / elems_budget)
@@ -162,62 +164,109 @@ def calibrate(
             + cfg.w_res_over * r_plus**2
             + cfg.w_res_under * r_minus**2
             + cfg.w_quality * Q
-            + cfg.w_dev * (s**2 + k**2)
+            + cfg.w_dev * (s_pen**2 + k_pen**2)
         )
 
-    # seeded swarm: mother particle, closed-form budget and accuracy
-    # scales (the classic scalar knob), and axis probes
-    E0, R0 = sur.predict(h_plus)
-    s_budget = float(
-        np.clip(np.log(R0 / elems_budget) / sur.d, -cfg.pos_bound, cfg.pos_bound)
-    )
-    q_mean = float(np.average(sur.q, weights=np.maximum(sur.E_ref, 1e-30)))
-    s_accuracy = float(
-        np.clip(
-            np.log(max(err_limit, 1e-30) / max(E0, 1e-30)) / max(q_mean, 0.5),
-            -cfg.pos_bound,
-            cfg.pos_bound,
-        )
-    )
-    init = [
-        (0.0, 0.0),
-        (s_budget, 0.0),
-        (s_accuracy, 0.0),
-        (0.12, 0.0),
-        (-0.12, 0.0),
-        (0.0, 0.12),
-        (0.0, -0.12),
-    ]
-    while len(init) < cfg.n_particles:
-        init.append(tuple(rng.uniform(-0.2, 0.2, size=2)))
-    pos = np.array(init[: cfg.n_particles], dtype=float)
-    vel = np.zeros_like(pos)
-    pbest = pos.copy()
-    pbest_f = np.array([fitness(*p) for p in pos])
-    g_idx = int(np.argmin(pbest_f))
-    gbest, gbest_f = pbest[g_idx].copy(), float(pbest_f[g_idx])
-    evals = len(pos)
+    def fitness(s: float, k: float) -> float:
+        return score_h(decode(s, k), s_pen=s, k_pen=k)
 
-    for _ in range(cfg.generations):
-        r1 = rng.random(pos.shape)
-        r2 = rng.random(pos.shape)
-        vel = (
-            cfg.inertia * vel
-            + cfg.cognitive * r1 * (pbest - pos)
-            + cfg.social * r2 * (gbest[None, :] - pos)
-        )
-        vel = np.clip(vel, -cfg.vel_bound, cfg.vel_bound)
-        pos = np.clip(pos + vel, -cfg.pos_bound, cfg.pos_bound)
-        for i, p in enumerate(pos):
-            f = fitness(*p)
-            evals += 1
-            if f < pbest_f[i]:
-                pbest_f[i], pbest[i] = f, p.copy()
-                if f < gbest_f:
-                    gbest_f, gbest = f, p.copy()
+    evals = 0
+    if mode == "s_only":
+        ss = np.linspace(-cfg.pos_bound, cfg.pos_bound, 41)
+        scores = np.array([fitness(float(s), 0.0) for s in ss])
+        evals = len(ss)
+        s = float(ss[int(np.argmin(scores))])
+        # local refine
+        lo, hi = max(s - 0.08, -cfg.pos_bound), min(s + 0.08, cfg.pos_bound)
+        for _ in range(20):
+            m1 = lo + 0.38 * (hi - lo)
+            m2 = lo + 0.62 * (hi - lo)
+            f1, f2 = fitness(m1, 0.0), fitness(m2, 0.0)
+            evals += 2
+            if f1 < f2:
+                hi = m2
+            else:
+                lo = m1
+        s, k = 0.5 * (lo + hi), 0.0
+        gbest_f = fitness(s, k)
+        evals += 1
+        h_final = decode(s, k)
+    elif mode == "nelder":
+        from scipy.optimize import minimize
 
-    s, k = float(gbest[0]), float(gbest[1])
-    h_final = decode(s, k)
+        x0 = np.zeros(len(h_plus))
+
+        def f_nm(x):
+            x = np.clip(x, -cfg.pos_bound, cfg.pos_bound)
+            h = np.clip(h_plus * np.exp(x), problem.h_min, problem.h0)
+            return score_h(h, s_pen=float(np.mean(x)), k_pen=0.0)
+
+        res = minimize(
+            f_nm, x0, method="Nelder-Mead",
+            options={"maxiter": 80, "xatol": 1e-3, "fatol": 1e-4, "disp": False},
+        )
+        evals = int(res.nfev)
+        x = np.clip(res.x, -cfg.pos_bound, cfg.pos_bound)
+        h_final = np.clip(h_plus * np.exp(x), problem.h_min, problem.h0)
+        s = float(np.mean(x))
+        k = 0.0
+        gbest_f = float(res.fun)
+    else:
+        if mode != "sk":
+            raise ValueError(f"unknown PSO mode {mode!r}")
+        # seeded swarm: mother particle, closed-form budget and accuracy
+        # scales (the classic scalar knob), and axis probes
+        E0, R0 = sur.predict(h_plus)
+        s_budget = float(
+            np.clip(np.log(R0 / elems_budget) / sur.d, -cfg.pos_bound, cfg.pos_bound)
+        )
+        q_mean = float(np.average(sur.q, weights=np.maximum(sur.E_ref, 1e-30)))
+        s_accuracy = float(
+            np.clip(
+                np.log(max(err_limit, 1e-30) / max(E0, 1e-30)) / max(q_mean, 0.5),
+                -cfg.pos_bound,
+                cfg.pos_bound,
+            )
+        )
+        init = [
+            (0.0, 0.0),
+            (s_budget, 0.0),
+            (s_accuracy, 0.0),
+            (0.12, 0.0),
+            (-0.12, 0.0),
+            (0.0, 0.12),
+            (0.0, -0.12),
+        ]
+        while len(init) < cfg.n_particles:
+            init.append(tuple(rng.uniform(-0.2, 0.2, size=2)))
+        pos = np.array(init[: cfg.n_particles], dtype=float)
+        vel = np.zeros_like(pos)
+        pbest = pos.copy()
+        pbest_f = np.array([fitness(*p) for p in pos])
+        g_idx = int(np.argmin(pbest_f))
+        gbest, gbest_f = pbest[g_idx].copy(), float(pbest_f[g_idx])
+        evals = len(pos)
+
+        for _ in range(cfg.generations):
+            r1 = rng.random(pos.shape)
+            r2 = rng.random(pos.shape)
+            vel = (
+                cfg.inertia * vel
+                + cfg.cognitive * r1 * (pbest - pos)
+                + cfg.social * r2 * (gbest[None, :] - pos)
+            )
+            vel = np.clip(vel, -cfg.vel_bound, cfg.vel_bound)
+            pos = np.clip(pos + vel, -cfg.pos_bound, cfg.pos_bound)
+            for i, p in enumerate(pos):
+                f = fitness(*p)
+                evals += 1
+                if f < pbest_f[i]:
+                    pbest_f[i], pbest[i] = f, p.copy()
+                    if f < gbest_f:
+                        gbest_f, gbest = f, p.copy()
+
+        s, k = float(gbest[0]), float(gbest[1])
+        h_final = decode(s, k)
 
     # certification semantics: the budget is a hard cap.  Project the
     # winner onto the surrogate budget surface (closed-form global scale).
@@ -226,8 +275,9 @@ def calibrate(
         _, R_chk = sur.predict(h_final)
         if R_chk <= cap:
             break
-        s += float(np.log(R_chk / cap)) / sur.d
-        h_final = decode(s, k)
+        scale = float(np.log(R_chk / cap)) / sur.d
+        s += scale
+        h_final = np.clip(h_final * np.exp(scale), problem.h_min, problem.h0)
 
     E_pred, R_pred = sur.predict(h_final)
     info = {
@@ -241,5 +291,6 @@ def calibrate(
         "err_limit": err_limit,
         "elems_budget": elems_budget,
         "resource_drift": drift,
+        "mode": mode,
     }
     return h_final, info

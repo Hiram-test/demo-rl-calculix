@@ -79,6 +79,23 @@ def test_region_shapes_are_not_boxes():
     assert abs(xa_top - xa_bot) > 1.0
 
 
+def test_linf_box_assignment_is_chebyshev():
+    mesh = grid_mesh(12, 4)
+    problem = make_plate_holes(width=12.0, height=4.0, holes=(), tension=1.0)
+    part = Partition(
+        [Seed("a", (1.0, 2.0, 0.0), h=1.0), Seed("b", (11.0, 2.0, 0.0), h=1.0)],
+        problem,
+        assign_mode="linf_box",
+    )
+    labels = part.assign(mesh)
+    assert labels.min() >= 0
+    # a vertical interface (axis-aligned), unlike the geodesic slanted case
+    cen = mesh.centroids
+    xs_left = cen[labels == 0, 0]
+    xs_right = cen[labels == 1, 0]
+    assert xs_left.max() < xs_right.min() + 1.5
+
+
 def test_split_concentrated_adds_child_seed():
     mesh = grid_mesh(20, 4)
     problem = make_plate_holes(width=20.0, height=4.0, holes=(), tension=1.0)

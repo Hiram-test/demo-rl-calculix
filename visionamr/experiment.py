@@ -124,7 +124,14 @@ class FemRunner:
             data = json.loads(ref_path.read_text())
             self.reference = Reference(**data)
             return self.reference
-        mesh = generate_mesh(self.problem, reference_size_fn(self.problem))
+        # Honour the plan's singular-line floor h_ref/8 even when the
+        # method-mesh h_min is coarser (otherwise an adaptive loop can
+        # locally beat the "reference" and trip gate G3).
+        mesh = generate_mesh(
+            self.problem,
+            reference_size_fn(self.problem),
+            h_floor=min(self.problem.h_min, self.problem.h_ref / 8.0),
+        )
         post, rec = self._solve(mesh, method="reference", stage="reference", count=False)
         self.reference = Reference(
             U_total=post.U_total,

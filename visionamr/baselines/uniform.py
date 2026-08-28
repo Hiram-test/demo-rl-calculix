@@ -13,6 +13,7 @@ def run_uniform_ladder(
     ratio: float | None = None,
     n_eq_cap: int | None = None,
     method: str = "uniform",
+    require_reference: bool = True,
 ) -> None:
     """Solve a geometric ladder h0, h0/r, h0/r^2, ...
 
@@ -22,7 +23,8 @@ def run_uniform_ladder(
     """
 
     problem = runner.problem
-    runner.ensure_reference()
+    if require_reference:
+        runner.ensure_reference()
     if ratio is None:
         ratio = 2.0 ** (1.0 / problem.dim)
     h = problem.h0

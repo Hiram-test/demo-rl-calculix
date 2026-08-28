@@ -167,31 +167,237 @@ that control the discretization error the way you would with a pen:
 stress concentrations, load-patch edges, support/reaction lines,
 re-entrant corners -- and also a few points in the calm bulk that should
 stay coarse.  Each mark becomes the seed of one mesh region grown
-geodesically around it (regions are organic shapes, never boxes).
-Reply with strict JSON:
+geodesically around it (regions are organic shapes, never boxes, never
+a fixed number of column slabs).
+Reply with strict JSON and nothing else:
 {"seeds": [{"name": "<structural name>", "x": .., "y": .., "z": ..,
 "fineness_fraction": <target element size as a fraction of the background
 size, hot 0.15-0.5, calm bulk 0.8-1.0>}, ...]}
 Use as many or as few seeds as the picture demands; never a fixed
-template.  Coordinates are in the model units printed on the axes."""
+template.  Include both hot seeds and at least one calm-bulk field seed.
+Coordinates are in the model units printed on the axes."""
+
+
+def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
+    """Return (api_base, api_key, model).  Prefer SpaceXAI / xAI."""
+
+    key = (
+        os.environ.get("XAI_API_KEY")
+        or os.environ.get("VLM_API_KEY")
+        or os.environ.get("OPENAI_API_KEY")
+    )
+    if os.environ.get("XAI_API_KEY") and not os.environ.get("VLM_API_BASE"):
+        base = "https://api.x.ai/v1"
+        model = os.environ.get("VLM_MODEL", "grok-4")
+    else:
+        base = os.environ.get("VLM_API_BASE") or (
+            "https://api.x.ai/v1" if os.environ.get("XAI_API_KEY")
+            else "https://api.openai.com/v1"
+        )
+        default_model = "grok-4" if "x.ai" in base else "gpt-4o"
+        model = os.environ.get("VLM_MODEL", default_model)
+    return base, key, model
+
+
+def seeds_from_spec(spec: dict, problem: Problem, max_seeds: int = 12) -> list[Seed]:
+    """Validate a VLM JSON object into Seed list.  Raises on empty/invalid."""
+
+    if not isinstance(spec, dict) or "seeds" not in spec:
+        raise ValueError("JSON missing 'seeds'")
+    raw = spec["seeds"]
+    if not isinstance(raw, list) or not raw:
+        raise ValueError("seeds must be a non-empty list")
+    lo = np.array(problem.bbox[:3], dtype=float)
+    hi = np.array(problem.bbox[3:], dtype=float)
+    seeds: list[Seed] = []
+    for i, s in enumerate(raw[:max_seeds]):
+        if not isinstance(s, dict):
+            raise ValueError(f"seed {i} is not an object")
+        try:
+            x = float(s["x"])
+            y = float(s.get("y", 0.0))
+            z = float(s.get("z", 0.0))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"seed {i} missing numeric x/y/z") from exc
+        frac = float(np.clip(s.get("fineness_fraction", 0.4), 0.1, 1.0))
+        pt = np.clip(np.array([x, y, z], dtype=float), lo, hi)
+        if problem.dim == 2:
+            pt[2] = 0.0
+        name = str(s.get("name", f"llm_seed_{i}"))[:48]
+        seeds.append(Seed(name, tuple(pt), h=float(frac * problem.h0)))
+    if not seeds:
+        raise ValueError("VLM returned no usable seeds")
+    return seeds
+
+
+def parse_seed_json(content: str, problem: Problem, max_seeds: int = 12) -> list[Seed]:
+    """Parse model content (raw JSON or fenced) into seeds."""
+
+    text = content.strip()
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+        text = text.strip()
+    spec = json.loads(text)
+    return seeds_from_spec(spec, problem, max_seeds=max_seeds)
+
+
+def load_seed_cache(path, problem: Problem) -> list[Seed]:
+    spec = json.loads(Path_read(path))
+    return seeds_from_spec(spec, problem, max_seeds=24)
+
+
+def Path_read(path) -> str:
+    from pathlib import Path
+
+    return Path(path).read_text()
+
+
+def dump_seed_cache(path, seeds: list[Seed]) -> None:
+    from pathlib import Path
+
+    spec = {
+        "seeds": [
+            {
+                "name": s.name,
+                "x": s.xyz[0],
+                "y": s.xyz[1],
+                "z": s.xyz[2],
+                "fineness_fraction": s.h,  # overwritten below
+            }
+            for s in seeds
+        ]
+    }
+    Path(path).write_text(json.dumps(spec, indent=1))
+
+
+@dataclass
+class RandomSeedPartitioner:
+    """AB1 lower bound: same cardinality, uniform-random locations/sizes."""
+
+    n_seeds: int = 10
+    rng_seed: int = 0
+
+    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
+        rng = np.random.default_rng(self.rng_seed)
+        b = problem.bbox
+        lo = np.array(b[:3], dtype=float)
+        hi = np.array(b[3:], dtype=float)
+        pts = rng.uniform(lo, hi, size=(self.n_seeds, 3))
+        if problem.dim == 2:
+            pts[:, 2] = 0.0
+        hs = rng.uniform(0.2, 1.0, size=self.n_seeds) * problem.h0
+        return [
+            Seed(f"rand_{i}", tuple(pts[i]), h=float(hs[i]), origin="vision")
+            for i in range(self.n_seeds)
+        ]
 
 
 @dataclass
 class LLMVisionPartitioner:
-    """Multimodal-LLM vision head (OpenAI-compatible chat completions)."""
+    """Multimodal-LLM vision head (OpenAI-compatible chat completions).
+
+    Contract: 3 retries, strict JSON seeds, low temperature; on persistent
+    failure fall back to ScriptedVisionPartitioner and record the fallback
+    in ``last_info`` (campaign reports the fallback rate; never silently
+    invents a six-zone template).
+    """
 
     model: str | None = None
     api_base: str | None = None
     api_key: str | None = None
     temperature: float = 0.1
     max_seeds: int = 12
+    n_retries: int = 3
+    timeout_s: float = 180.0
+    cache_path: str | None = None
+    dump_dir: str | None = None
+    fallback: ScriptedVisionPartitioner | None = None
+
+    def __post_init__(self) -> None:
+        if self.fallback is None:
+            self.fallback = ScriptedVisionPartitioner()
+        self.last_info: dict = {}
 
     def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
+        from pathlib import Path
+
         from ..viz import render_field_png
 
+        errors: list[str] = []
+        if self.cache_path and Path(self.cache_path).exists():
+            seeds = load_seed_cache(self.cache_path, problem)
+            self.last_info = {
+                "source": "llm_cache",
+                "attempts": 0,
+                "n_seeds": len(seeds),
+                "cache": self.cache_path,
+            }
+            return seeds
+
         png = render_field_png(problem, post)
+        if self.dump_dir:
+            Path(self.dump_dir).mkdir(parents=True, exist_ok=True)
+            (Path(self.dump_dir) / "probe_field.png").write_bytes(png)
+
+        api_base = self.api_base
+        api_key = self.api_key
+        model = self.model
+        if api_base is None or api_key is None or model is None:
+            b, k, m = resolve_vlm_endpoint()
+            api_base = api_base or b
+            api_key = api_key or k
+            model = model or m
+
+        if not api_key:
+            return self._fallback(problem, post, eta2, ["no_api_key"])
+
+        for attempt in range(1, self.n_retries + 1):
+            try:
+                content = self._chat(png, problem, api_base, api_key, model)
+                seeds = parse_seed_json(content, problem, max_seeds=self.max_seeds)
+                self.last_info = {
+                    "source": "llm",
+                    "attempts": attempt,
+                    "n_seeds": len(seeds),
+                    "model": model,
+                }
+                if self.dump_dir:
+                    dump_seed_cache(Path(self.dump_dir) / "llm_seeds.json", seeds)
+                    # rewrite fractions relative to h0 for a reusable cache
+                    spec = json.loads((Path(self.dump_dir) / "llm_seeds.json").read_text())
+                    for s, seed in zip(spec["seeds"], seeds):
+                        s["fineness_fraction"] = seed.h / problem.h0
+                    (Path(self.dump_dir) / "llm_seeds.json").write_text(
+                        json.dumps(spec, indent=1)
+                    )
+                    (Path(self.dump_dir) / "llm_raw.txt").write_text(content)
+                return seeds
+            except Exception as exc:  # noqa: BLE001  -- must not kill the campaign
+                errors.append(f"attempt {attempt}: {type(exc).__name__}: {exc}")
+        return self._fallback(problem, post, eta2, errors)
+
+    def _fallback(self, problem, post, eta2, errors: list[str]) -> list[Seed]:
+        seeds = self.fallback.propose(problem, post, eta2)
+        self.last_info = {
+            "source": "scripted_fallback",
+            "attempts": self.n_retries,
+            "errors": errors,
+            "n_seeds": len(seeds),
+        }
+        return seeds
+
+    def _chat(
+        self,
+        png: bytes,
+        problem: Problem,
+        api_base: str,
+        api_key: str,
+        model: str,
+    ) -> str:
         payload = {
-            "model": self.model or os.environ.get("VLM_MODEL", "gpt-4o"),
+            "model": model,
             "temperature": self.temperature,
             "response_format": {"type": "json_object"},
             "messages": [
@@ -210,53 +416,22 @@ class LLMVisionPartitioner:
                             "type": "image_url",
                             "image_url": {
                                 "url": "data:image/png;base64,"
-                                + base64.b64encode(png).decode()
+                                + base64.b64encode(png).decode(),
+                                "detail": "high",
                             },
                         },
                     ],
                 },
             ],
         }
-        api_base = self.api_base or os.environ.get(
-            "VLM_API_BASE", "https://api.openai.com/v1"
-        )
-        api_key = self.api_key or os.environ.get("VLM_API_KEY") or os.environ.get(
-            "OPENAI_API_KEY"
-        )
-        if not api_key:
-            raise RuntimeError(
-                "LLMVisionPartitioner needs VLM_API_KEY (or OPENAI_API_KEY); "
-                "use ScriptedVisionPartitioner for offline runs"
-            )
         req = urllib.request.Request(
-            f"{api_base}/chat/completions",
+            f"{api_base.rstrip('/')}/chat/completions",
             data=json.dumps(payload).encode(),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {api_key}",
             },
         )
-        with urllib.request.urlopen(req, timeout=180) as resp:
+        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
             body = json.loads(resp.read())
-        content = body["choices"][0]["message"]["content"]
-        spec = json.loads(content)
-        lo = np.array(problem.bbox[:3])
-        hi = np.array(problem.bbox[3:])
-        seeds: list[Seed] = []
-        for i, s in enumerate(spec.get("seeds", [])[: self.max_seeds]):
-            frac = float(np.clip(s.get("fineness_fraction", 0.4), 0.1, 1.0))
-            pt = np.clip(
-                np.array([float(s["x"]), float(s.get("y", 0.0)), float(s.get("z", 0.0))]),
-                lo,
-                hi,
-            )
-            seeds.append(
-                Seed(
-                    str(s.get("name", f"llm_seed_{i}"))[:48],
-                    tuple(pt),
-                    h=float(frac * problem.h0),
-                )
-            )
-        if not seeds:
-            raise RuntimeError("VLM returned no seeds")
-        return seeds
+        return body["choices"][0]["message"]["content"]

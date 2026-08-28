@@ -438,6 +438,29 @@ def sample_plate_holes(rng: np.random.Generator) -> Problem:
     return make_plate_holes(holes=holes, tension=tension)
 
 
+def analytic_load_resultant(problem: Problem) -> np.ndarray:
+    """Nominal traction resultant p×A (2-D: × thickness).  Gate G7 target."""
+
+    p = problem.params
+    t = problem.material.thickness
+    if problem.name == "bearing_block":
+        a, b = p["patch"]
+        return np.array([0.0, 0.0, -float(p["pressure"]) * a * b])
+    if problem.name == "deck_panel":
+        wa, wb = p["wheel"]
+        return np.array([0.0, 0.0, -float(p["pressure"]) * wa * wb])
+    if problem.name == "lbracket":
+        size = float(p["size"])
+        cy = size * float(p["cut_frac_y"])
+        load = float(p["load"])
+        return np.array([0.0, load * cy * t, 0.0])
+    if problem.name == "plate_holes":
+        height = float(p["height"])
+        tension = float(p["tension"])
+        return np.array([tension * height * t, 0.0, 0.0])
+    raise ValueError(f"no analytic resultant for {problem.name}")
+
+
 PROBLEM_FACTORIES = {
     "bearing_block": make_bearing_block,
     "deck_panel": make_deck_panel,
