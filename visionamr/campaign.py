@@ -541,15 +541,19 @@ def step_s5(families=FAMILIES_2D, *, n_experts: int | None = None, n_eq: int | N
         model = train_supervised(ds_path)
         model.save(model_path)
         for key in ["canonical"] + [f"test_{s}" for s in TEST_SEEDS]:
-            problem = instance_key_problem(fam, key)
             inst = instance_dir(fam, key)
+            out = inst / "records_supervised.json"
+            if _records_exist(out):
+                print(f"[S5] {fam}/{key} supervised cached")
+                continue
+            problem = instance_key_problem(fam, key)
             runner = make_runner(problem, inst)
             runner.ensure_reference()
             runner.reset_counter()
             deploy_supervised(
                 runner, model, n_elem_budget=elem_budget(budget, problem.dim)
             )
-            _dump_slice(runner, "supervised", inst / "records_supervised.json")
+            _dump_slice(runner, "supervised", out)
             print(f"[S5] {fam}/{key} supervised done")
 
 
@@ -586,15 +590,17 @@ def step_s6(
                 policy = DQNPolicy(cfg)
                 policy.load(policy_path)
             for key in ["canonical"] + [f"test_{s}" for s in TEST_SEEDS]:
-                problem = instance_key_problem(fam, key)
                 inst = instance_dir(fam, key)
+                out = inst / f"records_rl_dqn_s{seed}.json"
+                if _records_exist(out):
+                    print(f"[S6] {fam}/{key} rl seed={seed} cached")
+                    continue
+                problem = instance_key_problem(fam, key)
                 runner = make_runner(problem, inst)
                 runner.ensure_reference()
                 runner.reset_counter()
                 evaluate_dqn(runner, policy, partitioner, cfg=cfg, method=f"rl_dqn_s{seed}")
-                _dump_slice(
-                    runner, f"rl_dqn_s{seed}", inst / f"records_rl_dqn_s{seed}.json"
-                )
+                _dump_slice(runner, f"rl_dqn_s{seed}", out)
                 print(f"[S6] {fam}/{key} rl seed={seed} done")
 
 
