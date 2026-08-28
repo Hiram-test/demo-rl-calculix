@@ -34,6 +34,9 @@ def main() -> int:
     ap.add_argument("--learn-families", default="lbracket,plate_holes")
     ap.add_argument("--n-experts", type=int, default=None)
     ap.add_argument("--rl-episodes", type=int, default=None)
+    ap.add_argument("--n-seeds", type=int, default=3)
+    ap.add_argument("--rl-seeds", default=None,
+                    help="comma-separated seed indices (overrides --n-seeds range)")
     args = ap.parse_args()
 
     if args.all:

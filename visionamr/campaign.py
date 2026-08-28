@@ -562,14 +562,16 @@ def step_s6(
     *,
     episodes: int | None = None,
     n_seeds: int = 3,
+    seeds: tuple[int, ...] | None = None,
 ) -> None:
     from .baselines.rl_dqn import DQNConfig, evaluate_dqn, train_dqn
 
     partitioner = ScriptedVisionPartitioner()
+    seed_list = list(seeds) if seeds is not None else list(range(n_seeds))
     for fam in families:
         budget = PILOT_EQ[fam]
         ep = episodes if episodes is not None else (300 if fam in FAMILIES_2D else 120)
-        for seed in range(n_seeds):
+        for seed in seed_list:
             d = CAMPAIGN / fam / f"rl_seed{seed}"
             d.mkdir(parents=True, exist_ok=True)
             policy_path = d / "policy.pt"
@@ -778,6 +780,8 @@ def run_steps(steps: list[str], **kwargs) -> None:
         "S6": lambda: step_s6(
             kwargs.get("learn_families") or FAMILIES_2D,
             episodes=kwargs.get("rl_episodes"),
+            n_seeds=kwargs.get("n_seeds", 3),
+            seeds=kwargs.get("rl_seeds"),
         ),
         "S7": lambda: step_s7(kwargs.get("families") or FAMILIES_3D),
         "S8": step_s8,
