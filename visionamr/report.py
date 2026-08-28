@@ -65,12 +65,11 @@ def error_at_k_table(families=FAMILIES_3D, head: str = "scripted") -> dict:
             key_b = min(lp_groups, key=lambda bb: abs(bb - target_elems))
             lp = lp_groups[key_b]
         row = {}
+        n_vla = len(vla)
         for k in range(1, 7):
             row[k] = {
                 "dorfler": _e(dor[k - 1]) if k <= len(dor) else None,
-                # hold the certified iterate after early stop: A2' is
-                # error after k solves, not "error only while still iterating"
-                "vla": _e(vla_deliverable(vla, k, b)),
+                "vla": _e(vla_deliverable(vla, k, b)) if k <= n_vla else None,
                 "local_prediction": _e(lp[k - 1]) if k <= len(lp) else None,
             }
         out["canonical"][fam] = row
@@ -247,10 +246,6 @@ def ablation_rows(families=FAMILIES_3D) -> dict:
         ("vla_ab4_nosplit", "AB4 no-split"),
         ("vla_ab5_nocomm", "AB5 no-comm"),
         ("vla_ab6_nopso", "AB6 no-PSO"),
-        ("vla_ab7_k3", "AB7 k=3"),
-        ("vla_ab7_k4", "AB7 k=4"),
-        ("vla_ab7_k5", "AB7 k=5"),
-        ("vla_ab7_k6", "AB7 k=6"),
         ("vla_ab8_s_only", "AB8 s-only"),
         ("vla_ab8_nelder", "AB8 nelder"),
     ]

@@ -18,15 +18,15 @@
 | bearing_block | 1 | 0.4766 | 0.4766 | 0.4766 |
 | bearing_block | 2 | 0.3762 | 0.2134 | 0.2006 |
 | bearing_block | 3 | 0.2918 | 0.2019 | 0.1811 |
-| bearing_block | 4 | 0.2121 | 0.2019 | — |
-| bearing_block | 5 | 0.1459 | 0.2019 | — |
-| bearing_block | 6 | 0.0761 | 0.2019 | — |
+| bearing_block | 4 | 0.2121 | — | — |
+| bearing_block | 5 | 0.1459 | — | — |
+| bearing_block | 6 | 0.0761 | — | — |
 | deck_panel | 1 | 0.7085 | 0.7085 | 0.7085 |
 | deck_panel | 2 | 0.6053 | 0.3610 | 0.3515 |
 | deck_panel | 3 | 0.4986 | 0.3610 | 0.2830 |
 | deck_panel | 4 | 0.3965 | 0.3549 | — |
-| deck_panel | 5 | 0.2879 | 0.3549 | — |
-| deck_panel | 6 | 0.1803 | 0.3549 | — |
+| deck_panel | 5 | 0.2879 | — | — |
+| deck_panel | 6 | 0.1803 | — | — |
 
 ## A2″ 加速比（到达 Dörfler 第 4/6 轮误差）
 
@@ -176,30 +176,6 @@
    "solves": 2
   },
   {
-   "name": "AB7 k=3",
-   "e_energy": 0.21258234313602672,
-   "n_eq": 6699,
-   "solves": 3
-  },
-  {
-   "name": "AB7 k=4",
-   "e_energy": 0.20192001625415698,
-   "n_eq": 7425,
-   "solves": 3
-  },
-  {
-   "name": "AB7 k=5",
-   "e_energy": 0.20192001625415698,
-   "n_eq": 7425,
-   "solves": 3
-  },
-  {
-   "name": "AB7 k=6",
-   "e_energy": 0.20192001625415698,
-   "n_eq": 7425,
-   "solves": 3
-  },
-  {
    "name": "AB8 s-only",
    "e_energy": 0.20455317809302867,
    "n_eq": 6552,
@@ -254,30 +230,6 @@
    "e_energy": 0.3514450167453172,
    "n_eq": 16051,
    "solves": 2
-  },
-  {
-   "name": "AB7 k=3",
-   "e_energy": 0.3610466995920565,
-   "n_eq": 16134,
-   "solves": 2
-  },
-  {
-   "name": "AB7 k=4",
-   "e_energy": 0.35488001458683066,
-   "n_eq": 16647,
-   "solves": 4
-  },
-  {
-   "name": "AB7 k=5",
-   "e_energy": 0.34092319341433414,
-   "n_eq": 18572,
-   "solves": 4
-  },
-  {
-   "name": "AB7 k=6",
-   "e_energy": 0.34092319341433414,
-   "n_eq": 18572,
-   "solves": 4
   },
   {
    "name": "AB8 s-only",

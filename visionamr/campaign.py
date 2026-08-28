@@ -779,7 +779,5 @@ def run_steps(steps: list[str], **kwargs) -> None:
     }
     for s in steps:
         s = s.upper()
-        if s not in dispatch:
-            raise SystemExit(f"unknown step {s!r}; valid: {sorted(dispatch)}")
         print(f"==== {s} ====")
         dispatch[s]()

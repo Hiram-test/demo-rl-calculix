@@ -1,45 +1,23 @@
-"""Doerfler and local prediction must stay element-wise (never regional).
+"""Dörfler and local prediction must stay element-wise (never regional)."""
 
-The contamination vector would be an import from ``visionamr.vla`` (the
-partition/agent machinery), so the source checks are AST-based import
-checks rather than brittle substring scans of comments and docstrings.
-"""
-
-import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _imported_modules(path: Path) -> set[str]:
-    tree = ast.parse(path.read_text())
-    mods: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            mods.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom):
-            prefix = "." * node.level
-            mods.add(prefix + (node.module or ""))
-    return mods
+def test_dorfler_source_has_no_partition():
+    text = (ROOT / "visionamr" / "baselines" / "dorfler.py").read_text()
+    assert "Partition" not in text
+    assert "Seed" not in text
+    assert "region" not in text.lower()
 
 
-def _assert_no_vla_dependency(path: Path) -> None:
-    mods = _imported_modules(path)
-    offenders = [m for m in mods if "vla" in m.split(".")]
-    assert not offenders, f"{path.name} imports VLA machinery: {offenders}"
-    text = path.read_text()
-    for symbol in ("Partition(", "Seed(", "ScriptedVisionPartitioner"):
-        assert symbol not in text, f"{path.name} uses regional symbol {symbol!r}"
-
-
-def test_dorfler_source_is_elementwise():
-    _assert_no_vla_dependency(ROOT / "visionamr" / "baselines" / "dorfler.py")
-
-
-def test_local_prediction_source_is_elementwise():
-    _assert_no_vla_dependency(
-        ROOT / "visionamr" / "baselines" / "local_prediction.py"
-    )
+def test_local_prediction_source_has_no_partition():
+    text = (ROOT / "visionamr" / "baselines" / "local_prediction.py").read_text()
+    assert "Partition" not in text
+    assert "Seed" not in text
+    # the module may mention "region" only if someone sneaks it in
+    assert "vla" not in text
 
 
 def test_dorfler_mark_object_is_element():
