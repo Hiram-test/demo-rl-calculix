@@ -379,11 +379,19 @@ def learned_scale() -> dict:
         if meta.exists():
             payload = json.loads(meta.read_text())
             entry["supervised_experts"] = len(payload) if isinstance(payload, list) else None
-        hist = CAMPAIGN / fam / "rl_seed0" / "training" / "training_history.json"
-        if hist.exists():
-            payload = json.loads(hist.read_text())
-            entry["rl_episodes_s0"] = len(payload) if isinstance(payload, list) else None
-            entry["rl_seeds"] = 1
+        n_rl = 0
+        for seed in range(3):
+            hist = CAMPAIGN / fam / f"rl_seed{seed}" / "training" / "training_history.json"
+            rec = CAMPAIGN / fam / "canonical" / f"records_rl_dqn_s{seed}.json"
+            if hist.exists():
+                payload = json.loads(hist.read_text())
+                entry[f"rl_episodes_s{seed}"] = len(payload) if isinstance(payload, list) else None
+                n_rl += 1
+            elif rec.exists():
+                entry[f"rl_episodes_s{seed}"] = None
+                n_rl += 1
+        if n_rl:
+            entry["rl_seeds"] = n_rl
         if entry:
             out[fam] = entry
     return out
@@ -398,6 +406,8 @@ def learned_deploy_rows(families=FAMILIES_3D + FAMILIES_2D) -> list[dict]:
         for method, fname in (
             ("supervised", "records_supervised.json"),
             ("rl_dqn_s0", "records_rl_dqn_s0.json"),
+            ("rl_dqn_s1", "records_rl_dqn_s1.json"),
+            ("rl_dqn_s2", "records_rl_dqn_s2.json"),
         ):
             recs = _series(fam, "canonical", fname)
             if not recs:
@@ -547,7 +557,7 @@ def render_results_md(tables: dict) -> str:
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
-        "- 学习方法按缩小规模登记：deck 监督 8 专家，plate_holes RL 80×1，deck RL 40×1。H3 仍为证据不足。",
+        "- 学习方法按缩小规模登记：deck 监督 8 专家；RL 2D 80 回合、3D 40 回合（有 history 的种子）。H3 仍为证据不足。",
         "",
     ]
     return "\n".join(lines) + "\n"

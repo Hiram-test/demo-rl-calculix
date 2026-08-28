@@ -381,18 +381,32 @@
 
 ```json
 {
+ "bearing_block": {
+  "rl_episodes_s0": null,
+  "rl_episodes_s1": 40,
+  "rl_episodes_s2": 40,
+  "rl_seeds": 3
+ },
  "deck_panel": {
   "supervised_experts": 8,
   "rl_episodes_s0": 40,
-  "rl_seeds": 1
+  "rl_episodes_s1": 40,
+  "rl_episodes_s2": 40,
+  "rl_seeds": 3
  },
  "lbracket": {
-  "supervised_experts": 24
+  "supervised_experts": 24,
+  "rl_episodes_s0": null,
+  "rl_episodes_s1": 80,
+  "rl_episodes_s2": 80,
+  "rl_seeds": 3
  },
  "plate_holes": {
   "supervised_experts": 24,
   "rl_episodes_s0": 80,
-  "rl_seeds": 1
+  "rl_episodes_s1": 80,
+  "rl_episodes_s2": 80,
+  "rl_seeds": 3
  }
 }
 ```
@@ -401,12 +415,20 @@
 |---|---|---:|---:|---:|---:|:---:|
 | bearing_block | supervised | 2 | 4038 | 0.2237 | 0.5048 | no |
 | bearing_block | rl_dqn_s0 | 2 | 8235 | 0.2141 | 1.0294 | yes |
+| bearing_block | rl_dqn_s1 | 2 | 8235 | 0.2141 | 1.0294 | yes |
+| bearing_block | rl_dqn_s2 | 2 | 8235 | 0.2141 | 1.0294 | yes |
 | deck_panel | supervised | 2 | 8635 | 0.3863 | 0.4318 | no |
 | deck_panel | rl_dqn_s0 | 3 | 21917 | 0.3661 | 1.0958 | yes |
+| deck_panel | rl_dqn_s1 | 1 | 2073 | 0.7085 | 0.1037 | no |
+| deck_panel | rl_dqn_s2 | 2 | 18819 | 0.3877 | 0.9409 | no |
 | lbracket | supervised | 2 | 8824 | 0.0524 | 1.1030 | yes |
 | lbracket | rl_dqn_s0 | 5 | 6804 | 0.1236 | 0.8505 | no |
+| lbracket | rl_dqn_s1 | 5 | 3944 | 0.1273 | 0.4930 | no |
+| lbracket | rl_dqn_s2 | 7 | 1406 | 0.1717 | 0.1757 | no |
 | plate_holes | supervised | 2 | 9671 | 0.0199 | 1.2089 | yes |
 | plate_holes | rl_dqn_s0 | 6 | 4552 | 0.0559 | 0.5690 | no |
+| plate_holes | rl_dqn_s1 | 6 | 4558 | 0.0575 | 0.5697 | no |
+| plate_holes | rl_dqn_s2 | 6 | 6535 | 0.0623 | 0.8169 | no |
 
 ## 诚实边界
 
@@ -414,5 +436,5 @@
 - 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。
 - LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。
 - 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。
-- 学习方法按缩小规模登记：deck 监督 8 专家，plate_holes RL 80×1，deck RL 40×1。H3 仍为证据不足。
+- 学习方法按缩小规模登记：deck 监督 8 专家；RL 2D 80 回合、3D 40 回合（有 history 的种子）。H3 仍为证据不足。
 

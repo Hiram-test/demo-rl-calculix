@@ -1197,18 +1197,32 @@
   ]
  },
  "learned_scale": {
+  "bearing_block": {
+   "rl_episodes_s0": null,
+   "rl_episodes_s1": 40,
+   "rl_episodes_s2": 40,
+   "rl_seeds": 3
+  },
   "deck_panel": {
    "supervised_experts": 8,
    "rl_episodes_s0": 40,
-   "rl_seeds": 1
+   "rl_episodes_s1": 40,
+   "rl_episodes_s2": 40,
+   "rl_seeds": 3
   },
   "lbracket": {
-   "supervised_experts": 24
+   "supervised_experts": 24,
+   "rl_episodes_s0": null,
+   "rl_episodes_s1": 80,
+   "rl_episodes_s2": 80,
+   "rl_seeds": 3
   },
   "plate_holes": {
    "supervised_experts": 24,
    "rl_episodes_s0": 80,
-   "rl_seeds": 1
+   "rl_episodes_s1": 80,
+   "rl_episodes_s2": 80,
+   "rl_seeds": 3
   }
  },
  "learned_deploy": [
@@ -1227,6 +1241,28 @@
    "family": "bearing_block",
    "key": "canonical",
    "method": "rl_dqn_s0",
+   "solves": 2,
+   "n_eq": 8235,
+   "e_energy": 0.21412458392859293,
+   "budget": 8000,
+   "frac": 1.029375,
+   "over_cap": true
+  },
+  {
+   "family": "bearing_block",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 2,
+   "n_eq": 8235,
+   "e_energy": 0.21412458392859293,
+   "budget": 8000,
+   "frac": 1.029375,
+   "over_cap": true
+  },
+  {
+   "family": "bearing_block",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
    "solves": 2,
    "n_eq": 8235,
    "e_energy": 0.21412458392859293,
@@ -1257,6 +1293,28 @@
    "over_cap": true
   },
   {
+   "family": "deck_panel",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 1,
+   "n_eq": 2073,
+   "e_energy": 0.7085482992978767,
+   "budget": 20000,
+   "frac": 0.10365,
+   "over_cap": false
+  },
+  {
+   "family": "deck_panel",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
+   "solves": 2,
+   "n_eq": 18819,
+   "e_energy": 0.38768461555370004,
+   "budget": 20000,
+   "frac": 0.94095,
+   "over_cap": false
+  },
+  {
    "family": "lbracket",
    "key": "canonical",
    "method": "supervised",
@@ -1279,6 +1337,28 @@
    "over_cap": false
   },
   {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 5,
+   "n_eq": 3944,
+   "e_energy": 0.12725272168843,
+   "budget": 8000,
+   "frac": 0.493,
+   "over_cap": false
+  },
+  {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
+   "solves": 7,
+   "n_eq": 1406,
+   "e_energy": 0.17167745772590465,
+   "budget": 8000,
+   "frac": 0.17575,
+   "over_cap": false
+  },
+  {
    "family": "plate_holes",
    "key": "canonical",
    "method": "supervised",
@@ -1298,6 +1378,28 @@
    "e_energy": 0.05591273004381581,
    "budget": 8000,
    "frac": 0.569,
+   "over_cap": false
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 6,
+   "n_eq": 4558,
+   "e_energy": 0.05751984389715983,
+   "budget": 8000,
+   "frac": 0.56975,
+   "over_cap": false
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
+   "solves": 6,
+   "n_eq": 6535,
+   "e_energy": 0.06225847291095039,
+   "budget": 8000,
+   "frac": 0.816875,
    "over_cap": false
   }
  ],
