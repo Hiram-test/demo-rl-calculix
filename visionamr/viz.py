@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
 from matplotlib.collections import PolyCollection
+from matplotlib.patches import Rectangle
 
 from .fem_post import PostState
 from .geometry import Problem
@@ -59,7 +60,7 @@ def _surface_view(ax, mesh, values, axes_pair, depth_axis, depth_sign, cmap="tur
 
 
 def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 130) -> bytes:
-    """Orthographic drawing views: geometry box, loads, supports.  No solve."""
+    """Orthographic drawing views: geometry, load footprints, supports.  No solve."""
 
     b = problem.bbox
     kind_color = {
@@ -69,6 +70,7 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
         "hole": "#9467bd",
         "corner": "#ff7f0e",
     }
+    loads = [f for f in problem.features if f.kind == "load"]
     if problem.dim == 2:
         fig, axes = plt.subplots(1, 1, figsize=(7.2, 4.6))
         axes = [axes]
@@ -80,11 +82,50 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
         u0, u1 = pair
         xs = [b[u0], b[u0 + 3], b[u0 + 3], b[u0], b[u0]]
         ys = [b[u1], b[u1], b[u1 + 3], b[u1 + 3], b[u1]]
-        ax.plot(xs, ys, "k-", lw=1.2)
+        ax.plot(xs, ys, "k-", lw=1.6)
+        if pair == (0, 1):
+            bot = Rectangle(
+                (b[0], b[1]), b[3] - b[0], b[4] - b[1],
+                facecolor="#1f77b4", alpha=0.08, edgecolor="none",
+            )
+            ax.add_patch(bot)
+            ax.text(
+                0.5 * (b[0] + b[3]), b[1] + 0.04 * (b[4] - b[1]),
+                "bottom face clamped", color="#1f77b4", fontsize=8, ha="center",
+            )
+        if len(loads) >= 3:
+            pts = np.array([[f.xyz[u0], f.xyz[u1]] for f in loads])
+            if pair == (0, 1):
+                x0, y0 = pts[:, 0].min(), pts[:, 1].min()
+                ax.add_patch(Rectangle(
+                    (x0, y0), pts[:, 0].max() - x0, pts[:, 1].max() - y0,
+                    facecolor="#d62728", alpha=0.22, edgecolor="#d62728", lw=1.4,
+                ))
+                ax.text(
+                    pts[:, 0].mean(), pts[:, 1].mean(),
+                    "girder patch\npressure", color="#8b0000", fontsize=8, ha="center", va="center",
+                )
+            else:
+                ax.plot(
+                    [pts[:, 0].min(), pts[:, 0].max()],
+                    [pts[:, 1].max(), pts[:, 1].max()],
+                    color="#d62728", lw=3.0, solid_capstyle="butt",
+                )
+                ax.annotate(
+                    "pressure",
+                    (pts[:, 0].mean(), pts[:, 1].max()),
+                    textcoords="offset points", xytext=(0, 6),
+                    ha="center", color="#8b0000", fontsize=8,
+                )
+        if pair != (0, 1):
+            ax.plot(
+                [b[u0], b[u0 + 3]], [b[u1], b[u1]],
+                color="#1f77b4", lw=3.0, solid_capstyle="butt",
+            )
         for f in problem.features:
             c = kind_color.get(f.kind, "0.3")
-            ax.plot(f.xyz[u0], f.xyz[u1], "o", color=c, ms=7)
-            ax.annotate(f"{f.name}\n{f.kind}", (f.xyz[u0], f.xyz[u1]), fontsize=6)
+            ax.plot(f.xyz[u0], f.xyz[u1], "o", color=c, ms=6)
+            ax.annotate(f"{f.name}", (f.xyz[u0], f.xyz[u1]), fontsize=6)
         ax.set_aspect("equal")
         ax.set_title(f"{problem.name}: {title}")
         ax.set_xlabel("xyz"[u0] + " [mm]")

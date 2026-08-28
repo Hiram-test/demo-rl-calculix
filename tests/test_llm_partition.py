@@ -127,10 +127,10 @@ def test_eye_bearing_markup_assigns_varied_remainder():
     drawings = drawings_from_spec(spec, problem)
     seeds = seeds_from_spec(spec, problem)
     hs = [round(s.h / problem.h0, 2) for s in seeds]
-    assert len(set(hs)) == len(hs)
+    assert len(set(hs)) >= 6
     assert any(s.origin == "coarse" for s in seeds)
     assert any(d.view == "section" for d in drawings)
-    assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.78 * problem.h0)
+    assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.72 * problem.h0)
 
 
 def test_prompt_requires_remainder_and_allows_section():

@@ -1,39 +1,72 @@
 {
-  "note": "Agent eye markup on bearing_block probe views + section cuts. Not Scripted, not Grok.",
-  "remainder_fineness_fraction": 0.78,
+  "note": "Agent eye on bearing drawings only. No CalculiX, no Scripted, no probe cloud.",
+  "remainder_fineness_fraction": 0.72,
   "regions": [
     {
       "name": "patch_core",
-      "view": "section",
-      "plane": "xy",
-      "cut": 112.0,
-      "slab": 16.0,
-      "fineness_fraction": 0.22,
+      "view": "top",
+      "fineness_fraction": 0.26,
       "polygon": [
-        [220, 185],
-        [255, 168],
-        [285, 195],
-        [270, 230],
-        [230, 235],
-        [200, 210]
+        [198, 176],
+        [238, 160],
+        [276, 178],
+        [280, 218],
+        [242, 238],
+        [200, 222]
       ]
     },
     {
-      "name": "patch_halo",
-      "view": "section",
-      "plane": "xy",
-      "cut": 108.0,
-      "slab": 20.0,
-      "fineness_fraction": 0.34,
+      "name": "patch_rim_x0",
+      "view": "top",
+      "fineness_fraction": 0.14,
       "polygon": [
-        [145, 155],
-        [180, 105],
-        [260, 95],
-        [330, 140],
-        [345, 220],
-        [300, 285],
-        [210, 295],
-        [140, 240]
+        [148, 158],
+        [164, 122],
+        [190, 142],
+        [196, 202],
+        [184, 258],
+        [158, 278],
+        [142, 228]
+      ]
+    },
+    {
+      "name": "patch_rim_x1",
+      "view": "top",
+      "fineness_fraction": 0.14,
+      "polygon": [
+        [290, 148],
+        [328, 118],
+        [348, 178],
+        [350, 232],
+        [326, 282],
+        [294, 254],
+        [286, 198]
+      ]
+    },
+    {
+      "name": "patch_rim_y0",
+      "view": "top",
+      "fineness_fraction": 0.16,
+      "polygon": [
+        [176, 108],
+        [232, 92],
+        [302, 112],
+        [316, 148],
+        [248, 160],
+        [184, 152]
+      ]
+    },
+    {
+      "name": "patch_rim_y1",
+      "view": "top",
+      "fineness_fraction": 0.16,
+      "polygon": [
+        [174, 248],
+        [248, 240],
+        [322, 256],
+        [304, 296],
+        [228, 310],
+        [162, 286]
       ]
     },
     {
@@ -41,34 +74,63 @@
       "view": "section",
       "plane": "xz",
       "cut": 200.0,
-      "slab": 36.0,
-      "fineness_fraction": 0.40,
+      "slab": 48.0,
+      "fineness_fraction": 0.34,
       "polygon": [
-        [150, 70],
-        [175, 48],
-        [250, 42],
-        [320, 55],
-        [335, 100],
-        [300, 122],
-        [210, 125],
-        [155, 110]
+        [156, 52],
+        [182, 36],
+        [248, 30],
+        [322, 40],
+        [338, 86],
+        [312, 118],
+        [240, 122],
+        [168, 114],
+        [148, 86]
       ]
     },
     {
       "name": "bottom_bloom",
       "view": "section",
       "plane": "xy",
-      "cut": 20.0,
-      "slab": 28.0,
-      "fineness_fraction": 0.55,
+      "cut": 16.0,
+      "slab": 26.0,
+      "fineness_fraction": 0.50,
       "polygon": [
-        [160, 150],
-        [210, 115],
-        [290, 130],
-        [320, 200],
-        [280, 265],
-        [190, 270],
-        [145, 210]
+        [172, 148],
+        [228, 112],
+        [312, 124],
+        [342, 202],
+        [298, 272],
+        [208, 276],
+        [152, 208]
+      ]
+    },
+    {
+      "name": "bottom_east",
+      "view": "top",
+      "fineness_fraction": 0.40,
+      "polygon": [
+        [348, 52],
+        [392, 10],
+        [400, 78],
+        [400, 322],
+        [386, 394],
+        [350, 348],
+        [338, 198]
+      ]
+    },
+    {
+      "name": "bottom_west",
+      "view": "top",
+      "fineness_fraction": 0.62,
+      "polygon": [
+        [0, 22],
+        [56, 6],
+        [74, 88],
+        [58, 208],
+        [72, 332],
+        [38, 394],
+        [0, 358]
       ]
     }
   ]
