@@ -856,7 +856,12 @@ def step_s8() -> dict:
             "records_rl_dqn_s1.json",
             "records_rl_dqn_s2.json",
         ):
-            recs.extend(load_method_records(fam, "canonical", glob.replace("b*", f"b{PILOT_EQ[fam]}")))
+            loaded = load_method_records(fam, "canonical", glob.replace("b*", f"b{PILOT_EQ[fam]}"))
+            if "llm" in glob:
+                # both heads dump method="vla"; keep them separate series so
+                # the solves axis never stitches two runs into one curve
+                loaded = [{**r, "method": "vla_llm"} for r in loaded]
+            recs.extend(loaded)
         # wrap as simple namespace for viz
         class R:
             def __init__(self, d):

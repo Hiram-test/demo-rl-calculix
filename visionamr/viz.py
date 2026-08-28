@@ -172,6 +172,7 @@ METHOD_STYLE = {
     "dorfler_zz": dict(color="tab:blue", marker="o", ls="-"),
     "local_prediction": dict(color="tab:green", marker="^", ls="-"),
     "vla": dict(color="tab:red", marker="*", ls="-", ms=11),
+    "vla_llm": dict(color="tab:pink", marker="*", ls="--", ms=9),
     "rl_dqn": dict(color="tab:purple", marker="D", ls="-"),
     "supervised": dict(color="tab:orange", marker="v", ls="-"),
 }
@@ -182,7 +183,8 @@ ATOM_LABEL = {
     "uniform": "uniform (global h)",
     "dorfler_zz": "Dörfler (elem ZZ)",
     "local_prediction": "local pred (elem, one-shot)",
-    "vla": "VLA (region)",
+    "vla": "VLA (region, scripted)",
+    "vla_llm": "VLA (region, LLM head)",
     "rl_dqn": "RL (region)",
     "supervised": "supervised (size field)",
 }
@@ -255,15 +257,24 @@ def plot_error_vs_solves(
         ys = [r.e_energy for r in recs]
         series[method] = (xs, ys)
         ax.semilogy(xs, ys, label=_method_label(method), **style)
-    # H4: first k where Dörfler undercuts VLA, if both present
+    # H4: first k where Dörfler undercuts the *held* VLA deliverable.
+    # The VLA series ends when it certifies; A2' semantics hold the
+    # deliverable afterwards, drawn as a faint continuation.
     if "dorfler_zz" in series and "vla" in series:
         d_ys = series["dorfler_zz"][1]
         v_ys = series["vla"][1]
+        if len(d_ys) > len(v_ys) and v_ys and v_ys[-1] is not None:
+            xs_hold = list(range(len(v_ys), len(d_ys) + 1))
+            ax.semilogy(xs_hold, [v_ys[-1]] * len(xs_hold), color="tab:red",
+                        ls=":", lw=1.2, alpha=0.7)
         k_star = None
-        for k in range(1, min(len(d_ys), len(v_ys)) + 1):
-            if d_ys[k - 1] is None or v_ys[k - 1] is None:
+        v_hold = None
+        for k in range(1, len(d_ys) + 1):
+            if k <= len(v_ys) and v_ys[k - 1] is not None:
+                v_hold = v_ys[k - 1]
+            if v_hold is None or d_ys[k - 1] is None:
                 continue
-            if d_ys[k - 1] < v_ys[k - 1]:
+            if d_ys[k - 1] < v_hold:
                 k_star = k
                 break
         if k_star is not None:

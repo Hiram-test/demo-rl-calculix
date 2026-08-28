@@ -214,6 +214,16 @@ def test_budget_rows_lp_stays_same_tier():
     assert last != dumped_tail
 
 
+def test_s8_figures_never_stitch_llm_into_scripted_vla_series():
+    """G6/§8: two VLA runs must not merge into one solves curve."""
+
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "campaign.py").read_text()
+    assert 'if "llm" in glob' in src
+    assert '"method": "vla_llm"' in src
+
+
 def test_a2prime_discloses_dorfler_budget_and_learned_columns():
     """Audit lock: A2′ shows Dörfler N/B and the learned deliverables."""
 
