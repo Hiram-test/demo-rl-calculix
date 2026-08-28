@@ -16,7 +16,7 @@ from visionamr.mesher import generate_uniform
 
 @pytest.mark.parametrize(
     "factory",
-    [make_lbracket, make_plate_holes, make_bearing_block],
+    [make_lbracket, make_plate_holes, make_bearing_block, make_deck_panel],
 )
 def test_resultant_mesh_independent(factory):
     problem = factory()
