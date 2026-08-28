@@ -11,17 +11,21 @@ description: Real FEA meshing workflow for Visionamr VLA. Use when changing VLA,
 循环是：判别 → 调工具 → 再判别 → 再调工具。
 
 ```
-判别     画区；谁更密谁更疏（等级，不是 h）
-工具     一次闭式微调（评价 ≤1）→ 出网 → 求解
-判别     看结果和剩下的额度，可以改判断，仍不给 h
-工具     再微调 / 出网 / 求解
+判别     画区；谁更密谁更疏（等级 1 最密 … 5 最疏，不是 h）
+工具     先验映射（feats=None，评价 0）→ 出网 → 求解
+判别     看占用和剩余；可改等级，仍不给 h
+工具     一次闭式微调（评价 ≤1，不搜索）→ 出网 → 求解
 ```
 
-PSO **不搜索**。不准留给下一轮眼睛。参数循环速度是核心。
-`calibrate_grades` 评价次数必须 ≤ 1。
+第一次出网用 `GRADE_PRIOR`，**可以离谱超预算或欠预算**。
+那不是要搜索掉的 bug，是下一次判别要看的东西。
+不准的微调留给下一眼，像人一样。参数循环速度是核心。
+
+`calibrate_grades` 第一次 `feats=None` 评价 = 0；有上次网格时评价 ≤ 1。
 画区 + 判别 **禁止** 调用 CalculiX。没有 API 时代理自己写判别 JSON。
 **禁止** 眼睛输出 `fineness_fraction` / 缩放系数 / 连续尺寸。
-**禁止** 眼睛委派参数。
+**禁止** 眼睛委派参数（包括「交给 PSO 选 h」）。
+**禁止** 把第一次 N 搜回预算：`scale_drawings_to_elem_budget` / Gmsh size-search / 粒子群不得出现在 live 路径或 `run_eye_vs_lp.py`。
 **禁止** 再拟合 η ~ h^q、禁止 `fit_surrogate` / `E_pred`。
 `calibrate_measured` 不得出现在 `pipeline.py`。
 Scripted/LLM 没有 `revise`：第二次求解是同一套等级上的一次微调。改等级走 CachedDrawing 的 `revise` JSON。
@@ -41,4 +45,5 @@ A2′ / H1–H4 数字在重跑落地前仍是改前战役。不要把新流程�
 grep calibrate_grades visionamr/vla/pipeline.py
 grep n_particles visionamr/vla/pso.py   # live calibrate_grades 不得用
 grep calibrate_measured visionamr/vla/pipeline.py  # 必须没有
+grep scale_drawings_to_elem_budget scripts/run_eye_vs_lp.py  # 必须没有
 ```

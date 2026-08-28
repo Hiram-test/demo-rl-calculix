@@ -179,7 +179,7 @@ VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结
 
 每一块只给一个粗细等级，1 最密、5 最疏。
 图上看着不一样，等级就必须不一样。禁止所有区填同一个数。
-不要给连续单元尺寸，那是 PSO 的事。
+不要给连续单元尺寸。尺寸是工具的，不是你的。
 
 没画到的体积也要判别等级，不能默认当粗场。
 看着剩余区域，给出 remainder_grade。
@@ -227,7 +227,7 @@ def _bbox_center(problem: Problem) -> tuple[float, float, float]:
 
 
 def ensure_remainder_seed(seeds: list[Seed], spec: dict, problem: Problem) -> list[Seed]:
-    """Leftover volume must carry an eye-assigned size, not an implicit h0."""
+    """Leftover volume must carry an eye-assigned grade, not an implicit h0."""
 
     rem = spec.get("remainder_fineness_fraction") if isinstance(spec, dict) else None
     rem_g = spec.get("remainder_grade") if isinstance(spec, dict) else None
@@ -420,7 +420,7 @@ class CachedDrawingPartitioner:
         return seeds
 
     def revise(self, problem: Problem, observation: dict | None = None):
-        """Next vision decision: grades only.  PSO picks the sizes."""
+        """Next vision decision: grades only.  The tool owns the numbers."""
 
         del problem
         if self._rev_i >= len(self.revisions):

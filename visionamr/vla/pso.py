@@ -3,7 +3,8 @@
     h_i(s, kappa) = h+_i * exp(s + kappa * tau_i)
 
 The live path is ``calibrate_grades``: the model chose discrete
-levels, PSO picks the size of each level.  ``calibrate_measured``
+levels; the tool maps them to ``GRADE_PRIOR`` and, if a last mesh
+exists, applies one closed-form scale.  ``calibrate_measured``
 stays for older unit tests.  ``run_vla`` must not call ``fit_surrogate``.
 
 ``Surrogate`` / ``fit_surrogate`` / ``calibrate`` stay for unit tests of

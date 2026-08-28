@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 
 from visionamr.geometry import make_plate_holes
@@ -265,6 +267,7 @@ def test_pipeline_has_no_error_surrogate():
     assert "fit_surrogate" not in src
     assert "calibrate_measured" not in src
     assert "calibrate_grades" in src
+    assert "part, grades, None" in src
     assert "revise" in src
     assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
     assert "drawings_size_fn" in src
@@ -394,7 +397,10 @@ def test_agent_revise_returns_grades_not_sizes():
     assert "sizes" not in out
     assert out["grades"]["patch_rim_x0"] == 1
     assert out["grades"]["field"] == 5
-    assert "PSO" in out["thought"]
+    assert "等级" in out["thought"]
+    assert "不给尺寸" in out["thought"]
+    assert "八成" not in out["thought"]
+    assert "PSO" not in out["thought"]
     assert head.revise(problem, {}) is None
 
 
@@ -422,6 +428,37 @@ def test_calibrate_grades_is_one_shot_and_keeps_order():
     assert info["mode"] == "calibrate_grades"
     assert info["evals"] <= 1
     assert "E_pred" not in info
+
+
+def test_calibrate_grades_first_call_is_priors_only():
+    """First mesh: grades → GRADE_PRIOR, no resource eval, no search."""
+
+    from visionamr.vla.grades import GRADE_PRIOR
+    from visionamr.vla.pso import PSOConfig, calibrate_grades
+
+    part, _A = two_region_partition()
+    h, info = calibrate_grades(
+        part, np.array([1, 5]), None,
+        n_eq_budget=2400, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
+    )
+    assert info["evals"] == 0
+    assert info["applied"] is False
+    assert np.isclose(h[0], GRADE_PRIOR[1] * part.problem.h0)
+    assert np.isclose(h[1], GRADE_PRIOR[5] * part.problem.h0)
+
+
+def test_eye_fixtures_are_grades_only():
+    """The agent eye must not emit sizes or delegate parameters."""
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
+    for name in ("bearing_block_eye.json", "bearing_block_eye_revise1.json"):
+        text = (root / name).read_text()
+        assert "fineness_fraction" not in text
+        assert "八成" not in text
+        data = json.loads(text)
+        assert "remainder_grade" in data
 
 
 def test_project_feasible_only_pulls_back_overshoot():
@@ -483,6 +520,9 @@ def test_skill_locks_measured_pso_and_forbids_error_surrogate():
     assert "fit_surrogate" in skill
     assert "revise" in skill
     assert "不许误差代理" in skill or "禁止" in skill and "η ~ h^q" in skill
+    assert "feats=None" in skill
+    assert "scale_drawings_to_elem_budget" in skill
+    assert "先验" in skill
 
 
 def test_a2prime_tables_flagged_until_drawn_init_rerun():

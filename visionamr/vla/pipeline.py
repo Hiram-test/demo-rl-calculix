@@ -80,7 +80,7 @@ class VLAResult:
 
 
 def vision_assigned_sizes(part, problem) -> np.ndarray:
-    """Placeholder sizes from current partition; PSO overwrites them."""
+    """Placeholder sizes from current partition; the tool overwrites them."""
 
     return np.clip(part.sizes(), problem.h_min, problem.h0)
 
@@ -171,7 +171,7 @@ def run_vla(
     rec.extra["grades"] = [int(v) for v in grades]
     rec.extra["pso"] = {k: v for k, v in pso_info.items() if k != "tau"}
 
-    # ---- vision (re-grade) + tools (PSO / mesh / solve) -------------------
+    # ---- vision (re-grade) + tools (tweak / mesh / solve) -------------------
     while solve_idx < cfg.max_solves:
         obs = _observation(
             rec, cfg.n_eq_budget,

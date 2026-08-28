@@ -1,10 +1,10 @@
-"""Discrete coarseness grades.  The model picks a level; PSO picks h."""
+"""Discrete coarseness grades.  The model picks a level; the tool maps it to h."""
 
 from __future__ import annotations
 
 import numpy as np
 
-# 1 = finest, 5 = coarsest.  Priors are only PSO seeds, not model output.
+# 1 = finest, 5 = coarsest.  Priors are only tool seeds, not model output.
 GRADE_PRIOR = {1: 0.16, 2: 0.26, 3: 0.38, 4: 0.54, 5: 0.72}
 GRADE_MIN, GRADE_MAX = 1, 5
 MIN_STEP = 1.12  # coarser grade must be at least this times finer h
