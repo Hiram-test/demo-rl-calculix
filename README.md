@@ -63,7 +63,7 @@ visionamr/
     regions.py       类人分区：种子生长测地线 Voronoi、特征聚合、残差集中分裂
     agents.py        子智能体一轮通信（份额/邻域/父级预算压力）
     pso.py           决策超预算时的投影（`project_feasible`）；旧 `calibrate_measured` 留作单测
-    pipeline.py      自适应短循环：读图 → first → 中间修订 → 最后实测 PSO → certified
+    pipeline.py      短循环：读图 → first → revise 决策 → 超预算才 project_feasible → certified
 ```
 
 ## 归档

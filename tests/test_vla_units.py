@@ -363,6 +363,15 @@ def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
     assert float(h.mean()) > 0.08
 
 
+def test_scripted_and_llm_heads_have_no_revise():
+    """Campaign S4 uses Scripted; without revise, run_vla stops after solve 1."""
+
+    from visionamr.vla.partition import LLMVisionPartitioner, ScriptedVisionPartitioner
+
+    assert not hasattr(ScriptedVisionPartitioner, "revise")
+    assert not hasattr(LLMVisionPartitioner, "revise")
+
+
 def test_agent_revise_is_next_decision_from_result_and_leftover():
     """VLA think: this solve + remaining resource → next sizes.  No API."""
 
