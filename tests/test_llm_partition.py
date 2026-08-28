@@ -54,10 +54,91 @@ def test_regions_from_spec_are_drawn_polygons():
 def test_parse_fenced_json():
     problem = make_bearing_block()
     content = """```json
-{"seeds": [{"name": "a", "x": 1, "y": 2, "z": 3, "fineness_fraction": 0.4}]}
+{"seeds": [{"name": "a", "x": 1, "y": 2, "z": 3, "fineness_fraction": 0.4}],
+ "remainder_fineness_fraction": 0.8}
 ```"""
     seeds = parse_seed_json(content, problem)
     assert seeds[0].name == "a"
+    assert any(s.origin == "coarse" for s in seeds)
+
+
+def test_regions_spec_assigns_remainder():
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ],
+        "remainder_fineness_fraction": 0.72,
+    }
+    seeds = seeds_from_spec(spec, problem)
+    field = next(s for s in seeds if s.origin == "coarse")
+    assert np.isclose(field.h, 0.72 * problem.h0)
+
+
+def test_regions_spec_requires_remainder():
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match="remainder_fineness_fraction"):
+        seeds_from_spec(spec, problem)
+
+
+def test_section_region_needs_cut():
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "column",
+                "view": "section",
+                "plane": "xz",
+                "fineness_fraction": 0.3,
+                "polygon": [[150, 40], [300, 50], [280, 120], [160, 110]],
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match="cut"):
+        drawings_from_spec(spec, problem)
+
+
+def test_eye_bearing_markup_assigns_varied_remainder():
+    from pathlib import Path
+
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = json.loads(
+        (Path(__file__).resolve().parent / "fixtures" / "bearing_block_eye.json").read_text()
+    )
+    drawings = drawings_from_spec(spec, problem)
+    seeds = seeds_from_spec(spec, problem)
+    hs = [round(s.h / problem.h0, 2) for s in seeds]
+    assert len(set(hs)) == len(hs)
+    assert any(s.origin == "coarse" for s in seeds)
+    assert any(d.view == "section" for d in drawings)
+    assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.78 * problem.h0)
+
+
+def test_prompt_requires_remainder_and_allows_section():
+    from visionamr.vla.partition import VLM_SYSTEM_PROMPT
+
+    assert "remainder_fineness_fraction" in VLM_SYSTEM_PROMPT
+    assert "拆结构剖面" in VLM_SYSTEM_PROMPT
+    assert "leave the unpainted bulk coarse" not in VLM_SYSTEM_PROMPT
 
 
 def test_rejects_empty_seeds():

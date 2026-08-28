@@ -1,7 +1,8 @@
 """Irregular vision-drawn regions: polygons on ortho views, then a size.
 
-The eye draws a non-box outline (top / front / side) and then assigns
-one fineness to that region.  Leftover volume is the coarse field.
+The eye draws a non-box outline (top / front / side, or a section cut)
+and then assigns one fineness to that region.  Unpainted volume still
+gets an eye-assigned remainder size; it is not silently dumped at h0.
 """
 
 from __future__ import annotations
@@ -23,6 +24,9 @@ class DrawnRegion:
     view: str
     polygon: tuple[tuple[float, float], ...]
     origin: str = "vision"
+    plane: str | None = None
+    cut: float | None = None
+    slab: float | None = None
 
     def poly_array(self) -> np.ndarray:
         return np.asarray(self.polygon, dtype=float)
@@ -32,6 +36,53 @@ VIEW_AXES = {
     "front": (0, 2),
     "side": (1, 2),
 }
+
+PLANE_AXES = {
+    "xy": (0, 1),
+    "xz": (0, 2),
+    "yz": (1, 2),
+}
+
+ORTHO_PLANE = {"top": "xy", "front": "xz", "side": "yz"}
+REMAINDER_NAMES = frozenset({"field", "bulk", "remainder", "unpainted"})
+
+
+def drawing_plane(region: DrawnRegion) -> str:
+    if region.view == "section":
+        plane = region.plane or "xy"
+    else:
+        plane = ORTHO_PLANE.get(region.view, "xy")
+    if plane not in PLANE_AXES:
+        raise ValueError(f"unknown plane {plane!r}")
+    return plane
+
+
+def drawing_axes(region: DrawnRegion) -> tuple[int, int]:
+    return PLANE_AXES[drawing_plane(region)]
+
+
+def unused_axis(plane: str) -> int:
+    ax0, ax1 = PLANE_AXES[plane]
+    return ({0, 1, 2} - {ax0, ax1}).pop()
+
+
+def section_slab(region: DrawnRegion, problem: Problem) -> float:
+    if region.slab is not None:
+        return float(region.slab)
+    plane = drawing_plane(region)
+    k = unused_axis(plane)
+    span = float(problem.bbox[k + 3] - problem.bbox[k])
+    return 0.28 * max(span, 1e-9)
+
+
+def origin_for_name(name: str) -> str:
+    return "coarse" if name.lower() in REMAINDER_NAMES else "vision"
+
+
+def require_fineness(item: dict, label: str) -> float:
+    if "fineness_fraction" not in item:
+        raise ValueError(f"{label} missing fineness_fraction")
+    return float(np.clip(item["fineness_fraction"], 0.1, 1.0))
 
 
 def poly_tuple(pts: np.ndarray) -> tuple[tuple[float, float], ...]:
@@ -99,9 +150,12 @@ def drawing_centroid_xyz(region: DrawnRegion, problem: Problem) -> tuple[float, 
     c = np.asarray(region.polygon, float).mean(axis=0)
     b = problem.bbox
     xyz = [0.5 * (b[k] + b[k + 3]) for k in range(3)]
-    ax0, ax1 = VIEW_AXES[region.view]
+    plane = drawing_plane(region)
+    ax0, ax1 = PLANE_AXES[plane]
     xyz[ax0] = float(c[0])
     xyz[ax1] = float(c[1])
+    if region.view == "section" and region.cut is not None:
+        xyz[unused_axis(plane)] = float(region.cut)
     if problem.dim == 2:
         xyz[2] = 0.0
     lo = problem.bbox[:3]
@@ -147,9 +201,21 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
         for i, item in enumerate(raw_regions[:max_regions]):
             if not isinstance(item, dict):
                 raise ValueError(f"region {i} is not an object")
-            view = str(item.get("view", "top" if problem.dim == 2 else "top"))
-            if view not in VIEW_AXES:
+            view = str(item.get("view", "top"))
+            if view not in VIEW_AXES and view != "section":
                 raise ValueError(f"region {i} unknown view {view!r}")
+            plane = item.get("plane")
+            cut = item.get("cut")
+            slab = item.get("slab")
+            if view == "section":
+                plane = str(plane or "xy")
+                if plane not in PLANE_AXES:
+                    raise ValueError(f"region {i} unknown section plane {plane!r}")
+                if cut is None:
+                    raise ValueError(f"region {i} section needs cut")
+                cut = float(cut)
+            elif plane is not None:
+                plane = str(plane)
             poly = item.get("polygon")
             if not isinstance(poly, list) or len(poly) < 3:
                 raise ValueError(f"region {i} needs a polygon of at least 3 points")
@@ -158,10 +224,19 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
                 if not isinstance(p, (list, tuple)) or len(p) < 2:
                     raise ValueError(f"region {i} polygon vertex is not a pair")
                 pts.append((float(p[0]), float(p[1])))
-            frac = float(np.clip(item.get("fineness_fraction", 0.4), 0.1, 1.0))
+            frac = require_fineness(item, f"region {i}")
             name = str(item.get("name", f"llm_region_{i}"))[:48]
             drawings.append(
-                DrawnRegion(name, frac * problem.h0, view, tuple(pts), "vision")
+                DrawnRegion(
+                    name,
+                    frac * problem.h0,
+                    view,
+                    tuple(pts),
+                    origin_for_name(name),
+                    plane=plane,
+                    cut=cut if cut is None else float(cut),
+                    slab=None if slab is None else float(slab),
+                )
             )
     elif isinstance(raw_seeds, list) and raw_seeds:
         lo = np.array(problem.bbox[:3], dtype=float)
@@ -178,12 +253,13 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
             xyz = np.clip(xyz, lo, hi)
             if problem.dim == 2:
                 xyz[2] = 0.0
-            frac = float(np.clip(item.get("fineness_fraction", 0.4), 0.1, 1.0))
+            frac = require_fineness(item, f"seed {i}")
             name = str(item.get("name", f"llm_seed_{i}"))[:48]
             drawings.append(
                 halo_drawing(
                     name, xyz, frac * problem.h0, problem,
                     view="top", radius=0.07 * problem.diameter, phase=0.4 * i,
+                    origin=origin_for_name(name),
                 )
             )
     else:

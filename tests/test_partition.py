@@ -124,6 +124,31 @@ def test_drawn_regions_are_not_boxes_and_cover_domain():
     assert abs(xa_top.max() - xa_bot.max()) > 0.8
 
 
+def test_section_drawing_only_paints_near_the_cut():
+    from visionamr.vla.drawing import DrawnRegion
+
+    mesh = grid_mesh(12, 4)
+    problem = make_plate_holes(width=12.0, height=4.0, holes=(), tension=1.0)
+    # 2-D plate lives in z=0; a yz section at x=2 should only tag a slab.
+    column = DrawnRegion(
+        "column", 0.25, "section",
+        ((0.0, -1.0), (4.0, -1.0), (4.0, 1.0), (0.5, 0.8)),
+        plane="yz", cut=2.0, slab=1.2,
+    )
+    part = Partition(
+        [Seed("column", (2.0, 2.0, 0.0), h=0.25),
+         Seed("field", (10.0, 2.0, 0.0), h=0.8, origin="coarse")],
+        problem,
+        drawings=[column],
+    )
+    labels = part.assign(mesh)
+    cen = mesh.centroids
+    tagged = labels == 0
+    assert tagged.any()
+    assert np.all(np.abs(cen[tagged, 0] - 2.0) <= 1.2 + 1e-9)
+    assert (labels == 1).any()
+
+
 def test_scripted_head_draws_then_assigns_eye_sizes():
     from visionamr.vla.partition import ScriptedVisionPartitioner
     from visionamr.vla.pipeline import vision_assigned_sizes

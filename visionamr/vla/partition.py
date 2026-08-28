@@ -27,6 +27,7 @@ from ..fem_post import PostState
 from ..geometry import Problem
 from ..indicators import zz_indicator  # noqa: F401  (kept for head extensions)
 from .drawing import (
+    REMAINDER_NAMES,
     VIEW_AXES,
     DrawnRegion,
     drawing_centroid_xyz,
@@ -182,20 +183,34 @@ class ScriptedVisionPartitioner:
         return name
 
 
-VLM_SYSTEM_PROMPT = """You are a senior finite-element meshing engineer.
-You see rendered views of a structure with its von Mises stress field
-(orthographic projections for 3-D parts).  Draw irregular regions the
-way you would with a pen -- never axis-aligned boxes, never a fixed
-slab template.  First outline each region as a polygon on one view
-(top = x-y, front = x-z, side = y-z).  Then assign that region a
-single target element size as a fraction of the background size.
-Reply with strict JSON and nothing else:
-{"regions": [{"name": "<structural name>", "view": "top"|"front"|"side",
+VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结构响应场的正交视图
+（俯视 top = x-y，正视 front = x-z，侧视 side = y-z）。
+
+像用笔画一样圈出不规则区域。不要轴对齐方框，不要固定分块模板。
+
+允许拆结构剖面。三向外视图看不清内部或接触面时，
+可以自己定一个剖切面，在剖面上画区。
+剖切面用 plane（xy / xz / yz）和 cut（沿未用轴的位置，模型单位）说明。
+剖面不是盒子，也不是整层模板；只圈你真正要加密或放粗的那一块。
+
+每一块只给一个目标单元尺寸，写成背景尺寸 h0 的分数。
+图上看着不一样，尺寸就必须不一样。禁止所有区填同一个数，
+禁止收成「热 0.15–0.5 / 冷 0.8–1.0」两档。
+
+没画到的体积也必须委派尺寸，不能默认当粗场。
+看着剩余区域，给出 remainder_fineness_fraction。
+不许省略。剩余看着不像背景时，不许填 1.0。
+
+只回复 JSON：
+{"regions": [{"name": "<结构名>",
+"view": "top"|"front"|"side"|"section",
+"plane": "xy"|"xz"|"yz",
+"cut": <剖面位置，仅 section 需要>,
 "polygon": [[u,v], ...],
-"fineness_fraction": <hot 0.15-0.5, calm 0.8-1.0>}, ...]}
-Polygons need at least 3 vertices in model units on that view.
-Draw both hot regions and leave the unpainted bulk coarse.
-Use as many or as few regions as the picture demands."""
+"fineness_fraction": <0.1 到 1.0 的数>}, ...],
+"remainder_fineness_fraction": <0.1 到 1.0 的数>}
+多边形至少 3 个顶点，坐标用该视图或剖面的模型单位。
+图上需要几块就画几块；不需要剖面就不要硬拆。"""
 
 
 def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
@@ -219,11 +234,44 @@ def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
     return base, key, model
 
 
+def _bbox_center(problem: Problem) -> tuple[float, float, float]:
+    b = problem.bbox
+    z = 0.0 if problem.dim == 2 else 0.5 * (b[2] + b[5])
+    return (0.5 * (b[0] + b[3]), 0.5 * (b[1] + b[4]), z)
+
+
+def ensure_remainder_seed(seeds: list[Seed], spec: dict, problem: Problem) -> list[Seed]:
+    """Leftover volume must carry an eye-assigned size, not an implicit h0."""
+
+    rem = spec.get("remainder_fineness_fraction") if isinstance(spec, dict) else None
+    out: list[Seed] = []
+    has = False
+    for s in seeds:
+        if s.origin == "coarse" or s.name.lower() in REMAINDER_NAMES:
+            has = True
+            h = (
+                float(np.clip(float(rem), 0.1, 1.0)) * problem.h0
+                if rem is not None
+                else s.h
+            )
+            out.append(Seed(s.name, s.xyz, h, origin="coarse"))
+        else:
+            out.append(s)
+    if has:
+        return out
+    if rem is None:
+        raise ValueError("JSON missing remainder_fineness_fraction")
+    h = float(np.clip(float(rem), 0.1, 1.0)) * problem.h0
+    out.append(Seed("field", _bbox_center(problem), h, origin="coarse"))
+    return out
+
+
 def seeds_from_spec(spec: dict, problem: Problem, max_seeds: int = 12) -> list[Seed]:
     """Validate VLM JSON into seeds.  Drawn regions preferred; old seed lists still parse."""
 
     drawings = markup_from_spec(spec, problem, max_regions=max_seeds)
-    return [Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings]
+    seeds = [Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings]
+    return ensure_remainder_seed(seeds, spec, problem)
 
 
 def drawings_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> list[DrawnRegion]:
@@ -271,10 +319,16 @@ def dump_seed_cache(path, seeds: list[Seed], drawings: list | None = None, probl
                         d.h / problem.h0 if problem is not None else d.h
                     ),
                     "polygon": [list(p) for p in d.polygon],
+                    **({} if d.plane is None else {"plane": d.plane}),
+                    **({} if d.cut is None else {"cut": d.cut}),
+                    **({} if d.slab is None else {"slab": d.slab}),
                 }
                 for d in drawings
             ]
         }
+        field = next((s for s in seeds if s.origin == "coarse"), None)
+        if field is not None and problem is not None:
+            spec["remainder_fineness_fraction"] = field.h / problem.h0
     else:
         spec = {
             "seeds": [
@@ -392,10 +446,7 @@ class LLMVisionPartitioner:
                     text = text.strip()
                 spec = json.loads(text)
                 drawings = drawings_from_spec(spec, problem, max_regions=self.max_seeds)
-                seeds = [
-                    Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin)
-                    for d in drawings
-                ]
+                seeds = seeds_from_spec(spec, problem, max_seeds=self.max_seeds)
                 self.last_drawings = drawings
                 self.last_info = {
                     "source": "llm",
@@ -445,9 +496,11 @@ class LLMVisionPartitioner:
                         {
                             "type": "text",
                             "text": (
-                                f"Structure '{problem.name}', bbox {problem.bbox}, "
-                                f"background size h0={problem.h0:.3g}. "
-                                f"Draw irregular regions, then assign each a size."
+                                f"结构 '{problem.name}'，包围盒 {problem.bbox}，"
+                                f"背景尺寸 h0={problem.h0:.3g}。"
+                                f"画出不规则区域，给每一区一个尺寸；"
+                                f"没画到的体积也要给 remainder_fineness_fraction。"
+                                f"看不清的地方允许拆剖面再画。"
                             ),
                         },
                         {

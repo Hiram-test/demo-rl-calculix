@@ -1,9 +1,10 @@
 """Human-like partitions: AI-drawn irregular regions, then one size each.
 
-A vision head draws non-box outlines on ortho views and assigns a
-fineness to every outline.  Elements whose projection falls inside a
-drawing join that region (hotter / finer drawings win overlaps).
-Unpainted volume is the coarse field.  Axis-aligned boxes remain only
+A vision head draws non-box outlines on ortho views (or a section cut)
+and assigns a fineness to every outline.  Elements whose projection
+falls inside a drawing join that region (hotter / finer drawings win
+overlaps).  Unpainted volume still gets an eye-assigned remainder
+size; it is not silently dumped at h0.  Axis-aligned boxes remain only
 as the AB2 ablation; geodesic Voronoi from seed points is a fallback
 when a drawing list is missing.
 """
@@ -21,7 +22,15 @@ from ..fem_post import PostState
 from ..geometry import Problem
 from ..mesher import Mesh
 from ..sizefield import NodalSizeField, element_to_node_sizes
-from .drawing import VIEW_AXES, DrawnRegion, halo_drawing, points_in_poly
+from .drawing import (
+    DrawnRegion,
+    drawing_axes,
+    drawing_plane,
+    halo_drawing,
+    points_in_poly,
+    section_slab,
+    unused_axis,
+)
 
 
 @dataclass(frozen=True)
@@ -105,7 +114,7 @@ class Partition:
         return self._assign_drawn(mesh)
 
     def _assign_drawn(self, mesh: Mesh) -> np.ndarray:
-        """Paint irregular view-plane polygons; leftover cells go to the field seed."""
+        """Paint irregular view-plane / section polygons; leftover uses remainder seed."""
 
         name_to_i = {s.name: i for i, s in enumerate(self.seeds)}
         field_i = next(
@@ -117,8 +126,14 @@ class Partition:
         for di in order:
             d = self.drawings[di]
             i = name_to_i.get(d.name, di)
-            ax0, ax1 = VIEW_AXES[d.view]
+            ax0, ax1 = drawing_axes(d)
             inside = points_in_poly(mesh.centroids[:, [ax0, ax1]], d.poly_array())
+            if d.view == "section":
+                k = unused_axis(drawing_plane(d))
+                near = np.abs(mesh.centroids[:, k] - float(d.cut)) <= section_slab(
+                    d, self.problem
+                )
+                inside = inside & near
             labels[inside] = i
         return labels
 
