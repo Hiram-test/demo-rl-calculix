@@ -264,7 +264,7 @@ def test_pipeline_has_no_error_surrogate():
     src = (root / "visionamr" / "vla" / "pipeline.py").read_text()
     assert "fit_surrogate" not in src
     assert "calibrate_measured" not in src
-    assert "project_feasible" in src
+    assert "calibrate_grades" in src
     assert "revise" in src
     assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
     assert "drawings_size_fn" in src
@@ -364,7 +364,7 @@ def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
 
 
 def test_scripted_and_llm_heads_have_no_revise():
-    """Campaign S4 uses Scripted; without revise, run_vla stops after solve 1."""
+    """S4 Scripted/LLM do not re-grade.  Second solve is the same grades + one tweak."""
 
     from visionamr.vla.partition import LLMVisionPartitioner, ScriptedVisionPartitioner
 
@@ -372,8 +372,8 @@ def test_scripted_and_llm_heads_have_no_revise():
     assert not hasattr(LLMVisionPartitioner, "revise")
 
 
-def test_agent_revise_is_next_decision_from_result_and_leftover():
-    """VLA think: this solve + remaining resource → next sizes.  No API."""
+def test_agent_revise_returns_grades_not_sizes():
+    """Model re-grades.  It does not emit continuous sizes."""
 
     from pathlib import Path
 
@@ -386,17 +386,42 @@ def test_agent_revise_is_next_decision_from_result_and_leftover():
     rev = root / "tests" / "fixtures" / "bearing_block_eye_revise1.json"
     head = CachedDrawingPartitioner(str(eye), revisions=[str(rev)])
     head.propose(problem)
-    sizes0 = {d.name: d.h for d in head.last_drawings}
-    sizes0["field"] = 0.72 * problem.h0
     out = head.revise(
         problem,
-        {"n_equations": 6591, "budget": 8000, "remaining": 1409, "sizes": sizes0},
+        {"n_equations": 6591, "budget": 8000, "remaining": 1409},
     )
     assert out is not None
-    assert "还剩" in out["thought"] or "剩余" in out["thought"]
-    assert out["sizes"]["patch_rim_x0"] < sizes0["patch_rim_x0"]
-    assert out["sizes"]["patch_rim_x0"] < out["sizes"]["field"]
-    assert head.revise(problem, {"sizes": sizes0}) is None
+    assert "sizes" not in out
+    assert out["grades"]["patch_rim_x0"] == 1
+    assert out["grades"]["field"] == 5
+    assert "PSO" in out["thought"]
+    assert head.revise(problem, {}) is None
+
+
+def test_calibrate_grades_is_one_shot_and_keeps_order():
+    from visionamr.vla.pso import PSOConfig, calibrate_grades
+    from visionamr.vla.regions import RegionFeatures
+
+    part, _A = two_region_partition()
+    feats = RegionFeatures(
+        err_sum=np.array([4.0, 1.0]),
+        elems=np.array([800.0, 800.0]),
+        vm_max=np.array([1.0, 1.0]),
+        vm_mean=np.array([1.0, 1.0]),
+        h_meas=np.array([0.2, 0.2]),
+        volume=np.array([1.0, 1.0]),
+        total_err=5.0,
+        total_elems=1600,
+    )
+    h, info = calibrate_grades(
+        part, np.array([1, 5]), feats,
+        n_eq_budget=2400, eq_per_elem=1.5, h_anchor=feats.h_meas,
+        cfg=PSOConfig(seed=3),
+    )
+    assert h[0] < h[1]
+    assert info["mode"] == "calibrate_grades"
+    assert info["evals"] <= 1
+    assert "E_pred" not in info
 
 
 def test_project_feasible_only_pulls_back_overshoot():
@@ -451,11 +476,12 @@ def test_skill_locks_measured_pso_and_forbids_error_surrogate():
         Path(__file__).resolve().parents[1]
         / ".cursor" / "skills" / "vla-real-workflow" / "SKILL.md"
     ).read_text()
-    assert "project_feasible" in skill
-    assert "calibrate_measured" in skill
+    assert "calibrate_grades" in skill
+    assert "判别" in skill
+    assert "工具" in skill
+    assert "委派参数" in skill
     assert "fit_surrogate" in skill
     assert "revise" in skill
-    assert "计算结果" in skill and "资源存量" in skill
     assert "不许误差代理" in skill or "禁止" in skill and "η ~ h^q" in skill
 
 

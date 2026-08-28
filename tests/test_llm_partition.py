@@ -97,7 +97,7 @@ def test_regions_spec_requires_remainder():
             }
         ]
     }
-    with pytest.raises(ValueError, match="remainder_fineness_fraction"):
+    with pytest.raises(ValueError, match="remainder"):
         seeds_from_spec(spec, problem)
 
 
@@ -146,11 +146,15 @@ def test_eye_bearing_markup_assigns_varied_remainder():
     )
     drawings = drawings_from_spec(spec, problem)
     seeds = seeds_from_spec(spec, problem)
-    hs = [round(s.h / problem.h0, 2) for s in seeds]
-    assert len(set(hs)) >= 6
+    gs = [d.grade for d in drawings if d.grade is not None]
+    assert len(set(gs)) >= 4
+    assert min(gs) == 1
     assert any(s.origin == "coarse" for s in seeds)
     assert any(d.view == "section" for d in drawings)
-    assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.72 * problem.h0)
+    field = next(s for s in seeds if s.origin == "coarse")
+    rim = next(d for d in drawings if "rim" in d.name)
+    assert rim.grade == 1
+    assert field.h > rim.h
 
 
 def test_eye_vs_lp_script_is_one_step_and_not_old_a2prime():
@@ -196,7 +200,10 @@ def test_drawing_png_uses_bc_marks():
 def test_prompt_requires_remainder_and_allows_section():
     from visionamr.vla.partition import VLM_SYSTEM_PROMPT
 
-    assert "remainder_fineness_fraction" in VLM_SYSTEM_PROMPT
+    assert "remainder_grade" in VLM_SYSTEM_PROMPT
+    assert "grade" in VLM_SYSTEM_PROMPT
+    assert "不要给连续单元尺寸" in VLM_SYSTEM_PROMPT
+    assert "不要委派参数" in VLM_SYSTEM_PROMPT or "不要调参" in VLM_SYSTEM_PROMPT
     assert "拆结构剖面" in VLM_SYSTEM_PROMPT
     assert "图纸" in VLM_SYSTEM_PROMPT
     assert "leave the unpainted bulk coarse" not in VLM_SYSTEM_PROMPT

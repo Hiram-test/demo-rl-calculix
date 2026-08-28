@@ -27,6 +27,7 @@ class DrawnRegion:
     plane: str | None = None
     cut: float | None = None
     slab: float | None = None
+    grade: int | None = None
 
     def poly_array(self) -> np.ndarray:
         return np.asarray(self.polygon, dtype=float)
@@ -168,6 +169,21 @@ def require_fineness(item: dict, label: str) -> float:
     return float(np.clip(item["fineness_fraction"], 0.1, 1.0))
 
 
+def region_grade_and_frac(item: dict, label: str) -> tuple[int | None, float]:
+    """Model decides a grade.  A leftover fineness is only a PSO seed."""
+
+    from .grades import GRADE_PRIOR, grade_from_frac, parse_grade
+
+    if "grade" in item:
+        g = parse_grade(item["grade"], label)
+        frac = float(item["fineness_fraction"]) if "fineness_fraction" in item else GRADE_PRIOR[g]
+        return g, float(np.clip(frac, 0.1, 1.0))
+    if "fineness_fraction" in item:
+        frac = require_fineness(item, label)
+        return grade_from_frac(frac), frac
+    raise ValueError(f"{label} missing grade")
+
+
 def poly_tuple(pts: np.ndarray) -> tuple[tuple[float, float], ...]:
     return tuple((float(x), float(y)) for x, y in np.asarray(pts, float).reshape(-1, 2))
 
@@ -265,11 +281,12 @@ def halo_drawing(
     radius: float | None = None,
     phase: float = 0.0,
     origin: str = "vision",
+    grade: int | None = None,
 ) -> DrawnRegion:
     ax0, ax1 = VIEW_AXES[view]
     r = radius if radius is not None else 0.06 * problem.diameter
     poly = irregular_halo_2d(np.asarray(xyz, float)[[ax0, ax1]], r, phase=phase)
-    return DrawnRegion(name, float(h), view, poly_tuple(poly), origin)
+    return DrawnRegion(name, float(h), view, poly_tuple(poly), origin, grade=grade)
 
 
 def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> list[DrawnRegion]:
@@ -307,7 +324,7 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
                 if not isinstance(p, (list, tuple)) or len(p) < 2:
                     raise ValueError(f"region {i} polygon vertex is not a pair")
                 pts.append((float(p[0]), float(p[1])))
-            frac = require_fineness(item, f"region {i}")
+            grade, frac = region_grade_and_frac(item, f"region {i}")
             name = str(item.get("name", f"llm_region_{i}"))[:48]
             drawings.append(
                 DrawnRegion(
@@ -319,6 +336,7 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
                     plane=plane,
                     cut=cut if cut is None else float(cut),
                     slab=None if slab is None else float(slab),
+                    grade=grade,
                 )
             )
     elif isinstance(raw_seeds, list) and raw_seeds:
@@ -336,13 +354,14 @@ def markup_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> lis
             xyz = np.clip(xyz, lo, hi)
             if problem.dim == 2:
                 xyz[2] = 0.0
-            frac = require_fineness(item, f"seed {i}")
+            grade, frac = region_grade_and_frac(item, f"seed {i}")
             name = str(item.get("name", f"llm_seed_{i}"))[:48]
             drawings.append(
                 halo_drawing(
                     name, xyz, frac * problem.h0, problem,
                     view="top", radius=0.07 * problem.diameter, phase=0.4 * i,
                     origin=origin_for_name(name),
+                    grade=grade,
                 )
             )
     else:

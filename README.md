@@ -62,8 +62,8 @@ visionamr/
     partition.py     视觉头：LLM（正交三视图+JSON 种子）/ 脚本（峰值+结构锚点+粗场点）
     regions.py       类人分区：种子生长测地线 Voronoi、特征聚合、残差集中分裂
     agents.py        子智能体一轮通信（份额/邻域/父级预算压力）
-    pso.py           决策超预算时的投影（`project_feasible`）；旧 `calibrate_measured` 留作单测
-    pipeline.py      短循环：读图 → first → revise 决策 → 超预算才 project_feasible → certified
+    pso.py           等级上的一次闭式微调（`calibrate_grades`，不搜索）
+    pipeline.py      视觉（等级）→ 工具（微调/出网/求解）→ 再视觉
 ```
 
 ## 归档

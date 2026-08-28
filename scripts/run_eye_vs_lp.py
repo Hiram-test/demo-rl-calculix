@@ -2,7 +2,7 @@
 
   1. load the agent eye drawing (no solve)
   2. scale the drawn sizes to the element budget (Gmsh only; ranking fixed)
-  3. run_vla: first solve + agent decision from result/leftover (PSO only if overshoot)
+  3. run_vla: vision grades + PSO sizes + solve; then again
   4. one-step LP: probe + one predicted remesh
   5. compare e_E, e_qoi, N/B, and whether the drawing ranking survived
 

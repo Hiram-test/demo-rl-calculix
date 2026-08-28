@@ -1,13 +1,11 @@
-"""The VLA short loop: real-workflow remeshing (skill: vla-real-workflow).
+"""The VLA short loop: judge, call tools, then again.
 
-  draw             geometry / loads / supports; no CalculiX
-  solve            first analysis on the drawn mesh
-  decide           this result + remaining resource → next sizes
-  PSO              only if that decision overshoots (unreliable)
-  solve            next analysis
-  ...              until the agent stops or the solve cap
+  judge            draw regions; who is finer (a grade, not h)
+  tools            one-shot size tweak; Gmsh; CalculiX
+  judge            look at the result + leftover; maybe re-judge
+  tools            tweak / mesh / solve again
 
-The decision is the agent's.  PSO is not the allocator.
+The eye never tunes or delegates sizes.  Tools own the numbers.
 """
 
 from __future__ import annotations
@@ -21,7 +19,8 @@ from ..indicators import zz_indicator
 from ..mesher import generate_mesh
 from .agents import AgentConfig, communication_round
 from .drawing import drawings_size_fn, drawings_with_sizes
-from .pso import PSOConfig, project_feasible
+from .grades import grade_from_frac
+from .pso import PSOConfig, calibrate_grades
 from .regions import Partition
 
 
@@ -81,13 +80,27 @@ class VLAResult:
 
 
 def vision_assigned_sizes(part, problem) -> np.ndarray:
-    """Eye-assigned region sizes: the drawing's fineness, not LP paint."""
+    """Placeholder sizes from current partition; PSO overwrites them."""
 
     return np.clip(part.sizes(), problem.h_min, problem.h0)
 
 
+def _grades_array(partitioner, part) -> np.ndarray:
+    gmap = getattr(partitioner, "last_grades", None) or {}
+    h0 = part.problem.h0
+    out = []
+    for s in part.seeds:
+        if s.name in gmap:
+            out.append(int(gmap[s.name]))
+        elif s.origin == "coarse":
+            out.append(int(gmap.get("field", 5)))
+        else:
+            out.append(grade_from_frac(s.h / h0))
+    return np.asarray(out, dtype=int)
+
+
 def _observation(rec, n_eq_budget: int, sizes: dict) -> dict:
-    """What the next decision sees: this solve + leftover resource."""
+    """Tool result handed back to vision: this solve + leftover resource."""
 
     used = int(rec.n_equations)
     remaining = max(n_eq_budget - used, 0)
@@ -98,17 +111,6 @@ def _observation(rec, n_eq_budget: int, sizes: dict) -> dict:
         "remaining": remaining,
         "sizes": dict(sizes),
     }
-
-
-def _sizes_for_part(part, decided: dict, problem) -> np.ndarray:
-    by_name = decided.get("sizes") or {}
-    h = []
-    for s in part.seeds:
-        if s.name in by_name:
-            h.append(float(by_name[s.name]))
-        else:
-            h.append(float(s.h))
-    return np.clip(np.asarray(h, float), problem.h_min, problem.h0)
 
 
 def run_vla(
@@ -129,8 +131,20 @@ def run_vla(
         seeds, problem, gradation=cfg.gradation, assign_mode=cfg.partition_mode,
         drawings=drawings,
     )
-    h_init = vision_assigned_sizes(part, problem)
+    grades = _grades_array(partitioner, part)
+    eq_guess = _EQ_RATIO_CEIL[problem.dim]
+    if cfg.allow_pso:
+        h_init, pso_info = calibrate_grades(
+            part, grades, None,
+            n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_guess, cfg=cfg.pso,
+        )
+    else:
+        h_init = vision_assigned_sizes(part, problem)
+        pso_info = {"s": 0.0, "kappa": 0.0, "applied": False, "role": "pso_off"}
     part = part.with_sizes(h_init)
+    drawings = drawings_with_sizes(
+        drawings, [s.name for s in part.seeds], part.sizes()
+    )
     seeds_initial = [s.name for s in seeds]
     sizes_initial = [float(v) for v in h_init]
     remainder_h = next(
@@ -150,13 +164,14 @@ def run_vla(
     cfg.agent.error_share_target = cfg.error_share_target
 
     stopped_early = False
-    round_info: dict = {"skipped": True, "reason": "no_decision_yet"}
-    pso_info: dict = {"s": 0.0, "kappa": 0.0, "R_pred_elems": None, "applied": False}
-    s_last, k_last = 0.0, 0.0
+    round_info: dict = {"tool": "first_solve"}
+    s_last, k_last = float(pso_info.get("s", 0.0)), float(pso_info.get("kappa", 0.0))
     solve_idx = 1
     thoughts: list[str] = []
+    rec.extra["grades"] = [int(v) for v in grades]
+    rec.extra["pso"] = {k: v for k, v in pso_info.items() if k != "tau"}
 
-    # ---- later solves: agent decides from this result + leftover -----------
+    # ---- vision (re-grade) + tools (PSO / mesh / solve) -------------------
     while solve_idx < cfg.max_solves:
         obs = _observation(
             rec, cfg.n_eq_budget,
@@ -180,42 +195,44 @@ def run_vla(
                 "stop": False,
                 "source": "ab5_comm",
             }
-        if decision is None:
-            round_info = {"skipped": True, "reason": "no_further_decision"}
-            break
-        thoughts.append(str(decision.get("thought") or ""))
-        rec.extra["thought"] = thoughts[-1]
-        if decision.get("stop"):
-            rec.extra["stopped_by"] = "decision"
-            stopped_early = True
-            break
-
-        h_decided = _sizes_for_part(part, decision, problem)
-        part_next = part.with_sizes(h_decided)
+        if decision is not None:
+            thoughts.append(str(decision.get("thought") or ""))
+            rec.extra["thought"] = thoughts[-1]
+            if decision.get("stop"):
+                rec.extra["stopped_by"] = "decision"
+                stopped_early = True
+                break
+        grades = _grades_array(partitioner, part)
+        part_next = part
         if cfg.allow_split:
             grown = part_next.split_concentrated(post, eta2, labels)
             if len(grown.seeds) > len(part_next.seeds):
                 part_next = grown
                 labels = part_next.assign(mesh)
                 feats = part_next.features(post, eta2, labels)
-                h_decided = part_next.sizes()
+                grades = _grades_array(partitioner, part_next)
 
         if cfg.allow_pso:
-            h_cal, pso_info = project_feasible(
-                part_next, h_decided, feats,
+            h_cal, pso_info = calibrate_grades(
+                part_next, grades, feats,
                 n_eq_budget=cfg.n_eq_budget,
                 eq_per_elem=eq_per_elem,
                 h_anchor=part.sizes(),
                 cfg=cfg.pso,
             )
+        elif decision is not None and decision.get("sizes"):
+            h_cal = np.array(
+                [float(decision["sizes"].get(s.name, s.h)) for s in part_next.seeds]
+            )
+            pso_info = {"s": 0.0, "kappa": 0.0, "applied": False, "role": "pso_off"}
         else:
-            h_cal = h_decided
+            h_cal = part_next.sizes()
             pso_info = {"s": 0.0, "kappa": 0.0, "applied": False, "role": "pso_off"}
         s_last, k_last = float(pso_info.get("s", 0.0)), float(pso_info.get("kappa", 0.0))
         round_info = {
-            "source": decision.get("source"),
+            "source": None if decision is None else decision.get("source"),
             "remaining": obs["remaining"],
-            "pso_applied": bool(pso_info.get("applied")),
+            "grades": [int(v) for v in grades],
         }
 
         part = part_next.with_sizes(h_cal)
@@ -238,9 +255,10 @@ def run_vla(
         rec.extra.update(
             sum_eta2=float(eta2.sum()),
             regions={s.name: float(h) for s, h in zip(part.seeds, part.sizes())},
-            thought=thoughts[-1],
+            grades=[int(v) for v in grades],
+            thought=thoughts[-1] if thoughts else "",
             pso={k: v for k, v in pso_info.items() if k != "tau"},
-            final_revision="decision",
+            final_revision="grades_pso",
         )
         if is_final:
             break

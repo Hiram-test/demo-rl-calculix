@@ -2,9 +2,9 @@
 
     h_i(s, kappa) = h+_i * exp(s + kappa * tau_i)
 
-The live path is ``calibrate_measured``.  Fitness uses the last solve's
-η² shares and N ~ h^{-d} element-count scaling.  It does not predict
-the next error — that η ~ h^q assumption is LP's, not a VLA component.
+The live path is ``calibrate_grades``: the model chose discrete
+levels, PSO picks the size of each level.  ``calibrate_measured``
+stays for older unit tests.  ``run_vla`` must not call ``fit_surrogate``.
 
 ``Surrogate`` / ``fit_surrogate`` / ``calibrate`` stay for unit tests of
 the retired power-law fitness.  ``run_vla`` must not call them.
@@ -320,6 +320,63 @@ def project_feasible(
         "R_pred_elems": R2,
         "elems_budget": cap,
         "mode": "project_feasible",
+    }
+
+
+def calibrate_grades(
+    partition: Partition,
+    grades: np.ndarray,
+    feats: RegionFeatures | None,
+    *,
+    n_eq_budget: int,
+    eq_per_elem: float,
+    h_anchor: np.ndarray | None = None,
+    cfg: PSOConfig | None = None,
+) -> tuple[np.ndarray, dict]:
+    """One closed-form tweak on the model's grades.  No search.
+
+    Inaccuracy is left for the next vision pass, like a person glancing
+    again.  At most one resource evaluation.
+    """
+
+    from .grades import GRADE_PRIOR, MIN_STEP, parse_grade
+
+    del cfg
+    problem = partition.problem
+    d = float(problem.dim)
+    g = np.array([parse_grade(int(v), "grade") for v in np.asarray(grades).ravel()], int)
+    levels = sorted({int(x) for x in g})
+    h = np.array([GRADE_PRIOR[int(v)] * problem.h0 for v in g], float)
+    ordered = levels
+    for a, b in zip(ordered, ordered[1:]):
+        hi = float(h[g == a][0] * MIN_STEP)
+        h[g == b] = np.maximum(h[g == b], hi)
+    h = np.clip(h, problem.h_min, problem.h0)
+    elems_budget = max(n_eq_budget / max(eq_per_elem, 1e-12), 1.0)
+    evals = 0
+    s = 0.0
+    R_pred = None
+    if feats is not None:
+        h_ref = np.maximum(h_anchor if h_anchor is not None else feats.h_meas, 1e-12)
+        n_ref = np.maximum(feats.elems.astype(float), 1.0)
+        R = resource_elems(h, h_ref, n_ref, d)
+        evals = 1
+        target = elems_budget if R > elems_budget else 0.97 * elems_budget
+        s = float(np.log(max(R, 1.0) / max(target, 1.0)) / d)
+        h = np.clip(h * np.exp(s), problem.h_min, problem.h0)
+        R_pred = float(target)
+    h_lev = {int(lev): float(h[g == lev][0]) for lev in levels}
+    return h, {
+        "s": s,
+        "kappa": 0.0,
+        "applied": feats is not None,
+        "role": "one_shot_tweak",
+        "grades": [int(v) for v in g],
+        "h_by_grade": h_lev,
+        "R_pred_elems": R_pred,
+        "elems_budget": elems_budget,
+        "evals": evals,
+        "mode": "calibrate_grades",
     }
 
 

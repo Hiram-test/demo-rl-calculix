@@ -1,11 +1,11 @@
 {
-  "note": "Agent eye on bearing drawings only. No CalculiX, no Scripted, no probe cloud.",
-  "remainder_fineness_fraction": 0.72,
+  "note": "Agent eye: polygons + coarseness grades only. PSO picks h. No CalculiX.",
+  "remainder_grade": 5,
   "regions": [
     {
       "name": "patch_core",
       "view": "top",
-      "fineness_fraction": 0.26,
+      "grade": 2,
       "polygon": [
         [198, 176],
         [238, 160],
@@ -18,7 +18,7 @@
     {
       "name": "patch_rim_x0",
       "view": "top",
-      "fineness_fraction": 0.14,
+      "grade": 1,
       "polygon": [
         [148, 158],
         [164, 122],
@@ -32,7 +32,7 @@
     {
       "name": "patch_rim_x1",
       "view": "top",
-      "fineness_fraction": 0.14,
+      "grade": 1,
       "polygon": [
         [290, 148],
         [328, 118],
@@ -46,7 +46,7 @@
     {
       "name": "patch_rim_y0",
       "view": "top",
-      "fineness_fraction": 0.16,
+      "grade": 1,
       "polygon": [
         [176, 108],
         [232, 92],
@@ -59,7 +59,7 @@
     {
       "name": "patch_rim_y1",
       "view": "top",
-      "fineness_fraction": 0.16,
+      "grade": 1,
       "polygon": [
         [174, 248],
         [248, 240],
@@ -75,7 +75,7 @@
       "plane": "xz",
       "cut": 200.0,
       "slab": 48.0,
-      "fineness_fraction": 0.34,
+      "grade": 3,
       "polygon": [
         [156, 52],
         [182, 36],
@@ -94,7 +94,7 @@
       "plane": "xy",
       "cut": 16.0,
       "slab": 26.0,
-      "fineness_fraction": 0.50,
+      "grade": 4,
       "polygon": [
         [172, 148],
         [228, 112],
@@ -108,7 +108,7 @@
     {
       "name": "bottom_east",
       "view": "top",
-      "fineness_fraction": 0.40,
+      "grade": 3,
       "polygon": [
         [348, 52],
         [392, 10],
@@ -122,7 +122,7 @@
     {
       "name": "bottom_west",
       "view": "top",
-      "fineness_fraction": 0.62,
+      "grade": 4,
       "polygon": [
         [0, 22],
         [56, 6],

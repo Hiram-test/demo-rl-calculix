@@ -124,6 +124,13 @@ class ScriptedVisionPartitioner:
             ]
             seeds = [Seed("field", field_pt, field_h, origin="coarse")]
         self.last_drawings = drawings
+        from .grades import grade_from_frac
+
+        self.last_grades = {
+            d.name: (d.grade if d.grade is not None else grade_from_frac(d.h / problem.h0))
+            for d in drawings
+        }
+        self.last_grades["field"] = grade_from_frac(self.h_remainder)
         return seeds
 
     def _drawing_frac(self, feature) -> float:
@@ -169,13 +176,14 @@ VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结
 剖切面用 plane（xy / xz / yz）和 cut（沿未用轴的位置，模型单位）说明。
 剖面不是盒子，也不是整层模板；只圈你真正要加密或放粗的那一块。
 
-每一块只给一个目标单元尺寸，写成背景尺寸 h0 的分数。
-图上看着不一样，尺寸就必须不一样。禁止所有区填同一个数，
-禁止收成「热 0.15–0.5 / 冷 0.8–1.0」两档。
+每一块只给一个粗细等级，1 最密、5 最疏。
+图上看着不一样，等级就必须不一样。禁止所有区填同一个数。
+不要给连续单元尺寸，那是 PSO 的事。
 
-没画到的体积也必须委派尺寸，不能默认当粗场。
-看着剩余区域，给出 remainder_fineness_fraction。
-不许省略。剩余看着不像背景时，不许填 1.0。
+没画到的体积也要判别等级，不能默认当粗场。
+看着剩余区域，给出 remainder_grade。
+不要给连续尺寸，不要调参，不要委派参数。
+不许省略。
 
 只回复 JSON：
 {"regions": [{"name": "<结构名>",
@@ -183,10 +191,11 @@ VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结
 "plane": "xy"|"xz"|"yz",
 "cut": <剖面位置，仅 section 需要>,
 "polygon": [[u,v], ...],
-"fineness_fraction": <0.1 到 1.0 的数>}, ...],
-"remainder_fineness_fraction": <0.1 到 1.0 的数>}
+"grade": <1 最密 … 5 最疏>}, ...],
+"remainder_grade": <1 到 5>}
 多边形至少 3 个顶点，坐标用该视图或剖面的模型单位。
-图上需要几块就画几块；不需要剖面就不要硬拆。"""
+图上需要几块就画几块；不需要剖面就不要硬拆。
+不要给连续单元尺寸。等级就够了。"""
 
 
 def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
@@ -220,6 +229,11 @@ def ensure_remainder_seed(seeds: list[Seed], spec: dict, problem: Problem) -> li
     """Leftover volume must carry an eye-assigned size, not an implicit h0."""
 
     rem = spec.get("remainder_fineness_fraction") if isinstance(spec, dict) else None
+    rem_g = spec.get("remainder_grade") if isinstance(spec, dict) else None
+    if rem is None and rem_g is not None:
+        from .grades import GRADE_PRIOR, parse_grade
+
+        rem = GRADE_PRIOR[parse_grade(rem_g, "remainder_grade")]
     out: list[Seed] = []
     has = False
     for s in seeds:
@@ -236,7 +250,7 @@ def ensure_remainder_seed(seeds: list[Seed], spec: dict, problem: Problem) -> li
     if has:
         return out
     if rem is None:
-        raise ValueError("JSON missing remainder_fineness_fraction")
+        raise ValueError("JSON missing remainder_grade or remainder_fineness_fraction")
     h = float(np.clip(float(rem), 0.1, 1.0)) * problem.h0
     out.append(Seed("field", _bbox_center(problem), h, origin="coarse"))
     return out
@@ -346,10 +360,39 @@ class RandomSeedPartitioner:
             for i in range(self.n_seeds)
         ]
         self.last_drawings = drawings
+        from .grades import grade_from_frac
+
+        self.last_grades = {
+            f"rand_{i}": grade_from_frac(float(hs[i]) / problem.h0)
+            for i in range(self.n_seeds)
+        }
         return [
             Seed(f"rand_{i}", tuple(pts[i]), h=float(hs[i]), origin="vision")
             for i in range(self.n_seeds)
         ]
+
+
+def _grades_from_spec(spec: dict, drawings, seeds) -> dict:
+    from .grades import grade_from_frac, parse_grade
+
+    grades = {}
+    for d in drawings:
+        if d.grade is not None:
+            grades[d.name] = int(d.grade)
+    rem_g = spec.get("remainder_grade") if isinstance(spec, dict) else None
+    if rem_g is not None:
+        g = parse_grade(rem_g, "remainder_grade")
+        grades["field"] = g
+        for s in seeds:
+            if s.origin == "coarse" or s.name.lower() in REMAINDER_NAMES:
+                grades[s.name] = g
+    elif isinstance(spec, dict) and spec.get("remainder_fineness_fraction") is not None:
+        g = grade_from_frac(spec["remainder_fineness_fraction"])
+        grades["field"] = g
+        for s in seeds:
+            if s.origin == "coarse" or s.name.lower() in REMAINDER_NAMES:
+                grades[s.name] = g
+    return grades
 
 
 @dataclass
@@ -366,11 +409,17 @@ class CachedDrawingPartitioner:
         spec = json.loads(Path_read(self.path))
         self.last_drawings = drawings_from_spec(spec, problem, max_regions=self.max_regions)
         seeds = seeds_from_spec(spec, problem, max_seeds=self.max_regions)
-        self.last_info = {"source": "cached_drawing", "path": self.path, "n": len(seeds)}
+        self.last_grades = _grades_from_spec(spec, self.last_drawings, seeds)
+        self.last_info = {
+            "source": "cached_drawing",
+            "path": self.path,
+            "n": len(seeds),
+            "grades": dict(self.last_grades),
+        }
         return seeds
 
     def revise(self, problem: Problem, observation: dict | None = None):
-        """Next decision: last result + leftover in, new sizes out.  No API."""
+        """Next vision decision: grades only.  PSO picks the sizes."""
 
         del problem
         if self._rev_i >= len(self.revisions):
@@ -378,22 +427,21 @@ class CachedDrawingPartitioner:
         path = self.revisions[self._rev_i]
         self._rev_i += 1
         spec = json.loads(Path_read(path))
-        current = {}
-        if observation and observation.get("sizes"):
-            current = {str(k): float(v) for k, v in observation["sizes"].items()}
-        elif self.last_drawings:
-            current = {d.name: float(d.h) for d in self.last_drawings}
-        scales = spec.get("scales") or {}
-        rem_s = float(spec.get("remainder_scale", 1.0))
-        sizes = {}
-        for name, h in current.items():
-            if name.lower() in REMAINDER_NAMES:
-                sizes[name] = float(h) * rem_s
-            else:
-                sizes[name] = float(h) * float(scales.get(name, rem_s))
+        grades = dict(getattr(self, "last_grades", {}) or {})
+        if spec.get("grades"):
+            grades.update({str(k): int(v) for k, v in spec["grades"].items()})
+        if spec.get("remainder_grade") is not None:
+            from .grades import parse_grade
+
+            g = parse_grade(spec["remainder_grade"], "remainder_grade")
+            for name in list(grades):
+                if name.lower() in REMAINDER_NAMES:
+                    grades[name] = g
+            grades.setdefault("field", g)
+        self.last_grades = grades
         info = {
             "thought": spec.get("thought") or spec.get("note") or "",
-            "sizes": sizes,
+            "grades": dict(grades),
             "stop": bool(spec.get("stop", False)),
             "source": path,
             "remaining": None if not observation else observation.get("remaining"),
@@ -433,13 +481,16 @@ class LLMVisionPartitioner:
 
         errors: list[str] = []
         if self.cache_path and Path(self.cache_path).exists():
-            seeds = load_seed_cache(self.cache_path, problem)
-            self.last_drawings = load_drawings_cache(self.cache_path, problem)
+            spec = json.loads(Path(self.cache_path).read_text())
+            seeds = seeds_from_spec(spec, problem, max_seeds=self.max_seeds)
+            self.last_drawings = drawings_from_spec(spec, problem, max_regions=self.max_seeds)
+            self.last_grades = _grades_from_spec(spec, self.last_drawings, seeds)
             self.last_info = {
                 "source": "llm_cache",
                 "attempts": 0,
                 "n_seeds": len(seeds),
                 "cache": self.cache_path,
+                "grades": dict(self.last_grades),
             }
             return seeds
 
@@ -475,11 +526,13 @@ class LLMVisionPartitioner:
                 drawings = drawings_from_spec(spec, problem, max_regions=self.max_seeds)
                 seeds = seeds_from_spec(spec, problem, max_seeds=self.max_seeds)
                 self.last_drawings = drawings
+                self.last_grades = _grades_from_spec(spec, drawings, seeds)
                 self.last_info = {
                     "source": "llm",
                     "attempts": attempt,
                     "n_seeds": len(seeds),
                     "model": model,
+                    "grades": dict(self.last_grades),
                 }
                 if self.dump_dir:
                     dump_seed_cache(
@@ -495,11 +548,13 @@ class LLMVisionPartitioner:
     def _fallback(self, problem, post, eta2, errors: list[str]) -> list[Seed]:
         seeds = self.fallback.propose(problem, post, eta2)
         self.last_drawings = list(getattr(self.fallback, "last_drawings", []) or [])
+        self.last_grades = dict(getattr(self.fallback, "last_grades", {}) or {})
         self.last_info = {
             "source": "scripted_fallback",
             "attempts": self.n_retries,
             "errors": errors,
             "n_seeds": len(seeds),
+            "grades": dict(self.last_grades),
         }
         return seeds
 
@@ -525,9 +580,9 @@ class LLMVisionPartitioner:
                             "text": (
                                 f"结构 '{problem.name}'，包围盒 {problem.bbox}，"
                                 f"背景尺寸 h0={problem.h0:.3g}。"
-                                f"这是图纸，还没有求解。按图画出不规则区域并给尺寸；"
-                                f"没画到的体积也要给 remainder_fineness_fraction。"
-                                f"看不清的地方允许拆剖面再画。"
+                                f"这是图纸，还没有求解。按图画出不规则区域并给等级 1–5；"
+                                f"没画到的体积也要给 remainder_grade。"
+                                f"看不清的地方允许拆剖面再画。不要给连续尺寸。"
                             ),
                         },
                         {
