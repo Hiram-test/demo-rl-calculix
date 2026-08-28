@@ -1,24 +1,18 @@
 import numpy as np
 
 from visionamr.geometry import make_plate_holes
-from visionamr.sizefield import Region
 from visionamr.vla.pso import PSOConfig, Surrogate, calibrate, transfer_direction
-from visionamr.vla.regions import RegionGraph
+from visionamr.vla.regions import Partition, Seed
 
 
-def graph_two_regions():
+def two_region_partition():
     problem = make_plate_holes(width=2.0, height=1.0, holes=(), tension=100.0)
-    regions = [
-        Region("left", 0.0, 0.0, 0.6, 1.0, h=0.1),
-        Region("right", 0.7, 0.0, 1.3, 1.0, h=0.1),
-    ]
-    return RegionGraph.build(regions, 0.2, problem), problem
-
-
-def test_adjacency_via_padding():
-    graph, _ = graph_two_regions()
-    assert 1 in graph.adjacency[0]
-    assert 0 in graph.adjacency[1]
+    part = Partition(
+        [Seed("left", (0.5, 0.5, 0.0), h=0.1), Seed("right", (1.5, 0.5, 0.0), h=0.1)],
+        problem,
+    )
+    A = np.array([[0.0, 1.0], [1.0, 0.0]])
+    return part, A
 
 
 def test_transfer_direction_zero_mean_and_signs():
@@ -27,9 +21,7 @@ def test_transfer_direction_zero_mean_and_signs():
         R_ref=np.array([100.0, 100.0]),
         h_ref=np.array([0.1, 0.1]),
         q=np.array([2.0, 2.0]),
-        E_bg=0.0,
-        R_bg=1.0,
-        h_bg=0.2,
+        d=2.0,
     )
     tau = transfer_direction(sur)
     assert abs(np.max(np.abs(tau)) - 1.0) < 1e-9
@@ -38,37 +30,50 @@ def test_transfer_direction_zero_mean_and_signs():
 
 
 def test_pso_respects_resource_budget_on_surrogate():
-    graph, problem = graph_two_regions()
+    part, A = two_region_partition()
     sur = Surrogate(
         E_ref=np.array([1.0, 1.0]),
-        R_ref=np.array([2000.0, 2000.0]),
+        R_ref=np.array([2500.0, 2500.0]),
         h_ref=np.array([0.1, 0.1]),
         q=np.array([2.0, 2.0]),
-        E_bg=0.1,
-        R_bg=1000.0,
-        h_bg=0.2,
+        d=2.0,
     )
-    # anchor uses 5000 elements but the budget only allows ~2000
-    h, hb, info = calibrate(
-        graph, sur, err_limit=1e9, n_eq_budget=3000, cfg=PSOConfig(seed=3)
+    # anchor holds 5000 elements; budget allows only ~2000
+    h, info = calibrate(
+        part, np.array([0.1, 0.1]), sur, A,
+        err_limit=1e9, n_eq_budget=3000, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
     )
-    E_pred, R_pred = sur.predict(h, hb)
-    assert R_pred <= 1.10 * info["elems_budget"]  # within 10% of the cap
+    E_pred, R_pred = sur.predict(h)
+    assert R_pred <= 1.10 * info["elems_budget"]
     assert info["s"] > 0.0  # budget pressure coarsens
 
 
 def test_pso_refines_when_error_limit_binds():
-    graph, problem = graph_two_regions()
+    part, A = two_region_partition()
     sur = Surrogate(
         E_ref=np.array([5.0, 5.0]),
         R_ref=np.array([100.0, 100.0]),
         h_ref=np.array([0.1, 0.1]),
         q=np.array([2.0, 2.0]),
-        E_bg=0.0,
-        R_bg=100.0,
-        h_bg=0.2,
+        d=2.0,
     )
-    h, hb, info = calibrate(
-        graph, sur, err_limit=1.0, n_eq_budget=10**7, cfg=PSOConfig(seed=3)
+    h, info = calibrate(
+        part, np.array([0.1, 0.1]), sur, A,
+        err_limit=1.0, n_eq_budget=10**7, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
     )
     assert info["s"] < 0.0  # must refine to chase the accuracy limit
+
+
+def test_surrogate_dimension_changes_resource_scaling():
+    sur2 = Surrogate(
+        E_ref=np.array([1.0]), R_ref=np.array([1000.0]),
+        h_ref=np.array([0.1]), q=np.array([2.0]), d=2.0,
+    )
+    sur3 = Surrogate(
+        E_ref=np.array([1.0]), R_ref=np.array([1000.0]),
+        h_ref=np.array([0.1]), q=np.array([2.0]), d=3.0,
+    )
+    _, R2 = sur2.predict(np.array([0.05]))
+    _, R3 = sur3.predict(np.array([0.05]))
+    assert np.isclose(R2, 4000.0)
+    assert np.isclose(R3, 8000.0)

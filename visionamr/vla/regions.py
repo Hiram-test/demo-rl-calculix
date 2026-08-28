@@ -1,34 +1,55 @@
-"""Region graph: the shared decision object of the VLA and RL methods.
+"""Human-like partitions: seed-grown geodesic regions (never boxes).
 
-A region is an axis-aligned box with one mesh size (see
-``sizefield.Region``).  The graph connects spatially adjacent regions;
-features aggregate the last solve's indicator and resource distribution
-over regions plus the background complement.
+A vision head proposes named *seeds* (structural anchor points with a
+fineness each).  The partition of any mesh is the weighted-geodesic
+Voronoi decomposition of its elements: every element joins the seed with
+the smallest graph distance over the element-adjacency graph.  Region
+shapes therefore hug the geometry the way a human's marker stroke does
+(they grow around corners, along edges, through thin members) and the
+whole domain is covered -- there is no "background" pseudo-region.
+
+Each region still carries exactly one mesh size; region-level grading is
+achieved by *splitting* (a region whose internal residual is too
+concentrated spawns a child seed at its hotspot), mirroring how a person
+redraws a finer partition where needed.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import dijkstra
+from scipy.spatial import cKDTree
 
 from ..fem_post import PostState
 from ..geometry import Problem
-from ..mesher import TriMesh
-from ..sizefield import Region, RegionSizeField
+from ..mesher import Mesh
+from ..sizefield import NodalSizeField, element_to_node_sizes
+
+
+@dataclass(frozen=True)
+class Seed:
+    """One region: a named anchor point and its single mesh size."""
+
+    name: str
+    xyz: tuple[float, float, float]
+    h: float
+    origin: str = "vision"   # "vision" | "coarse" | "split"
+
+    def point(self) -> np.ndarray:
+        return np.asarray(self.xyz, dtype=float)
 
 
 @dataclass
 class RegionFeatures:
-    err_sum: np.ndarray     # (R,) sum of eta^2 over elements in region
-    elems: np.ndarray       # (R,) element counts
-    vm_max: np.ndarray      # (R,)
-    vm_mean: np.ndarray     # (R,)
-    h_meas: np.ndarray      # (R,) measured mean element size
-    area: np.ndarray        # (R,)
-    bg_err: float
-    bg_elems: int
-    bg_h_meas: float
+    err_sum: np.ndarray     # (R,) sum of eta^2 per region
+    elems: np.ndarray       # (R,)
+    vm_max: np.ndarray
+    vm_mean: np.ndarray
+    h_meas: np.ndarray      # measured mean element size
+    volume: np.ndarray      # region measure (area / volume)
     total_err: float
     total_elems: int
 
@@ -42,123 +63,159 @@ class RegionFeatures:
 
 
 @dataclass
-class RegionGraph:
-    regions: list[Region]
-    h_background: float
+class Partition:
+    seeds: list[Seed]
     problem: Problem
-    adjacency: list[set[int]] = field(default_factory=list)
     gradation: float = 0.9
 
     # ------------------------------------------------------------------
-    @staticmethod
-    def build(
-        regions: list[Region],
-        h_background: float,
-        problem: Problem,
-        *,
-        pad_frac: float = 0.04,
-        gradation: float = 0.9,
-    ) -> "RegionGraph":
-        xmin, ymin, xmax, ymax = problem.bbox
-        pad = pad_frac * float(np.hypot(xmax - xmin, ymax - ymin))
-        n = len(regions)
-        adj: list[set[int]] = [set() for _ in range(n)]
-        for i in range(n):
-            for j in range(i + 1, n):
-                a, b = regions[i], regions[j]
-                if (
-                    a.xmin - pad <= b.xmax
-                    and b.xmin - pad <= a.xmax
-                    and a.ymin - pad <= b.ymax
-                    and b.ymin - pad <= a.ymax
-                ):
-                    adj[i].add(j)
-                    adj[j].add(i)
-        # connect isolated regions to their nearest neighbour
-        centers = np.array([r.center for r in regions]) if regions else np.zeros((0, 2))
-        for i in range(n):
-            if not adj[i] and n > 1:
-                d = np.linalg.norm(centers - centers[i], axis=1)
-                d[i] = np.inf
-                j = int(np.argmin(d))
-                adj[i].add(j)
-                adj[j].add(i)
-        return RegionGraph(list(regions), h_background, problem, adj, gradation)
+    def sizes(self) -> np.ndarray:
+        return np.array([s.h for s in self.seeds], dtype=float)
+
+    def with_sizes(self, sizes: np.ndarray) -> "Partition":
+        seeds = [replace(s, h=float(h)) for s, h in zip(self.seeds, sizes)]
+        return Partition(seeds, self.problem, self.gradation)
+
+    def add_seed(self, seed: Seed) -> "Partition":
+        return Partition(list(self.seeds) + [seed], self.problem, self.gradation)
 
     # ------------------------------------------------------------------
-    def assign_elements(self, mesh: TriMesh) -> np.ndarray:
-        """Region index per element (-1 = background).
-
-        Overlapping regions: the smallest-area region wins, so nested
-        hotspot boxes keep their identity.
-        """
+    def assign(self, mesh: Mesh) -> np.ndarray:
+        """Element labels by geodesic Voronoi over the cell-adjacency graph."""
 
         cen = mesh.centroids
-        owner = np.full(mesh.n_tris, -1, dtype=np.int64)
-        order = np.argsort([-r.area for r in self.regions])  # big first, small overwrite
-        for i in order:
-            r = self.regions[i]
-            inside = r.contains(cen[:, 0], cen[:, 1])
-            owner[inside] = i
-        return owner
+        tree = cKDTree(cen)
+        src = np.array([tree.query(s.point())[1] for s in self.seeds])
 
-    def features(self, post: PostState, eta2: np.ndarray) -> RegionFeatures:
+        pairs, _ = mesh.cell_adjacency
+        w = np.linalg.norm(cen[pairs[:, 0]] - cen[pairs[:, 1]], axis=1)
+        m = mesh.n_cells
+        g = coo_matrix(
+            (np.concatenate([w, w]),
+             (np.concatenate([pairs[:, 0], pairs[:, 1]]),
+              np.concatenate([pairs[:, 1], pairs[:, 0]]))),
+            shape=(m, m),
+        ).tocsr()
+        dist = dijkstra(g, directed=False, indices=src)
+        labels = np.asarray(np.argmin(dist, axis=0), dtype=np.int64)
+        # disconnected leftovers (should not happen): nearest seed by euclid
+        bad = ~np.isfinite(dist[labels, np.arange(m)])
+        if bad.any():
+            seed_pts = np.array([s.point() for s in self.seeds])
+            d_euc = np.linalg.norm(cen[bad, None, :] - seed_pts[None, :, :], axis=2)
+            labels[bad] = np.argmin(d_euc, axis=1)
+        return labels
+
+    def adjacency(self, mesh: Mesh, labels: np.ndarray) -> list[set[int]]:
+        R = len(self.seeds)
+        adj: list[set[int]] = [set() for _ in range(R)]
+        pairs, _ = mesh.cell_adjacency
+        la, lb = labels[pairs[:, 0]], labels[pairs[:, 1]]
+        cross = la != lb
+        for a, b in zip(la[cross], lb[cross]):
+            adj[int(a)].add(int(b))
+            adj[int(b)].add(int(a))
+        return adj
+
+    def adjacency_matrix(self, mesh: Mesh, labels: np.ndarray) -> np.ndarray:
+        R = len(self.seeds)
+        A = np.zeros((R, R))
+        for i, nbs in enumerate(self.adjacency(mesh, labels)):
+            for j in nbs:
+                A[i, j] = 1.0
+        return A
+
+    # ------------------------------------------------------------------
+    def features(self, post: PostState, eta2: np.ndarray, labels: np.ndarray) -> RegionFeatures:
         mesh = post.mesh
-        owner = self.assign_elements(mesh)
-        R = len(self.regions)
+        R = len(self.seeds)
         err = np.zeros(R)
         cnt = np.zeros(R, dtype=np.int64)
         vmx = np.zeros(R)
         vmm = np.zeros(R)
         hme = np.zeros(R)
-        area = np.array([r.area for r in self.regions], dtype=float)
-        sizes = mesh.tri_sizes
+        vol = np.zeros(R)
+        sizes = mesh.cell_sizes
         for i in range(R):
-            m = owner == i
+            m = labels == i
             cnt[i] = int(m.sum())
             if cnt[i]:
                 err[i] = float(eta2[m].sum())
                 vmx[i] = float(post.vm_elem[m].max())
                 vmm[i] = float(post.vm_elem[m].mean())
                 hme[i] = float(sizes[m].mean())
+                vol[i] = float(mesh.measures[m].sum())
             else:
-                hme[i] = self.regions[i].h
-        bg = owner == -1
+                hme[i] = self.seeds[i].h
         return RegionFeatures(
             err_sum=err,
             elems=cnt,
             vm_max=vmx,
             vm_mean=vmm,
             h_meas=hme,
-            area=area,
-            bg_err=float(eta2[bg].sum()),
-            bg_elems=int(bg.sum()),
-            bg_h_meas=float(sizes[bg].mean()) if bg.any() else self.h_background,
+            volume=vol,
             total_err=float(eta2.sum()),
-            total_elems=mesh.n_tris,
+            total_elems=mesh.n_cells,
         )
 
     # ------------------------------------------------------------------
-    def size_field(self) -> RegionSizeField:
-        return RegionSizeField(list(self.regions), self.h_background, self.gradation)
+    def size_field(self, mesh: Mesh, labels: np.ndarray) -> NodalSizeField:
+        """Element target = its region's size; node-min; graded interpolant."""
 
-    def with_sizes(self, sizes: np.ndarray, h_background: float | None = None) -> "RegionGraph":
-        regs = [r.with_h(float(h)) for r, h in zip(self.regions, sizes)]
-        return RegionGraph(
-            regs,
-            float(h_background if h_background is not None else self.h_background),
-            self.problem,
-            [set(s) for s in self.adjacency],
-            self.gradation,
+        h_elem = self.sizes()[labels]
+        target = element_to_node_sizes(mesh, h_elem)
+        return NodalSizeField(
+            mesh,
+            target,
+            gradation=self.gradation,
+            h_min=self.problem.h_min,
+            h_max=self.problem.h0,
         )
 
-    def sizes(self) -> np.ndarray:
-        return np.array([r.h for r in self.regions], dtype=float)
+    # ------------------------------------------------------------------
+    def split_concentrated(
+        self,
+        post: PostState,
+        eta2: np.ndarray,
+        labels: np.ndarray,
+        *,
+        top_frac: float = 0.10,
+        conc_threshold: float = 0.55,
+        min_elems: int = 30,
+        max_new: int = 2,
+        max_seeds: int = 14,
+        child_h_factor: float = 0.55,
+    ) -> "Partition":
+        """Spawn child seeds inside regions whose residual is concentrated.
 
-    def adjacency_matrix(self) -> np.ndarray:
-        n = len(self.regions)
-        A = np.zeros((n, n))
-        for i, nb in enumerate(self.adjacency):
-            for j in nb:
-                A[i, j] = 1.0
-        return A
+        The human analogue: where one stroke turns out to cover both a hot
+        spot and calm material, the engineer redraws a smaller patch.
+        """
+
+        mesh = post.mesh
+        scores: list[tuple[float, int, int]] = []
+        for i in range(len(self.seeds)):
+            idx = np.nonzero(labels == i)[0]
+            if len(idx) < min_elems:
+                continue
+            e = eta2[idx]
+            k = max(int(np.ceil(top_frac * len(idx))), 1)
+            top = np.sort(e)[-k:]
+            conc = float(top.sum() / max(e.sum(), 1e-30))
+            if conc > conc_threshold:
+                peak = idx[int(np.argmax(e))]
+                scores.append((conc, i, peak))
+        scores.sort(reverse=True)
+        part = self
+        for conc, i, peak in scores[:max_new]:
+            if len(part.seeds) >= max_seeds:
+                break
+            parent = part.seeds[i]
+            child = Seed(
+                name=f"{parent.name}_hot",
+                xyz=tuple(mesh.centroids[peak]),
+                h=max(child_h_factor * parent.h, self.problem.h_min),
+                origin="split",
+            )
+            part = part.add_seed(child)
+        return part

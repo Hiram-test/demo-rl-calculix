@@ -1,20 +1,21 @@
 """Benchmark problem definitions.
 
-Every problem is a 2-D plane-stress domain built with the Gmsh OCC API.
-A ``Problem`` carries geometry construction, boundary conditions, loads,
-the quantity of interest, and named feature anchors that vision/region
-methods may use to name regions.
+Problems are built with the Gmsh OCC API; boundary conditions, loads and
+the quantity of interest are geometric predicates so they survive any
+remesh.  Two 3-D bridge-component families are the main experimental
+objects; two 2-D families remain as the fast development/CI substrate.
 
-Two parametric families are provided:
+3-D bridge components:
 
-* ``lbracket`` -- L-shaped bracket with a re-entrant corner (classic AFEM
-  singularity benchmark; energy-norm rate of uniform meshing is limited
-  by the corner singularity, so correct adaptive methods must win).
-* ``plate_holes`` -- rectangular plate with 1-3 circular holes under
-  tension (smooth but with strong stress-concentration hotspots).
+* ``bearing_block`` -- bridge bearing plate under a local patch pressure
+  from the girder flange (singular lines along the patch edges and the
+  clamped bottom perimeter).
+* ``deck_panel``    -- beam-bridge deck slab strip on two girder support
+  strips under a wheel patch load (bending hotspot under the wheel plus
+  reaction concentrations along the strip edges).
 
-Instance samplers generate randomized train/test instances for the
-learning-based methods.
+2-D substrate: ``lbracket`` (re-entrant corner singularity) and
+``plate_holes`` (smooth hole hotspots).
 """
 
 from __future__ import annotations
@@ -28,49 +29,67 @@ import numpy as np
 
 @dataclass(frozen=True)
 class Material:
-    E: float = 210e3          # MPa
+    E: float = 210e3  # MPa
     nu: float = 0.3
-    thickness: float = 1.0    # mm
+    thickness: float = 1.0  # mm, 2-D plane stress only
 
 
 @dataclass(frozen=True)
 class FeatureAnchor:
-    """Named geometric feature usable for region naming."""
+    """Named structural feature usable for region naming and grading."""
 
     name: str
     x: float
     y: float
-    kind: str  # "corner" | "hole" | "clamp" | "load"
-    r: float = 0.0  # characteristic radius (holes)
+    z: float = 0.0
+    kind: str = "corner"  # "corner" | "hole" | "clamp" | "load" | "support"
+    r: float = 0.0
+
+    @property
+    def xyz(self) -> np.ndarray:
+        return np.array([self.x, self.y, self.z])
+
+
+@dataclass(frozen=True)
+class Constraint:
+    """Fix the given dofs (1-based: 1=ux, 2=uy, 3=uz) on matching nodes."""
+
+    node_predicate: Callable[[np.ndarray], np.ndarray]
+    dofs: tuple[int, ...]
+    name: str = "fix"
 
 
 @dataclass(frozen=True)
 class TractionSpec:
-    """Traction applied on boundary edges whose midpoints satisfy the predicate.
+    """Traction on boundary facets whose centroids satisfy the predicate.
 
-    ``value`` is a surface traction in MPa (force per area); nodal forces
-    are assembled as t * edge_length * thickness, half to each edge node.
+    ``value`` is in MPa; nodal forces are assembled as
+    t * facet_measure * (thickness in 2-D), split equally over facet nodes.
     """
 
-    edge_predicate: Callable[[np.ndarray], np.ndarray]
-    value: tuple[float, float]
+    facet_predicate: Callable[[np.ndarray], np.ndarray]
+    value: tuple[float, float, float]
     name: str = "load"
 
 
 @dataclass
 class Problem:
     name: str
+    dim: int
     build_geometry: Callable[[], None]
-    clamp_predicate: Callable[[np.ndarray], np.ndarray]
+    constraints: Sequence[Constraint]
     tractions: Sequence[TractionSpec]
-    qoi_edge_predicate: Callable[[np.ndarray], np.ndarray]
+    qoi_facet_predicate: Callable[[np.ndarray], np.ndarray]
     material: Material
-    h0: float                 # initial/background mesh size
-    h_ref: float              # reference-mesh size (error origin)
-    h_min: float              # hard floor for any method
-    bbox: tuple[float, float, float, float]
+    h0: float
+    h_ref: float
+    h_min: float
+    bbox: tuple[float, float, float, float, float, float]
     features: list[FeatureAnchor] = field(default_factory=list)
-    singular_points: list[tuple[float, float]] = field(default_factory=list)
+    singular_points: list[tuple[float, float, float]] = field(default_factory=list)
+    singular_segments: list[tuple[tuple[float, float, float], tuple[float, float, float]]] = field(
+        default_factory=list
+    )
     params: dict = field(default_factory=dict)
 
     @property
@@ -78,24 +97,227 @@ class Problem:
         blob = repr(sorted(self.params.items())).encode()
         return f"{self.name}-{hashlib.sha256(blob).hexdigest()[:8]}"
 
+    @property
+    def diameter(self) -> float:
+        b = self.bbox
+        return float(np.linalg.norm([b[3] - b[0], b[4] - b[1], b[5] - b[2]]))
 
-# ---------------------------------------------------------------------------
-# helpers
 
-
-def _edge_mid_between(lo: np.ndarray, hi: np.ndarray) -> Callable[[np.ndarray], np.ndarray]:
+def _box_pred(lo, hi) -> Callable[[np.ndarray], np.ndarray]:
     lo = np.asarray(lo, dtype=float)
     hi = np.asarray(hi, dtype=float)
 
-    def pred(mid: np.ndarray) -> np.ndarray:
-        mid = np.atleast_2d(mid)
-        return np.all((mid >= lo - 1e-9) & (mid <= hi + 1e-9), axis=1)
+    def pred(pts: np.ndarray) -> np.ndarray:
+        pts = np.atleast_2d(pts)[:, : len(lo)]
+        return np.all((pts >= lo - 1e-9) & (pts <= hi + 1e-9), axis=1)
 
     return pred
 
 
-# ---------------------------------------------------------------------------
-# L-bracket family
+# ===========================================================================
+# 3-D bridge components
+# ===========================================================================
+
+
+def make_bearing_block(
+    W: float = 400.0,
+    D: float = 400.0,
+    H: float = 120.0,
+    patch: tuple[float, float] = (140.0, 140.0),
+    offset: tuple[float, float] = (40.0, 0.0),
+    pressure: float = 12.0,
+) -> Problem:
+    """Bridge bearing plate: solid block, bottom fixed, top patch pressure.
+
+    The patch models the girder-flange contact footprint; its edges carry
+    3-D line singularities, the strongest AMR targets.
+    """
+
+    a, b = patch
+    ox, oy = offset
+    cx, cy = W / 2.0 + ox, D / 2.0 + oy
+    px0, px1 = cx - a / 2.0, cx + a / 2.0
+    py0, py1 = cy - b / 2.0, cy + b / 2.0
+
+    def build() -> None:
+        import gmsh
+
+        occ = gmsh.model.occ
+        box = occ.addBox(0.0, 0.0, 0.0, W, D, H)
+        # imprint the load footprint so every mesh tiles the patch exactly
+        # (mesh-independent load resultant)
+        patch_face = occ.addRectangle(px0, py0, H, a, b)
+        occ.fragment([(3, box)], [(2, patch_face)])
+
+    bottom = Constraint(lambda n: n[:, 2] < 1e-9, (1, 2, 3), "bottom_fixed")
+    patch_pred = _box_pred((px0, py0, H - 1e-6), (px1, py1, H + 1e-6))
+    tr = TractionSpec(patch_pred, (0.0, 0.0, -pressure), "girder_patch")
+
+    zt = H
+    segs = [
+        ((px0, py0, zt), (px1, py0, zt)),
+        ((px1, py0, zt), (px1, py1, zt)),
+        ((px1, py1, zt), (px0, py1, zt)),
+        ((px0, py1, zt), (px0, py0, zt)),
+        # clamped bottom perimeter
+        ((0, 0, 0), (W, 0, 0)),
+        ((W, 0, 0), (W, D, 0)),
+        ((W, D, 0), (0, D, 0)),
+        ((0, D, 0), (0, 0, 0)),
+    ]
+    features = [
+        FeatureAnchor("patch_center", cx, cy, H, "load"),
+        FeatureAnchor("patch_edge_x0", px0, cy, H, "load"),
+        FeatureAnchor("patch_edge_x1", px1, cy, H, "load"),
+        FeatureAnchor("patch_edge_y0", cx, py0, H, "load"),
+        FeatureAnchor("patch_edge_y1", cx, py1, H, "load"),
+        FeatureAnchor("bottom_center", W / 2, D / 2, 0.0, "clamp"),
+        # clamped-edge reaction lines (textbook bearing-edge concentration)
+        FeatureAnchor("bottom_edge_y0", W / 2, 0.0, 0.0, "support"),
+        FeatureAnchor("bottom_edge_y1", W / 2, D, 0.0, "support"),
+        FeatureAnchor("bottom_edge_x0", 0.0, D / 2, 0.0, "support"),
+        FeatureAnchor("bottom_edge_x1", W, D / 2, 0.0, "support"),
+    ]
+    return Problem(
+        name="bearing_block",
+        dim=3,
+        build_geometry=build,
+        constraints=[bottom],
+        tractions=[tr],
+        qoi_facet_predicate=patch_pred,
+        material=Material(),
+        h0=H / 2.4,          # 50 mm
+        h_ref=H / 9.0,       # ~13 mm background, graded to edges
+        h_min=H / 40.0,      # 3 mm
+        bbox=(0, 0, 0, W, D, H),
+        features=features,
+        singular_points=[],
+        singular_segments=segs,
+        params={"W": W, "D": D, "H": H, "patch": patch, "offset": offset,
+                "pressure": pressure},
+    )
+
+
+def sample_bearing_block(rng: np.random.Generator) -> Problem:
+    a = float(rng.uniform(100.0, 180.0))
+    b = float(rng.uniform(100.0, 180.0))
+    ox = float(rng.uniform(-70.0, 70.0))
+    oy = float(rng.uniform(-70.0, 70.0))
+    return make_bearing_block(
+        patch=(a, b), offset=(ox, oy), pressure=float(rng.uniform(8.0, 16.0))
+    )
+
+
+def make_deck_panel(
+    L: float = 2400.0,
+    B: float = 1600.0,
+    T: float = 200.0,
+    strip_w: float = 220.0,
+    strip_off: float = 300.0,
+    wheel: tuple[float, float] = (400.0, 250.0),
+    wheel_pos: tuple[float, float] = (1200.0, 800.0),
+    pressure: float = 1.0,
+) -> Problem:
+    """Beam-bridge deck slab strip on two girder support strips.
+
+    Girders run along x at y = strip_off and y = B - strip_off (strip
+    width ``strip_w``, uz fixed on the bottom face there).  A wheel patch
+    presses on the top face.  Hotspots: under the wheel and along the
+    inner strip edges (reaction line concentrations).
+    """
+
+    y1, y2 = strip_off, B - strip_off
+    wa, wb = wheel
+    wx, wy = wheel_pos
+    wx0, wx1 = wx - wa / 2.0, wx + wa / 2.0
+    wy0, wy1 = wy - wb / 2.0, wy + wb / 2.0
+
+    def build() -> None:
+        import gmsh
+
+        occ = gmsh.model.occ
+        box = occ.addBox(0.0, 0.0, 0.0, L, B, T)
+        # imprint the wheel footprint and both support strips so loads and
+        # constraints are mesh-independent
+        wheel_face = occ.addRectangle(wx0, wy0, T, wa, wb)
+        s1_face = occ.addRectangle(0.0, y1 - strip_w / 2.0, 0.0, L, strip_w)
+        s2_face = occ.addRectangle(0.0, y2 - strip_w / 2.0, 0.0, L, strip_w)
+        occ.fragment([(3, box)], [(2, wheel_face), (2, s1_face), (2, s2_face)])
+
+    def strip_nodes(n: np.ndarray) -> np.ndarray:
+        on_bot = n[:, 2] < 1e-9
+        s1 = np.abs(n[:, 1] - y1) <= strip_w / 2.0 + 1e-9
+        s2 = np.abs(n[:, 1] - y2) <= strip_w / 2.0 + 1e-9
+        return on_bot & (s1 | s2)
+
+    def strip1_lateral(n: np.ndarray) -> np.ndarray:
+        return (n[:, 2] < 1e-9) & (np.abs(n[:, 1] - y1) <= strip_w / 2.0 + 1e-9)
+
+    constraints = [
+        Constraint(strip_nodes, (3,), "girder_strips_uz"),
+        Constraint(strip1_lateral, (1, 2), "strip1_lateral"),
+    ]
+    wheel_pred = _box_pred((wx0, wy0, T - 1e-6), (wx1, wy1, T + 1e-6))
+    tr = TractionSpec(wheel_pred, (0.0, 0.0, -pressure), "wheel_patch")
+
+    zt = T
+    segs = [
+        ((wx0, wy0, zt), (wx1, wy0, zt)),
+        ((wx1, wy0, zt), (wx1, wy1, zt)),
+        ((wx1, wy1, zt), (wx0, wy1, zt)),
+        ((wx0, wy1, zt), (wx0, wy0, zt)),
+        # inner edges of the two support strips (reaction lines)
+        ((0, y1 + strip_w / 2, 0), (L, y1 + strip_w / 2, 0)),
+        ((0, y1 - strip_w / 2, 0), (L, y1 - strip_w / 2, 0)),
+        ((0, y2 - strip_w / 2, 0), (L, y2 - strip_w / 2, 0)),
+        ((0, y2 + strip_w / 2, 0), (L, y2 + strip_w / 2, 0)),
+    ]
+    features = [
+        FeatureAnchor("wheel_center", wx, wy, T, "load"),
+        FeatureAnchor("wheel_edge_x0", wx0, wy, T, "load"),
+        FeatureAnchor("wheel_edge_x1", wx1, wy, T, "load"),
+        FeatureAnchor("wheel_edge_y0", wx, wy0, T, "load"),
+        FeatureAnchor("wheel_edge_y1", wx, wy1, T, "load"),
+        FeatureAnchor("midspan", L / 2, B / 2, T / 2, "corner"),
+    ]
+    for si, ys in ((1, y1), (2, y2)):
+        for tag, xs in (("a", L / 6), ("mid", L / 2), ("b", 5 * L / 6)):
+            features.append(
+                FeatureAnchor(f"girder_strip_{si}_{tag}", xs, ys, 0.0, "support")
+            )
+    return Problem(
+        name="deck_panel",
+        dim=3,
+        build_geometry=build,
+        constraints=constraints,
+        tractions=[tr],
+        qoi_facet_predicate=wheel_pred,
+        material=Material(E=34e3, nu=0.2),  # concrete deck
+        h0=T / 1.6,          # 125 mm
+        h_ref=T / 4.5,       # ~44 mm background, graded to lines
+        h_min=T / 20.0,      # 10 mm
+        bbox=(0, 0, 0, L, B, T),
+        features=features,
+        singular_points=[],
+        singular_segments=segs,
+        params={"L": L, "B": B, "T": T, "strip_w": strip_w, "strip_off": strip_off,
+                "wheel": wheel, "wheel_pos": wheel_pos, "pressure": pressure},
+    )
+
+
+def sample_deck_panel(rng: np.random.Generator) -> Problem:
+    wx = float(rng.uniform(700.0, 1700.0))
+    wy = float(rng.uniform(500.0, 1100.0))
+    return make_deck_panel(
+        wheel_pos=(wx, wy),
+        wheel=(float(rng.uniform(300.0, 500.0)), float(rng.uniform(200.0, 320.0))),
+        pressure=float(rng.uniform(0.7, 1.4)),
+    )
+
+
+# ===========================================================================
+# 2-D development substrate
+# ===========================================================================
 
 
 def make_lbracket(
@@ -104,12 +326,7 @@ def make_lbracket(
     cut_frac_y: float = 0.5,
     load: float = -10.0,
 ) -> Problem:
-    """L-shaped bracket.
-
-    Domain: [0,size]^2 minus the upper-right rectangle
-    [cx,size] x [cy,size].  Re-entrant 270-degree corner at (cx, cy).
-    Left edge clamped, right edge (below the cut) loaded downward.
-    """
+    """L-shaped bracket: left edge clamped, right edge loaded downward."""
 
     cx = size * cut_frac_x
     cy = size * cut_frac_y
@@ -122,34 +339,31 @@ def make_lbracket(
         cut = occ.addRectangle(cx, cy, 0.0, size - cx + 1.0, size - cy + 1.0)
         occ.cut([(2, outer)], [(2, cut)])
 
-    clamp = lambda nodes: nodes[:, 0] < 1e-9
-    load_pred = _edge_mid_between((size - 1e-6, 0.0), (size + 1e-6, cy))
-    tr = TractionSpec(load_pred, (0.0, load), name="tip_load")
+    clamp = Constraint(lambda n: n[:, 0] < 1e-9, (1, 2), "clamp")
+    load_pred = _box_pred((size - 1e-6, 0.0), (size + 1e-6, cy))
+    tr = TractionSpec(load_pred, (0.0, load, 0.0), "tip_load")
 
     return Problem(
         name="lbracket",
+        dim=2,
         build_geometry=build,
-        clamp_predicate=clamp,
+        constraints=[clamp],
         tractions=[tr],
-        qoi_edge_predicate=load_pred,
+        qoi_facet_predicate=load_pred,
         material=Material(),
         h0=size / 8.0,
         h_ref=size / 80.0,
         h_min=size / 512.0,
-        bbox=(0.0, 0.0, size, size),
+        bbox=(0.0, 0.0, 0.0, size, size, 0.0),
         features=[
-            FeatureAnchor("reentrant_corner", cx, cy, "corner"),
-            FeatureAnchor("clamp_top", 0.0, size, "clamp"),
-            FeatureAnchor("clamp_bottom", 0.0, 0.0, "clamp"),
-            FeatureAnchor("load_edge", size, cy / 2.0, "load"),
+            FeatureAnchor("reentrant_corner", cx, cy, 0.0, "corner"),
+            FeatureAnchor("clamp_top", 0.0, size, 0.0, "clamp"),
+            FeatureAnchor("clamp_bottom", 0.0, 0.0, 0.0, "clamp"),
+            FeatureAnchor("load_edge", size, cy / 2.0, 0.0, "load"),
         ],
-        singular_points=[(cx, cy)],
-        params={
-            "size": size,
-            "cut_frac_x": cut_frac_x,
-            "cut_frac_y": cut_frac_y,
-            "load": load,
-        },
+        singular_points=[(cx, cy, 0.0)],
+        params={"size": size, "cut_frac_x": cut_frac_x, "cut_frac_y": cut_frac_y,
+                "load": load},
     )
 
 
@@ -159,10 +373,6 @@ def sample_lbracket(rng: np.random.Generator) -> Problem:
         cut_frac_y=float(rng.uniform(0.4, 0.65)),
         load=float(rng.uniform(-14.0, -6.0)),
     )
-
-
-# ---------------------------------------------------------------------------
-# plate-with-holes family
 
 
 def make_plate_holes(
@@ -184,42 +394,35 @@ def make_plate_holes(
         if tools:
             occ.cut([(2, plate)], tools)
 
-    clamp = lambda nodes: nodes[:, 0] < 1e-9
-    load_pred = _edge_mid_between((width - 1e-6, 0.0), (width + 1e-6, height))
-    tr = TractionSpec(load_pred, (tension, 0.0), name="tension")
+    clamp = Constraint(lambda n: n[:, 0] < 1e-9, (1, 2), "clamp")
+    load_pred = _box_pred((width - 1e-6, 0.0), (width + 1e-6, height))
+    tr = TractionSpec(load_pred, (tension, 0.0, 0.0), "tension")
 
     features = [
-        FeatureAnchor("clamp_edge", 0.0, height / 2.0, "clamp"),
-        FeatureAnchor("load_edge", width, height / 2.0, "load"),
+        FeatureAnchor("clamp_edge", 0.0, height / 2.0, 0.0, "clamp"),
+        FeatureAnchor("load_edge", width, height / 2.0, 0.0, "load"),
     ]
     for i, (x, y, r) in enumerate(holes):
-        features.append(FeatureAnchor(f"hole_{i}", x, y, "hole", r=r))
+        features.append(FeatureAnchor(f"hole_{i}", x, y, 0.0, "hole", r=r))
 
     return Problem(
         name="plate_holes",
+        dim=2,
         build_geometry=build,
-        clamp_predicate=clamp,
+        constraints=[clamp],
         tractions=[tr],
-        qoi_edge_predicate=load_pred,
+        qoi_facet_predicate=load_pred,
         material=Material(),
         h0=height / 5.0,
         h_ref=height / 64.0,
         h_min=height / 400.0,
-        bbox=(0.0, 0.0, width, height),
+        bbox=(0.0, 0.0, 0.0, width, height, 0.0),
         features=features,
-        singular_points=[],
-        params={
-            "width": width,
-            "height": height,
-            "holes": holes,
-            "tension": tension,
-        },
+        params={"width": width, "height": height, "holes": holes, "tension": tension},
     )
 
 
 def sample_plate_holes(rng: np.random.Generator) -> Problem:
-    """Randomized plate instance with 1-3 non-overlapping holes."""
-
     width, height = 200.0, 100.0
     n_holes = int(rng.integers(1, 4))
     holes: list[tuple[float, float, float]] = []
@@ -236,11 +439,15 @@ def sample_plate_holes(rng: np.random.Generator) -> Problem:
 
 
 PROBLEM_FACTORIES = {
+    "bearing_block": make_bearing_block,
+    "deck_panel": make_deck_panel,
     "lbracket": make_lbracket,
     "plate_holes": make_plate_holes,
 }
 
 SAMPLERS = {
+    "bearing_block": sample_bearing_block,
+    "deck_panel": sample_deck_panel,
     "lbracket": sample_lbracket,
     "plate_holes": sample_plate_holes,
 }

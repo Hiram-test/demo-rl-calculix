@@ -1,9 +1,9 @@
-"""Gmsh meshing driver.
+"""Gmsh meshing driver (2-D triangles and 3-D tetrahedra).
 
 This is the single place where meshes are created.  Every method in this
-framework expresses its decision as a size field (callable ``size(x, y)``)
-and Gmsh regenerates the mesh.  No code in this repository ever edits
-nodes or elements by hand.
+framework expresses its decision as a size field (callable
+``size(x, y, z)``) and Gmsh regenerates the mesh.  No code in this
+repository ever edits nodes or elements by hand.
 """
 
 from __future__ import annotations
@@ -14,9 +14,16 @@ from functools import cached_property
 
 import numpy as np
 
-from .geometry import Problem
-
 _GMSH_INITIALIZED = False
+
+_EDGE_LOCAL = {
+    2: [(0, 1), (1, 2), (2, 0)],
+    3: [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)],
+}
+_FACET_LOCAL = {
+    2: [(0, 1), (1, 2), (2, 0)],
+    3: [(0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)],
+}
 
 
 def _ensure_gmsh() -> None:
@@ -31,45 +38,77 @@ def _ensure_gmsh() -> None:
 
 
 @dataclass
-class TriMesh:
-    nodes: np.ndarray  # (n, 2) float
-    tris: np.ndarray   # (m, 3) int, zero-based
+class Mesh:
+    """Simplex mesh: triangles (dim=2, z column zero) or tets (dim=3)."""
+
+    nodes: np.ndarray  # (n, 3) float
+    cells: np.ndarray  # (m, dim+1) int, zero-based
+    dim: int
 
     @cached_property
-    def areas(self) -> np.ndarray:
-        p = self.nodes[self.tris]
-        return 0.5 * np.abs(
-            (p[:, 1, 0] - p[:, 0, 0]) * (p[:, 2, 1] - p[:, 0, 1])
-            - (p[:, 2, 0] - p[:, 0, 0]) * (p[:, 1, 1] - p[:, 0, 1])
-        )
+    def measures(self) -> np.ndarray:
+        """Element areas (2-D) or volumes (3-D)."""
+        p = self.nodes[self.cells]
+        if self.dim == 2:
+            a = p[:, 1, :2] - p[:, 0, :2]
+            b = p[:, 2, :2] - p[:, 0, :2]
+            return 0.5 * np.abs(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0])
+        a = p[:, 1] - p[:, 0]
+        b = p[:, 2] - p[:, 0]
+        c = p[:, 3] - p[:, 0]
+        return np.abs(np.einsum("ij,ij->i", a, np.cross(b, c))) / 6.0
 
     @cached_property
     def centroids(self) -> np.ndarray:
-        return self.nodes[self.tris].mean(axis=1)
+        return self.nodes[self.cells].mean(axis=1)
 
     @cached_property
     def edges(self) -> np.ndarray:
-        """Unique undirected edges (k, 2), sorted node indices."""
-        e = np.vstack(
-            [self.tris[:, [0, 1]], self.tris[:, [1, 2]], self.tris[:, [2, 0]]]
+        """Unique undirected node-pair edges (k, 2)."""
+        pairs = np.vstack(
+            [self.cells[:, list(pl)] for pl in _EDGE_LOCAL[self.dim]]
         )
-        e.sort(axis=1)
-        return np.unique(e, axis=0)
+        pairs.sort(axis=1)
+        return np.unique(pairs, axis=0)
 
     @cached_property
-    def boundary_edges(self) -> np.ndarray:
-        """Edges belonging to exactly one triangle (k, 2)."""
-        e = np.vstack(
-            [self.tris[:, [0, 1]], self.tris[:, [1, 2]], self.tris[:, [2, 0]]]
-        )
-        e.sort(axis=1)
-        uniq, counts = np.unique(e, axis=0, return_counts=True)
-        return uniq[counts == 1]
+    def _boundary(self) -> tuple[np.ndarray, np.ndarray]:
+        f = np.vstack([self.cells[:, list(fl)] for fl in _FACET_LOCAL[self.dim]])
+        owner = np.tile(np.arange(len(self.cells)), len(_FACET_LOCAL[self.dim]))
+        fs = np.sort(f, axis=1)
+        uniq, idx, counts = np.unique(fs, axis=0, return_index=True, return_counts=True)
+        sel = idx[counts == 1]
+        return f[sel], owner[sel]
+
+    @cached_property
+    def boundary_facets(self) -> np.ndarray:
+        """Facets on the boundary: edges (2-D) or triangles (3-D)."""
+        return self._boundary[0]
+
+    @cached_property
+    def boundary_facet_owners(self) -> np.ndarray:
+        """Owning cell index of each boundary facet."""
+        return self._boundary[1]
+
+    @cached_property
+    def facet_measures(self) -> np.ndarray:
+        """Length (2-D) or area (3-D) of each boundary facet."""
+        bf = self.boundary_facets
+        if self.dim == 2:
+            d = self.nodes[bf[:, 0]] - self.nodes[bf[:, 1]]
+            return np.linalg.norm(d, axis=1)
+        a = self.nodes[bf[:, 1]] - self.nodes[bf[:, 0]]
+        b = self.nodes[bf[:, 2]] - self.nodes[bf[:, 0]]
+        return 0.5 * np.linalg.norm(np.cross(a, b), axis=1)
+
+    @cached_property
+    def facet_centroids(self) -> np.ndarray:
+        return self.nodes[self.boundary_facets].mean(axis=1)
 
     @cached_property
     def edge_lengths(self) -> np.ndarray:
         d = self.nodes[self.edges[:, 0]] - self.nodes[self.edges[:, 1]]
-        return np.hypot(d[:, 0], d[:, 1])
+        return np.linalg.norm(d, axis=1)
 
     @cached_property
     def node_sizes(self) -> np.ndarray:
@@ -85,34 +124,47 @@ class TriMesh:
         return acc / cnt
 
     @cached_property
-    def tri_sizes(self) -> np.ndarray:
-        """Local mesh size per element: mean of its three edge lengths."""
-        p = self.nodes[self.tris]
-        l0 = np.linalg.norm(p[:, 0] - p[:, 1], axis=1)
-        l1 = np.linalg.norm(p[:, 1] - p[:, 2], axis=1)
-        l2 = np.linalg.norm(p[:, 2] - p[:, 0], axis=1)
-        return (l0 + l1 + l2) / 3.0
+    def cell_sizes(self) -> np.ndarray:
+        """Local mesh size per element: mean of its edge lengths."""
+        p = self.nodes[self.cells]
+        acc = np.zeros(len(self.cells))
+        pairs = _EDGE_LOCAL[self.dim]
+        for i, j in pairs:
+            acc += np.linalg.norm(p[:, i] - p[:, j], axis=1)
+        return acc / len(pairs)
+
+    @cached_property
+    def cell_adjacency(self) -> tuple[np.ndarray, np.ndarray]:
+        """Pairs of face-adjacent cells (k, 2) and the facet measure between."""
+        f = np.vstack([self.cells[:, list(fl)] for fl in _FACET_LOCAL[self.dim]])
+        owner = np.tile(np.arange(len(self.cells)), len(_FACET_LOCAL[self.dim]))
+        fs = np.sort(f, axis=1)
+        order = np.lexsort(fs.T)
+        fs, owner = fs[order], owner[order]
+        same = np.all(fs[1:] == fs[:-1], axis=1)
+        a = owner[:-1][same]
+        b = owner[1:][same]
+        return np.column_stack([a, b]), fs[:-1][same]
 
     @property
     def n_nodes(self) -> int:
         return len(self.nodes)
 
     @property
-    def n_tris(self) -> int:
-        return len(self.tris)
+    def n_cells(self) -> int:
+        return len(self.cells)
 
     def sha(self) -> str:
         h = hashlib.sha256()
         h.update(np.ascontiguousarray(self.nodes).tobytes())
-        h.update(np.ascontiguousarray(self.tris).tobytes())
+        h.update(np.ascontiguousarray(self.cells).tobytes())
         return h.hexdigest()[:16]
 
 
-def generate_mesh(problem: Problem, size_fn, *, model_name: str = "model") -> TriMesh:
+def generate_mesh(problem, size_fn, *, model_name: str = "model") -> Mesh:
     """Build the problem geometry and mesh it with the given size field.
 
-    ``size_fn(x, y) -> float`` is evaluated by Gmsh's size callback; the
-    returned mesh is a linear triangle mesh.
+    ``size_fn(x, y, z) -> float`` is evaluated by Gmsh's size callback.
     """
 
     import gmsh
@@ -127,46 +179,53 @@ def generate_mesh(problem: Problem, size_fn, *, model_name: str = "model") -> Tr
         gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
         gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
         gmsh.option.setNumber("Mesh.Algorithm", 6)  # Frontal-Delaunay
+        if problem.dim == 3:
+            gmsh.option.setNumber("Mesh.Algorithm3D", 10)  # HXT
+            gmsh.option.setNumber("Mesh.OptimizeNetgen", 0)
         gmsh.option.setNumber("Mesh.Optimize", 1)
 
         h_floor = float(problem.h_min)
 
         def cb(dim, tag, x, y, z, lc):
-            return max(float(size_fn(x, y)), h_floor)
+            return max(float(size_fn(x, y, z)), h_floor)
 
         gmsh.model.mesh.setSizeCallback(cb)
-        gmsh.model.mesh.generate(2)
+        gmsh.model.mesh.generate(problem.dim)
         gmsh.model.mesh.removeSizeCallback()
 
         tags, coords, _ = gmsh.model.mesh.getNodes()
         tags = np.asarray(tags, dtype=np.int64)
-        coords = np.asarray(coords, dtype=float).reshape(-1, 3)[:, :2]
+        coords = np.asarray(coords, dtype=float).reshape(-1, 3)
         order = np.argsort(tags)
         tags = tags[order]
         coords = coords[order]
         remap = np.full(int(tags.max()) + 1, -1, dtype=np.int64)
         remap[tags] = np.arange(len(tags))
 
-        etypes, _, enodes = gmsh.model.mesh.getElements(2)
-        tris = []
+        want_type = 2 if problem.dim == 2 else 4  # tri3 / tet4
+        etypes, _, enodes = gmsh.model.mesh.getElements(problem.dim)
+        blocks = []
         for etype, conn in zip(etypes, enodes):
-            if etype == 2:  # 3-node triangle
-                tris.append(np.asarray(conn, dtype=np.int64).reshape(-1, 3))
-        if not tris:
-            raise RuntimeError("Gmsh produced no linear triangles")
-        tri = remap[np.vstack(tris)]
+            if etype == want_type:
+                blocks.append(
+                    np.asarray(conn, dtype=np.int64).reshape(-1, problem.dim + 1)
+                )
+        if not blocks:
+            raise RuntimeError("Gmsh produced no linear simplices")
+        cells = remap[np.vstack(blocks)]
 
-        mesh = TriMesh(nodes=coords, tris=tri)
-        # drop unused nodes (gmsh may report embedded geometry vertices)
-        used = np.zeros(mesh.n_nodes, dtype=bool)
-        used[tri.ravel()] = True
+        used = np.zeros(len(coords), dtype=bool)
+        used[cells.ravel()] = True
         if not used.all():
             new_index = np.cumsum(used) - 1
-            mesh = TriMesh(nodes=coords[used], tris=new_index[tri])
-        return mesh
+            coords, cells = coords[used], new_index[cells]
+        if problem.dim == 2:
+            coords = coords.copy()
+            coords[:, 2] = 0.0
+        return Mesh(nodes=coords, cells=cells, dim=problem.dim)
     finally:
         gmsh.model.remove()
 
 
-def generate_uniform(problem: Problem, h: float) -> TriMesh:
-    return generate_mesh(problem, lambda x, y: h)
+def generate_uniform(problem, h: float) -> Mesh:
+    return generate_mesh(problem, lambda x, y, z: h)

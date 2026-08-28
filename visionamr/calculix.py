@@ -1,4 +1,4 @@
-"""CalculiX interface: plane-stress deck writer, runner, FRD parser."""
+"""CalculiX interface: CPS3 (2-D plane stress) / C3D4 (3-D) decks."""
 
 from __future__ import annotations
 
@@ -12,73 +12,83 @@ from pathlib import Path
 import numpy as np
 
 from .geometry import Problem
-from .mesher import TriMesh
+from .mesher import Mesh
 
 
 @dataclass
 class CcxResult:
-    u: np.ndarray            # (n, 2) nodal displacements
+    u: np.ndarray            # (n, 3) nodal displacements
     n_equations: int
     wall_s: float
     workdir: str
     jobname: str
 
 
-def assemble_nodal_forces(mesh: TriMesh, problem: Problem) -> np.ndarray:
-    """Consistent nodal forces from boundary tractions (force = t * L * thk)."""
+def assemble_nodal_forces(mesh: Mesh, problem: Problem) -> np.ndarray:
+    """Consistent nodal forces from boundary tractions.
 
-    F = np.zeros((mesh.n_nodes, 2))
-    thk = problem.material.thickness
-    be = mesh.boundary_edges
-    mids = 0.5 * (mesh.nodes[be[:, 0]] + mesh.nodes[be[:, 1]])
-    lengths = np.linalg.norm(mesh.nodes[be[:, 0]] - mesh.nodes[be[:, 1]], axis=1)
+    force = t * facet_measure * (thickness in 2-D), split equally over the
+    facet nodes (exact lumping for linear facets).
+    """
+
+    F = np.zeros((mesh.n_nodes, 3))
+    scale = problem.material.thickness if problem.dim == 2 else 1.0
+    bf = mesh.boundary_facets
+    mids = mesh.facet_centroids
+    meas = mesh.facet_measures
+    n_facet_nodes = bf.shape[1]
     for spec in problem.tractions:
-        mask = spec.edge_predicate(mids)
+        mask = spec.facet_predicate(mids)
         t = np.asarray(spec.value, dtype=float)
-        for e_idx in np.nonzero(mask)[0]:
-            f_edge = t * lengths[e_idx] * thk
-            F[be[e_idx, 0]] += 0.5 * f_edge
-            F[be[e_idx, 1]] += 0.5 * f_edge
+        for f_idx in np.nonzero(mask)[0]:
+            f_total = t * meas[f_idx] * scale
+            for node in bf[f_idx]:
+                F[node] += f_total / n_facet_nodes
     return F
 
 
-def write_inp(path: Path, mesh: TriMesh, problem: Problem, heading: str) -> None:
+def write_inp(path: Path, mesh: Mesh, problem: Problem, heading: str) -> None:
     mat = problem.material
-    clamp = np.nonzero(problem.clamp_predicate(mesh.nodes))[0]
-    if len(clamp) == 0:
-        raise ValueError("no clamped nodes found")
     F = assemble_nodal_forces(mesh, problem)
     loaded = np.nonzero(np.abs(F).sum(axis=1) > 0)[0]
     if len(loaded) == 0:
         raise ValueError("no loaded nodes found")
 
+    etype = "CPS3" if problem.dim == 2 else "C3D4"
     lines: list[str] = []
     lines.append("*HEADING")
     lines.append(heading)
     lines.append("*NODE, NSET=NALL")
-    for i, (x, y) in enumerate(mesh.nodes, start=1):
-        lines.append(f"{i}, {x:.9g}, {y:.9g}, 0.0")
-    lines.append("*ELEMENT, TYPE=CPS3, ELSET=EALL")
-    for i, (a, b, c) in enumerate(mesh.tris + 1, start=1):
-        lines.append(f"{i}, {a}, {b}, {c}")
-    lines.append("*NSET, NSET=CLAMP")
-    for i in range(0, len(clamp), 8):
-        lines.append(", ".join(str(n + 1) for n in clamp[i : i + 8]))
+    for i, (x, y, z) in enumerate(mesh.nodes, start=1):
+        lines.append(f"{i}, {x:.9g}, {y:.9g}, {z:.9g}")
+    lines.append(f"*ELEMENT, TYPE={etype}, ELSET=EALL")
+    for i, conn in enumerate(mesh.cells + 1, start=1):
+        lines.append(f"{i}, " + ", ".join(str(c) for c in conn))
     lines.append("*MATERIAL, NAME=MAT")
     lines.append("*ELASTIC")
     lines.append(f"{mat.E:.6g}, {mat.nu:.6g}")
     lines.append("*SOLID SECTION, ELSET=EALL, MATERIAL=MAT")
-    lines.append(f"{mat.thickness:.6g}")
+    if problem.dim == 2:
+        lines.append(f"{mat.thickness:.6g}")
     lines.append("*BOUNDARY")
-    lines.append("CLAMP, 1, 2")
+    any_fixed = False
+    for k, con in enumerate(problem.constraints):
+        nodes = np.nonzero(con.node_predicate(mesh.nodes))[0]
+        if len(nodes) == 0:
+            raise ValueError(f"constraint '{con.name}' matched no nodes")
+        any_fixed = True
+        for n in nodes:
+            for dof in con.dofs:
+                lines.append(f"{n + 1}, {dof}, {dof}")
+    if not any_fixed:
+        raise ValueError("no constrained nodes")
     lines.append("*STEP")
     lines.append("*STATIC")
     lines.append("*CLOAD")
     for n in loaded:
-        if abs(F[n, 0]) > 0:
-            lines.append(f"{n + 1}, 1, {F[n, 0]:.9g}")
-        if abs(F[n, 1]) > 0:
-            lines.append(f"{n + 1}, 2, {F[n, 1]:.9g}")
+        for dof in range(3 if problem.dim == 3 else 2):
+            if abs(F[n, dof]) > 0:
+                lines.append(f"{n + 1}, {dof + 1}, {F[n, dof]:.9g}")
     lines.append("*NODE FILE")
     lines.append("U")
     lines.append("*END STEP")
@@ -93,7 +103,7 @@ def run_ccx(
     jobname: str,
     *,
     ccx_cmd: str | None = None,
-    timeout: float = 240.0,
+    timeout: float = 600.0,
 ) -> tuple[str, int]:
     """Run CalculiX; return (stdout, n_equations)."""
 
@@ -105,7 +115,7 @@ def run_ccx(
         capture_output=True,
         text=True,
         timeout=timeout,
-        env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "2")},
+        env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "4")},
     )
     wall = time.perf_counter() - t0
     out = proc.stdout + proc.stderr
@@ -154,18 +164,18 @@ def read_frd_displacements(frd_path: Path, n_nodes: int) -> np.ndarray:
                     u[node - 1] = vals
     if not found:
         raise RuntimeError(f"no DISP dataset in {frd_path}")
-    return u[:, :2]
+    return u
 
 
 def solve(
-    mesh: TriMesh,
+    mesh: Mesh,
     problem: Problem,
     workdir: Path,
     jobname: str,
     *,
     heading: str = "",
     ccx_cmd: str | None = None,
-    timeout: float = 240.0,
+    timeout: float = 600.0,
 ) -> CcxResult:
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)

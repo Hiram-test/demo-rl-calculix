@@ -18,19 +18,19 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..experiment import FemRunner
+from ..experiment import FemRunner, initial_mesh
 from ..indicators import zz_indicator
 from ..marking import dorfler_mark
-from ..mesher import TriMesh, generate_mesh
+from ..mesher import Mesh, generate_mesh
 from ..sizefield import NodalSizeField
 
 
-def refine_size_map(mesh: TriMesh, marked: np.ndarray, *, factor: float = 0.5) -> np.ndarray:
+def refine_size_map(mesh: Mesh, marked: np.ndarray, *, factor: float = 0.5) -> np.ndarray:
     """Per-node target size: current size, halved on nodes of marked elements."""
 
     h_node = mesh.node_sizes.copy()
     target = h_node.copy()
-    marked_nodes = np.unique(mesh.tris[marked].ravel())
+    marked_nodes = np.unique(mesh.cells[marked].ravel())
     target[marked_nodes] = factor * h_node[marked_nodes]
     return target
 
@@ -48,8 +48,6 @@ def run_dorfler(
     runner.ensure_reference()
     if n_eq_cap is None:
         n_eq_cap = runner.reference.n_equations
-
-    from ..experiment import initial_mesh
 
     mesh = initial_mesh(problem)
     for cycle in range(max_rounds + 1):

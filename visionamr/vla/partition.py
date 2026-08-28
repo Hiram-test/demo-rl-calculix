@@ -1,16 +1,15 @@
-"""Vision partitioners: turn a rendered view of the structure + response
-field into named regions with delegate sizes.
+"""Vision heads: propose named partition seeds from a rendered view.
 
-Two implementations:
+The heads never emit geometric primitives; they point at structural
+locations ("wheel patch edge", "inner strip line", "re-entrant corner",
+"calm mid-field") the way a human marks up a plot, and the geodesic
+partition in ``regions.Partition`` grows organic region shapes from
+those seeds.
 
-* ``ScriptedVisionPartitioner`` -- deterministic hotspot clustering on the
-  von Mises field of the probe solve.  Serves as the reproducible stand-in
-  and the "vision quality" ablation lower bound.
-* ``LLMVisionPartitioner`` -- renders a PNG and asks a multimodal LLM for
-  regions in strict JSON (the paper's actual vision head).  Requires
-  VLM_API_KEY / VLM_MODEL (OpenAI-compatible chat completions endpoint).
-
-Both return regions whose count follows the view, never a fixed template.
+* ``ScriptedVisionPartitioner`` -- deterministic stand-in: von Mises
+  peaks (non-max suppression) + structural anchors + coarse field seeds.
+* ``LLMVisionPartitioner``      -- multimodal LLM on rendered views
+  (orthographic views in 3-D), strict JSON seed schema.
 """
 
 from __future__ import annotations
@@ -22,119 +21,159 @@ import urllib.request
 from dataclasses import dataclass
 
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
+from scipy.spatial import cKDTree
 
 from ..fem_post import PostState
 from ..geometry import Problem
-from ..sizefield import Region
+from ..indicators import zz_indicator  # noqa: F401  (kept for head extensions)
+from .regions import Seed
+
+
+def _farthest_point_seeds(points: np.ndarray, k: int, min_sep: float) -> list[int]:
+    """Greedy farthest-point sampling indices."""
+
+    if len(points) == 0 or k <= 0:
+        return []
+    picked = [int(np.argmin(points[:, 0]))]
+    for _ in range(k - 1):
+        d = np.min(
+            np.linalg.norm(points[:, None, :] - points[picked][None, :, :], axis=2),
+            axis=1,
+        )
+        cand = int(np.argmax(d))
+        if d[cand] < min_sep:
+            break
+        picked.append(cand)
+    return picked
 
 
 @dataclass
 class ScriptedVisionPartitioner:
-    """Hotspot clustering: quantile threshold + connected components.
+    """Peak + structural-anchor + field seeds from the probe response.
 
-    For the ``nested_top`` hottest clusters an inner box is emitted around
-    the peak (a vision-style nested frame); each box still carries exactly
-    one size, so nesting realizes region-level grading without breaking
-    the one-size-per-region contract.
+    Mimics how an engineer marks a plot: peaks of the response field,
+    the structurally declared detail locations (load patch edges,
+    support strips, corners, holes -- these exist on the drawing even
+    when the coarse probe underresolves them), and a few calm-bulk
+    points that should stay coarse.
     """
 
-    quantile: float = 0.90
-    min_nodes: int = 3
-    max_regions: int = 6
-    pad_factor: float = 1.6
-    h_hot: float = 0.22       # hottest region delegate size, fraction of h0
-    h_mild: float = 0.55      # mildest region delegate size, fraction of h0
-    nested_top: int = 1
-    nested_shrink: float = 0.38
-    nested_h_factor: float = 0.45
+    peak_quantile: float = 0.60
+    max_hot: int = 5
+    min_sep_frac: float = 0.10
+    anchor_kinds: tuple[str, ...] = ("load", "support", "corner", "hole")
+    anchor_sep_frac: float = 0.06
+    n_field: int = 3
+    field_sep_frac: float = 0.22
+    h_hot: float = 0.30       # initial fineness of the hottest seed (x h0)
+    h_mild: float = 0.60
+    h_anchor: float = 0.40
 
-    def partition(
-        self, problem: Problem, post: PostState, eta2: np.ndarray
-    ) -> list[Region]:
+    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
         mesh = post.mesh
         vm = post.vm_node
-        thr = np.quantile(vm, self.quantile)
-        hot = vm >= thr
-        if hot.sum() < self.min_nodes:
-            hot = vm >= np.quantile(vm, 0.8)
+        diam = problem.diameter
+        thr = np.quantile(vm, self.peak_quantile)
 
-        # connected components of hot nodes over the mesh edge graph
+        # nodal local maxima over the mesh edge graph
         e = mesh.edges
-        keep = hot[e[:, 0]] & hot[e[:, 1]]
-        ek = e[keep]
-        n = mesh.n_nodes
-        g = coo_matrix(
-            (np.ones(len(ek)), (ek[:, 0], ek[:, 1])), shape=(n, n)
-        )
-        n_comp, labels = connected_components(g, directed=False)
-        regions: list[Region] = []
-        comp_stats = []
-        for c in range(n_comp):
-            idx = np.nonzero((labels == c) & hot)[0]
-            if len(idx) < self.min_nodes:
-                continue
-            comp_stats.append((float(vm[idx].max()), idx))
-        comp_stats.sort(key=lambda s: -s[0])
-        vm_gmax = max(float(vm.max()), 1e-30)
+        is_peak = np.ones(mesh.n_nodes, dtype=bool)
+        a, b = e[:, 0], e[:, 1]
+        lower_a = vm[a] < vm[b]
+        np.logical_and.at(is_peak, a[lower_a], False)
+        lower_b = vm[b] < vm[a]
+        np.logical_and.at(is_peak, b[lower_b], False)
+        cand = np.nonzero(is_peak & (vm >= thr))[0]
+        cand = cand[np.argsort(vm[cand])[::-1]]
 
-        bx0, by0, bx1, by1 = problem.bbox
-        used_names: set[str] = set()
-        for rank, (vmax, idx) in enumerate(comp_stats[: self.max_regions]):
-            pts = mesh.nodes[idx]
-            pad = self.pad_factor * float(np.mean(mesh.node_sizes[idx]))
-            xmin, ymin = pts.min(axis=0) - pad
-            xmax, ymax = pts.max(axis=0) + pad
-            xmin, xmax = max(xmin, bx0), min(xmax, bx1)
-            ymin, ymax = max(ymin, by0), min(ymax, by1)
-            intensity = vmax / vm_gmax
+        picked: list[int] = []
+        for n in cand:
+            if len(picked) >= self.max_hot:
+                break
+            if all(
+                np.linalg.norm(mesh.nodes[n] - mesh.nodes[p]) >= self.min_sep_frac * diam
+                for p in picked
+            ):
+                picked.append(int(n))
+
+        vm_gmax = max(float(vm.max()), 1e-30)
+        seeds: list[Seed] = []
+        used: set[str] = set()
+        for rank, n in enumerate(picked):
+            pt = mesh.nodes[n]
+            name = self._name(problem, pt, rank, used)
+            used.add(name)
+            intensity = float(vm[n]) / vm_gmax
             frac = self.h_mild - (self.h_mild - self.h_hot) * intensity
-            name = self._name_region(problem, 0.5 * (xmin + xmax), 0.5 * (ymin + ymax), rank)
-            if name in used_names:
-                name = f"{name}_{rank}"
-            used_names.add(name)
-            outer = Region(name, xmin, ymin, xmax, ymax, h=float(frac * problem.h0))
-            regions.append(outer)
-            if rank < self.nested_top:
-                peak = mesh.nodes[idx[np.argmax(vm[idx])]]
-                half = 0.5 * self.nested_shrink * max(xmax - xmin, ymax - ymin)
-                regions.append(
-                    Region(
-                        f"{name}_core",
-                        max(peak[0] - half, bx0),
-                        max(peak[1] - half, by0),
-                        min(peak[0] + half, bx1),
-                        min(peak[1] + half, by1),
-                        h=float(self.nested_h_factor * outer.h),
-                    )
-                )
-        return regions
+            seeds.append(Seed(name, tuple(pt), h=float(frac * problem.h0)))
+
+        # structural anchors from the drawing (deduplicated against peaks)
+        for f in problem.features:
+            if f.kind not in self.anchor_kinds:
+                continue
+            if any(
+                np.linalg.norm(f.xyz - s.point()) < self.anchor_sep_frac * diam
+                for s in seeds
+            ):
+                continue
+            name = f"{f.name}_zone"
+            if name in used:
+                name = f"{name}_a"
+            used.add(name)
+            seeds.append(
+                Seed(name, tuple(f.xyz), h=float(self.h_anchor * problem.h0))
+            )
+
+        # coarse "field" seeds so the calm bulk forms its own coarse regions
+        low = post.vm_elem <= np.quantile(post.vm_elem, 0.5)
+        pts = mesh.centroids[low]
+        if len(seeds) > 0 and len(pts) > 0:
+            seed_pts = np.array([s.point() for s in seeds])
+            d_to_hot = np.min(
+                np.linalg.norm(pts[:, None, :] - seed_pts[None, :, :], axis=2), axis=1
+            )
+            pts = pts[d_to_hot > self.field_sep_frac * diam]
+        for j, idx in enumerate(
+            _farthest_point_seeds(pts, self.n_field, self.field_sep_frac * diam)
+        ):
+            seeds.append(
+                Seed(f"field_{j}", tuple(pts[idx]), h=float(problem.h0), origin="coarse")
+            )
+        if not seeds:
+            seeds = [Seed("domain", tuple(np.mean(mesh.nodes, axis=0)), h=problem.h0)]
+        return seeds
 
     @staticmethod
-    def _name_region(problem: Problem, cx: float, cy: float, rank: int) -> str:
+    def _name(problem: Problem, pt: np.ndarray, rank: int, used: set[str]) -> str:
         best, dist = None, np.inf
         for f in problem.features:
-            d = float(np.hypot(cx - f.x, cy - f.y))
+            d = float(np.linalg.norm(pt - f.xyz))
             if d < dist:
                 best, dist = f, d
-        xmin, ymin, xmax, ymax = problem.bbox
-        near = 0.25 * float(np.hypot(xmax - xmin, ymax - ymin))
-        if best is not None and dist < near:
-            return f"{best.name}_zone"
-        return f"hotspot_{rank}"
+        name = (
+            f"{best.name}_zone"
+            if best is not None and dist < 0.25 * problem.diameter
+            else f"hotspot_{rank}"
+        )
+        if name in used:
+            name = f"{name}_{rank}"
+        return name
 
 
-VLM_SYSTEM_PROMPT = """You are a finite-element meshing engineer. You see a
-plane-stress structure with its von Mises stress field. Identify the
-structural regions that need local mesh refinement (stress concentrations,
-re-entrant corners, load introductions, support reactions). Reply with a
-strict JSON object:
-{"regions": [{"name": "<structural name>", "xmin": .., "ymin": .., "xmax": ..,
-"ymax": .., "size_fraction": <target element size as a fraction of the
-background size, in (0.1, 0.8)>}, ...]}
-Use as many or as few regions as the picture demands; never emit a fixed
-template. Coordinates are in the model units printed on the axes."""
+VLM_SYSTEM_PROMPT = """You are a senior finite-element meshing engineer.
+You see rendered views of a structure with its von Mises stress field
+(orthographic projections for 3-D parts).  Mark the structural locations
+that control the discretization error the way you would with a pen:
+stress concentrations, load-patch edges, support/reaction lines,
+re-entrant corners -- and also a few points in the calm bulk that should
+stay coarse.  Each mark becomes the seed of one mesh region grown
+geodesically around it (regions are organic shapes, never boxes).
+Reply with strict JSON:
+{"seeds": [{"name": "<structural name>", "x": .., "y": .., "z": ..,
+"fineness_fraction": <target element size as a fraction of the background
+size, hot 0.15-0.5, calm bulk 0.8-1.0>}, ...]}
+Use as many or as few seeds as the picture demands; never a fixed
+template.  Coordinates are in the model units printed on the axes."""
 
 
 @dataclass
@@ -145,11 +184,9 @@ class LLMVisionPartitioner:
     api_base: str | None = None
     api_key: str | None = None
     temperature: float = 0.1
-    max_regions: int = 8
+    max_seeds: int = 12
 
-    def partition(
-        self, problem: Problem, post: PostState, eta2: np.ndarray
-    ) -> list[Region]:
+    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
         from ..viz import render_field_png
 
         png = render_field_png(problem, post)
@@ -165,8 +202,8 @@ class LLMVisionPartitioner:
                         {
                             "type": "text",
                             "text": (
-                                f"Structure '{problem.name}', bounding box {problem.bbox}. "
-                                f"Background mesh size h0={problem.h0:.3g}. Partition it."
+                                f"Structure '{problem.name}', bbox {problem.bbox}, "
+                                f"background size h0={problem.h0:.3g}. Mark the seeds."
                             ),
                         },
                         {
@@ -203,20 +240,23 @@ class LLMVisionPartitioner:
             body = json.loads(resp.read())
         content = body["choices"][0]["message"]["content"]
         spec = json.loads(content)
-        regions: list[Region] = []
-        bx0, by0, bx1, by1 = problem.bbox
-        for i, r in enumerate(spec.get("regions", [])[: self.max_regions]):
-            frac = float(np.clip(r.get("size_fraction", 0.4), 0.1, 0.8))
-            regions.append(
-                Region(
-                    str(r.get("name", f"llm_region_{i}"))[:48],
-                    max(float(r["xmin"]), bx0),
-                    max(float(r["ymin"]), by0),
-                    min(float(r["xmax"]), bx1),
-                    min(float(r["ymax"]), by1),
-                    h=frac * problem.h0,
+        lo = np.array(problem.bbox[:3])
+        hi = np.array(problem.bbox[3:])
+        seeds: list[Seed] = []
+        for i, s in enumerate(spec.get("seeds", [])[: self.max_seeds]):
+            frac = float(np.clip(s.get("fineness_fraction", 0.4), 0.1, 1.0))
+            pt = np.clip(
+                np.array([float(s["x"]), float(s.get("y", 0.0)), float(s.get("z", 0.0))]),
+                lo,
+                hi,
+            )
+            seeds.append(
+                Seed(
+                    str(s.get("name", f"llm_seed_{i}"))[:48],
+                    tuple(pt),
+                    h=float(frac * problem.h0),
                 )
             )
-        if not regions:
-            raise RuntimeError("VLM returned no regions")
-        return regions
+        if not seeds:
+            raise RuntimeError("VLM returned no seeds")
+        return seeds

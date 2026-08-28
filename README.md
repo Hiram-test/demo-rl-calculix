@@ -1,8 +1,11 @@
 # Vision-Region AMR: 视觉分区驱动的少重网格自适应有限元
 
-研究框架：比较**视觉分区多智能体短循环（VLA）**与四个对比算法（Dörfler 逐单元循环、局部预测一步多级、区域图 DQN 强化学习、监督尺寸场回归）在"误差 × 自由度 × 全局求解次数 × 预算合规 × 训练成本"五个轴上的表现。
+研究框架：在**三维桥梁构件**（支座板局部承压、梁桥面板轮载）上，比较**视觉播种的类人分区多智能体短循环（VLA）**与四个对比算法（Dörfler 逐单元循环、局部预测一步多级、分区图 DQN 强化学习、监督尺寸场回归）。主目标：**少量求解次数（k=2..6）处击败 Dörfler**（渐近最优性让给它），且预算硬帽认证。
 
-核心约定：**所有重网格都经 Gmsh**。任何方法的决策统一表达为尺寸场（逐单元目标尺寸图或区域尺寸），由 Gmsh 重新生成网格，CalculiX 求解。仓库中不存在手写网格操作。
+核心约定：
+- **所有重网格都经 Gmsh**：任何方法的决策统一表达为尺寸场，由 Gmsh 重新生成网格，CalculiX 求解；仓库无手写网格操作。
+- **区域绝不是盒子**：视觉头输出命名种子（结构锚点+场峰值+粗场点），区域是单元邻接图上的多源测地线 Voronoi 分区，形状贴几何生长，全域覆盖；粒度靠残差集中区自动分裂。
+- 荷载/约束足迹压印进几何（OCC fragment），任意网格下合力精确。
 
 ## 文档
 
@@ -20,44 +23,47 @@ pip install -r requirements.txt
 ## 快速验证
 
 ```bash
-# 门 G1：奇异问题上正确部署的 Dörfler 必须优于均匀加密
+# 门 G1（2D 基板）：正确部署的 Dörfler 必须优于均匀加密
 python3 scripts/run_smoke.py
 
 # 单元测试（不需要 CalculiX）
 python3 -m pytest tests/ -q
 
-# 六方法基准（单实例演示规模，含 RL 训练与监督专家库生成）
-python3 scripts/run_benchmark.py --problem lbracket --out results/bench_lbracket
-python3 scripts/run_benchmark.py --problem plate_holes --out results/bench_plate
+# 三维桥梁构件基准（经典方法 + VLA）
+python3 scripts/run_benchmark.py --problem bearing_block --n-eq-budget 8000
+python3 scripts/run_benchmark.py --problem deck_panel --n-eq-budget 20000
 
-# 证据图
-python3 scripts/make_figures.py
+# 2D 基板全方法基准（含 RL 训练与监督专家库，演示规模）
+python3 scripts/run_benchmark.py --problem lbracket --with-learned
+
+# 证据图（分区三视图、认证网格、误差曲线）
+python3 scripts/make_figures.py bearing_block deck_panel
 ```
 
 ## 包结构
 
 ```
 visionamr/
-  geometry.py        基准问题族（L 形支架/带孔板，参数化采样器）
-  mesher.py          Gmsh 网格器（唯一的网格来源）
-  sizefield.py       尺寸场：区域尺寸 / 节点尺寸图 + Lipschitz 梯度限制
-  calculix.py        CalculiX 卡片、运行器、FRD 解析
-  fem_post.py        位移重构应力/应变能/von Mises
-  indicators.py      ZZ 1987 恢复型误差指示子
+  geometry.py        问题族：3D 支座/桥面板（荷载足迹压印）+ 2D 基板，参数化采样器
+  mesher.py          Gmsh 网格器（2D 三角/3D 四面体，唯一网格来源）
+  sizefield.py       节点尺寸图 + Lipschitz 梯度限制 + 反距离插值
+  calculix.py        CPS3/C3D4 卡片、运行器、FRD 解析
+  fem_post.py        2D/3D B 矩阵重构应力/能量（含 3D 补丁测试）
+  indicators.py      ZZ 1987 指示子（2D 三中点 / 3D 四点精确积分）
   marking.py         Dörfler bulk 标记 / 极大值标记
-  experiment.py      求解记账（每次 ccx 调用都有记录）、分级参考解
+  experiment.py      求解记账、奇异线分级参考解
   baselines/
-    uniform.py           均匀梯子
-    dorfler.py           Dörfler 逐单元循环（ZZ + bulk 标记 + Gmsh 重网格）
-    local_prediction.py  逐单元一步多级尺寸预测（ZZ 1987 / Li–Bettess 1995）
-    supervised.py        专家网格自造 + 节点尺寸场 MLP + 预算标量部署
-    rl_dqn.py            区域图 Double DQN + GCN（每步真实求解）
+    uniform.py           均匀梯子（每档单元数翻倍，预算帽）
+    dorfler.py           Dörfler 逐单元循环
+    local_prediction.py  逐单元一步多级尺寸预测（理论指数 (d+2)/2）
+    supervised.py        专家网格自造 + 节点尺寸场 MLP + 预算标量
+    rl_dqn.py            分区图 Double DQN + GCN（每步真实求解）
   vla/
-    partition.py     视觉分区：LLM 头（多模态接口）+ 脚本头（热点聚类）
-    regions.py       区域图（邻接、特征聚合）
-    agents.py        子智能体一轮通信（邻域耦合 + 父级预算压力）+ 区域编辑
-    pso.py           (s, κ) 两坐标 PSO 校准（幂律代理 + 闭式种子）
-    pipeline.py      三次求解短循环：probe → regional → certified
+    partition.py     视觉头：LLM（正交三视图+JSON 种子）/ 脚本（峰值+结构锚点+粗场点）
+    regions.py       类人分区：种子生长测地线 Voronoi、特征聚合、残差集中分裂
+    agents.py        子智能体一轮通信（份额/邻域/父级预算压力）
+    pso.py           (s, κ) PSO 校准：幂律代理 + 闭式种子 + 预算硬帽投影
+    pipeline.py      自适应短循环（≤k 次求解）：probe → regional → cal… → certified
 ```
 
 ## 归档

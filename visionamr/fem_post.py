@@ -1,46 +1,86 @@
-"""Post-processing of plane-stress CPS3 solutions.
+"""Post-processing of CPS3 / C3D4 solutions.
 
 Element stresses, strain energy, and the quantity of interest are
-reconstructed from the FRD displacement field; this keeps the error
-metrics solver-independent and exact for linear triangles.
+reconstructed from the FRD displacement field (exact for linear
+simplices), keeping error metrics solver-independent.
+
+Voigt order: 2-D [xx, yy, xy]; 3-D [xx, yy, zz, xy, yz, zx]
+(engineering shear strains).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import lru_cache
 
 import numpy as np
 
 from .geometry import Material, Problem
-from .mesher import TriMesh
+from .mesher import Mesh
 
 
-def plane_stress_C(mat: Material) -> np.ndarray:
-    f = mat.E / (1.0 - mat.nu**2)
-    return f * np.array(
-        [[1.0, mat.nu, 0.0], [mat.nu, 1.0, 0.0], [0.0, 0.0, (1.0 - mat.nu) / 2.0]]
-    )
+def elastic_C(mat: Material, dim: int) -> np.ndarray:
+    if dim == 2:  # plane stress
+        f = mat.E / (1.0 - mat.nu**2)
+        return f * np.array(
+            [[1.0, mat.nu, 0.0], [mat.nu, 1.0, 0.0], [0.0, 0.0, (1.0 - mat.nu) / 2.0]]
+        )
+    lam = mat.E * mat.nu / ((1.0 + mat.nu) * (1.0 - 2.0 * mat.nu))
+    mu = mat.E / (2.0 * (1.0 + mat.nu))
+    C = np.zeros((6, 6))
+    C[:3, :3] = lam
+    C[np.arange(3), np.arange(3)] += 2.0 * mu
+    C[3:, 3:] = np.diag([mu, mu, mu])
+    return C
 
 
-def element_B(mesh: TriMesh) -> np.ndarray:
-    """Strain-displacement matrices (m, 3, 6) for CST triangles."""
+def shape_gradients(mesh: Mesh) -> np.ndarray:
+    """Gradients of the linear shape functions: (m, dim+1, dim)."""
 
-    p = mesh.nodes[mesh.tris]
-    x1, y1 = p[:, 0, 0], p[:, 0, 1]
-    x2, y2 = p[:, 1, 0], p[:, 1, 1]
-    x3, y3 = p[:, 2, 0], p[:, 2, 1]
-    A2 = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)
-    b1, b2, b3 = y2 - y3, y3 - y1, y1 - y2
-    c1, c2, c3 = x3 - x2, x1 - x3, x2 - x1
-    m = len(mesh.tris)
-    B = np.zeros((m, 3, 6))
-    for i, (b, c) in enumerate(((b1, c1), (b2, c2), (b3, c3))):
-        B[:, 0, 2 * i] = b
-        B[:, 1, 2 * i + 1] = c
-        B[:, 2, 2 * i] = c
-        B[:, 2, 2 * i + 1] = b
-    B /= A2[:, None, None]
+    p = mesh.nodes[mesh.cells]
+    m = mesh.n_cells
+    if mesh.dim == 2:
+        J = np.stack(
+            [p[:, 1, :2] - p[:, 0, :2], p[:, 2, :2] - p[:, 0, :2]], axis=1
+        )  # (m, 2, 2)
+    else:
+        J = np.stack(
+            [p[:, 1, :3] - p[:, 0, :3], p[:, 2, :3] - p[:, 0, :3], p[:, 3, :3] - p[:, 0, :3]],
+            axis=1,
+        )
+    Jinv = np.linalg.inv(J)
+    d = mesh.dim
+    ref_grads = np.vstack([-np.ones((1, d)), np.eye(d)])  # (d+1, d)
+    # grad_x N = grad_xi N @ (dx/dxi)^-1 with dx/dxi = J^T (J rows are edges)
+    return np.einsum("nd,mkd->mnk", ref_grads, Jinv)
+
+
+def element_B(mesh: Mesh) -> np.ndarray:
+    """Strain-displacement matrices: (m, n_voigt, (dim+1)*dim)."""
+
+    g = shape_gradients(mesh)  # (m, d+1, d)
+    m = mesh.n_cells
+    if mesh.dim == 2:
+        B = np.zeros((m, 3, 6))
+        for i in range(3):
+            gx, gy = g[:, i, 0], g[:, i, 1]
+            B[:, 0, 2 * i] = gx
+            B[:, 1, 2 * i + 1] = gy
+            B[:, 2, 2 * i] = gy
+            B[:, 2, 2 * i + 1] = gx
+        return B
+    B = np.zeros((m, 6, 12))
+    for i in range(4):
+        gx, gy, gz = g[:, i, 0], g[:, i, 1], g[:, i, 2]
+        c = 3 * i
+        B[:, 0, c] = gx
+        B[:, 1, c + 1] = gy
+        B[:, 2, c + 2] = gz
+        B[:, 3, c] = gy
+        B[:, 3, c + 1] = gx
+        B[:, 4, c + 1] = gz
+        B[:, 4, c + 2] = gy
+        B[:, 5, c] = gz
+        B[:, 5, c + 2] = gx
     return B
 
 
@@ -48,42 +88,49 @@ def element_B(mesh: TriMesh) -> np.ndarray:
 class PostState:
     """Everything downstream methods need from one solve."""
 
-    mesh: TriMesh
-    u: np.ndarray             # (n, 2)
-    stress: np.ndarray        # (m, 3) sxx, syy, sxy per element
-    strain: np.ndarray        # (m, 3)
+    mesh: Mesh
+    u: np.ndarray             # (n, 3)
+    stress: np.ndarray        # (m, n_voigt)
+    strain: np.ndarray        # (m, n_voigt)
     vm_elem: np.ndarray       # (m,)
     vm_node: np.ndarray       # (n,)
-    energy_elem: np.ndarray   # (m,) strain energy per element
+    energy_elem: np.ndarray   # (m,)
     U_total: float
-    qoi: float                # length-weighted mean |u| on the QoI edge
+    qoi: float                # measure-weighted mean |u| on the QoI facets
 
 
-def von_mises(stress: np.ndarray) -> np.ndarray:
-    sxx, syy, sxy = stress[:, 0], stress[:, 1], stress[:, 2]
-    return np.sqrt(sxx**2 - sxx * syy + syy**2 + 3.0 * sxy**2)
+def von_mises(stress: np.ndarray, dim: int) -> np.ndarray:
+    if dim == 2:
+        sxx, syy, sxy = stress[:, 0], stress[:, 1], stress[:, 2]
+        return np.sqrt(sxx**2 - sxx * syy + syy**2 + 3.0 * sxy**2)
+    sxx, syy, szz, sxy, syz, szx = (stress[:, k] for k in range(6))
+    return np.sqrt(
+        0.5 * ((sxx - syy) ** 2 + (syy - szz) ** 2 + (szz - sxx) ** 2)
+        + 3.0 * (sxy**2 + syz**2 + szx**2)
+    )
 
 
-def compute_post(mesh: TriMesh, problem: Problem, u: np.ndarray) -> PostState:
+def compute_post(mesh: Mesh, problem: Problem, u: np.ndarray) -> PostState:
     mat = problem.material
-    C = plane_stress_C(mat)
+    d = mesh.dim
+    C = elastic_C(mat, d)
     B = element_B(mesh)
-    ue = u[mesh.tris].reshape(len(mesh.tris), 6)
+    ue = u[:, :d][mesh.cells].reshape(mesh.n_cells, (d + 1) * d)
     strain = np.einsum("mij,mj->mi", B, ue)
     stress = strain @ C.T
-    energy = 0.5 * np.einsum("mi,mi->m", stress, strain) * mesh.areas * mat.thickness
-    vm_e = von_mises(stress)
+    scale = mat.thickness if d == 2 else 1.0
+    energy = 0.5 * np.einsum("mi,mi->m", stress, strain) * mesh.measures * scale
+    vm_e = von_mises(stress, d)
 
-    # area-weighted nodal von Mises
     vm_n = np.zeros(mesh.n_nodes)
     wsum = np.zeros(mesh.n_nodes)
-    for k in range(3):
-        np.add.at(vm_n, mesh.tris[:, k], vm_e * mesh.areas)
-        np.add.at(wsum, mesh.tris[:, k], mesh.areas)
+    for k in range(d + 1):
+        np.add.at(vm_n, mesh.cells[:, k], vm_e * mesh.measures)
+        np.add.at(wsum, mesh.cells[:, k], mesh.measures)
     wsum[wsum == 0] = 1.0
     vm_n /= wsum
 
-    qoi = _edge_qoi(mesh, problem, u)
+    qoi = _facet_qoi(mesh, problem, u)
     return PostState(
         mesh=mesh,
         u=u,
@@ -97,13 +144,12 @@ def compute_post(mesh: TriMesh, problem: Problem, u: np.ndarray) -> PostState:
     )
 
 
-def _edge_qoi(mesh: TriMesh, problem: Problem, u: np.ndarray) -> float:
-    be = mesh.boundary_edges
-    mids = 0.5 * (mesh.nodes[be[:, 0]] + mesh.nodes[be[:, 1]])
-    mask = problem.qoi_edge_predicate(mids)
+def _facet_qoi(mesh: Mesh, problem: Problem, u: np.ndarray) -> float:
+    bf = mesh.boundary_facets
+    mask = problem.qoi_facet_predicate(mesh.facet_centroids)
     if not mask.any():
         return float(np.linalg.norm(u, axis=1).max())
-    L = np.linalg.norm(mesh.nodes[be[:, 0]] - mesh.nodes[be[:, 1]], axis=1)[mask]
+    w = mesh.facet_measures[mask]
     umag = np.linalg.norm(u, axis=1)
-    edge_mean = 0.5 * (umag[be[mask, 0]] + umag[be[mask, 1]])
-    return float(np.sum(edge_mean * L) / np.sum(L))
+    facet_mean = umag[bf[mask]].mean(axis=1)
+    return float(np.sum(facet_mean * w) / np.sum(w))

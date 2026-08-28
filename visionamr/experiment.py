@@ -7,7 +7,7 @@ so the "number of global solves" axis in the paper is an honest count.
 from __future__ import annotations
 
 import json
-import time
+import math
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -16,7 +16,7 @@ import numpy as np
 from . import calculix
 from .fem_post import PostState, compute_post
 from .geometry import Problem
-from .mesher import TriMesh, generate_mesh, generate_uniform
+from .mesher import Mesh, generate_mesh, generate_uniform
 
 
 @dataclass
@@ -46,29 +46,46 @@ class Reference:
     h_ref: float
 
 
+def _dist_point_segment(pts: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    ab = b - a
+    denom = float(ab @ ab)
+    t = np.clip((pts - a) @ ab / max(denom, 1e-30), 0.0, 1.0)
+    proj = a + t[:, None] * ab
+    return np.linalg.norm(pts - proj, axis=1)
+
+
 def reference_size_fn(problem: Problem):
-    """Strongly graded reference field: background h_ref, power-law grading
-    into corner singularities (r^(1-lambda), lambda ~ 0.545 for the 270-deg
-    elastic corner) and towards hole edges.  The reference resolves every
-    method mesh by a wide margin near the error-dominating features, so the
+    """Strongly graded reference field.
+
+    Background h_ref with power-law grading into corner singularities
+    (r^0.55), towards singular line segments (patch edges, support-strip
+    reaction lines; r^0.6, floor 1/8) and hole edges.  The reference
+    resolves every method mesh near the error-dominating features so the
     Galerkin energy gap stays positive.
     """
 
-    import math
-
-    xmin, ymin, xmax, ymax = problem.bbox
-    diam = math.hypot(xmax - xmin, ymax - ymin)
-    d_grade = 0.3 * diam
+    d_grade = 0.3 * problem.diameter
     corner_floor = 1.0 / 48.0
+    seg_floor = 1.0 / 8.0
     holes = [f for f in problem.features if f.kind == "hole" and f.r > 0]
+    points = [np.asarray(p, dtype=float) for p in problem.singular_points]
+    segments = [
+        (np.asarray(a, dtype=float), np.asarray(b, dtype=float))
+        for a, b in problem.singular_segments
+    ]
+    seg_grade = 0.12 * problem.diameter
 
-    def size(x: float, y: float) -> float:
+    def size(x: float, y: float, z: float = 0.0) -> float:
+        p = np.array([[x, y, z]])
         h = problem.h_ref
-        for sx, sy in problem.singular_points:
-            d = math.hypot(x - sx, y - sy)
-            h = min(h, problem.h_ref * max((d / d_grade) ** 0.55, corner_floor))
+        for sp in points:
+            dd = float(np.linalg.norm(p[0] - sp))
+            h = min(h, problem.h_ref * max((dd / d_grade) ** 0.55, corner_floor))
+        for a, b in segments:
+            dd = float(_dist_point_segment(p, a, b)[0])
+            h = min(h, problem.h_ref * max((dd / seg_grade) ** 0.6, seg_floor))
         for f in holes:
-            d_edge = abs(math.hypot(x - f.x, y - f.y) - f.r)
+            d_edge = abs(float(np.linalg.norm(p[0, :2] - f.xyz[:2])) - f.r)
             h = min(h, problem.h_ref * max((d_edge / (1.5 * f.r)) ** 0.7, 0.2))
         return h
 
@@ -84,7 +101,7 @@ class FemRunner:
         workdir: Path,
         *,
         keep_files: bool = False,
-        ccx_timeout: float = 240.0,
+        ccx_timeout: float = 600.0,
     ) -> None:
         self.problem = problem
         self.workdir = Path(workdir)
@@ -94,11 +111,11 @@ class FemRunner:
         self.records: list[SolveRecord] = []
         self._counter = 0
         self.reference: Reference | None = None
-        self.last_mesh: TriMesh | None = None
+        self.last_mesh: Mesh | None = None
 
     # ------------------------------------------------------------------
     def ensure_reference(self) -> Reference:
-        """Solve (or load) the fine uniform reference for this instance."""
+        """Solve (or load) the graded fine reference for this instance."""
 
         ref_path = self.workdir / "reference.json"
         if self.reference is not None:
@@ -113,7 +130,7 @@ class FemRunner:
             U_total=post.U_total,
             qoi=post.qoi,
             n_equations=rec.n_equations,
-            n_elems=mesh.n_tris,
+            n_elems=mesh.n_cells,
             h_ref=self.problem.h_ref,
         )
         ref_path.write_text(json.dumps(asdict(self.reference), indent=1))
@@ -121,13 +138,13 @@ class FemRunner:
 
     # ------------------------------------------------------------------
     def solve_mesh(
-        self, mesh: TriMesh, *, method: str, stage: str, extra: dict | None = None
+        self, mesh: Mesh, *, method: str, stage: str, extra: dict | None = None
     ) -> tuple[PostState, SolveRecord]:
         return self._solve(mesh, method=method, stage=stage, count=True, extra=extra)
 
     def _solve(
         self,
-        mesh: TriMesh,
+        mesh: Mesh,
         *,
         method: str,
         stage: str,
@@ -148,13 +165,13 @@ class FemRunner:
             timeout=self.ccx_timeout,
         )
         post = compute_post(mesh, self.problem, res.u)
-        sizes = mesh.tri_sizes
+        sizes = mesh.cell_sizes
         rec = SolveRecord(
             method=method,
             stage=stage,
             solve_index=idx,
             n_nodes=mesh.n_nodes,
-            n_elems=mesh.n_tris,
+            n_elems=mesh.n_cells,
             n_equations=res.n_equations,
             U_total=post.U_total,
             qoi=post.qoi,
@@ -179,15 +196,11 @@ class FemRunner:
 
     # ------------------------------------------------------------------
     def energy_error(self, U: float) -> float:
-        """Relative energy-norm error: ||u-u_h||_E / ||u||_E = sqrt(1 - U_h/U_ref).
-
-        Valid for conforming FE with fixed traction loading (Galerkin
-        orthogonality); the reference is the fine uniform mesh.
-        """
+        """Relative energy-norm error sqrt(1 - U_h/U_ref) (Galerkin gap)."""
 
         ref = self.ensure_reference()
         gap = max(ref.U_total - U, 0.0)
-        return float(np.sqrt(gap / ref.U_total))
+        return float(math.sqrt(gap / ref.U_total))
 
     def qoi_error(self, qoi: float) -> float:
         ref = self.ensure_reference()
@@ -205,9 +218,9 @@ class FemRunner:
             "reference": asdict(self.reference) if self.reference else None,
             "records": [asdict(r) for r in self.records],
         }
-        path.write_text(json.dumps(payload, indent=1))
+        path.write_text(json.dumps(payload, indent=1, default=str))
         return path
 
 
-def initial_mesh(problem: Problem) -> TriMesh:
+def initial_mesh(problem: Problem) -> Mesh:
     return generate_uniform(problem, problem.h0)

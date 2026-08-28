@@ -1,47 +1,65 @@
-"""Zienkiewicz-Zhu (1987) recovery-based element error indicator.
+"""Zienkiewicz-Zhu (1987) recovery-based element error indicator (2-D/3-D).
 
-sigma_h is the piecewise-constant CST stress; sigma* is the area-weighted
-nodal average interpolated linearly.  The indicator is the energy-norm of
-the recovery difference,
+sigma_h is the piecewise-constant simplex stress; sigma* is the
+measure-weighted nodal average interpolated linearly.  The indicator is
 
-    eta_K^2 = t * integral_K (sigma* - sigma_h) : C^{-1} : (sigma* - sigma_h) dA,
+    eta_K^2 = scale * integral_K (sigma*-sigma_h) : C^{-1} : (sigma*-sigma_h),
 
-integrated exactly with the three-midpoint rule.  This is the simple ZZ
-estimator (not SPR).
+integrated exactly for the quadratic integrand: three edge midpoints in
+2-D, the degree-2 four-point rule in 3-D.  Simple ZZ, not SPR.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
-from .fem_post import PostState, plane_stress_C
+from .fem_post import PostState, elastic_C
 from .geometry import Problem
+
+# degree-2 exact quadrature on the reference tet (barycentric, weight 1/4)
+_TET_A = 0.5854101966249685
+_TET_B = 0.13819660112501053
+_TET_POINTS = np.array(
+    [
+        [_TET_A, _TET_B, _TET_B, _TET_B],
+        [_TET_B, _TET_A, _TET_B, _TET_B],
+        [_TET_B, _TET_B, _TET_A, _TET_B],
+        [_TET_B, _TET_B, _TET_B, _TET_A],
+    ]
+)
+
+_TRI_POINTS = np.array(
+    [
+        [0.5, 0.5, 0.0],
+        [0.0, 0.5, 0.5],
+        [0.5, 0.0, 0.5],
+    ]
+)
 
 
 def zz_indicator(problem: Problem, post: PostState) -> np.ndarray:
     mesh = post.mesh
-    C = plane_stress_C(problem.material)
-    Cinv = np.linalg.inv(C)
-    t = problem.material.thickness
+    d = mesh.dim
+    Cinv = np.linalg.inv(elastic_C(problem.material, d))
+    scale = problem.material.thickness if d == 2 else 1.0
 
-    # area-weighted nodal stress recovery
-    sig_node = np.zeros((mesh.n_nodes, 3))
+    # measure-weighted nodal stress recovery
+    nv = post.stress.shape[1]
+    sig_node = np.zeros((mesh.n_nodes, nv))
     wsum = np.zeros(mesh.n_nodes)
-    for k in range(3):
-        np.add.at(sig_node, mesh.tris[:, k], post.stress * mesh.areas[:, None])
-        np.add.at(wsum, mesh.tris[:, k], mesh.areas)
+    for k in range(d + 1):
+        np.add.at(sig_node, mesh.cells[:, k], post.stress * mesh.measures[:, None])
+        np.add.at(wsum, mesh.cells[:, k], mesh.measures)
     wsum[wsum == 0] = 1.0
     sig_node /= wsum[:, None]
 
-    # nodal recovery difference per element corner: e_i = sigma*(x_i) - sigma_h
-    e_corner = sig_node[mesh.tris] - post.stress[:, None, :]  # (m, 3, 3)
+    # recovery difference at element corners: (m, d+1, nv)
+    e_corner = sig_node[mesh.cells] - post.stress[:, None, :]
 
-    # exact integral of quadratic e:Cinv:e with 3-midpoint rule
-    m01 = 0.5 * (e_corner[:, 0] + e_corner[:, 1])
-    m12 = 0.5 * (e_corner[:, 1] + e_corner[:, 2])
-    m20 = 0.5 * (e_corner[:, 2] + e_corner[:, 0])
-    quad = np.zeros(len(mesh.tris))
-    for mm in (m01, m12, m20):
-        quad += np.einsum("mi,ij,mj->m", mm, Cinv, mm)
-    eta2 = (mesh.areas / 3.0) * quad * t
-    return eta2
+    pts = _TRI_POINTS if d == 2 else _TET_POINTS
+    quad = np.zeros(mesh.n_cells)
+    for bary in pts:
+        e_pt = np.einsum("k,mkv->mv", bary, e_corner)
+        quad += np.einsum("mi,ij,mj->m", e_pt, Cinv, e_pt)
+    quad /= len(pts)
+    return mesh.measures * quad * scale

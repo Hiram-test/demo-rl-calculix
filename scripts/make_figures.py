@@ -1,7 +1,7 @@
-"""Regenerate the VLA evidence figures (partition view, meshes, curves).
+"""Regenerate the VLA evidence figures (partition views, meshes, curves).
 
 Reuses the cached reference in an existing benchmark directory; the VLA
-itself costs three CalculiX solves per problem.
+itself costs its usual few CalculiX solves per problem.
 """
 
 from __future__ import annotations
@@ -12,24 +12,22 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import numpy as np
-
 from visionamr.experiment import FemRunner, initial_mesh
-from visionamr.fem_post import compute_post
 from visionamr.geometry import PROBLEM_FACTORIES
 from visionamr.indicators import zz_indicator
-from visionamr.mesher import generate_mesh
-from visionamr.sizefield import Region, RegionSizeField
-from visionamr.viz import plot_mesh, render_field_png
+from visionamr.viz import plot_mesh, plot_partition, render_field_png
 from visionamr.vla.partition import ScriptedVisionPartitioner
 from visionamr.vla.pipeline import VLAConfig, run_vla
+from visionamr.vla.regions import Partition
+
+BUDGETS = {"bearing_block": 8000, "deck_panel": 20000, "lbracket": 8000,
+           "plate_holes": 8000}
 
 
 def figures_for(problem_name: str, bench_dir: Path, out_dir: Path) -> None:
     problem = PROBLEM_FACTORIES[problem_name]()
     out_dir.mkdir(parents=True, exist_ok=True)
     runner = FemRunner(problem, bench_dir / "figs_tmp")
-    # reuse the benchmark reference if present
     ref_src = bench_dir / "reference.json"
     if ref_src.exists():
         shutil.copy(ref_src, runner.workdir / "reference.json")
@@ -40,22 +38,26 @@ def figures_for(problem_name: str, bench_dir: Path, out_dir: Path) -> None:
     post0, _ = runner.solve_mesh(mesh0, method="fig", stage="probe")
     eta2_0 = zz_indicator(problem, post0)
     render_field_png(problem, post0, out_dir / f"{problem_name}_probe_field.png")
-    regions = partitioner.partition(problem, post0, eta2_0)
-    plot_mesh(
-        mesh0,
+
+    seeds = partitioner.propose(problem, post0, eta2_0)
+    part = Partition(seeds, problem)
+    labels = part.assign(mesh0)
+    plot_partition(
+        problem, post0, labels, seeds,
         out_dir / f"{problem_name}_partition.png",
-        title=f"{problem_name}: vision partition on probe solve",
-        regions=regions,
+        title=f"{problem_name}: seed-grown geodesic partition on the probe",
     )
 
-    res = run_vla(runner, partitioner, VLAConfig(n_eq_budget=8000))
-    final_mesh = runner.last_mesh
+    res = run_vla(
+        runner, partitioner,
+        VLAConfig(n_eq_budget=BUDGETS[problem_name], max_solves=4),
+    )
     plot_mesh(
-        final_mesh,
+        runner.last_mesh,
         out_dir / f"{problem_name}_vla_certified_mesh.png",
         title=(
             f"{problem_name}: VLA certified mesh "
-            f"(3 solves, s={res.s:.3f}, kappa={res.kappa:.3f})"
+            f"({res.solves} solves, {len(res.seeds_final)} regions)"
         ),
     )
 
@@ -67,6 +69,6 @@ def figures_for(problem_name: str, bench_dir: Path, out_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    figures_for("lbracket", Path("results/bench_lbracket"), Path("docs/evidence"))
-    figures_for("plate_holes", Path("results/bench_plate"), Path("docs/evidence"))
-    print("figures written to docs/evidence/")
+    for name in sys.argv[1:] or ("bearing_block", "deck_panel"):
+        figures_for(name, Path(f"results/bench_{name}"), Path("docs/evidence"))
+        print(f"{name} figures written")
