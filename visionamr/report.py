@@ -12,13 +12,13 @@ from pathlib import Path
 import numpy as np
 
 from .campaign import (
-    BUDGETS_EQ,
     CAMPAIGN,
+    EQ_PER_ELEM,
     FAMILIES_3D,
     PILOT_EQ,
     TEST_SEEDS,
+    elem_budget,
     instance_dir,
-    load_method_records,
     vla_deliverable,
 )
 
@@ -57,12 +57,19 @@ def error_at_k_table(families=FAMILIES_3D, head: str = "scripted") -> dict:
         lp_groups: dict[int, list] = {}
         for r in lp_all:
             lp_groups.setdefault(int(r.get("extra", {}).get("budget", 0)), []).append(r)
-        lp = max(lp_groups.values(), key=lambda rr: rr[-1]["n_equations"]) if lp_groups else []
+        # same resource tier as the VLA column (do not stitch larger LP budgets)
+        dim = 3 if fam in FAMILIES_3D else 2
+        target_elems = elem_budget(b, dim)
+        lp = []
+        if lp_groups:
+            key_b = min(lp_groups, key=lambda bb: abs(bb - target_elems))
+            lp = lp_groups[key_b]
         row = {}
+        n_vla = len(vla)
         for k in range(1, 7):
             row[k] = {
                 "dorfler": _e(dor[k - 1]) if k <= len(dor) else None,
-                "vla": _e(vla_deliverable(vla, k, b)),
+                "vla": _e(vla_deliverable(vla, k, b)) if k <= n_vla else None,
                 "local_prediction": _e(lp[k - 1]) if k <= len(lp) else None,
             }
         out["canonical"][fam] = row
@@ -239,10 +246,6 @@ def ablation_rows(families=FAMILIES_3D) -> dict:
         ("vla_ab4_nosplit", "AB4 no-split"),
         ("vla_ab5_nocomm", "AB5 no-comm"),
         ("vla_ab6_nopso", "AB6 no-PSO"),
-        ("vla_ab7_k3", "AB7 k=3"),
-        ("vla_ab7_k4", "AB7 k=4"),
-        ("vla_ab7_k5", "AB7 k=5"),
-        ("vla_ab7_k6", "AB7 k=6"),
         ("vla_ab8_s_only", "AB8 s-only"),
         ("vla_ab8_nelder", "AB8 nelder"),
     ]
@@ -334,20 +337,23 @@ def judge_hypotheses(error_table, speedup, budgets, wilcox) -> dict:
         h["H2_fracs"] = fracs
 
     h["H3"] = "证据不足"  # needs learned methods at deployment scale
-    # H4 crossover
+    # H4: after VLA stops, its deliverable is held; Dörfler keeps iterating.
     h4 = {}
     for fam, row in error_table.get("canonical", {}).items():
+        v_hold = None
         k_star = None
         for k in range(1, 7):
             v = row.get(k, {}).get("vla")
             d = row.get(k, {}).get("dorfler")
-            if v is None or d is None:
+            if v is not None:
+                v_hold = v
+            if v_hold is None or d is None:
                 continue
-            if d < v:
+            if d < v_hold:
                 k_star = k
                 break
         h4[fam] = k_star
-    if all(v is None for v in h4.values()) and not error_table.get("canonical"):
+    if not error_table.get("canonical"):
         h["H4"] = "证据不足"
     else:
         h["H4"] = h4
