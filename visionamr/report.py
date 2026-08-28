@@ -533,7 +533,7 @@ def render_results_md(tables: dict) -> str:
         "",
         "## 学习方法部署账本（canonical；不升格为 H3）",
         "",
-        "实际训练规模（从产物推断，小于 EXPERIMENT_PLAN 的 24 专家 / 120–300×3 种子）：",
+        "实际训练规模（从产物推断；3D 对齐计划 24 专家 / 120×3）：",
         "",
         "```json",
         json.dumps(tables.get("learned_scale", {}), indent=1, default=str),
@@ -557,7 +557,7 @@ def render_results_md(tables: dict) -> str:
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
-        "- 学习方法按缩小规模登记：deck 监督 8 专家；RL 2D 80 回合、3D 40 回合（有 history 的种子）。H3 仍为证据不足。",
+        "- 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。",
         "",
     ]
     return "\n".join(lines) + "\n"
