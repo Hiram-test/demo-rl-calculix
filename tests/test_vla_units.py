@@ -391,6 +391,8 @@ def test_a2prime_tables_flagged_until_drawn_init_rerun():
 
     src = (Path(__file__).resolve().parents[1] / "visionamr" / "report.py").read_text()
     assert "尚未用新初始化重跑" in src
+    assert "通信/PSO/分裂/硬帽/就地认证仍是实例循环" not in src
+    assert "两轮定稿" in src
 
 
 def test_e1_does_not_claim_v2_lp_is_monotonic():
