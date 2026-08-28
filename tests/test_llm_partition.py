@@ -138,6 +138,7 @@ def test_prompt_requires_remainder_and_allows_section():
 
     assert "remainder_fineness_fraction" in VLM_SYSTEM_PROMPT
     assert "拆结构剖面" in VLM_SYSTEM_PROMPT
+    assert "图纸" in VLM_SYSTEM_PROMPT
     assert "leave the unpainted bulk coarse" not in VLM_SYSTEM_PROMPT
 
 

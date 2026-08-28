@@ -155,11 +155,8 @@ def test_scripted_head_draws_then_assigns_eye_sizes():
 
     mesh = grid_mesh(12, 4)
     problem = make_plate_holes(width=12.0, height=4.0, holes=(), tension=1.0)
-    u = np.zeros((mesh.n_nodes, 3))
-    u[:, 0] = 1e-3 * mesh.nodes[:, 0]
-    post = compute_post(mesh, problem, u)
     head = ScriptedVisionPartitioner()
-    seeds = head.propose(problem, post, np.ones(mesh.n_cells))
+    seeds = head.propose(problem)
     assert head.last_drawings
     for d in head.last_drawings:
         assert len(d.polygon) >= 3

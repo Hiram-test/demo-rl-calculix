@@ -79,6 +79,42 @@ def origin_for_name(name: str) -> str:
     return "coarse" if name.lower() in REMAINDER_NAMES else "vision"
 
 
+def point_hits_drawing(xyz: np.ndarray, region: DrawnRegion, problem: Problem) -> bool:
+    """True if a model point falls in this drawing (section = slab around the cut)."""
+
+    pt = np.asarray(xyz, float).reshape(3)
+    plane = drawing_plane(region)
+    ax0, ax1 = PLANE_AXES[plane]
+    inside = bool(points_in_poly(pt[None, [ax0, ax1]], region.poly_array())[0])
+    if not inside:
+        return False
+    if region.view == "section":
+        k = unused_axis(plane)
+        return abs(pt[k] - float(region.cut)) <= section_slab(region, problem)
+    return True
+
+
+def size_at_xyz(
+    xyz: np.ndarray,
+    drawings: list[DrawnRegion],
+    remainder_h: float,
+    problem: Problem,
+) -> float:
+    """Eye size at a point: finest hitting drawing, else the remainder assignment."""
+
+    hits = [d.h for d in drawings if point_hits_drawing(xyz, d, problem)]
+    return float(min(hits) if hits else remainder_h)
+
+
+def drawings_size_fn(drawings: list[DrawnRegion], remainder_h: float, problem: Problem):
+    """Gmsh callback: drawings + remainder, no background mesh, no solve."""
+
+    def fn(x, y, z):
+        return size_at_xyz((x, y, z), drawings, remainder_h, problem)
+
+    return fn
+
+
 def require_fineness(item: dict, label: str) -> float:
     if "fineness_fraction" not in item:
         raise ValueError(f"{label} missing fineness_fraction")

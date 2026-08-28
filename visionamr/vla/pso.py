@@ -1,17 +1,13 @@
-"""Two-coordinate PSO calibration under accuracy and resource limits.
+"""(s, κ) PSO on the last measured residual and the mesh-count budget.
 
-After the communication round the proposed region sizes h+ are
-calibrated with a particle swarm over (s, kappa):
+    h_i(s, kappa) = h+_i * exp(s + kappa * tau_i)
 
-    h_i(s, kappa) = h+_i * exp(s + kappa * tau_i),
+The live path is ``calibrate_measured``.  Fitness uses the last solve's
+η² shares and N ~ h^{-d} element-count scaling.  It does not predict
+the next error — that η ~ h^q assumption is LP's, not a VLA component.
 
-where s is a global log-scale and tau is a resource-neutral transfer
-direction built from measured marginal efficiencies.  Fitness is a
-weighted penalty around the pre-declared accuracy limit and resource
-budget (meet the accuracy, prefer fewer resources), evaluated on a
-power-law surrogate anchored at the latest real solve (its region
-exponents are fitted from the two most recent solves).  The winning
-particle is certified with one real solve by the caller.
+``Surrogate`` / ``fit_surrogate`` / ``calibrate`` stay for unit tests of
+the retired power-law fitness.  ``run_vla`` must not call them.
 """
 
 from __future__ import annotations
@@ -96,6 +92,185 @@ def fit_surrogate(
         q=q,
         d=float(partition.problem.dim),
     )
+
+
+def transfer_from_measure(err_sum: np.ndarray, elems: np.ndarray) -> np.ndarray:
+    """Refine where the last solve's residual per element is high.  No q-fit."""
+
+    dens = np.asarray(err_sum, float) / np.maximum(np.asarray(elems, float), 1.0)
+    tau = -np.log(np.maximum(dens, 1e-30))
+    w = np.maximum(elems.astype(float), 1.0)
+    w = w / w.sum()
+    tau = tau - float(np.sum(w * tau))
+    m = float(np.abs(tau).max())
+    return tau / m if m > 1e-12 else np.zeros_like(tau)
+
+
+def resource_elems(h: np.ndarray, h_ref: np.ndarray, n_ref: np.ndarray, d: float) -> float:
+    """Element-count scaling from the last mesh.  Not a PDE error model."""
+
+    ratio = np.maximum(h, 1e-12) / np.maximum(h_ref, 1e-12)
+    return float(np.sum(np.maximum(n_ref, 1.0) * ratio ** (-d)))
+
+
+def calibrate_measured(
+    partition: Partition,
+    h_plus: np.ndarray,
+    feats: RegionFeatures,
+    adjacency_matrix: np.ndarray,
+    *,
+    n_eq_budget: int,
+    eq_per_elem: float,
+    resource_drift: float = 1.0,
+    cfg: PSOConfig | None = None,
+    mode: str = "sk",
+) -> tuple[np.ndarray, dict]:
+    """Last-revision PSO: measured residual + budget.  No error surrogate.
+
+    Fitness uses the last solve's η² shares as weights and only a mesh-count
+    scaling N ~ h^{-d} for the hard cap.  It does not predict the next
+    error field (that assumption is LP's).
+    """
+
+    cfg = cfg or PSOConfig()
+    if mode not in ("sk", "s_only", "nelder"):
+        raise ValueError(f"unknown measured-PSO mode {mode!r}")
+    problem = partition.problem
+    rng = np.random.default_rng(cfg.seed)
+    d = float(problem.dim)
+    h_ref = np.maximum(h_plus, 1e-12)
+    n_ref = np.maximum(feats.elems.astype(float), 1.0)
+    err = np.maximum(feats.err_sum, 1e-30)
+    share = err / err.sum()
+    tau = transfer_from_measure(feats.err_sum, feats.elems)
+    drift = float(np.clip(resource_drift, 1.0, 1.4))
+    elems_budget = max(n_eq_budget / eq_per_elem, 1.0) / drift
+    edges = np.argwhere(np.triu(adjacency_matrix) > 0)
+
+    def decode(s: float, k: float) -> np.ndarray:
+        return np.clip(h_plus * np.exp(s + k * tau), problem.h_min, problem.h0)
+
+    def score_h(h: np.ndarray, *, s_pen: float = 0.0, k_pen: float = 0.0) -> float:
+        R = resource_elems(h, h_ref, n_ref, d)
+        r_log = np.log(R / elems_budget)
+        r_plus, r_minus = max(r_log, 0.0), max(-r_log, 0.0)
+        align = float(np.sum(share * (h / h_ref)))
+        Q = 0.0
+        for i, j in edges:
+            ratio = max(h[i], h[j]) / max(min(h[i], h[j]), 1e-12)
+            Q += max(np.log(ratio / cfg.max_neighbor_ratio), 0.0) ** 2
+        return (
+            cfg.w_res_over * r_plus**2
+            + cfg.w_res_under * r_minus**2
+            + cfg.w_quality * Q
+            + 20.0 * align
+            + cfg.w_dev * (s_pen**2 + k_pen**2)
+        )
+
+    def fitness(s: float, k: float) -> float:
+        return score_h(decode(s, k), s_pen=s, k_pen=k)
+
+    if mode == "s_only":
+        ss = np.linspace(-cfg.pos_bound, cfg.pos_bound, 41)
+        scores = np.array([fitness(float(s), 0.0) for s in ss])
+        evals = len(ss)
+        s = float(ss[int(np.argmin(scores))])
+        lo, hi = max(s - 0.08, -cfg.pos_bound), min(s + 0.08, cfg.pos_bound)
+        for _ in range(20):
+            m1 = lo + 0.38 * (hi - lo)
+            m2 = lo + 0.62 * (hi - lo)
+            f1, f2 = fitness(m1, 0.0), fitness(m2, 0.0)
+            evals += 2
+            if f1 < f2:
+                hi = m2
+            else:
+                lo = m1
+        s, k = 0.5 * (lo + hi), 0.0
+        gbest_f = fitness(s, k)
+        evals += 1
+        h_final = decode(s, k)
+    elif mode == "nelder":
+        from scipy.optimize import minimize
+
+        x0 = np.zeros(len(h_plus))
+
+        def f_nm(x):
+            x = np.clip(x, -cfg.pos_bound, cfg.pos_bound)
+            h = np.clip(h_plus * np.exp(x), problem.h_min, problem.h0)
+            return score_h(h, s_pen=float(np.mean(x)), k_pen=0.0)
+
+        res = minimize(
+            f_nm, x0, method="Nelder-Mead",
+            options={"maxiter": 80, "xatol": 1e-3, "fatol": 1e-4, "disp": False},
+        )
+        evals = int(res.nfev)
+        x = np.clip(res.x, -cfg.pos_bound, cfg.pos_bound)
+        h_final = np.clip(h_plus * np.exp(x), problem.h_min, problem.h0)
+        s = float(np.mean(x))
+        k = 0.0
+        gbest_f = float(res.fun)
+    else:
+        R0 = resource_elems(h_plus, h_ref, n_ref, d)
+        s_budget = float(
+            np.clip(np.log(max(R0, 1.0) / elems_budget) / d, -cfg.pos_bound, cfg.pos_bound)
+        )
+        init = [
+            (0.0, 0.0),
+            (s_budget, 0.0),
+            (0.0, 0.15),
+            (0.0, -0.15),
+            (0.10, 0.0),
+            (-0.10, 0.0),
+        ]
+        while len(init) < cfg.n_particles:
+            init.append(tuple(rng.uniform(-0.2, 0.2, size=2)))
+        pos = np.array(init[: cfg.n_particles], dtype=float)
+        vel = np.zeros_like(pos)
+        pbest = pos.copy()
+        pbest_f = np.array([fitness(*p) for p in pos])
+        g_idx = int(np.argmin(pbest_f))
+        gbest, gbest_f = pbest[g_idx].copy(), float(pbest_f[g_idx])
+        evals = len(pos)
+        for _ in range(cfg.generations):
+            r1 = rng.random(pos.shape)
+            r2 = rng.random(pos.shape)
+            vel = (
+                cfg.inertia * vel
+                + cfg.cognitive * r1 * (pbest - pos)
+                + cfg.social * r2 * (gbest[None, :] - pos)
+            )
+            vel = np.clip(vel, -cfg.vel_bound, cfg.vel_bound)
+            pos = np.clip(pos + vel, -cfg.pos_bound, cfg.pos_bound)
+            for i, p in enumerate(pos):
+                f = fitness(*p)
+                evals += 1
+                if f < pbest_f[i]:
+                    pbest_f[i], pbest[i] = f, p.copy()
+                    if f < gbest_f:
+                        gbest_f, gbest = f, p.copy()
+        s, k = float(gbest[0]), float(gbest[1])
+        h_final = decode(s, k)
+    cap = cfg.budget_safety * elems_budget
+    for _ in range(3):
+        R_chk = resource_elems(h_final, h_ref, n_ref, d)
+        if R_chk <= cap:
+            break
+        scale = float(np.log(R_chk / cap)) / d
+        s += scale
+        h_final = np.clip(h_final * np.exp(scale), problem.h_min, problem.h0)
+    R_pred = resource_elems(h_final, h_ref, n_ref, d)
+    return h_final, {
+        "s": s,
+        "kappa": k,
+        "tau": tau.tolist(),
+        "fitness": float(gbest_f),
+        "evals": evals,
+        "R_pred_elems": R_pred,
+        "elems_budget": elems_budget,
+        "resource_drift": drift,
+        "mode": "measured",
+        "final_revision": "pso",
+    }
 
 
 def transfer_direction(sur: Surrogate) -> np.ndarray:

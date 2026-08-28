@@ -58,6 +58,47 @@ def _surface_view(ax, mesh, values, axes_pair, depth_axis, depth_sign, cmap="tur
     return pc
 
 
+def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 130) -> bytes:
+    """Orthographic drawing views: geometry box, loads, supports.  No solve."""
+
+    b = problem.bbox
+    kind_color = {
+        "load": "#d62728",
+        "support": "#1f77b4",
+        "clamp": "#2ca02c",
+        "hole": "#9467bd",
+        "corner": "#ff7f0e",
+    }
+    if problem.dim == 2:
+        fig, axes = plt.subplots(1, 1, figsize=(7.2, 4.6))
+        axes = [axes]
+        views = [("top (x-y)", (0, 1))]
+    else:
+        fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2))
+        views = [("top (x-y)", (0, 1)), ("front (x-z)", (0, 2)), ("side (y-z)", (1, 2))]
+    for ax, (title, pair) in zip(axes, views):
+        u0, u1 = pair
+        xs = [b[u0], b[u0 + 3], b[u0 + 3], b[u0], b[u0]]
+        ys = [b[u1], b[u1], b[u1 + 3], b[u1 + 3], b[u1]]
+        ax.plot(xs, ys, "k-", lw=1.2)
+        for f in problem.features:
+            c = kind_color.get(f.kind, "0.3")
+            ax.plot(f.xyz[u0], f.xyz[u1], "o", color=c, ms=7)
+            ax.annotate(f"{f.name}\n{f.kind}", (f.xyz[u0], f.xyz[u1]), fontsize=6)
+        ax.set_aspect("equal")
+        ax.set_title(f"{problem.name}: {title}")
+        ax.set_xlabel("xyz"[u0] + " [mm]")
+        ax.set_ylabel("xyz"[u1] + " [mm]")
+    fig.suptitle(f"{problem.name}: drawing (no solve)")
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    data = buf.getvalue()
+    if path is not None:
+        Path(path).write_bytes(data)
+    return data
+
+
 def render_field_png(
     problem: Problem, post: PostState, path: Path | None = None, dpi: int = 130
 ) -> bytes:

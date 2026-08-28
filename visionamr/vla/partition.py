@@ -6,10 +6,10 @@ locations ("wheel patch edge", "inner strip line", "re-entrant corner",
 partition in ``regions.Partition`` grows organic region shapes from
 those seeds.
 
-* ``ScriptedVisionPartitioner`` -- deterministic stand-in: von Mises
-  peaks (non-max suppression) + structural anchors + coarse field seeds.
-* ``LLMVisionPartitioner``      -- multimodal LLM on rendered views
-  (orthographic views in 3-D), strict JSON seed schema.
+* ``ScriptedVisionPartitioner`` -- drawing-only stand-in: structural
+  anchors on the CAD (loads, supports, corners, holes).  No solve.
+* ``LLMVisionPartitioner``      -- multimodal LLM on geometry views
+  (orthographic drawings, not a solved stress field).
 """
 
 from __future__ import annotations
@@ -62,68 +62,33 @@ def _farthest_point_seeds(points: np.ndarray, k: int, min_sep: float) -> list[in
 class ScriptedVisionPartitioner:
     """Draw irregular regions on the probe views, then assign a size each.
 
-    Mimics how an engineer marks a plot: a non-box stroke around each
-    hotspot and each drawing feature, plus a coarse field for leftover
-    volume.  Sizes are the eye's fineness, not an equidistribution paint.
+    Mimics an engineer marking the drawing before the first analysis:
+    a non-box stroke around each load, support, corner, or hole, then a
+    remainder size for unpainted volume.  Does not read a solved field.
     """
 
     peak_quantile: float = 0.60
     max_hot: int = 5
     min_sep_frac: float = 0.10
-    anchor_kinds: tuple[str, ...] = ("load", "support", "corner", "hole")
+    anchor_kinds: tuple[str, ...] = ("load", "support", "clamp", "corner", "hole")
     anchor_sep_frac: float = 0.06
     n_field: int = 3
     field_sep_frac: float = 0.22
-    h_hot: float = 0.30       # initial fineness of the hottest seed (x h0)
-    h_mild: float = 0.60
-    h_anchor: float = 0.40
+    h_remainder: float = 0.78
+    kind_frac: tuple = (
+        ("load", 0.18, 0.32),
+        ("hole", 0.20, 0.34),
+        ("corner", 0.26, 0.40),
+        ("support", 0.42, 0.58),
+        ("clamp", 0.46, 0.62),
+    )
 
-    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
-        mesh = post.mesh
-        vm = post.vm_node
+    def propose(self, problem: Problem, post: PostState | None = None, eta2=None) -> list[Seed]:
+        del post, eta2  # drawing step is solve-free; ignore any residual field
         diam = problem.diameter
-        thr = np.quantile(vm, self.peak_quantile)
-
-        e = mesh.edges
-        is_peak = np.ones(mesh.n_nodes, dtype=bool)
-        a, b = e[:, 0], e[:, 1]
-        lower_a = vm[a] < vm[b]
-        np.logical_and.at(is_peak, a[lower_a], False)
-        lower_b = vm[b] < vm[a]
-        np.logical_and.at(is_peak, b[lower_b], False)
-        cand = np.nonzero(is_peak & (vm >= thr))[0]
-        cand = cand[np.argsort(vm[cand])[::-1]]
-
-        picked: list[int] = []
-        for n in cand:
-            if len(picked) >= self.max_hot:
-                break
-            if all(
-                np.linalg.norm(mesh.nodes[n] - mesh.nodes[p]) >= self.min_sep_frac * diam
-                for p in picked
-            ):
-                picked.append(int(n))
-
-        vm_gmax = max(float(vm.max()), 1e-30)
         drawings = []
         used: set[str] = set()
         seed_pts: list[np.ndarray] = []
-
-        for rank, n in enumerate(picked):
-            pt = mesh.nodes[n]
-            name = self._name(problem, pt, rank, used)
-            used.add(name)
-            intensity = float(vm[n]) / vm_gmax
-            frac = self.h_mild - (self.h_mild - self.h_hot) * intensity
-            view = "top"
-            near = np.linalg.norm(mesh.nodes - pt, axis=1) < 0.08 * diam
-            pts = mesh.nodes[near] if near.any() else pt.reshape(1, 3)
-            ax0, ax1 = VIEW_AXES[view]
-            poly = irregular_from_points(pts[:, [ax0, ax1]], 0.05 * diam)
-            drawings.append(
-                DrawnRegion(name, float(frac * problem.h0), view, poly_tuple(poly))
-            )
-            seed_pts.append(pt)
 
         for f in problem.features:
             if f.kind not in self.anchor_kinds:
@@ -138,33 +103,43 @@ class ScriptedVisionPartitioner:
             used.add(name)
             view = view_for_feature(f, problem)
             rad = max(float(f.r), 0.05 * diam) * 1.4
-            near = np.linalg.norm(mesh.nodes - f.xyz, axis=1) < rad
-            pts = mesh.nodes[near] if near.sum() >= 3 else np.vstack(
-                [f.xyz, mesh.nodes[np.argmin(np.linalg.norm(mesh.nodes - f.xyz, axis=1))]]
-            )
-            ax0, ax1 = VIEW_AXES[view]
-            poly = irregular_from_points(pts[:, [ax0, ax1]], rad)
+            frac = self._drawing_frac(f)
             drawings.append(
-                DrawnRegion(
-                    name, float(self.h_anchor * problem.h0), view, poly_tuple(poly)
+                halo_drawing(
+                    name, f.xyz, float(frac * problem.h0), problem,
+                    view=view, radius=rad,
                 )
             )
             seed_pts.append(f.xyz)
 
+        field_h = float(self.h_remainder * problem.h0)
+        field_pt = _bbox_center(problem)
         seeds = [
             Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings
         ]
-        field_pt = np.mean(mesh.nodes, axis=0)
-        if problem.dim == 2:
-            field_pt[2] = 0.0
-        seeds.append(Seed("field", tuple(field_pt), float(problem.h0), origin="coarse"))
+        seeds.append(Seed("field", field_pt, field_h, origin="coarse"))
         if not drawings:
             drawings = [
-                halo_drawing("field", field_pt, problem.h0, problem, origin="coarse")
+                halo_drawing("field", np.array(field_pt), field_h, problem, origin="coarse")
             ]
-            seeds = [Seed("field", tuple(field_pt), float(problem.h0), origin="coarse")]
+            seeds = [Seed("field", field_pt, field_h, origin="coarse")]
         self.last_drawings = drawings
         return seeds
+
+    def _drawing_frac(self, feature) -> float:
+        """Size from the drawing: kind + edge vs center.  Not a solved field."""
+
+        lo, hi = self.h_remainder, self.h_remainder
+        for name, a, b in self.kind_frac:
+            if name == feature.kind:
+                lo, hi = float(a), float(b)
+                break
+        tag = feature.name.lower()
+        if any(w in tag for w in ("edge", "rim", "corner")):
+            return lo
+        if "center" in tag:
+            return hi
+        return 0.5 * (lo + hi)
 
     @staticmethod
     def _name(problem: Problem, pt: np.ndarray, rank: int, used: set[str]) -> str:
@@ -183,8 +158,9 @@ class ScriptedVisionPartitioner:
         return name
 
 
-VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结构响应场的正交视图
-（俯视 top = x-y，正视 front = x-z，侧视 side = y-z）。
+VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结构图纸的正交视图
+（俯视 top = x-y，正视 front = x-z，侧视 side = y-z），
+以及荷载与支承标注。这不是求解后的应力云图。不要假设已经算过场。
 
 像用笔画一样圈出不规则区域。不要轴对齐方框，不要固定分块模板。
 
@@ -352,7 +328,8 @@ class RandomSeedPartitioner:
     n_seeds: int = 10
     rng_seed: int = 0
 
-    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
+    def propose(self, problem: Problem, post: PostState | None = None, eta2=None) -> list[Seed]:
+        del post, eta2
         rng = np.random.default_rng(self.rng_seed)
         b = problem.bbox
         lo = np.array(b[:3], dtype=float)
@@ -401,7 +378,7 @@ class LLMVisionPartitioner:
             self.fallback = ScriptedVisionPartitioner()
         self.last_info: dict = {}
 
-    def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
+    def propose(self, problem: Problem, post: PostState | None = None, eta2=None) -> list[Seed]:
         from pathlib import Path
 
         errors: list[str] = []
@@ -428,12 +405,12 @@ class LLMVisionPartitioner:
         if not api_key:
             return self._fallback(problem, post, eta2, ["no_api_key"])
 
-        from ..viz import render_field_png
+        from ..viz import render_drawing_png
 
-        png = render_field_png(problem, post)
+        png = render_drawing_png(problem)
         if self.dump_dir:
             Path(self.dump_dir).mkdir(parents=True, exist_ok=True)
-            (Path(self.dump_dir) / "probe_field.png").write_bytes(png)
+            (Path(self.dump_dir) / "drawing.png").write_bytes(png)
 
         for attempt in range(1, self.n_retries + 1):
             try:
@@ -498,7 +475,7 @@ class LLMVisionPartitioner:
                             "text": (
                                 f"结构 '{problem.name}'，包围盒 {problem.bbox}，"
                                 f"背景尺寸 h0={problem.h0:.3g}。"
-                                f"画出不规则区域，给每一区一个尺寸；"
+                                f"这是图纸，还没有求解。按图画出不规则区域并给尺寸；"
                                 f"没画到的体积也要给 remainder_fineness_fraction。"
                                 f"看不清的地方允许拆剖面再画。"
                             ),

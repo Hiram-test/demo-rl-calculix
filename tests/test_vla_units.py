@@ -250,6 +250,64 @@ def test_vla_init_does_not_paint_lp_sizes():
     src = (Path(__file__).resolve().parents[1] / "visionamr" / "vla" / "pipeline.py").read_text()
     assert "predicted_sizes" not in src
     assert "vision_assigned_sizes" in src
+    assert src.index("propose") < src.index("solve_mesh")
+
+
+def test_pipeline_has_no_error_surrogate():
+    """PSO is already written; the live loop must not fit η ~ h^q."""
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    src = (root / "visionamr" / "vla" / "pipeline.py").read_text()
+    assert "fit_surrogate" not in src
+    assert "calibrate_measured" in src
+    assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
+    scripted = (root / "visionamr" / "vla" / "partition.py").read_text()
+    propose_body = scripted.split("def propose")[1].split("def _drawing_frac")[0]
+    assert "vm_node" not in propose_body
+    assert "del post, eta2" in propose_body
+
+
+def test_calibrate_measured_respects_budget_without_predicting_error():
+    """Last revision: measured residual + N~h^{-d}.  No E_pred."""
+
+    from visionamr.vla.pso import PSOConfig, calibrate_measured, resource_elems
+    from visionamr.vla.regions import RegionFeatures
+
+    part, A = two_region_partition()
+    feats = RegionFeatures(
+        err_sum=np.array([8.0, 0.5]),
+        elems=np.array([2500.0, 2500.0]),
+        vm_max=np.array([1.0, 1.0]),
+        vm_mean=np.array([1.0, 1.0]),
+        h_meas=np.array([0.1, 0.1]),
+        volume=np.array([1.0, 1.0]),
+        total_err=8.5,
+        total_elems=5000,
+    )
+    h, info = calibrate_measured(
+        part, np.array([0.1, 0.1]), feats, A,
+        n_eq_budget=3000, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
+    )
+    assert "E_pred" not in info
+    assert info["mode"] == "measured"
+    R = resource_elems(h, np.array([0.1, 0.1]), np.array([2500.0, 2500.0]), 2.0)
+    assert R <= 1.10 * info["elems_budget"]
+    assert info["s"] > 0.0
+    assert h[0] <= h[1]  # more residual → keep or refine that region relative to the other
+
+
+def test_skill_locks_measured_pso_and_forbids_error_surrogate():
+    from pathlib import Path
+
+    skill = (
+        Path(__file__).resolve().parents[1]
+        / ".cursor" / "skills" / "vla-real-workflow" / "SKILL.md"
+    ).read_text()
+    assert "calibrate_measured" in skill
+    assert "fit_surrogate" in skill
+    assert "不许误差代理" in skill or "禁止" in skill and "η ~ h^q" in skill
 
 
 def test_a2prime_tables_flagged_until_drawn_init_rerun():

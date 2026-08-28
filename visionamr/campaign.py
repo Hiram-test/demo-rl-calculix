@@ -1017,7 +1017,7 @@ def vla_deliverable(records: list[dict], k: int, n_eq_budget: int) -> dict | Non
     seen = [r for r in records if r.get("method", "").startswith("vla")][:k]
     cands = [
         r
-        for r in seen[1:]
+        for r in seen
         if r.get("n_equations", 10**18) <= n_eq_budget and "sum_eta2" in r.get("extra", {})
     ]
     if not cands:
@@ -1032,13 +1032,15 @@ def _method_series(records: list[dict], method: str) -> list[dict]:
 def write_whitelist_mesh_figures(figdir: Path) -> list[str]:
     """Plan §8: partition tri-views and certified-mesh tri-views.
 
-    Seed locations come from a fresh scripted probe (same head as S4).
-    Certified sizes are taken from the stored campaign dump by seed name
-    so the figure matches the tabulated deliverable, not a new VLA loop.
+    Drawings come from the scripted head (solve-free).  Certified sizes
+    are taken from the stored campaign dump by seed name so the figure
+    matches the tabulated deliverable, not a new VLA loop.
     """
 
-    from .indicators import zz_indicator
-    from .mesher import generate_mesh, generate_uniform
+    from types import SimpleNamespace
+
+    from .mesher import generate_mesh
+    from .vla.drawing import drawings_size_fn
     from .vla.regions import Partition, Seed
     from .viz import plot_mesh, plot_partition
 
@@ -1055,25 +1057,25 @@ def write_whitelist_mesh_figures(figdir: Path) -> list[str]:
             if rec.get("extra", {}).get("certified_pick"):
                 pick = rec
         regions = ((pick or (payload.get("records") or [{}])[-1]).get("extra") or {}).get("regions") or {}
-        workdir = figdir / "_meshes" / fam
-        runner = make_runner(problem, workdir, timeout=180.0)
-        mesh0 = generate_uniform(problem, problem.h0)
-        post, _ = runner.solve_mesh(mesh0, method="vla_evidence", stage="probe")
-        eta2 = zz_indicator(problem, post)
         head = ScriptedVisionPartitioner()
-        seeds = head.propose(problem, post, eta2)
+        seeds = head.propose(problem)
+        drawings = list(getattr(head, "last_drawings", []) or [])
         sized = [
             Seed(s.name, s.xyz, float(regions.get(s.name, s.h)), s.origin) for s in seeds
         ]
-        part = Partition(sized, problem, drawings=list(getattr(head, "last_drawings", []) or []))
-        labels = part.assign(post.mesh)
+        part = Partition(sized, problem, drawings=drawings)
+        remainder_h = next(
+            (s.h for s in part.seeds if s.origin == "coarse"), float(problem.h0)
+        )
+        mesh = generate_mesh(problem, drawings_size_fn(drawings, remainder_h, problem))
+        labels = part.assign(mesh)
         part_path = figdir / f"{fam}_partition.png"
         plot_partition(
-            problem, post, labels, part.seeds, part_path,
+            problem, SimpleNamespace(mesh=mesh), labels, part.seeds, part_path,
             title=f"{fam}: drawn irregular partition (scripted)",
         )
         written.append(part_path.name)
-        cert = generate_mesh(problem, part.size_field(post.mesh, labels))
+        cert = generate_mesh(problem, part.size_field(mesh, labels))
         mesh_path = figdir / f"{fam}_certified_mesh.png"
         plot_mesh(cert, mesh_path, title=f"{fam}: certified size-field mesh")
         written.append(mesh_path.name)
