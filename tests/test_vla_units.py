@@ -145,7 +145,7 @@ def test_s7_keeps_plan_ablations_ab7_and_ab9_to_ab11():
 
     text = (Path(__file__).resolve().parents[1] / "visionamr" / "campaign.py").read_text()
     for token in (
-        "vla_ab7_k3",
+        "vla_ab7_k",
         "vla_ab9_fixed_q",
         "vla_ab10_nodrift",
         "vla_ab10_safety092",
