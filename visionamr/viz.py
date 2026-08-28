@@ -20,7 +20,7 @@ from matplotlib.collections import PolyCollection
 from matplotlib.patches import Rectangle
 
 from .fem_post import PostState
-from .geometry import Problem
+from .geometry import Problem, drawing_bc_marks
 
 _VIEWS = [
     ("top (x-y)", (0, 1), 2, +1),
@@ -71,6 +71,7 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
         "corner": "#ff7f0e",
     }
     loads = [f for f in problem.features if f.kind == "load"]
+    marks = drawing_bc_marks(problem)
     if problem.dim == 2:
         fig, axes = plt.subplots(1, 1, figsize=(7.2, 4.6))
         axes = [axes]
@@ -83,7 +84,7 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
         xs = [b[u0], b[u0 + 3], b[u0 + 3], b[u0], b[u0]]
         ys = [b[u1], b[u1], b[u1 + 3], b[u1 + 3], b[u1]]
         ax.plot(xs, ys, "k-", lw=1.6)
-        if pair == (0, 1):
+        if pair == (0, 1) and marks["full_bottom_clamp"]:
             bot = Rectangle(
                 (b[0], b[1]), b[3] - b[0], b[4] - b[1],
                 facecolor="#1f77b4", alpha=0.08, edgecolor="none",
@@ -93,7 +94,7 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
                 0.5 * (b[0] + b[3]), b[1] + 0.04 * (b[4] - b[1]),
                 "bottom face clamped", color="#1f77b4", fontsize=8, ha="center",
             )
-        if len(loads) >= 3:
+        if marks["load_patch_label"] is not None:
             pts = np.array([[f.xyz[u0], f.xyz[u1]] for f in loads])
             if pair == (0, 1):
                 x0, y0 = pts[:, 0].min(), pts[:, 1].min()
@@ -103,7 +104,8 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
                 ))
                 ax.text(
                     pts[:, 0].mean(), pts[:, 1].mean(),
-                    "girder patch\npressure", color="#8b0000", fontsize=8, ha="center", va="center",
+                    f"{marks['load_patch_label']}\npressure",
+                    color="#8b0000", fontsize=8, ha="center", va="center",
                 )
             else:
                 ax.plot(
@@ -117,7 +119,7 @@ def render_drawing_png(problem: Problem, path: Path | None = None, dpi: int = 13
                     textcoords="offset points", xytext=(0, 6),
                     ha="center", color="#8b0000", fontsize=8,
                 )
-        if pair != (0, 1):
+        if pair != (0, 1) and marks["full_bottom_clamp"]:
             ax.plot(
                 [b[u0], b[u0 + 3]], [b[u1], b[u1]],
                 color="#1f77b4", lw=3.0, solid_capstyle="butt",

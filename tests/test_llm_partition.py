@@ -3,7 +3,12 @@ import json
 import numpy as np
 import pytest
 
-from visionamr.geometry import make_bearing_block
+from visionamr.geometry import (
+    drawing_bc_marks,
+    make_bearing_block,
+    make_deck_panel,
+    make_lbracket,
+)
 from visionamr.vla.partition import (
     LLMVisionPartitioner,
     RandomSeedPartitioner,
@@ -131,6 +136,31 @@ def test_eye_bearing_markup_assigns_varied_remainder():
     assert any(s.origin == "coarse" for s in seeds)
     assert any(d.view == "section" for d in drawings)
     assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.72 * problem.h0)
+
+
+def test_drawing_marks_follow_bcs_not_family_hardcode():
+    """Eye canvas must not caption a deck as a fully-clamped bearing."""
+
+    bearing = drawing_bc_marks(make_bearing_block())
+    assert bearing["full_bottom_clamp"] is True
+    assert bearing["load_patch_label"] == "girder patch"
+
+    deck = drawing_bc_marks(make_deck_panel())
+    assert deck["full_bottom_clamp"] is False
+    assert deck["load_patch_label"] == "wheel patch"
+
+    plate = drawing_bc_marks(make_lbracket())
+    assert plate["full_bottom_clamp"] is False
+    assert plate["load_patch_label"] is None
+
+
+def test_drawing_png_uses_bc_marks():
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "viz.py").read_text()
+    assert "drawing_bc_marks" in src
+    assert "full_bottom_clamp" in src
+    assert 'marks["load_patch_label"]' in src
 
 
 def test_prompt_requires_remainder_and_allows_section():

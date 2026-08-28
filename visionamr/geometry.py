@@ -103,6 +103,26 @@ class Problem:
         return float(np.linalg.norm([b[3] - b[0], b[4] - b[1], b[5] - b[2]]))
 
 
+def drawing_bc_marks(problem: Problem) -> dict:
+    """What the eye drawing may paint, taken from BCs — not a family hardcode.
+
+    A full-bottom clamp overlay is only honest when a constraint is actually
+    named ``bottom_fixed``.  The load-patch label is the traction name
+    (``girder_patch`` vs ``wheel_patch``), so a deck slab is not captioned
+    as a bearing.
+    """
+
+    full_bottom = any(c.name == "bottom_fixed" for c in problem.constraints)
+    n_loads = sum(1 for f in problem.features if f.kind == "load")
+    load_label = None
+    if n_loads >= 3 and problem.tractions:
+        load_label = str(problem.tractions[0].name).replace("_", " ")
+    return {
+        "full_bottom_clamp": bool(full_bottom),
+        "load_patch_label": load_label,
+    }
+
+
 def _box_pred(lo, hi) -> Callable[[np.ndarray], np.ndarray]:
     lo = np.asarray(lo, dtype=float)
     hi = np.asarray(hi, dtype=float)
