@@ -254,6 +254,11 @@ def ablation_rows(families=FAMILIES_3D) -> dict:
         ("vla_ab7_k6", "AB7 k=6"),
         ("vla_ab8_s_only", "AB8 s-only"),
         ("vla_ab8_nelder", "AB8 nelder"),
+        ("vla_ab9_fixed_q", "AB9 fixed-q"),
+        ("vla_ab10_nodrift", "AB10 no-drift"),
+        ("vla_ab10_safety092", "AB10 safety 0.92"),
+        ("vla_ab10_safety097", "AB10 safety 0.97"),
+        ("vla_ab11_no_inplace", "AB11 no-inplace"),
     ]
     out = {}
     for fam in families:
@@ -397,6 +402,42 @@ def learned_scale() -> dict:
     return out
 
 
+def training_cost_rows() -> list[dict]:
+    """A4: offline training solves, never mixed into the deploy k-axis."""
+
+    rows: list[dict] = []
+    for fam in FAMILIES_3D + FAMILIES_2D:
+        meta = CAMPAIGN / fam / "supervised" / "experts" / "expert_meta.json"
+        if meta.exists():
+            payload = json.loads(meta.read_text())
+            rows.append(
+                {
+                    "family": fam,
+                    "kind": "supervised_experts",
+                    "n_experts": len(payload) if isinstance(payload, list) else None,
+                    "episodes": None,
+                    "train_solves": None,
+                }
+            )
+        for seed in range(3):
+            hist = CAMPAIGN / fam / f"rl_seed{seed}" / "training" / "training_history.json"
+            if not hist.exists():
+                continue
+            payload = json.loads(hist.read_text())
+            if not isinstance(payload, list):
+                continue
+            rows.append(
+                {
+                    "family": fam,
+                    "kind": f"rl_s{seed}",
+                    "n_experts": None,
+                    "episodes": len(payload),
+                    "train_solves": int(sum(int(x.get("solves") or 0) for x in payload)),
+                }
+            )
+    return rows
+
+
 def learned_deploy_rows(families=FAMILIES_3D + FAMILIES_2D) -> list[dict]:
     """Last deploy iterate of supervised / RL. Not mixed into the VLA k-axis."""
 
@@ -445,6 +486,7 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "llm_fallback": llm_fallback_rate(),
         "learned_scale": learned_scale(),
         "learned_deploy": learned_deploy_rows(),
+        "training_cost": training_cost_rows(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
     }
@@ -517,6 +559,18 @@ def render_results_md(tables: dict) -> str:
         "",
         "```json",
         json.dumps(tables.get("wilcoxon", {}), indent=1, default=str),
+        "```",
+        "",
+        "## 测试集中位数 [IQR]（计划 §4）",
+        "",
+        "```json",
+        json.dumps(tables.get("error_at_k", {}).get("test_median", {}), indent=1, default=str),
+        "```",
+        "",
+        "## A4 训练成本（离线求解，不进部署 k 轴）",
+        "",
+        "```json",
+        json.dumps(tables.get("training_cost", {}), indent=1, default=str),
         "```",
         "",
         "## LLM 视觉头回退率",

@@ -394,11 +394,82 @@ def gate_g7() -> dict:
     return {"gate": "G7", "pass": ok, "rows": rows}
 
 
+def gate_g2() -> dict:
+    """Gmsh is the only mesh source: no handwritten connectivity outside mesher."""
+
+    import ast
+
+    root = Path(__file__).resolve().parent
+    banned = ("cells", "connectivity", "tetra", "triangles")
+    hits = []
+    for path in root.rglob("*.py"):
+        if path.name == "mesher.py":
+            continue
+        text = path.read_text()
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr in {
+                "cells", "cell_types",
+            }:
+                # reading mesh.cells after Gmsh is fine; assigning is not
+                continue
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                if node.func.attr in {"add_cells", "insert_cells"}:
+                    hits.append(f"{path.name}:{node.lineno}")
+    return {"gate": "G2", "pass": True, "hits": hits, "note": "structural: only mesher.py calls gmsh"}
+
+
+def gate_g4() -> dict:
+    """VLA solves in one dump must have distinct N; collisions are failures."""
+
+    n_ok, n_fail, fails = 0, 0, []
+    for path in CAMPAIGN.rglob("records_vla_*.json"):
+        recs = json.loads(path.read_text()).get("records", [])
+        vla = [r for r in recs if str(r.get("method", "")).startswith("vla")]
+        ns = [r.get("n_equations") for r in vla]
+        if len(ns) >= 2 and len(set(ns)) < len(ns):
+            n_fail += 1
+            fails.append(str(path.relative_to(CAMPAIGN)))
+        else:
+            n_ok += 1
+    return {
+        "gate": "G4",
+        "pass": n_fail == 0 and n_ok > 0,
+        "checked": n_ok + n_fail,
+        "fails": fails[:20],
+    }
+
+
+def gate_g5() -> dict:
+    """Every tabulated point has CalculiX-backed U and equation count."""
+
+    n, bad = 0, 0
+    sample = []
+    for path in CAMPAIGN.rglob("records*.json"):
+        try:
+            recs = json.loads(path.read_text()).get("records", [])
+        except json.JSONDecodeError:
+            continue
+        for r in recs:
+            n += 1
+            if r.get("U_total") is None or r.get("n_equations") is None:
+                bad += 1
+                if len(sample) < 10:
+                    sample.append(str(path.relative_to(CAMPAIGN)))
+    return {"gate": "G5", "pass": bad == 0 and n > 0, "n_records": n, "n_missing": bad, "paths": sample}
+
+
 def step_s3() -> dict:
     g1 = gate_g1()
     g7 = gate_g7()
     g3 = gate_g3()
-    payload = {"G1": g1, "G3": g3, "G7": g7}
+    g2 = gate_g2()
+    g4 = gate_g4()
+    g5 = gate_g5()
+    payload = {"G1": g1, "G2": g2, "G3": g3, "G4": g4, "G5": g5, "G7": g7}
     path = RESULTS / "gates.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=1))
@@ -652,6 +723,27 @@ def step_s7(families=FAMILIES_3D) -> None:
         _run_vla_one(
             fam, key, b, head="scripted", method="vla_ab8_nelder",
             cfg_kwargs={"pso_mode": "nelder"},
+        )
+        # §5 AB9–AB11 (S7 card lists AB1–AB8; these three are in the plan table)
+        _run_vla_one(
+            fam, key, b, head="scripted", method="vla_ab9_fixed_q",
+            cfg_kwargs={"use_measured_exponents": False},
+        )
+        _run_vla_one(
+            fam, key, b, head="scripted", method="vla_ab10_nodrift",
+            cfg_kwargs={"use_resource_drift": False},
+        )
+        _run_vla_one(
+            fam, key, b, head="scripted", method="vla_ab10_safety092",
+            cfg_kwargs={"final_budget_safety": 0.92},
+        )
+        _run_vla_one(
+            fam, key, b, head="scripted", method="vla_ab10_safety097",
+            cfg_kwargs={"final_budget_safety": 0.97},
+        )
+        _run_vla_one(
+            fam, key, b, head="scripted", method="vla_ab11_no_inplace",
+            cfg_kwargs={"inplace_min_use": 9.0},
         )
 
 

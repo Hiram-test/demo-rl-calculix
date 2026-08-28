@@ -138,6 +138,22 @@ def test_vla_deliverable_holds_certified_after_early_stop():
     assert pick3["e_energy"] == pick6["e_energy"] == 0.198
 
 
+def test_s7_keeps_plan_ablations_ab7_and_ab9_to_ab11():
+    """Review lock: AB7 rows and plan §5 AB9–AB11 must stay wired."""
+
+    from pathlib import Path
+
+    text = (Path(__file__).resolve().parents[1] / "visionamr" / "campaign.py").read_text()
+    for token in (
+        "vla_ab7_k3",
+        "vla_ab9_fixed_q",
+        "vla_ab10_nodrift",
+        "vla_ab10_safety092",
+        "vla_ab11_no_inplace",
+    ):
+        assert token in text
+
+
 def test_reference_floor_honours_lbracket_corner_grading():
     """G3: reference mesh floor must be at least as fine as h_ref/48."""
 
