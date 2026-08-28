@@ -298,6 +298,35 @@ def test_calibrate_measured_respects_budget_without_predicting_error():
     assert h[0] <= h[1]  # more residual → keep or refine that region relative to the other
 
 
+def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
+    """N ~ h^{-d} must start from the mesh that produced n_ref."""
+
+    from visionamr.vla.pso import PSOConfig, calibrate_measured, resource_elems
+    from visionamr.vla.regions import RegionFeatures
+
+    part, A = two_region_partition()
+    # last mesh was coarse (h_meas=0.2); communication already proposed 0.05
+    feats = RegionFeatures(
+        err_sum=np.array([4.0, 4.0]),
+        elems=np.array([800.0, 800.0]),
+        vm_max=np.array([1.0, 1.0]),
+        vm_mean=np.array([1.0, 1.0]),
+        h_meas=np.array([0.2, 0.2]),
+        volume=np.array([1.0, 1.0]),
+        total_err=8.0,
+        total_elems=1600,
+    )
+    proposed = np.array([0.05, 0.05])
+    h, info = calibrate_measured(
+        part, proposed, feats, A,
+        n_eq_budget=2400, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
+    )
+    R = resource_elems(h, feats.h_meas, feats.elems.astype(float), 2.0)
+    assert R <= 1.10 * info["elems_budget"]
+    # naive h_ref=h_plus would think N is still 1600 and accept 0.05
+    assert float(h.mean()) > 0.08
+
+
 def test_skill_locks_measured_pso_and_forbids_error_surrogate():
     from pathlib import Path
 

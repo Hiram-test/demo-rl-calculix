@@ -128,8 +128,10 @@ def calibrate_measured(
     """Last-revision PSO: measured residual + budget.  No error surrogate.
 
     Fitness uses the last solve's η² shares as weights and only a mesh-count
-    scaling N ~ h^{-d} for the hard cap.  It does not predict the next
-    error field (that assumption is LP's).
+    scaling N ~ h^{-d} for the hard cap.  ``h_ref`` is the last mesh's
+    measured region size (``feats.h_meas``), not the already-revised
+    proposal — otherwise communication can shrink h, the count looks
+    unchanged, and the next remesh blows the budget.
     """
 
     cfg = cfg or PSOConfig()
@@ -138,7 +140,7 @@ def calibrate_measured(
     problem = partition.problem
     rng = np.random.default_rng(cfg.seed)
     d = float(problem.dim)
-    h_ref = np.maximum(h_plus, 1e-12)
+    h_ref = np.maximum(feats.h_meas, 1e-12)
     n_ref = np.maximum(feats.elems.astype(float), 1.0)
     err = np.maximum(feats.err_sum, 1e-30)
     share = err / err.sum()
