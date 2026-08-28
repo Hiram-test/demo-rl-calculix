@@ -45,6 +45,14 @@ def _vla_file(fam, key, head, n_eq) -> list[dict]:
     return json.loads(path.read_text()).get("records", [])
 
 
+def _held(series: list[dict], k: int) -> dict | None:
+    """Deliverable after k solves: the last record with solve index <= k."""
+
+    if not series:
+        return None
+    return series[min(k, len(series)) - 1]
+
+
 def _lp_same_tier(fam: str, key: str, n_eq_budget: int) -> list[dict]:
     """One local-prediction budget group, matched to the VLA equation tier.
 
@@ -73,14 +81,32 @@ def error_at_k_table(families=FAMILIES_3D, head: str = "scripted") -> dict:
         vla = _vla_file(fam, "canonical", head, b)
         # same resource tier as the VLA column (do not stitch larger LP budgets)
         lp = _lp_same_tier(fam, "canonical", b)
+        sup = _series(fam, "canonical", "records_supervised.json")
+        rls = [
+            _series(fam, "canonical", f"records_rl_dqn_s{seed}.json")
+            for seed in range(3)
+        ]
         row = {}
         for k in range(1, 7):
+            vla_pick = vla_deliverable(vla, k, b)
+            dor_rec = dor[k - 1] if k <= len(dor) else None
+            dor_n = dor_rec.get("n_equations") if dor_rec else None
+            rl_es = [_e(_held(r, k)) for r in rls]
+            rl_es = [e for e in rl_es if e is not None]
             row[k] = {
-                "dorfler": _e(dor[k - 1]) if k <= len(dor) else None,
+                "dorfler": _e(dor_rec),
+                # A2′ compares at equal k; the resource side must stay
+                # visible because S2 runs Dörfler to the largest tier.
+                "dorfler_n": dor_n,
+                "dorfler_frac": (dor_n / b) if dor_n else None,
                 # hold the certified iterate after early stop: A2' is
                 # error after k solves, not "error only while still iterating"
-                "vla": _e(vla_deliverable(vla, k, b)),
+                "vla": _e(vla_pick),
+                "vla_n": vla_pick.get("n_equations") if vla_pick else None,
                 "local_prediction": _e(lp[k - 1]) if k <= len(lp) else None,
+                # learned deploys stop at k=2; hold their deliverable
+                "supervised": _e(_held(sup, k)),
+                "rl_dqn": float(np.median(rl_es)) if rl_es else None,
             }
         out["canonical"][fam] = row
 
@@ -360,25 +386,36 @@ def judge_hypotheses(error_table, speedup, budgets, wilcox) -> dict:
     # RL deploys and leftover 2D runs are not that test.
     h["H3"] = "证据不足"
     # H4: after VLA stops, its deliverable is held; Dörfler keeps iterating.
+    # S2 runs the classical loop to the largest budget tier, so also record
+    # the crossover restricted to budget-compliant Dörfler iterates
+    # (N <= 1.05 x pilot budget, the H2 band upper edge).
     h4 = {}
+    h4_capped = {}
     for fam, row in error_table.get("canonical", {}).items():
         v_hold = None
         k_star = None
+        k_star_capped = None
         for k in range(1, 7):
-            v = row.get(k, {}).get("vla")
-            d = row.get(k, {}).get("dorfler")
+            cell = row.get(k, {})
+            v = cell.get("vla")
+            d = cell.get("dorfler")
+            frac = cell.get("dorfler_frac")
             if v is not None:
                 v_hold = v
             if v_hold is None or d is None:
                 continue
             if d < v_hold:
-                k_star = k
-                break
+                if k_star is None:
+                    k_star = k
+                if k_star_capped is None and frac is not None and frac <= 1.05:
+                    k_star_capped = k
         h4[fam] = k_star
+        h4_capped[fam] = k_star_capped
     if not error_table.get("canonical"):
         h["H4"] = "证据不足"
     else:
         h["H4"] = h4
+        h["H4_capped"] = h4_capped
     return h
 
 
@@ -584,18 +621,28 @@ def render_results_md(tables: dict) -> str:
         f"- **H1**（少求解次数处 VLA 优于 Dörfler，加速比 ≥ 1.5×）：**{hyp.get('H1', '证据不足')}**",
         f"- **H2**（预算占用 ∈ [90%, 105%]）：**{hyp.get('H2', '证据不足')}**",
         f"- **H3**（免训练达到学习方法同量级）：**{hyp.get('H3', '证据不足')}**",
-        f"- **H4**（交叉点 k*）：`{hyp.get('H4', '证据不足')}`",
+        f"- **H4**（交叉点 k*，Dörfler 未封顶）：`{hyp.get('H4', '证据不足')}`",
+        f"- H4 预算内交叉（Dörfler N ≤ 1.05×试点档时）：`{hyp.get('H4_capped', '证据不足')}`",
         "",
         "## A2′ 误差 @ k 次全局求解（canonical，试点预算档）",
         "",
-        "| family | k | Dörfler | VLA (scripted) | local_prediction |",
-        "|---|---:|---:|---:|---:|",
+        "带 `*` 的 Dörfler 轮次其 N 超过试点预算 105%（S2 经典循环封顶在最大档，",
+        "资源侧见 N/B 列与 A3）。监督/RL 第 2 次求解后交付并保持。",
+        "",
+        "| family | k | Dörfler | Dörfler N/B | VLA (scripted) | local_prediction | supervised | RL (3种子中位) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for fam, row in tables.get("error_at_k", {}).get("canonical", {}).items():
         for k, cell in row.items():
+            frac = cell.get("dorfler_frac")
+            over = frac is not None and frac > 1.05
+            dtxt = _fmt(cell.get("dorfler"))
+            if dtxt != "—" and over:
+                dtxt += "*"
             lines.append(
-                f"| {fam} | {k} | {_fmt(cell.get('dorfler'))} | {_fmt(cell.get('vla'))} | "
-                f"{_fmt(cell.get('local_prediction'))} |"
+                f"| {fam} | {k} | {dtxt} | {_fmt(frac, 2)} | {_fmt(cell.get('vla'))} | "
+                f"{_fmt(cell.get('local_prediction'))} | {_fmt(cell.get('supervised'))} | "
+                f"{_fmt(cell.get('rl_dqn'))} |"
             )
     lines += [
         "",
@@ -664,6 +711,7 @@ def render_results_md(tables: dict) -> str:
         "## 诚实边界",
         "",
         "- Dörfler 的渐近最优性不在本文争夺范围；k* 交叉若出现必须画出。",
+        "- A2′ 的 Dörfler 列不按试点档封顶（S2 给经典循环的帽是最大档）；超 105% 的轮次带 `*`，预算内交叉在假设判定单列。A2″ 的第 4/6 轮目标误差同样取自该未封顶序列。",
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",

@@ -188,6 +188,22 @@ ATOM_LABEL = {
 }
 
 
+def _method_base(method: str) -> str:
+    return "rl_dqn" if method.startswith("rl_dqn") else method
+
+
+def _method_style(method: str) -> dict:
+    return dict(METHOD_STYLE.get(_method_base(method), dict(marker=".")))
+
+
+def _method_label(method: str) -> str:
+    base = _method_base(method)
+    label = ATOM_LABEL.get(base, method)
+    if base != method:
+        label = f"{label} {method.removeprefix('rl_dqn_')}"
+    return label
+
+
 def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
                       y: str = "e_energy", title: str = "") -> None:
     """e_E vs N.  Local-prediction budgets are separate series (G6)."""
@@ -197,7 +213,7 @@ def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
     for r in records:
         by_method.setdefault(r.method, []).append(r)
     for method, recs in by_method.items():
-        style = dict(METHOD_STYLE.get(method, dict(marker=".")))
+        style = _method_style(method)
         if method == "local_prediction":
             groups: dict[int, list] = {}
             for r in recs:
@@ -205,11 +221,11 @@ def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
             for b, rr in sorted(groups.items()):
                 xs = [getattr(r, x) for r in rr]
                 ys = [getattr(r, y) for r in rr]
-                ax.loglog(xs, ys, label=f"{ATOM_LABEL.get(method, method)} b{b}", **style)
+                ax.loglog(xs, ys, label=f"{_method_label(method)} b{b}", **style)
             continue
         xs = [getattr(r, x) for r in recs]
         ys = [getattr(r, y) for r in recs]
-        ax.loglog(xs, ys, label=ATOM_LABEL.get(method, method), **style)
+        ax.loglog(xs, ys, label=_method_label(method), **style)
     ax.set_xlabel("equations $N$" if x == "n_equations" else x)
     ax.set_ylabel("relative energy error" if y == "e_energy" else y)
     ax.grid(True, which="both", alpha=0.3)
@@ -229,7 +245,7 @@ def plot_error_vs_solves(
         by_method.setdefault(r.method, []).append(r)
     series = {}
     for method, recs in by_method.items():
-        style = dict(METHOD_STYLE.get(method, dict(marker=".")))
+        style = _method_style(method)
         if method == "local_prediction":
             best: dict[int, list] = {}
             for r in recs:
@@ -238,7 +254,7 @@ def plot_error_vs_solves(
         xs = list(range(1, len(recs) + 1))
         ys = [r.e_energy for r in recs]
         series[method] = (xs, ys)
-        ax.semilogy(xs, ys, label=ATOM_LABEL.get(method, method), **style)
+        ax.semilogy(xs, ys, label=_method_label(method), **style)
     # H4: first k where Dörfler undercuts VLA, if both present
     if "dorfler_zz" in series and "vla" in series:
         d_ys = series["dorfler_zz"][1]

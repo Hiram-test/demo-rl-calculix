@@ -214,6 +214,24 @@ def test_budget_rows_lp_stays_same_tier():
     assert last != dumped_tail
 
 
+def test_a2prime_discloses_dorfler_budget_and_learned_columns():
+    """Audit lock: A2′ shows Dörfler N/B and the learned deliverables."""
+
+    from visionamr.report import error_at_k_table
+
+    row = error_at_k_table()["canonical"]["bearing_block"]
+    # learned methods were run (S5/S6): probe + deploy, held after k=2
+    assert row[2]["supervised"] is not None
+    assert row[2]["rl_dqn"] is not None
+    assert row[6]["supervised"] == row[2]["supervised"]
+    # S2 caps Dörfler at the largest tier; over-pilot rounds must be visible
+    fracs = [row[k]["dorfler_frac"] for k in range(1, 7) if row[k].get("dorfler_frac")]
+    assert fracs and any(f > 1.05 for f in fracs)
+    for k in range(1, 7):
+        if row[k]["dorfler"] is not None:
+            assert row[k]["dorfler_n"] is not None
+
+
 def test_learned_test_summary_covers_3d_test_set():
     """Plan §1.3: learned deploy on the 8 test instances is tabulated."""
 

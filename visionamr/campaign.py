@@ -851,6 +851,10 @@ def step_s8() -> dict:
             "records_local_prediction.json",
             "records_vla_scripted_b*.json",
             "records_vla_llm_b*.json",
+            "records_supervised.json",
+            "records_rl_dqn_s0.json",
+            "records_rl_dqn_s1.json",
+            "records_rl_dqn_s2.json",
         ):
             recs.extend(load_method_records(fam, "canonical", glob.replace("b*", f"b{PILOT_EQ[fam]}")))
         # wrap as simple namespace for viz
