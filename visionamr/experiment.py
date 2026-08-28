@@ -92,6 +92,23 @@ def reference_size_fn(problem: Problem):
     return size
 
 
+def reference_floor(problem: Problem) -> float:
+    """Meshing floor for the reference: the grading field's own minimum.
+
+    Clipping the reference mesh coarser than the field's floors lets a
+    deep adaptive run (e.g. a top-tier Doerfler overshoot round) locally
+    out-resolve the reference and trip gate G3: the L-bracket corner
+    grading bottoms at h_ref/48, far below the h_ref/8 segment floor.
+    """
+
+    floor = problem.h_ref / 8.0  # singular-segment floor
+    if problem.singular_points:
+        floor = min(floor, problem.h_ref / 48.0)
+    if any(f.kind == "hole" and f.r > 0 for f in problem.features):
+        floor = min(floor, 0.2 * problem.h_ref)
+    return float(min(problem.h_min, floor))
+
+
 class FemRunner:
     """Solves meshes for one problem instance and records every solve."""
 
@@ -124,13 +141,13 @@ class FemRunner:
             data = json.loads(ref_path.read_text())
             self.reference = Reference(**data)
             return self.reference
-        # Honour the plan's singular-line floor h_ref/8 even when the
-        # method-mesh h_min is coarser (otherwise an adaptive loop can
-        # locally beat the "reference" and trip gate G3).
+        # Honour the grading field's own floors even when the method-mesh
+        # h_min is coarser (otherwise an adaptive loop can locally beat
+        # the "reference" and trip gate G3).
         mesh = generate_mesh(
             self.problem,
             reference_size_fn(self.problem),
-            h_floor=min(self.problem.h_min, self.problem.h_ref / 8.0),
+            h_floor=reference_floor(self.problem),
         )
         post, rec = self._solve(mesh, method="reference", stage="reference", count=False)
         self.reference = Reference(
