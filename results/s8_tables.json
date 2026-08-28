@@ -1016,6 +1016,36 @@
     "e_energy": 0.2036369199782863,
     "n_eq": 6930,
     "solves": 2
+   },
+   {
+    "name": "AB9 fixed-q",
+    "e_energy": 0.2008390112292959,
+    "n_eq": 7620,
+    "solves": 3
+   },
+   {
+    "name": "AB10 no-drift",
+    "e_energy": 0.20192001625415698,
+    "n_eq": 7425,
+    "solves": 3
+   },
+   {
+    "name": "AB10 safety 0.92",
+    "e_energy": 0.20192001625415698,
+    "n_eq": 7425,
+    "solves": 3
+   },
+   {
+    "name": "AB10 safety 0.97",
+    "e_energy": 0.20192001625415698,
+    "n_eq": 7425,
+    "solves": 3
+   },
+   {
+    "name": "AB11 no-inplace",
+    "e_energy": 0.19667413511883547,
+    "n_eq": 7917,
+    "solves": 4
    }
   ],
   "deck_panel": [
@@ -1096,6 +1126,36 @@
     "e_energy": 0.3513948363638845,
     "n_eq": 15801,
     "solves": 2
+   },
+   {
+    "name": "AB9 fixed-q",
+    "e_energy": 0.3569896648731121,
+    "n_eq": 16720,
+    "solves": 4
+   },
+   {
+    "name": "AB10 no-drift",
+    "e_energy": 0.35488001458683066,
+    "n_eq": 16647,
+    "solves": 4
+   },
+   {
+    "name": "AB10 safety 0.92",
+    "e_energy": 0.3494593632292738,
+    "n_eq": 17681,
+    "solves": 4
+   },
+   {
+    "name": "AB10 safety 0.97",
+    "e_energy": 0.34092319341433414,
+    "n_eq": 18572,
+    "solves": 4
+   },
+   {
+    "name": "AB11 no-inplace",
+    "e_energy": 0.35488001458683066,
+    "n_eq": 16647,
+    "solves": 4
    }
   ]
  },
@@ -1214,10 +1274,16 @@
   "lbracket": {
    "supervised_experts": 24,
    "rl_episodes_s0": 300,
-   "rl_seeds": 1
+   "rl_episodes_s1": 80,
+   "rl_episodes_s2": 80,
+   "rl_seeds": 3
   },
   "plate_holes": {
-   "supervised_experts": 24
+   "supervised_experts": 24,
+   "rl_episodes_s0": 80,
+   "rl_episodes_s1": 80,
+   "rl_episodes_s2": 80,
+   "rl_seeds": 3
   }
  },
  "learned_deploy": [
@@ -1332,6 +1398,28 @@
    "over_cap": false
   },
   {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 5,
+   "n_eq": 3944,
+   "e_energy": 0.12725272168843,
+   "budget": 8000,
+   "frac": 0.493,
+   "over_cap": false
+  },
+  {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
+   "solves": 7,
+   "n_eq": 1406,
+   "e_energy": 0.17167745772590465,
+   "budget": 8000,
+   "frac": 0.17575,
+   "over_cap": false
+  },
+  {
    "family": "plate_holes",
    "key": "canonical",
    "method": "supervised",
@@ -1341,6 +1429,153 @@
    "budget": 8000,
    "frac": 1.208875,
    "over_cap": true
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s0",
+   "solves": 6,
+   "n_eq": 4552,
+   "e_energy": 0.05591273004381581,
+   "budget": 8000,
+   "frac": 0.569,
+   "over_cap": false
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s1",
+   "solves": 6,
+   "n_eq": 4558,
+   "e_energy": 0.05751984389715983,
+   "budget": 8000,
+   "frac": 0.56975,
+   "over_cap": false
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s2",
+   "solves": 6,
+   "n_eq": 6535,
+   "e_energy": 0.06225847291095039,
+   "budget": 8000,
+   "frac": 0.816875,
+   "over_cap": false
+  }
+ ],
+ "training_cost": [
+  {
+   "family": "bearing_block",
+   "kind": "supervised_experts",
+   "n_experts": 24,
+   "episodes": null,
+   "train_solves": null
+  },
+  {
+   "family": "bearing_block",
+   "kind": "rl_s0",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 294
+  },
+  {
+   "family": "bearing_block",
+   "kind": "rl_s1",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 310
+  },
+  {
+   "family": "bearing_block",
+   "kind": "rl_s2",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 275
+  },
+  {
+   "family": "deck_panel",
+   "kind": "supervised_experts",
+   "n_experts": 24,
+   "episodes": null,
+   "train_solves": null
+  },
+  {
+   "family": "deck_panel",
+   "kind": "rl_s0",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 231
+  },
+  {
+   "family": "deck_panel",
+   "kind": "rl_s1",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 296
+  },
+  {
+   "family": "deck_panel",
+   "kind": "rl_s2",
+   "n_experts": null,
+   "episodes": 120,
+   "train_solves": 250
+  },
+  {
+   "family": "lbracket",
+   "kind": "supervised_experts",
+   "n_experts": 24,
+   "episodes": null,
+   "train_solves": null
+  },
+  {
+   "family": "lbracket",
+   "kind": "rl_s0",
+   "n_experts": null,
+   "episodes": 300,
+   "train_solves": 1565
+  },
+  {
+   "family": "lbracket",
+   "kind": "rl_s1",
+   "n_experts": null,
+   "episodes": 80,
+   "train_solves": 421
+  },
+  {
+   "family": "lbracket",
+   "kind": "rl_s2",
+   "n_experts": null,
+   "episodes": 80,
+   "train_solves": 488
+  },
+  {
+   "family": "plate_holes",
+   "kind": "supervised_experts",
+   "n_experts": 24,
+   "episodes": null,
+   "train_solves": null
+  },
+  {
+   "family": "plate_holes",
+   "kind": "rl_s0",
+   "n_experts": null,
+   "episodes": 80,
+   "train_solves": 471
+  },
+  {
+   "family": "plate_holes",
+   "kind": "rl_s1",
+   "n_experts": null,
+   "episodes": 80,
+   "train_solves": 456
+  },
+  {
+   "family": "plate_holes",
+   "kind": "rl_s2",
+   "n_experts": null,
+   "episodes": 80,
+   "train_solves": 481
   }
  ],
  "hypotheses": {

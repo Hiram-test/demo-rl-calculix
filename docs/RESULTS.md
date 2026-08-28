@@ -106,6 +106,220 @@
 }
 ```
 
+## 测试集中位数 [IQR]（计划 §4）
+
+```json
+{
+ "bearing_block": {
+  "2": {
+   "dorfler_median": 0.3709452798684745,
+   "dorfler_iqr": [
+    0.35947346841463174,
+    0.38618709123868095
+   ],
+   "vla_median": 0.25561166751836906,
+   "vla_iqr": [
+    0.2297864800762033,
+    0.2827571598802641
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  },
+  "3": {
+   "dorfler_median": 0.29167019447277975,
+   "dorfler_iqr": [
+    0.28032249908387247,
+    0.3060743143158321
+   ],
+   "vla_median": 0.21318903371437367,
+   "vla_iqr": [
+    0.2112231895643017,
+    0.22994920937233637
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  },
+  "4": {
+   "dorfler_median": 0.21830823110470726,
+   "dorfler_iqr": [
+    0.2041865871126107,
+    0.22594024683573155
+   ],
+   "vla_median": 0.2129989948842165,
+   "vla_iqr": [
+    0.20909350494318737,
+    0.22993963543847387
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  }
+ },
+ "deck_panel": {
+  "2": {
+   "dorfler_median": 0.608637436282876,
+   "dorfler_iqr": [
+    0.6018737752752925,
+    0.6111261925106566
+   ],
+   "vla_median": 0.3506828689128814,
+   "vla_iqr": [
+    0.34110183538499733,
+    0.3645411072670693
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  },
+  "3": {
+   "dorfler_median": 0.5058733994180606,
+   "dorfler_iqr": [
+    0.5021610376045645,
+    0.5115018524861425
+   ],
+   "vla_median": 0.3504029443633892,
+   "vla_iqr": [
+    0.3411214229704252,
+    0.35319965780301593
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  },
+  "4": {
+   "dorfler_median": 0.4033446157029582,
+   "dorfler_iqr": [
+    0.39650541204109213,
+    0.409813598867791
+   ],
+   "vla_median": 0.3498372301205097,
+   "vla_iqr": [
+    0.3411214229704252,
+    0.35306473507809927
+   ],
+   "n_dorfler": 8,
+   "n_vla": 8
+  }
+ }
+}
+```
+
+## A4 训练成本（离线求解，不进部署 k 轴）
+
+```json
+[
+ {
+  "family": "bearing_block",
+  "kind": "supervised_experts",
+  "n_experts": 24,
+  "episodes": null,
+  "train_solves": null
+ },
+ {
+  "family": "bearing_block",
+  "kind": "rl_s0",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 294
+ },
+ {
+  "family": "bearing_block",
+  "kind": "rl_s1",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 310
+ },
+ {
+  "family": "bearing_block",
+  "kind": "rl_s2",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 275
+ },
+ {
+  "family": "deck_panel",
+  "kind": "supervised_experts",
+  "n_experts": 24,
+  "episodes": null,
+  "train_solves": null
+ },
+ {
+  "family": "deck_panel",
+  "kind": "rl_s0",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 231
+ },
+ {
+  "family": "deck_panel",
+  "kind": "rl_s1",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 296
+ },
+ {
+  "family": "deck_panel",
+  "kind": "rl_s2",
+  "n_experts": null,
+  "episodes": 120,
+  "train_solves": 250
+ },
+ {
+  "family": "lbracket",
+  "kind": "supervised_experts",
+  "n_experts": 24,
+  "episodes": null,
+  "train_solves": null
+ },
+ {
+  "family": "lbracket",
+  "kind": "rl_s0",
+  "n_experts": null,
+  "episodes": 300,
+  "train_solves": 1565
+ },
+ {
+  "family": "lbracket",
+  "kind": "rl_s1",
+  "n_experts": null,
+  "episodes": 80,
+  "train_solves": 421
+ },
+ {
+  "family": "lbracket",
+  "kind": "rl_s2",
+  "n_experts": null,
+  "episodes": 80,
+  "train_solves": 488
+ },
+ {
+  "family": "plate_holes",
+  "kind": "supervised_experts",
+  "n_experts": 24,
+  "episodes": null,
+  "train_solves": null
+ },
+ {
+  "family": "plate_holes",
+  "kind": "rl_s0",
+  "n_experts": null,
+  "episodes": 80,
+  "train_solves": 471
+ },
+ {
+  "family": "plate_holes",
+  "kind": "rl_s1",
+  "n_experts": null,
+  "episodes": 80,
+  "train_solves": 456
+ },
+ {
+  "family": "plate_holes",
+  "kind": "rl_s2",
+  "n_experts": null,
+  "episodes": 80,
+  "train_solves": 481
+ }
+]
+```
+
 ## LLM 视觉头回退率
 
 ```json
@@ -290,6 +504,36 @@
    "e_energy": 0.2036369199782863,
    "n_eq": 6930,
    "solves": 2
+  },
+  {
+   "name": "AB9 fixed-q",
+   "e_energy": 0.2008390112292959,
+   "n_eq": 7620,
+   "solves": 3
+  },
+  {
+   "name": "AB10 no-drift",
+   "e_energy": 0.20192001625415698,
+   "n_eq": 7425,
+   "solves": 3
+  },
+  {
+   "name": "AB10 safety 0.92",
+   "e_energy": 0.20192001625415698,
+   "n_eq": 7425,
+   "solves": 3
+  },
+  {
+   "name": "AB10 safety 0.97",
+   "e_energy": 0.20192001625415698,
+   "n_eq": 7425,
+   "solves": 3
+  },
+  {
+   "name": "AB11 no-inplace",
+   "e_energy": 0.19667413511883547,
+   "n_eq": 7917,
+   "solves": 4
   }
  ],
  "deck_panel": [
@@ -370,6 +614,36 @@
    "e_energy": 0.3513948363638845,
    "n_eq": 15801,
    "solves": 2
+  },
+  {
+   "name": "AB9 fixed-q",
+   "e_energy": 0.3569896648731121,
+   "n_eq": 16720,
+   "solves": 4
+  },
+  {
+   "name": "AB10 no-drift",
+   "e_energy": 0.35488001458683066,
+   "n_eq": 16647,
+   "solves": 4
+  },
+  {
+   "name": "AB10 safety 0.92",
+   "e_energy": 0.3494593632292738,
+   "n_eq": 17681,
+   "solves": 4
+  },
+  {
+   "name": "AB10 safety 0.97",
+   "e_energy": 0.34092319341433414,
+   "n_eq": 18572,
+   "solves": 4
+  },
+  {
+   "name": "AB11 no-inplace",
+   "e_energy": 0.35488001458683066,
+   "n_eq": 16647,
+   "solves": 4
   }
  ]
 }
@@ -398,10 +672,16 @@
  "lbracket": {
   "supervised_experts": 24,
   "rl_episodes_s0": 300,
-  "rl_seeds": 1
+  "rl_episodes_s1": 80,
+  "rl_episodes_s2": 80,
+  "rl_seeds": 3
  },
  "plate_holes": {
-  "supervised_experts": 24
+  "supervised_experts": 24,
+  "rl_episodes_s0": 80,
+  "rl_episodes_s1": 80,
+  "rl_episodes_s2": 80,
+  "rl_seeds": 3
  }
 }
 ```
@@ -418,7 +698,12 @@
 | deck_panel | rl_dqn_s2 | 2 | 18819 | 0.3877 | 0.9409 | no |
 | lbracket | supervised | 2 | 8824 | 0.0524 | 1.1030 | yes |
 | lbracket | rl_dqn_s0 | 5 | 6804 | 0.1255 | 0.8505 | no |
+| lbracket | rl_dqn_s1 | 5 | 3944 | 0.1273 | 0.4930 | no |
+| lbracket | rl_dqn_s2 | 7 | 1406 | 0.1717 | 0.1757 | no |
 | plate_holes | supervised | 2 | 9671 | 0.0199 | 1.2089 | yes |
+| plate_holes | rl_dqn_s0 | 6 | 4552 | 0.0559 | 0.5690 | no |
+| plate_holes | rl_dqn_s1 | 6 | 4558 | 0.0575 | 0.5697 | no |
+| plate_holes | rl_dqn_s2 | 6 | 6535 | 0.0623 | 0.8169 | no |
 
 ## 诚实边界
 
@@ -427,4 +712,16 @@
 - LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。
 - 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。
 - 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。
+- 图政策（§8）：局部预测按预算档分列，不跨档拼线；k* 画在误差@k 主图上。
+
+## S3 验收门
+
+| gate | pass |
+|---|---|
+| G1 | PASS |
+| G2 | PASS |
+| G3 | PASS |
+| G4 | PASS |
+| G5 | PASS |
+| G7 | PASS |
 
