@@ -239,6 +239,10 @@ def ablation_rows(families=FAMILIES_3D) -> dict:
         ("vla_ab4_nosplit", "AB4 no-split"),
         ("vla_ab5_nocomm", "AB5 no-comm"),
         ("vla_ab6_nopso", "AB6 no-PSO"),
+        ("vla_ab7_k3", "AB7 k=3"),
+        ("vla_ab7_k4", "AB7 k=4"),
+        ("vla_ab7_k5", "AB7 k=5"),
+        ("vla_ab7_k6", "AB7 k=6"),
         ("vla_ab8_s_only", "AB8 s-only"),
         ("vla_ab8_nelder", "AB8 nelder"),
     ]
