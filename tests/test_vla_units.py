@@ -252,6 +252,15 @@ def test_vla_init_does_not_paint_lp_sizes():
     assert "vision_assigned_sizes" in src
 
 
+def test_a2prime_tables_flagged_until_drawn_init_rerun():
+    """Honesty: do not apply the new-init narrative to pre-change dumps."""
+
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "report.py").read_text()
+    assert "尚未用新初始化重跑" in src
+
+
 def test_e1_does_not_claim_v2_lp_is_monotonic():
     """Honesty lock: v2 7-solve LP also rebounds; do not call it 单调."""
 
