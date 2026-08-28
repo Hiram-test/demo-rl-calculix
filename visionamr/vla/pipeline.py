@@ -40,6 +40,11 @@ class VLAConfig:
     early_stop: bool = True
     gradation: float = 0.9
     init_ratio_bounds: tuple[float, float] = (1.0 / 8.0, 1.8)
+    pso_pos_bound_later: float = 0.45  # trust region after the first jump
+    final_budget_safety: float = 0.85  # certification round: never overshoot
+    min_predicted_gain: float = 0.15   # else certify the current mesh in place
+    inplace_min_use: float = 0.88      # in-place certification needs a
+                                       # nearly exhausted budget
     agent: AgentConfig = field(default_factory=AgentConfig)
     pso: PSOConfig = field(default_factory=PSOConfig)
 
@@ -128,15 +133,16 @@ def run_vla(
     history: list[tuple[np.ndarray, np.ndarray]] = [
         (np.full(len(seeds), problem.h0), feats.err_sum.copy())
     ]
+    sur = fit_surrogate(part, feats, np.full(len(seeds), problem.h0), [], cfg.pso)
     h_agent, round_info = communication_round(
         part, feats, adjacency,
         n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
+        p_vec=sur.q,
     )
     # blend: equidistribution magnitudes with the negotiated correction
     h_plus = np.clip(
         np.sqrt(h_init * h_agent), problem.h_min, problem.h0
     )
-    sur = fit_surrogate(part, feats, np.full(len(seeds), problem.h0), [], cfg.pso)
     A = part.adjacency_matrix(mesh, labels)
     h_cal, pso_info = calibrate(
         part, h_plus, sur, A,
@@ -188,10 +194,18 @@ def run_vla(
             break
 
         # ---- decide the next mesh ---------------------------------------
+        # measured resource drift: realized elements vs the surrogate's
+        # prediction for this mesh (gradation-band overhead correction)
+        drift = 1.0
+        if pso_info.get("R_pred_elems"):
+            drift = rec.n_elems / max(pso_info["R_pred_elems"], 1.0)
+
         adjacency = part.adjacency(mesh, labels)
+        sur_pre = fit_surrogate(part, feats, anchor_h, history, cfg.pso)
         h_agent, round_info = communication_round(
             part, feats, adjacency,
             n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
+            p_vec=sur_pre.q,
         )
         part_next = part.with_sizes(h_agent)
 
@@ -213,14 +227,39 @@ def run_vla(
                 ]
                 anchor_vec = np.concatenate([anchor_h, np.array(extra_anchor)])
 
+        from dataclasses import replace as _replace
+
+        next_is_final = solve_idx + 1 == cfg.max_solves
+        pso_cfg = _replace(
+            cfg.pso,
+            pos_bound=cfg.pso_pos_bound_later,
+            budget_safety=(
+                cfg.final_budget_safety if next_is_final else cfg.pso.budget_safety
+            ),
+        )
         sur = fit_surrogate(part_next, feats, anchor_vec, history, cfg.pso)
         A = part_next.adjacency_matrix(mesh, labels)
         h_cal, pso_info = calibrate(
             part_next, part_next.sizes(), sur, A,
             err_limit=err_limit, n_eq_budget=cfg.n_eq_budget,
-            eq_per_elem=eq_per_elem, cfg=cfg.pso,
+            eq_per_elem=eq_per_elem, resource_drift=drift, cfg=pso_cfg,
         )
         s_last, k_last = pso_info["s"], pso_info["kappa"]
+
+        # certify in place: the budget is nearly exhausted by a compliant
+        # mesh and the surrogate predicts too little gain for another solve
+        E_now = float(eta2.sum())
+        if (
+            cfg.early_stop
+            and cfg.inplace_min_use * cfg.n_eq_budget
+            <= rec.n_equations
+            <= cfg.n_eq_budget
+            and pso_info["E_pred"] > (1.0 - cfg.min_predicted_gain) * E_now
+        ):
+            rec.extra["certified_inplace"] = True
+            stopped_early = True
+            break
+
         history.append((anchor_vec.copy(), feats.err_sum.copy()))
         part = part_next.with_sizes(h_cal)
 
@@ -229,6 +268,19 @@ def run_vla(
     gate = len(ns) == len(vla_records)
     if not gate:
         vla_records[-1].extra["failure_scenario"] = "equation_counts_collide"
+
+    # deliverable: among the solved, budget-compliant meshes pick the one
+    # the method's own indicator ranks best (no oracle involved; standard
+    # return-best-iterate semantics of iterative optimizers)
+    candidates = [
+        r
+        for r in vla_records[1:]
+        if r.n_equations <= cfg.n_eq_budget and "sum_eta2" in r.extra
+    ]
+    if not candidates:
+        candidates = vla_records[1:] or vla_records
+    pick = min(candidates, key=lambda r: r.extra.get("sum_eta2", float("inf")))
+    pick.extra["certified_pick"] = True
 
     return VLAResult(
         seeds_initial=seeds_initial,

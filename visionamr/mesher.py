@@ -34,6 +34,12 @@ def _ensure_gmsh() -> None:
         gmsh.initialize()
         gmsh.option.setNumber("General.Terminal", 0)
         gmsh.option.setNumber("General.Verbosity", 2)
+        # single-threaded meshing: bitwise-reproducible meshes (HXT is
+        # otherwise nondeterministic run-to-run)
+        gmsh.option.setNumber("General.NumThreads", 1)
+        gmsh.option.setNumber("Mesh.MaxNumThreads1D", 1)
+        gmsh.option.setNumber("Mesh.MaxNumThreads2D", 1)
+        gmsh.option.setNumber("Mesh.MaxNumThreads3D", 1)
         _GMSH_INITIALIZED = True
 
 

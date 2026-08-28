@@ -187,7 +187,7 @@ def make_bearing_block(
         qoi_facet_predicate=patch_pred,
         material=Material(),
         h0=H / 2.4,          # 50 mm
-        h_ref=H / 9.0,       # ~13 mm background, graded to edges
+        h_ref=H / 10.0,      # 12 mm background, graded to edges
         h_min=H / 40.0,      # 3 mm
         bbox=(0, 0, 0, W, D, H),
         features=features,

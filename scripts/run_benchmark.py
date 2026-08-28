@@ -128,7 +128,10 @@ def main() -> int:
             f"{r.e_energy:8.4f} {r.e_qoi:8.4f}"
         )
 
-    # headline: error at matched few solve counts (VLA target: beat Doerfler)
+    # headline: error at matched few solve counts (VLA target: beat Doerfler).
+    # The VLA column reports its deliverable after k solves: the solved,
+    # budget-compliant mesh its own indicator ranks best (return-best-iterate
+    # semantics; no oracle involved in the pick).
     by_method: dict[str, list] = {}
     for r in runner.records:
         by_method.setdefault(r.method, []).append(r)
@@ -140,9 +143,21 @@ def main() -> int:
     for r in by_method.get("local_prediction", []):
         lp.setdefault(r.extra.get("budget", 0), []).append(r)
     lp_best = max(lp.values(), key=lambda rr: rr[-1].n_equations) if lp else []
+
+    def vla_deliverable(k: int):
+        seen = vla[:k]
+        cands = [
+            r for r in seen[1:]
+            if r.n_equations <= args.n_eq_budget and "sum_eta2" in r.extra
+        ]
+        if not cands:
+            return seen[-1] if seen else None
+        return min(cands, key=lambda r: r.extra["sum_eta2"])
+
     for k in range(1, max(len(dor), len(vla)) + 1):
         d = f"{dor[k-1].e_energy:.4f}" if k <= len(dor) else "-"
-        v = f"{vla[k-1].e_energy:.4f}" if k <= len(vla) else "-"
+        vr = vla_deliverable(k) if k <= len(vla) else None
+        v = f"{vr.e_energy:.4f}" if vr is not None else "-"
         l = f"{lp_best[k-1].e_energy:.4f}" if k <= len(lp_best) else "-"
         print(f"{k:>3} {d:>10} {v:>10} {l:>18}")
 

@@ -118,15 +118,25 @@ def calibrate(
     err_limit: float,
     n_eq_budget: int,
     eq_per_elem: float,
+    resource_drift: float = 1.0,
     cfg: PSOConfig | None = None,
 ) -> tuple[np.ndarray, dict]:
-    """PSO over (s, kappa) around the proposal h_plus; returns (sizes, info)."""
+    """PSO over (s, kappa) around the proposal h_plus; returns (sizes, info).
+
+    ``resource_drift`` is the measured realized/predicted element ratio of
+    the previous round (Gmsh gradation bands and mesh-generator behaviour
+    are not in the power-law surrogate).  Because the budget is a hard
+    cap, the correction may only *tighten* the surrogate budget (drift
+    clipped below at 1): under-realization is a soft cost, overshoot is a
+    contract violation.
+    """
 
     cfg = cfg or PSOConfig()
     problem = partition.problem
     rng = np.random.default_rng(cfg.seed)
     tau = transfer_direction(sur)
-    elems_budget = max(n_eq_budget / eq_per_elem, 1.0)
+    drift = float(np.clip(resource_drift, 1.0, 1.4))
+    elems_budget = max(n_eq_budget / eq_per_elem, 1.0) / drift
     edges = np.argwhere(np.triu(adjacency_matrix) > 0)
 
     def decode(s: float, k: float) -> np.ndarray:
@@ -230,5 +240,6 @@ def calibrate(
         "R_pred_elems": R_pred,
         "err_limit": err_limit,
         "elems_budget": elems_budget,
+        "resource_drift": drift,
     }
     return h_final, info

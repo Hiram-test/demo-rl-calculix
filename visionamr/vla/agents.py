@@ -23,7 +23,7 @@ class AgentConfig:
     max_log_step: float = 0.35
     neighbor_coupling: float = 0.08
     global_share: float = 0.6
-    p_error: float = 1.3     # assumed local error order until measured
+    p_error: float = 2.0     # smooth-rate prior d log(sum eta^2)/d log h
     error_share_target: float = 0.7
 
 
@@ -35,8 +35,17 @@ def communication_round(
     n_eq_budget: int,
     eq_per_elem: float,
     cfg: AgentConfig | None = None,
+    p_vec: np.ndarray | None = None,
 ) -> tuple[np.ndarray, dict]:
-    """One round; returns (new region sizes, info)."""
+    """One round; returns (new region sizes, info).
+
+    ``p_vec`` supplies per-region *measured* error exponents (fitted from
+    two consecutive real solves).  This is the counter to the classic
+    one-shot remeshing failure mode: assuming one smooth convergence rate
+    everywhere is what makes ZZ-style prediction oscillate at
+    singularities (Onate-Bugeda 1993); the agents negotiate with the rate
+    each region actually exhibited.
+    """
 
     cfg = cfg or AgentConfig()
     problem = partition.problem
@@ -54,7 +63,10 @@ def communication_round(
     e_log = np.log(E_i / E_tgt)
     r_log = np.log(R_i / R_tgt)
 
-    p = cfg.p_error
+    if p_vec is not None:
+        p = np.clip(np.asarray(p_vec, dtype=float), 0.5, 5.0)
+    else:
+        p = np.full(R, cfg.p_error)
     denom = cfg.w_err * p**2 + cfg.w_res * d**2 + cfg.regularization
     delta = np.clip(
         (cfg.w_res * d * r_log - cfg.w_err * p * e_log) / denom,
