@@ -153,6 +153,17 @@ def test_eye_bearing_markup_assigns_varied_remainder():
     assert np.isclose(next(s for s in seeds if s.origin == "coarse").h, 0.72 * problem.h0)
 
 
+def test_eye_vs_lp_script_is_one_step_and_not_old_a2prime():
+    """Skill walk: 一步 LP, and do not paste the trial into old A2′ tables."""
+
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "scripts" / "run_eye_vs_lp.py").read_text()
+    assert "rounds=1" in src
+    assert "rounds=2" not in src
+    assert "do not paste into old A2" in src
+
+
 def test_drawing_marks_follow_bcs_not_family_hardcode():
     """Eye canvas must not caption a deck as a fully-clamped bearing."""
 

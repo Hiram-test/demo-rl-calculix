@@ -118,7 +118,8 @@ def main() -> int:
     )
 
     runner.reset_counter()
-    run_local_prediction(runner, budgets=[n_elem], rounds=2, method="lp_eye")
+    # one-step LP: probe + one predicted remesh (rounds+1 solves).  k=1 is uniform.
+    run_local_prediction(runner, budgets=[n_elem], rounds=1, method="lp_eye")
     lp_recs = [r for r in runner.records if r.method == "lp_eye"]
     for r in lp_recs:
         r.extra.setdefault("n_eq_budget", args.n_eq_budget)
