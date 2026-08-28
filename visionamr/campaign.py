@@ -1060,16 +1060,17 @@ def write_whitelist_mesh_figures(figdir: Path) -> list[str]:
         mesh0 = generate_uniform(problem, problem.h0)
         post, _ = runner.solve_mesh(mesh0, method="vla_evidence", stage="probe")
         eta2 = zz_indicator(problem, post)
-        seeds = ScriptedVisionPartitioner().propose(problem, post, eta2)
+        head = ScriptedVisionPartitioner()
+        seeds = head.propose(problem, post, eta2)
         sized = [
             Seed(s.name, s.xyz, float(regions.get(s.name, s.h)), s.origin) for s in seeds
         ]
-        part = Partition(sized, problem)
+        part = Partition(sized, problem, drawings=list(getattr(head, "last_drawings", []) or []))
         labels = part.assign(post.mesh)
         part_path = figdir / f"{fam}_partition.png"
         plot_partition(
             problem, post, labels, part.seeds, part_path,
-            title=f"{fam}: geodesic partition (scripted seeds)",
+            title=f"{fam}: drawn irregular partition (scripted)",
         )
         written.append(part_path.name)
         cert = generate_mesh(problem, part.size_field(post.mesh, labels))

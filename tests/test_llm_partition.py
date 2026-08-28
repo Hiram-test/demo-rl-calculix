@@ -26,8 +26,29 @@ def test_seeds_from_spec_clips_and_names():
     seeds = seeds_from_spec(spec, problem)
     assert len(seeds) == 2
     assert seeds[0].name == "patch_edge"
-    assert seeds[1].xyz[0] == 0.0  # clipped to bbox
+    assert seeds[1].xyz[0] == pytest.approx(0.0, abs=1e-9)  # clipped to bbox
     assert np.isclose(seeds[0].h, 0.3 * problem.h0)
+
+
+def test_regions_from_spec_are_drawn_polygons():
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ]
+    }
+    drawings = drawings_from_spec(spec, problem)
+    assert drawings[0].name == "patch"
+    assert drawings[0].view == "top"
+    assert len(drawings[0].polygon) == 4
+    assert np.isclose(drawings[0].h, 0.25 * problem.h0)
 
 
 def test_parse_fenced_json():

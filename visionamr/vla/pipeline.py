@@ -3,8 +3,8 @@
 Global solve accounting (all through FemRunner):
 
   solve 1        "probe"       uniform h0 mesh; vision input + residual source
-  solve 2        "regional"    partition sizes from region-level error
-                               equidistribution + one communication round + PSO
+  solve 2        "regional"    vision-drawn irregular regions + eye sizes
+                               then one communication round + PSO
   solve 3..k-1   "cal{r}"      optional further rounds: exponent refit,
                                communication round, region splitting, PSO
   solve k        "certified"   final calibrated mesh
@@ -21,7 +21,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from ..baselines.local_prediction import predicted_sizes
 from ..experiment import FemRunner, initial_mesh
 from ..indicators import zz_indicator
 from ..mesher import generate_mesh
@@ -45,7 +44,7 @@ class VLAConfig:
     min_predicted_gain: float = 0.15   # else certify the current mesh in place
     inplace_min_use: float = 0.88      # in-place certification needs a
                                        # nearly exhausted budget
-    partition_mode: str = "geodesic"   # geodesic | linf_box (AB2)
+    partition_mode: str = "drawn"      # drawn | geodesic | linf_box (AB2)
     allow_communication: bool = True   # AB5
     allow_pso: bool = True             # AB6
     pso_mode: str = "sk"               # sk | s_only | nelder (AB8)
@@ -86,14 +85,10 @@ class VLAResult:
     info: dict
 
 
-def _region_geomean_sizes(h_elem: np.ndarray, labels: np.ndarray, R: int,
-                          fallback: float) -> np.ndarray:
-    out = np.full(R, fallback)
-    for i in range(R):
-        m = labels == i
-        if m.any():
-            out[i] = float(np.exp(np.mean(np.log(np.maximum(h_elem[m], 1e-12)))))
-    return out
+def vision_assigned_sizes(part, problem) -> np.ndarray:
+    """Eye-assigned region sizes: the drawing's fineness, not LP paint."""
+
+    return np.clip(part.sizes(), problem.h_min, problem.h0)
 
 
 def run_vla(
@@ -115,21 +110,15 @@ def run_vla(
     err_limit = cfg.error_share_target * float(eta2.sum())
     eq_per_elem = _eq_ratio(problem, rec)
 
-    # ---- vision partition + region-level equidistribution init ----------
+    # ---- vision draws irregular regions, then the eye assigns sizes -----
     seeds = partitioner.propose(problem, post, eta2)
+    drawings = list(getattr(partitioner, "last_drawings", []) or [])
     part = Partition(
-        seeds, problem, gradation=cfg.gradation, assign_mode=cfg.partition_mode
+        seeds, problem, gradation=cfg.gradation, assign_mode=cfg.partition_mode,
+        drawings=drawings,
     )
     labels = part.assign(mesh)
-    elems_budget = cfg.n_eq_budget / eq_per_elem
-    h_elem = predicted_sizes(
-        mesh, eta2, n_target=elems_budget, ratio_bounds=cfg.init_ratio_bounds,
-        d=problem.dim,
-    )
-    h_init = np.clip(
-        _region_geomean_sizes(h_elem, labels, len(seeds), problem.h0),
-        problem.h_min, problem.h0,
-    )
+    h_init = vision_assigned_sizes(part, problem)
     part = part.with_sizes(h_init)
     seeds_initial = [s.name for s in seeds]
     sizes_initial = [float(v) for v in h_init]
@@ -139,9 +128,9 @@ def run_vla(
     adjacency = part.adjacency(mesh, labels)
     cfg.agent.error_share_target = cfg.error_share_target
     history: list[tuple[np.ndarray, np.ndarray]] = [
-        (np.full(len(seeds), problem.h0), feats.err_sum.copy())
+        (h_init.copy(), feats.err_sum.copy())
     ]
-    sur = fit_surrogate(part, feats, np.full(len(seeds), problem.h0), [], cfg.pso)
+    sur = fit_surrogate(part, feats, h_init.copy(), [], cfg.pso)
     p_vec = sur.q if cfg.use_measured_exponents else None
     if cfg.allow_communication:
         h_agent, round_info = communication_round(
@@ -149,10 +138,7 @@ def run_vla(
             n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem, cfg=cfg.agent,
             p_vec=p_vec,
         )
-        # blend: equidistribution magnitudes with the negotiated correction
-        h_plus = np.clip(
-            np.sqrt(h_init * h_agent), problem.h_min, problem.h0
-        )
+        h_plus = np.clip(h_agent, problem.h_min, problem.h0)
     else:
         round_info = {"skipped": True}
         h_plus = h_init

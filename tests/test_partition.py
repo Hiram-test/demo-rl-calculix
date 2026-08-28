@@ -34,6 +34,7 @@ def make_partition(mesh):
 def test_geodesic_assignment_covers_domain():
     mesh = grid_mesh()
     part, _ = make_partition(mesh)
+    part.assign_mode = "geodesic"
     labels = part.assign(mesh)
     assert labels.min() >= 0            # no background: a true partition
     assert set(np.unique(labels)) == {0, 1}
@@ -94,6 +95,64 @@ def test_linf_box_assignment_is_chebyshev():
     xs_left = cen[labels == 0, 0]
     xs_right = cen[labels == 1, 0]
     assert xs_left.max() < xs_right.min() + 1.5
+
+
+def test_drawn_regions_are_not_boxes_and_cover_domain():
+    """Eye-drawn polygons assign labels; leftover is the field; not an AABB split."""
+
+    from visionamr.vla.drawing import DrawnRegion
+
+    mesh = grid_mesh(12, 4)
+    problem = make_plate_holes(width=12.0, height=4.0, holes=(), tension=1.0)
+    left = DrawnRegion(
+        "hot", 0.3,
+        "top",
+        ((0.0, 0.0), (3.0, 0.2), (8.5, 3.8), (0.0, 4.0)),
+    )
+    part = Partition(
+        [Seed("hot", (2.0, 2.0, 0.0), h=0.3), Seed("field", (10.0, 2.0, 0.0), h=1.0, origin="coarse")],
+        problem,
+        drawings=[left],
+    )
+    labels = part.assign(mesh)
+    assert labels.min() >= 0
+    assert set(np.unique(labels)) == {0, 1}
+    cen = mesh.centroids
+    xa_top = cen[(labels == 0) & (cen[:, 1] > 3.0), 0]
+    xa_bot = cen[(labels == 0) & (cen[:, 1] < 1.0), 0]
+    assert len(xa_top) and len(xa_bot)
+    assert abs(xa_top.max() - xa_bot.max()) > 0.8
+
+
+def test_scripted_head_draws_then_assigns_eye_sizes():
+    from visionamr.vla.partition import ScriptedVisionPartitioner
+    from visionamr.vla.pipeline import vision_assigned_sizes
+
+    mesh = grid_mesh(12, 4)
+    problem = make_plate_holes(width=12.0, height=4.0, holes=(), tension=1.0)
+    u = np.zeros((mesh.n_nodes, 3))
+    u[:, 0] = 1e-3 * mesh.nodes[:, 0]
+    post = compute_post(mesh, problem, u)
+    head = ScriptedVisionPartitioner()
+    seeds = head.propose(problem, post, np.ones(mesh.n_cells))
+    assert head.last_drawings
+    for d in head.last_drawings:
+        assert len(d.polygon) >= 3
+        # a box has two unique x and two unique y at the corners only;
+        # an irregular halo/hull has more distinct vertices than 4, or
+        # an edge that is not axis-aligned.
+        axis_edges = 0
+        poly = d.polygon
+        for i, p in enumerate(poly):
+            q = poly[(i + 1) % len(poly)]
+            if abs(p[0] - q[0]) < 1e-9 or abs(p[1] - q[1]) < 1e-9:
+                axis_edges += 1
+        assert axis_edges < len(poly) or len(poly) > 4
+    part = Partition(seeds, problem, drawings=list(head.last_drawings))
+    labels = part.assign(mesh)
+    assert labels.min() >= 0
+    h = vision_assigned_sizes(part, problem)
+    assert np.allclose(h, [s.h for s in seeds])
 
 
 def test_split_concentrated_adds_child_seed():

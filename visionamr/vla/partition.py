@@ -26,6 +26,16 @@ from scipy.spatial import cKDTree
 from ..fem_post import PostState
 from ..geometry import Problem
 from ..indicators import zz_indicator  # noqa: F401  (kept for head extensions)
+from .drawing import (
+    VIEW_AXES,
+    DrawnRegion,
+    drawing_centroid_xyz,
+    halo_drawing,
+    irregular_from_points,
+    markup_from_spec,
+    poly_tuple,
+    view_for_feature,
+)
 from .regions import Seed
 
 
@@ -49,13 +59,11 @@ def _farthest_point_seeds(points: np.ndarray, k: int, min_sep: float) -> list[in
 
 @dataclass
 class ScriptedVisionPartitioner:
-    """Peak + structural-anchor + field seeds from the probe response.
+    """Draw irregular regions on the probe views, then assign a size each.
 
-    Mimics how an engineer marks a plot: peaks of the response field,
-    the structurally declared detail locations (load patch edges,
-    support strips, corners, holes -- these exist on the drawing even
-    when the coarse probe underresolves them), and a few calm-bulk
-    points that should stay coarse.
+    Mimics how an engineer marks a plot: a non-box stroke around each
+    hotspot and each drawing feature, plus a coarse field for leftover
+    volume.  Sizes are the eye's fineness, not an equidistribution paint.
     """
 
     peak_quantile: float = 0.60
@@ -75,7 +83,6 @@ class ScriptedVisionPartitioner:
         diam = problem.diameter
         thr = np.quantile(vm, self.peak_quantile)
 
-        # nodal local maxima over the mesh edge graph
         e = mesh.edges
         is_peak = np.ones(mesh.n_nodes, dtype=bool)
         a, b = e[:, 0], e[:, 1]
@@ -97,50 +104,65 @@ class ScriptedVisionPartitioner:
                 picked.append(int(n))
 
         vm_gmax = max(float(vm.max()), 1e-30)
-        seeds: list[Seed] = []
+        drawings = []
         used: set[str] = set()
+        seed_pts: list[np.ndarray] = []
+
         for rank, n in enumerate(picked):
             pt = mesh.nodes[n]
             name = self._name(problem, pt, rank, used)
             used.add(name)
             intensity = float(vm[n]) / vm_gmax
             frac = self.h_mild - (self.h_mild - self.h_hot) * intensity
-            seeds.append(Seed(name, tuple(pt), h=float(frac * problem.h0)))
+            view = "top"
+            near = np.linalg.norm(mesh.nodes - pt, axis=1) < 0.08 * diam
+            pts = mesh.nodes[near] if near.any() else pt.reshape(1, 3)
+            ax0, ax1 = VIEW_AXES[view]
+            poly = irregular_from_points(pts[:, [ax0, ax1]], 0.05 * diam)
+            drawings.append(
+                DrawnRegion(name, float(frac * problem.h0), view, poly_tuple(poly))
+            )
+            seed_pts.append(pt)
 
-        # structural anchors from the drawing (deduplicated against peaks)
         for f in problem.features:
             if f.kind not in self.anchor_kinds:
                 continue
             if any(
-                np.linalg.norm(f.xyz - s.point()) < self.anchor_sep_frac * diam
-                for s in seeds
+                np.linalg.norm(f.xyz - p) < self.anchor_sep_frac * diam for p in seed_pts
             ):
                 continue
             name = f"{f.name}_zone"
             if name in used:
                 name = f"{name}_a"
             used.add(name)
-            seeds.append(
-                Seed(name, tuple(f.xyz), h=float(self.h_anchor * problem.h0))
+            view = view_for_feature(f, problem)
+            rad = max(float(f.r), 0.05 * diam) * 1.4
+            near = np.linalg.norm(mesh.nodes - f.xyz, axis=1) < rad
+            pts = mesh.nodes[near] if near.sum() >= 3 else np.vstack(
+                [f.xyz, mesh.nodes[np.argmin(np.linalg.norm(mesh.nodes - f.xyz, axis=1))]]
             )
+            ax0, ax1 = VIEW_AXES[view]
+            poly = irregular_from_points(pts[:, [ax0, ax1]], rad)
+            drawings.append(
+                DrawnRegion(
+                    name, float(self.h_anchor * problem.h0), view, poly_tuple(poly)
+                )
+            )
+            seed_pts.append(f.xyz)
 
-        # coarse "field" seeds so the calm bulk forms its own coarse regions
-        low = post.vm_elem <= np.quantile(post.vm_elem, 0.5)
-        pts = mesh.centroids[low]
-        if len(seeds) > 0 and len(pts) > 0:
-            seed_pts = np.array([s.point() for s in seeds])
-            d_to_hot = np.min(
-                np.linalg.norm(pts[:, None, :] - seed_pts[None, :, :], axis=2), axis=1
-            )
-            pts = pts[d_to_hot > self.field_sep_frac * diam]
-        for j, idx in enumerate(
-            _farthest_point_seeds(pts, self.n_field, self.field_sep_frac * diam)
-        ):
-            seeds.append(
-                Seed(f"field_{j}", tuple(pts[idx]), h=float(problem.h0), origin="coarse")
-            )
-        if not seeds:
-            seeds = [Seed("domain", tuple(np.mean(mesh.nodes, axis=0)), h=problem.h0)]
+        seeds = [
+            Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings
+        ]
+        field_pt = np.mean(mesh.nodes, axis=0)
+        if problem.dim == 2:
+            field_pt[2] = 0.0
+        seeds.append(Seed("field", tuple(field_pt), float(problem.h0), origin="coarse"))
+        if not drawings:
+            drawings = [
+                halo_drawing("field", field_pt, problem.h0, problem, origin="coarse")
+            ]
+            seeds = [Seed("field", tuple(field_pt), float(problem.h0), origin="coarse")]
+        self.last_drawings = drawings
         return seeds
 
     @staticmethod
@@ -162,20 +184,18 @@ class ScriptedVisionPartitioner:
 
 VLM_SYSTEM_PROMPT = """You are a senior finite-element meshing engineer.
 You see rendered views of a structure with its von Mises stress field
-(orthographic projections for 3-D parts).  Mark the structural locations
-that control the discretization error the way you would with a pen:
-stress concentrations, load-patch edges, support/reaction lines,
-re-entrant corners -- and also a few points in the calm bulk that should
-stay coarse.  Each mark becomes the seed of one mesh region grown
-geodesically around it (regions are organic shapes, never boxes, never
-a fixed number of column slabs).
+(orthographic projections for 3-D parts).  Draw irregular regions the
+way you would with a pen -- never axis-aligned boxes, never a fixed
+slab template.  First outline each region as a polygon on one view
+(top = x-y, front = x-z, side = y-z).  Then assign that region a
+single target element size as a fraction of the background size.
 Reply with strict JSON and nothing else:
-{"seeds": [{"name": "<structural name>", "x": .., "y": .., "z": ..,
-"fineness_fraction": <target element size as a fraction of the background
-size, hot 0.15-0.5, calm bulk 0.8-1.0>}, ...]}
-Use as many or as few seeds as the picture demands; never a fixed
-template.  Include both hot seeds and at least one calm-bulk field seed.
-Coordinates are in the model units printed on the axes."""
+{"regions": [{"name": "<structural name>", "view": "top"|"front"|"side",
+"polygon": [[u,v], ...],
+"fineness_fraction": <hot 0.15-0.5, calm 0.8-1.0>}, ...]}
+Polygons need at least 3 vertices in model units on that view.
+Draw both hot regions and leave the unpainted bulk coarse.
+Use as many or as few regions as the picture demands."""
 
 
 def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
@@ -200,34 +220,14 @@ def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
 
 
 def seeds_from_spec(spec: dict, problem: Problem, max_seeds: int = 12) -> list[Seed]:
-    """Validate a VLM JSON object into Seed list.  Raises on empty/invalid."""
+    """Validate VLM JSON into seeds.  Drawn regions preferred; old seed lists still parse."""
 
-    if not isinstance(spec, dict) or "seeds" not in spec:
-        raise ValueError("JSON missing 'seeds'")
-    raw = spec["seeds"]
-    if not isinstance(raw, list) or not raw:
-        raise ValueError("seeds must be a non-empty list")
-    lo = np.array(problem.bbox[:3], dtype=float)
-    hi = np.array(problem.bbox[3:], dtype=float)
-    seeds: list[Seed] = []
-    for i, s in enumerate(raw[:max_seeds]):
-        if not isinstance(s, dict):
-            raise ValueError(f"seed {i} is not an object")
-        try:
-            x = float(s["x"])
-            y = float(s.get("y", 0.0))
-            z = float(s.get("z", 0.0))
-        except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError(f"seed {i} missing numeric x/y/z") from exc
-        frac = float(np.clip(s.get("fineness_fraction", 0.4), 0.1, 1.0))
-        pt = np.clip(np.array([x, y, z], dtype=float), lo, hi)
-        if problem.dim == 2:
-            pt[2] = 0.0
-        name = str(s.get("name", f"llm_seed_{i}"))[:48]
-        seeds.append(Seed(name, tuple(pt), h=float(frac * problem.h0)))
-    if not seeds:
-        raise ValueError("VLM returned no usable seeds")
-    return seeds
+    drawings = markup_from_spec(spec, problem, max_regions=max_seeds)
+    return [Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin) for d in drawings]
+
+
+def drawings_from_spec(spec: dict, problem: Problem, max_regions: int = 12) -> list[DrawnRegion]:
+    return markup_from_spec(spec, problem, max_regions=max_regions)
 
 
 def parse_seed_json(content: str, problem: Problem, max_seeds: int = 12) -> list[Seed]:
@@ -248,27 +248,46 @@ def load_seed_cache(path, problem: Problem) -> list[Seed]:
     return seeds_from_spec(spec, problem, max_seeds=24)
 
 
+def load_drawings_cache(path, problem: Problem) -> list[DrawnRegion]:
+    return drawings_from_spec(json.loads(Path_read(path)), problem, max_regions=24)
+
+
 def Path_read(path) -> str:
     from pathlib import Path
 
     return Path(path).read_text()
 
 
-def dump_seed_cache(path, seeds: list[Seed]) -> None:
+def dump_seed_cache(path, seeds: list[Seed], drawings: list | None = None, problem=None) -> None:
     from pathlib import Path
 
-    spec = {
-        "seeds": [
-            {
-                "name": s.name,
-                "x": s.xyz[0],
-                "y": s.xyz[1],
-                "z": s.xyz[2],
-                "fineness_fraction": s.h,  # overwritten below
-            }
-            for s in seeds
-        ]
-    }
+    if drawings:
+        spec = {
+            "regions": [
+                {
+                    "name": d.name,
+                    "view": d.view,
+                    "fineness_fraction": (
+                        d.h / problem.h0 if problem is not None else d.h
+                    ),
+                    "polygon": [list(p) for p in d.polygon],
+                }
+                for d in drawings
+            ]
+        }
+    else:
+        spec = {
+            "seeds": [
+                {
+                    "name": s.name,
+                    "x": s.xyz[0],
+                    "y": s.xyz[1],
+                    "z": s.xyz[2],
+                    "fineness_fraction": s.h,
+                }
+                for s in seeds
+            ]
+        }
     Path(path).write_text(json.dumps(spec, indent=1))
 
 
@@ -288,6 +307,14 @@ class RandomSeedPartitioner:
         if problem.dim == 2:
             pts[:, 2] = 0.0
         hs = rng.uniform(0.2, 1.0, size=self.n_seeds) * problem.h0
+        drawings = [
+            halo_drawing(
+                f"rand_{i}", pts[i], float(hs[i]), problem,
+                radius=0.08 * problem.diameter, phase=0.5 * i,
+            )
+            for i in range(self.n_seeds)
+        ]
+        self.last_drawings = drawings
         return [
             Seed(f"rand_{i}", tuple(pts[i]), h=float(hs[i]), origin="vision")
             for i in range(self.n_seeds)
@@ -326,6 +353,7 @@ class LLMVisionPartitioner:
         errors: list[str] = []
         if self.cache_path and Path(self.cache_path).exists():
             seeds = load_seed_cache(self.cache_path, problem)
+            self.last_drawings = load_drawings_cache(self.cache_path, problem)
             self.last_info = {
                 "source": "llm_cache",
                 "attempts": 0,
@@ -356,7 +384,19 @@ class LLMVisionPartitioner:
         for attempt in range(1, self.n_retries + 1):
             try:
                 content = self._chat(png, problem, api_base, api_key, model)
-                seeds = parse_seed_json(content, problem, max_seeds=self.max_seeds)
+                text = content.strip()
+                if text.startswith("```"):
+                    text = text.strip("`")
+                    if text.lower().startswith("json"):
+                        text = text[4:]
+                    text = text.strip()
+                spec = json.loads(text)
+                drawings = drawings_from_spec(spec, problem, max_regions=self.max_seeds)
+                seeds = [
+                    Seed(d.name, drawing_centroid_xyz(d, problem), d.h, d.origin)
+                    for d in drawings
+                ]
+                self.last_drawings = drawings
                 self.last_info = {
                     "source": "llm",
                     "attempts": attempt,
@@ -364,13 +404,9 @@ class LLMVisionPartitioner:
                     "model": model,
                 }
                 if self.dump_dir:
-                    dump_seed_cache(Path(self.dump_dir) / "llm_seeds.json", seeds)
-                    # rewrite fractions relative to h0 for a reusable cache
-                    spec = json.loads((Path(self.dump_dir) / "llm_seeds.json").read_text())
-                    for s, seed in zip(spec["seeds"], seeds):
-                        s["fineness_fraction"] = seed.h / problem.h0
-                    (Path(self.dump_dir) / "llm_seeds.json").write_text(
-                        json.dumps(spec, indent=1)
+                    dump_seed_cache(
+                        Path(self.dump_dir) / "llm_seeds.json",
+                        seeds, drawings=drawings, problem=problem,
                     )
                     (Path(self.dump_dir) / "llm_raw.txt").write_text(content)
                 return seeds
@@ -380,6 +416,7 @@ class LLMVisionPartitioner:
 
     def _fallback(self, problem, post, eta2, errors: list[str]) -> list[Seed]:
         seeds = self.fallback.propose(problem, post, eta2)
+        self.last_drawings = list(getattr(self.fallback, "last_drawings", []) or [])
         self.last_info = {
             "source": "scripted_fallback",
             "attempts": self.n_retries,
@@ -409,7 +446,8 @@ class LLMVisionPartitioner:
                             "type": "text",
                             "text": (
                                 f"Structure '{problem.name}', bbox {problem.bbox}, "
-                                f"background size h0={problem.h0:.3g}. Mark the seeds."
+                                f"background size h0={problem.h0:.3g}. "
+                                f"Draw irregular regions, then assign each a size."
                             ),
                         },
                         {

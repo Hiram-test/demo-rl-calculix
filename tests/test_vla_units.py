@@ -242,6 +242,16 @@ def test_a2prime_discloses_dorfler_budget_and_learned_columns():
             assert row[k]["dorfler_n"] is not None
 
 
+def test_vla_init_does_not_paint_lp_sizes():
+    """Init sizes come from the eye after drawing regions, not LP geomean."""
+
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "vla" / "pipeline.py").read_text()
+    assert "predicted_sizes" not in src
+    assert "vision_assigned_sizes" in src
+
+
 def test_e1_does_not_claim_v2_lp_is_monotonic():
     """Honesty lock: v2 7-solve LP also rebounds; do not call it 单调."""
 

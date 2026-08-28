@@ -1,17 +1,11 @@
-"""Human-like partitions: seed-grown geodesic regions (never boxes).
+"""Human-like partitions: AI-drawn irregular regions, then one size each.
 
-A vision head proposes named *seeds* (structural anchor points with a
-fineness each).  The partition of any mesh is the weighted-geodesic
-Voronoi decomposition of its elements: every element joins the seed with
-the smallest graph distance over the element-adjacency graph.  Region
-shapes therefore hug the geometry the way a human's marker stroke does
-(they grow around corners, along edges, through thin members) and the
-whole domain is covered -- there is no "background" pseudo-region.
-
-Each region still carries exactly one mesh size; region-level grading is
-achieved by *splitting* (a region whose internal residual is too
-concentrated spawns a child seed at its hotspot), mirroring how a person
-redraws a finer partition where needed.
+A vision head draws non-box outlines on ortho views and assigns a
+fineness to every outline.  Elements whose projection falls inside a
+drawing join that region (hotter / finer drawings win overlaps).
+Unpainted volume is the coarse field.  Axis-aligned boxes remain only
+as the AB2 ablation; geodesic Voronoi from seed points is a fallback
+when a drawing list is missing.
 """
 
 from __future__ import annotations
@@ -27,6 +21,7 @@ from ..fem_post import PostState
 from ..geometry import Problem
 from ..mesher import Mesh
 from ..sizefield import NodalSizeField, element_to_node_sizes
+from .drawing import VIEW_AXES, DrawnRegion, halo_drawing, points_in_poly
 
 
 @dataclass(frozen=True)
@@ -67,7 +62,8 @@ class Partition:
     seeds: list[Seed]
     problem: Problem
     gradation: float = 0.9
-    assign_mode: str = "geodesic"  # "geodesic" | "linf_box" (AB2)
+    assign_mode: str = "drawn"  # "drawn" | "geodesic" | "linf_box" (AB2)
+    drawings: list = field(default_factory=list)
 
     # ------------------------------------------------------------------
     def sizes(self) -> np.ndarray:
@@ -75,20 +71,56 @@ class Partition:
 
     def with_sizes(self, sizes: np.ndarray) -> "Partition":
         seeds = [replace(s, h=float(h)) for s, h in zip(self.seeds, sizes)]
-        return Partition(seeds, self.problem, self.gradation, self.assign_mode)
+        drawings = []
+        name_h = {s.name: float(h) for s, h in zip(self.seeds, sizes)}
+        for d in self.drawings:
+            drawings.append(replace(d, h=name_h.get(d.name, d.h)))
+        return Partition(seeds, self.problem, self.gradation, self.assign_mode, drawings)
 
     def add_seed(self, seed: Seed) -> "Partition":
-        return Partition(list(self.seeds) + [seed], self.problem, self.gradation, self.assign_mode)
+        drawings = list(self.drawings)
+        if self.assign_mode == "drawn":
+            drawings.append(
+                halo_drawing(
+                    seed.name, seed.point(), seed.h, self.problem,
+                    view="top" if self.problem.dim == 2 else "top",
+                    radius=0.05 * self.problem.diameter,
+                    origin=seed.origin,
+                )
+            )
+        return Partition(
+            list(self.seeds) + [seed], self.problem, self.gradation, self.assign_mode, drawings
+        )
 
     # ------------------------------------------------------------------
     def assign(self, mesh: Mesh) -> np.ndarray:
-        """Element labels: geodesic Voronoi, or L∞ boxes for the AB2 ablation."""
+        """Element labels from drawn polygons, geodesic fallback, or AB2 boxes."""
 
         if self.assign_mode == "linf_box":
             return self._assign_linf_box(mesh)
-        if self.assign_mode != "geodesic":
-            raise ValueError(f"unknown assign_mode {self.assign_mode!r}")
-        return self._assign_geodesic(mesh)
+        if self.assign_mode == "geodesic" or not self.drawings:
+            if self.assign_mode not in ("geodesic", "drawn"):
+                raise ValueError(f"unknown assign_mode {self.assign_mode!r}")
+            return self._assign_geodesic(mesh)
+        return self._assign_drawn(mesh)
+
+    def _assign_drawn(self, mesh: Mesh) -> np.ndarray:
+        """Paint irregular view-plane polygons; leftover cells go to the field seed."""
+
+        name_to_i = {s.name: i for i, s in enumerate(self.seeds)}
+        field_i = next(
+            (i for i, s in enumerate(self.seeds) if s.origin == "coarse"),
+            len(self.seeds) - 1,
+        )
+        labels = np.full(mesh.n_cells, field_i, dtype=np.int64)
+        order = sorted(range(len(self.drawings)), key=lambda i: -self.drawings[i].h)
+        for di in order:
+            d = self.drawings[di]
+            i = name_to_i.get(d.name, di)
+            ax0, ax1 = VIEW_AXES[d.view]
+            inside = points_in_poly(mesh.centroids[:, [ax0, ax1]], d.poly_array())
+            labels[inside] = i
+        return labels
 
     def _assign_linf_box(self, mesh: Mesh) -> np.ndarray:
         """Axis-aligned (Chebyshev) Voronoi: the v1-style box ablation."""
