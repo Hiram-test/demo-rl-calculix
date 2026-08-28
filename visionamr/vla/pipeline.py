@@ -1,10 +1,11 @@
 """The VLA short loop: judge, call tools, then again.
 
-  judge            draw regions; who is finer (a grade, not h)
-  tools            one-shot size tweak; Gmsh; CalculiX
-  judge            look at the result + leftover; maybe re-judge
-  tools            tweak / mesh / solve again
+  judge            draw regions; who is finer (grade 1..5, not h)
+  tools            GRADE_PRIOR map (feats=None, evals=0) → mesh → solve
+  judge            look at occupancy and leftover; maybe re-grade, still no h
+  tools            one closed-form tweak (evals ≤ 1) → mesh → solve
 
+The first mesh may overshoot.  That is the next glance, not a search bug.
 The eye never tunes or delegates sizes.  Tools own the numbers.
 """
 

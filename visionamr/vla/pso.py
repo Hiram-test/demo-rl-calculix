@@ -334,10 +334,11 @@ def calibrate_grades(
     h_anchor: np.ndarray | None = None,
     cfg: PSOConfig | None = None,
 ) -> tuple[np.ndarray, dict]:
-    """One closed-form tweak on the model's grades.  No search.
+    """Map grades to h.  First call (feats=None) is priors only, evals=0.
 
+    With a last mesh, one closed-form N-scale, evals ≤ 1.  No search.
     Inaccuracy is left for the next vision pass, like a person glancing
-    again.  At most one resource evaluation.
+    again.  The first mesh may overshoot; that is not a search bug.
     """
 
     from .grades import GRADE_PRIOR, MIN_STEP, parse_grade

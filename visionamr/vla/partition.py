@@ -60,11 +60,11 @@ def _farthest_point_seeds(points: np.ndarray, k: int, min_sep: float) -> list[in
 
 @dataclass
 class ScriptedVisionPartitioner:
-    """Draw irregular regions on the probe views, then assign a size each.
+    """Draw irregular regions on the probe views, then assign a grade each.
 
     Mimics an engineer marking the drawing before the first analysis:
     a non-box stroke around each load, support, corner, or hole, then a
-    remainder size for unpainted volume.  Does not read a solved field.
+    remainder grade for unpainted volume.  Does not read a solved field.
     """
 
     peak_quantile: float = 0.60
