@@ -80,6 +80,7 @@ class ScriptedVisionPartitioner:
         vm_gmax = max(float(vm.max()), 1e-30)
 
         bx0, by0, bx1, by1 = problem.bbox
+        used_names: set[str] = set()
         for rank, (vmax, idx) in enumerate(comp_stats[: self.max_regions]):
             pts = mesh.nodes[idx]
             pad = self.pad_factor * float(np.mean(mesh.node_sizes[idx]))
@@ -90,6 +91,9 @@ class ScriptedVisionPartitioner:
             intensity = vmax / vm_gmax
             frac = self.h_mild - (self.h_mild - self.h_hot) * intensity
             name = self._name_region(problem, 0.5 * (xmin + xmax), 0.5 * (ymin + ymax), rank)
+            if name in used_names:
+                name = f"{name}_{rank}"
+            used_names.add(name)
             outer = Region(name, xmin, ymin, xmax, ymax, h=float(frac * problem.h0))
             regions.append(outer)
             if rank < self.nested_top:

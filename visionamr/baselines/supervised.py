@@ -230,11 +230,16 @@ def deploy_supervised(
     )
     h_pred = problem.h0 * np.exp(log_ratio)
 
-    # one budget scalar c (MeshingNet/AMBER-style): elements ~ sum 2A/h^2
+    # one budget scalar c (MeshingNet/AMBER-style): elements ~ sum 2A/h^2,
+    # calibrated against what Gmsh actually produced on the probe mesh
     tri_h = h_pred[mesh0.tris].mean(axis=1)
+    theory_probe = float(np.sum(2.0 * mesh0.areas / mesh0.tri_sizes**2))
+    cal = mesh0.n_tris / max(theory_probe, 1e-12)
 
     def elems(c: float) -> float:
-        return float(np.sum(2.0 * mesh0.areas / np.maximum(c * tri_h, problem.h_min) ** 2))
+        return cal * float(
+            np.sum(2.0 * mesh0.areas / np.maximum(c * tri_h, problem.h_min) ** 2)
+        )
 
     lo, hi = 0.2, 5.0
     for _ in range(60):

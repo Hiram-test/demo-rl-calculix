@@ -176,9 +176,15 @@ class RegionRefineEnv:
         problem = self.runner.problem
         R = len(self.graph.regions)
         if action == R + 1:  # stop
-            within = self.last_rec.n_equations <= cfg.n_eq_budget
-            reward = cfg.reward_stop_bonus if within else -cfg.reward_budget_penalty
-            return self.state(), reward, True, {"stop": True}
+            n_eq = self.last_rec.n_equations
+            if n_eq > cfg.n_eq_budget:
+                reward = -cfg.reward_budget_penalty
+            else:
+                # reward budget utilization: stopping with unspent budget
+                # forgoes accuracy, so the bonus scales with usage
+                usage = n_eq / cfg.n_eq_budget
+                reward = cfg.reward_stop_bonus * (2.0 * usage - 1.0)
+            return self.state(), float(reward), True, {"stop": True}
 
         if action == R:
             self.h_bg = max(self.h_bg * cfg.gamma_refine, problem.h_min)
@@ -282,7 +288,7 @@ class DQNPolicy:
         self.grad_steps += 1
         if self.grad_steps % cfg.target_sync == 0:
             self.q_target.load_state_dict(self.q.state_dict())
-        return float(loss)
+        return float(loss.detach())
 
     def save(self, path: Path) -> None:
         import torch
