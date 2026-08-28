@@ -191,6 +191,41 @@ def test_s8_whitelist_figure_helpers_are_wired():
     assert (out / "test_boxplots.png").stat().st_size > 0
 
 
+def test_budget_rows_lp_stays_same_tier():
+    """G6: local-prediction budget scatter must not stitch larger tiers."""
+
+    from visionamr.report import _lp_same_tier, budget_rows, PILOT_EQ
+
+    b = PILOT_EQ["bearing_block"]
+    tier = _lp_same_tier("bearing_block", "canonical", b)
+    assert tier
+    last = tier[-1]["n_equations"]
+    rows = [
+        r for r in budget_rows()
+        if r["method"] == "local_prediction"
+        and r["family"] == "bearing_block"
+        and r["key"] == "canonical"
+    ]
+    assert len(rows) == 1
+    assert rows[0]["n_eq"] == last
+    # the dumped file's last record is the largest (stitched) tier
+    from visionamr.report import _series
+    dumped_tail = _series("bearing_block", "canonical", "records_local_prediction.json")[-1]["n_equations"]
+    assert last != dumped_tail
+
+
+def test_learned_test_summary_covers_3d_test_set():
+    """Plan §1.3: learned deploy on the 8 test instances is tabulated."""
+
+    from visionamr.report import learned_test_summary
+
+    summary = learned_test_summary()
+    for fam in ("bearing_block", "deck_panel"):
+        assert fam in summary
+        assert summary[fam]["supervised"]["n"] == 8
+        assert summary[fam]["rl_dqn_s0"]["n"] == 8
+
+
 def test_s7_keeps_plan_ablations_ab7_and_ab9_to_ab11():
     """Review lock: AB7 rows and plan §5 AB9–AB11 must stay wired."""
 

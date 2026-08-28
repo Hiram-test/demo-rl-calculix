@@ -176,6 +176,17 @@ METHOD_STYLE = {
     "supervised": dict(color="tab:orange", marker="v", ls="-"),
 }
 
+# Plan §8: label the refinement atom.  These series share a canvas but
+# are not one Pareto front.
+ATOM_LABEL = {
+    "uniform": "uniform (global h)",
+    "dorfler_zz": "Dörfler (elem ZZ)",
+    "local_prediction": "local pred (elem, one-shot)",
+    "vla": "VLA (region)",
+    "rl_dqn": "RL (region)",
+    "supervised": "supervised (size field)",
+}
+
 
 def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
                       y: str = "e_energy", title: str = "") -> None:
@@ -194,11 +205,11 @@ def plot_error_curves(records: list, path: Path, *, x: str = "n_equations",
             for b, rr in sorted(groups.items()):
                 xs = [getattr(r, x) for r in rr]
                 ys = [getattr(r, y) for r in rr]
-                ax.loglog(xs, ys, label=f"local_prediction b{b}", **style)
+                ax.loglog(xs, ys, label=f"{ATOM_LABEL.get(method, method)} b{b}", **style)
             continue
         xs = [getattr(r, x) for r in recs]
         ys = [getattr(r, y) for r in recs]
-        ax.loglog(xs, ys, label=method, **style)
+        ax.loglog(xs, ys, label=ATOM_LABEL.get(method, method), **style)
     ax.set_xlabel("equations $N$" if x == "n_equations" else x)
     ax.set_ylabel("relative energy error" if y == "e_energy" else y)
     ax.grid(True, which="both", alpha=0.3)
@@ -227,7 +238,7 @@ def plot_error_vs_solves(
         xs = list(range(1, len(recs) + 1))
         ys = [r.e_energy for r in recs]
         series[method] = (xs, ys)
-        ax.semilogy(xs, ys, label=method, **style)
+        ax.semilogy(xs, ys, label=ATOM_LABEL.get(method, method), **style)
     # H4: first k where Dörfler undercuts VLA, if both present
     if "dorfler_zz" in series and "vla" in series:
         d_ys = series["dorfler_zz"][1]

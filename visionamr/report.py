@@ -13,7 +13,6 @@ import numpy as np
 
 from .campaign import (
     CAMPAIGN,
-    EQ_PER_ELEM,
     FAMILIES_2D,
     FAMILIES_3D,
     PILOT_EQ,
@@ -46,6 +45,23 @@ def _vla_file(fam, key, head, n_eq) -> list[dict]:
     return json.loads(path.read_text()).get("records", [])
 
 
+def _lp_same_tier(fam: str, key: str, n_eq_budget: int) -> list[dict]:
+    """One local-prediction budget group, matched to the VLA equation tier.
+
+    Local-prediction dumps store several short runs in one file.  Stitching
+    them is a G6 blacklist item; the extra.budget field is an element count.
+    """
+
+    groups: dict[int, list] = {}
+    for rec in _series(fam, key, "records_local_prediction.json"):
+        groups.setdefault(int(rec.get("extra", {}).get("budget", 0)), []).append(rec)
+    if not groups:
+        return []
+    dim = 3 if fam in FAMILIES_3D else 2
+    target = elem_budget(n_eq_budget, dim)
+    return groups[min(groups, key=lambda bb: abs(bb - target))]
+
+
 def error_at_k_table(families=FAMILIES_3D, head: str = "scripted") -> dict:
     """Headline A2′: e_E after k global solves, canonical + test median."""
 
@@ -55,17 +71,8 @@ def error_at_k_table(families=FAMILIES_3D, head: str = "scripted") -> dict:
         # canonical
         dor = _series(fam, "canonical", "records_dorfler.json")
         vla = _vla_file(fam, "canonical", head, b)
-        lp_all = _series(fam, "canonical", "records_local_prediction.json")
-        lp_groups: dict[int, list] = {}
-        for r in lp_all:
-            lp_groups.setdefault(int(r.get("extra", {}).get("budget", 0)), []).append(r)
         # same resource tier as the VLA column (do not stitch larger LP budgets)
-        dim = 3 if fam in FAMILIES_3D else 2
-        target_elems = elem_budget(b, dim)
-        lp = []
-        if lp_groups:
-            key_b = min(lp_groups, key=lambda bb: abs(bb - target_elems))
-            lp = lp_groups[key_b]
+        lp = _lp_same_tier(fam, "canonical", b)
         row = {}
         for k in range(1, 7):
             row[k] = {
@@ -165,7 +172,7 @@ def budget_rows(families=FAMILIES_3D, head: str = "scripted") -> list[dict]:
                         "e_energy": pick.get("e_energy"),
                     }
                 )
-            lp = _series(fam, key, "records_local_prediction.json")
+            lp = _lp_same_tier(fam, key, b)
             if lp:
                 last = lp[-1]
                 rows.append(
@@ -348,9 +355,9 @@ def judge_hypotheses(error_table, speedup, budgets, wilcox) -> dict:
         h["H2"] = "成立" if ok else "不成立"
         h["H2_fracs"] = fracs
 
-    # H3 stays 证据不足 until learned methods exist at the *plan* scale
-    # (24 experts / 120–300 episodes × 3 seeds) and a locked comparison
-    # is run. Reduced-scale ledgers below are not that comparison.
+    # H3 stays 证据不足: 3D plan-scale ledgers exist, but there is no
+    # pre-registered same-order test that would license 成立. Over-cap
+    # RL deploys and leftover 2D runs are not that test.
     h["H3"] = "证据不足"
     # H4: after VLA stops, its deliverable is held; Dörfler keeps iterating.
     h4 = {}
@@ -439,7 +446,7 @@ def training_cost_rows() -> list[dict]:
     return rows
 
 
-def learned_deploy_rows(families=FAMILIES_3D + FAMILIES_2D) -> list[dict]:
+def learned_deploy_rows(families=FAMILIES_3D) -> list[dict]:
     """Last deploy iterate of supervised / RL. Not mixed into the VLA k-axis."""
 
     rows: list[dict] = []
@@ -472,6 +479,47 @@ def learned_deploy_rows(families=FAMILIES_3D + FAMILIES_2D) -> list[dict]:
     return rows
 
 
+def learned_test_summary(families=FAMILIES_3D) -> dict:
+    """Plan §1.3: learned methods are judged on the test set, not upgraded to H3."""
+
+    out: dict = {}
+    for fam in families:
+        b = PILOT_EQ[fam]
+        fam_row = {}
+        for method, fname in (
+            ("supervised", "records_supervised.json"),
+            ("rl_dqn_s0", "records_rl_dqn_s0.json"),
+            ("rl_dqn_s1", "records_rl_dqn_s1.json"),
+            ("rl_dqn_s2", "records_rl_dqn_s2.json"),
+        ):
+            es, ns, fracs = [], [], []
+            for seed in TEST_SEEDS:
+                recs = _series(fam, f"test_{seed}", fname)
+                if not recs:
+                    continue
+                last = recs[-1]
+                e = last.get("e_energy")
+                n = last.get("n_equations")
+                if e is not None:
+                    es.append(float(e))
+                if n is not None:
+                    ns.append(int(n))
+                    fracs.append(n / b)
+            if not es:
+                continue
+            fam_row[method] = {
+                "n": len(es),
+                "e_median": float(np.median(es)),
+                "e_iqr": [float(np.percentile(es, 25)), float(np.percentile(es, 75))],
+                "n_eq_median": float(np.median(ns)) if ns else None,
+                "frac_median": float(np.median(fracs)) if fracs else None,
+                "n_over_cap": int(sum(f > 1.0 for f in fracs)),
+            }
+        if fam_row:
+            out[fam] = fam_row
+    return out
+
+
 def build_all_tables(campaign_dir: Path | None = None) -> dict:
     err = error_at_k_table()
     sp = speedup_table()
@@ -487,6 +535,7 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "llm_fallback": llm_fallback_rate(),
         "learned_scale": learned_scale(),
         "learned_deploy": learned_deploy_rows(),
+        "learned_test": learned_test_summary(),
         "training_cost": training_cost_rows(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
@@ -586,7 +635,13 @@ def render_results_md(tables: dict) -> str:
         json.dumps(tables.get("ablation", {}), indent=1, default=str),
         "```",
         "",
-        "## 学习方法部署账本（canonical；不升格为 H3）",
+        "## 学习方法测试集中位数（计划 §1.3；不升格为 H3）",
+        "",
+        "```json",
+        json.dumps(tables.get("learned_test", {}), indent=1, default=str),
+        "```",
+        "",
+        "## 学习方法部署账本（3D canonical；不升格为 H3）",
         "",
         "实际训练规模（从产物推断；3D 对齐计划 24 专家 / 120×3）：",
         "",
@@ -613,7 +668,8 @@ def render_results_md(tables: dict) -> str:
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
         "- 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。",
-        "- 图政策（§8）：局部预测按预算档分列，不跨档拼线；k* 画在误差@k 主图上。",
+        "- 图政策（§8）：局部预测按预算档分列，不跨档拼线；e_E–N 图标注加密原子，不是单一 Pareto；k* 画在误差@k 主图上。",
+        "- 学习方法按 §1.3 在测试集 8 实例上汇总；该表不升格为 H3。",
         "",
     ]
     gates_path = RESULTS / "gates.json"
