@@ -301,6 +301,36 @@ def _run_classical(fam: str, key: str, budgets: tuple[int, ...]) -> None:
     runner.dump(d / "records_classical.json")
 
 
+def run_lp_rounds_diagnostic(families=FAMILIES_3D, rounds: int = 6) -> None:
+    """Audit: rerun local prediction past its plan-locked 3-solve short run.
+
+    The plan (§3.3) fixes probe+2 rounds per tier; §3.3.1 cites the known
+    oscillation failure mode of longer element-wise prediction loops.  This
+    diagnostic measures it on the canonical instances instead of asserting
+    it.  Dumped to a separate file so the main LP series stays a short run.
+    """
+
+    for fam in families:
+        b = PILOT_EQ[fam]
+        d = instance_dir(fam, "canonical")
+        out = d / "records_lp_rounds_diag.json"
+        if _records_exist(out):
+            print(f"[LPdiag] {fam} cached")
+            continue
+        problem = instance_key_problem(fam, "canonical")
+        runner = make_runner(problem, d)
+        runner.ensure_reference()
+        runner.reset_counter()
+        run_local_prediction(
+            runner,
+            budgets=[elem_budget(b, problem.dim)],
+            rounds=rounds,
+            method="local_prediction_r6",
+        )
+        _dump_slice(runner, "local_prediction_r6", out)
+        print(f"[LPdiag] {fam} done")
+
+
 # ---------------------------------------------------------------------------
 # S3 gates
 # ---------------------------------------------------------------------------

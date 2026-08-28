@@ -338,19 +338,19 @@ def plot_training_cost_bars(rows: list[dict], path: Path, title: str = "") -> No
     labels, heights, colors = [], [], []
     for r in rows:
         fam = r.get("family", "?")
-        kind = r.get("kind", "?")
+        kind = str(r.get("kind", "?"))
         if r.get("train_solves") is not None:
-            labels.append(f"{fam}\n{kind}")
             heights.append(float(r["train_solves"]))
-            colors.append("tab:purple")
         elif r.get("n_experts") is not None:
-            labels.append(f"{fam}\n{kind}")
             heights.append(float(r["n_experts"]))
-            colors.append("tab:orange")
+        else:
+            continue
+        labels.append(f"{fam}\n{kind}")
+        colors.append("tab:orange" if kind.startswith("supervised") else "tab:purple")
     ax.bar(range(len(labels)), heights, color=colors, alpha=0.85)
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=35, ha="right", fontsize=7)
-    ax.set_ylabel("offline solves (RL) / expert count (supervised)")
+    ax.set_ylabel("offline solves (VLA/classical = 0)")
     ax.set_title(title)
     fig.tight_layout()
     fig.savefig(path, dpi=170)

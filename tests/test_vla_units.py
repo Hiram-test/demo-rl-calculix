@@ -242,6 +242,31 @@ def test_a2prime_discloses_dorfler_budget_and_learned_columns():
             assert row[k]["dorfler_n"] is not None
 
 
+def test_lp_rounds_diag_stays_out_of_the_main_lp_series():
+    """G6: the 7-solve diagnostic must not join the plan-locked short run."""
+
+    from visionamr.report import _lp_same_tier, lp_rounds_diagnostic, PILOT_EQ
+
+    diag = lp_rounds_diagnostic()
+    assert "bearing_block" in diag and len(diag["bearing_block"]["rows"]) == 7
+    # main same-tier pick is still the 3-solve short run
+    tier = _lp_same_tier("bearing_block", "canonical", PILOT_EQ["bearing_block"])
+    assert len(tier) == 3
+    assert all(r.get("method") == "local_prediction" for r in tier)
+
+
+def test_training_cost_counts_supervised_offline_solves():
+    """A4: the expert bank's real CalculiX solves are on the books."""
+
+    from visionamr.report import training_cost_rows
+
+    rows = {(r["family"], r["kind"]): r for r in training_cost_rows()}
+    for fam in ("bearing_block", "deck_panel"):
+        sup = rows[(fam, "supervised_experts")]
+        assert sup["n_experts"] == 24
+        assert sup["train_solves"] is not None and sup["train_solves"] > 100
+
+
 def test_learned_test_summary_covers_3d_test_set():
     """Plan §1.3: learned deploy on the 8 test instances is tabulated."""
 

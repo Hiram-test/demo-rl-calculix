@@ -447,6 +447,42 @@ def learned_scale() -> dict:
     return out
 
 
+def lp_rounds_diagnostic(families=FAMILIES_3D) -> dict:
+    """Audit table: local prediction rerun past its 3-solve short run."""
+
+    out = {}
+    for fam in families:
+        recs = _series(fam, "canonical", "records_lp_rounds_diag.json")
+        if not recs:
+            continue
+        b = PILOT_EQ[fam]
+        rows = [
+            {
+                "solve": r.get("solve_index"),
+                "n_eq": r.get("n_equations"),
+                "frac": (r.get("n_equations") or 0) / b,
+                "e_energy": r.get("e_energy"),
+            }
+            for r in recs
+        ]
+        es = [r["e_energy"] for r in rows if r["e_energy"] is not None]
+        e3 = rows[2]["e_energy"] if len(rows) >= 3 else None
+        e_best = min(es) if es else None
+        k_best = (es.index(e_best) + 1) if es else None
+        out[fam] = {
+            "rows": rows,
+            "e_at_3_solves": e3,
+            "e_best": e_best,
+            "k_best": k_best,
+            "rel_gain_after_3": (1.0 - e_best / e3) if (e3 and e_best) else None,
+            "uptick_after_best": bool(
+                k_best is not None
+                and any(es[i] > es[i - 1] for i in range(k_best, len(es)))
+            ),
+        }
+    return out
+
+
 def training_cost_rows() -> list[dict]:
     """A4: offline training solves, never mixed into the deploy k-axis."""
 
@@ -455,13 +491,17 @@ def training_cost_rows() -> list[dict]:
         meta = CAMPAIGN / fam / "supervised" / "experts" / "expert_meta.json"
         if meta.exists():
             payload = json.loads(meta.read_text())
+            cost = meta.parent / "training_cost.json"
+            train_solves = None
+            if cost.exists():
+                train_solves = json.loads(cost.read_text()).get("total_solves")
             rows.append(
                 {
                     "family": fam,
                     "kind": "supervised_experts",
                     "n_experts": len(payload) if isinstance(payload, list) else None,
                     "episodes": None,
-                    "train_solves": None,
+                    "train_solves": train_solves,
                 }
             )
         for seed in range(3):
@@ -574,6 +614,7 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "learned_deploy": learned_deploy_rows(),
         "learned_test": learned_test_summary(),
         "training_cost": training_cost_rows(),
+        "lp_rounds_diag": lp_rounds_diagnostic(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
     }
@@ -666,9 +707,40 @@ def render_results_md(tables: dict) -> str:
         "",
         "## A4 训练成本（离线求解，不进部署 k 轴）",
         "",
+        "监督行的 train_solves 为专家库制造（探针+Dörfler 到帽）实际发生的 CalculiX 求解数，",
+        "计自各 expert 运行目录；经典方法与 VLA 无离线成本。",
+        "",
         "```json",
         json.dumps(tables.get("training_cost", {}), indent=1, default=str),
         "```",
+        "",
+    ]
+    diag = tables.get("lp_rounds_diag") or {}
+    if diag:
+        lines += [
+            "## 局部预测轮数诊断（canonical，试点档；审核补充）",
+            "",
+            "计划 §3.3 锁定每档 probe+2 轮=3 次求解；此诊断放开到 7 次以核查该限制是否压误差。",
+            "",
+            "| family | solve | N | N/B | e_E |",
+            "|---|---:|---:|---:|---:|",
+        ]
+        for fam, info in diag.items():
+            for r in info.get("rows", []):
+                lines.append(
+                    f"| {fam} | {r['solve']} | {r['n_eq']} | "
+                    f"{_fmt(r['frac'], 2)} | {_fmt(r['e_energy'])} |"
+                )
+        for fam, info in diag.items():
+            gain = info.get("rel_gain_after_3")
+            lines.append("")
+            lines.append(
+                f"- {fam}：3 次求解 e={_fmt(info.get('e_at_3_solves'))}，"
+                f"7 次内最优 e={_fmt(info.get('e_best'))}（第 {info.get('k_best')} 次），"
+                f"额外 4 次求解的相对改善 {_fmt(100 * gain if gain is not None else None, 1)}%；"
+                f"最优后出现回弹：{'是' if info.get('uptick_after_best') else '否'}。"
+            )
+    lines += [
         "",
         "## LLM 视觉头回退率",
         "",
@@ -713,6 +785,8 @@ def render_results_md(tables: dict) -> str:
         "- Dörfler 的渐近最优性不在本文争夺范围；k* 交叉若出现必须画出。",
         "- A2′ 的 Dörfler 列不按试点档封顶（S2 给经典循环的帽是最大档）；超 105% 的轮次带 `*`，预算内交叉在假设判定单列。A2″ 的第 4/6 轮目标误差同样取自该未封顶序列。",
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
+        "- VLA 第 2 次求解的初始尺寸复用同一逐单元等分布预测（按区几何平均，§3.6），故 k=2 处两者相近是结构性的；其后 VLA 走实测指数/漂移反馈/硬帽投影/就地认证（AB5/AB6/AB9–AB11 量化各自贡献），局部预测走再等分布（轮数诊断见上）。",
+        "- 监督专家库由训练实例上的 Dörfler-到帽循环蒸馏（离线求解已计入 A4）；其部署无预算帽语义，canonical 交付停在 44–52% 档位。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
         "- 论文主文只报 3D。S5 3D 监督 24 专家；S6 3D RL 120 回合 × 3 种子。H3 仍为证据不足。",
