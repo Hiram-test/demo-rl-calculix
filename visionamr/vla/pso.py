@@ -163,7 +163,7 @@ def calibrate_measured(
             Q += max(np.log(ratio / cfg.max_neighbor_ratio), 0.0) ** 2
         return (
             cfg.w_res_over * r_plus**2
-            + cfg.w_res_under * r_minus**2
+            + max(cfg.w_res_under, 80.0) * r_minus**2
             + cfg.w_quality * Q
             + 20.0 * align
             + cfg.w_dev * (s_pen**2 + k_pen**2)

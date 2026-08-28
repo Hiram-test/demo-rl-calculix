@@ -174,8 +174,10 @@ def run_vla(
 
         A = part_next.adjacency_matrix(mesh, labels)
         if cfg.allow_pso:
+            h_mesh = np.maximum(feats.h_meas, problem.h_min)
+            h_start = part_next.sizes() if not next_is_final else h_mesh
             h_cal, pso_info = calibrate_measured(
-                part_next, part_next.sizes(), feats, A,
+                part_next, h_start, feats, A,
                 n_eq_budget=cfg.n_eq_budget,
                 eq_per_elem=eq_per_elem, resource_drift=drift, cfg=pso_cfg,
                 mode=cfg.pso_mode,

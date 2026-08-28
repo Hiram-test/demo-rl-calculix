@@ -298,6 +298,32 @@ def test_calibrate_measured_respects_budget_without_predicting_error():
     assert h[0] <= h[1]  # more residual → keep or refine that region relative to the other
 
 
+def test_calibrate_measured_spends_unused_budget():
+    """Under the cap, measured PSO must refine — the budget is a target band."""
+
+    from visionamr.vla.pso import PSOConfig, calibrate_measured, resource_elems
+    from visionamr.vla.regions import RegionFeatures
+
+    part, A = two_region_partition()
+    feats = RegionFeatures(
+        err_sum=np.array([6.0, 1.0]),
+        elems=np.array([400.0, 400.0]),
+        vm_max=np.array([1.0, 1.0]),
+        vm_mean=np.array([1.0, 1.0]),
+        h_meas=np.array([0.2, 0.2]),
+        volume=np.array([1.0, 1.0]),
+        total_err=7.0,
+        total_elems=800,
+    )
+    h, info = calibrate_measured(
+        part, np.array([0.2, 0.2]), feats, A,
+        n_eq_budget=4500, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
+    )
+    R = resource_elems(h, feats.h_meas, feats.elems.astype(float), 2.0)
+    assert R > 800.0
+    assert info["s"] < 0.0
+
+
 def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
     """N ~ h^{-d} must start from the mesh that produced n_ref."""
 
