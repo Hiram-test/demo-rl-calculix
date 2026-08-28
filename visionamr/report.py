@@ -14,6 +14,7 @@ import numpy as np
 from .campaign import (
     CAMPAIGN,
     EQ_PER_ELEM,
+    FAMILIES_2D,
     FAMILIES_3D,
     PILOT_EQ,
     TEST_SEEDS,
@@ -341,7 +342,10 @@ def judge_hypotheses(error_table, speedup, budgets, wilcox) -> dict:
         h["H2"] = "成立" if ok else "不成立"
         h["H2_fracs"] = fracs
 
-    h["H3"] = "证据不足"  # needs learned methods at deployment scale
+    # H3 stays 证据不足 until learned methods exist at the *plan* scale
+    # (24 experts / 120–300 episodes × 3 seeds) and a locked comparison
+    # is run. Reduced-scale ledgers below are not that comparison.
+    h["H3"] = "证据不足"
     # H4: after VLA stops, its deliverable is held; Dörfler keeps iterating.
     h4 = {}
     for fam, row in error_table.get("canonical", {}).items():
@@ -365,6 +369,57 @@ def judge_hypotheses(error_table, speedup, budgets, wilcox) -> dict:
     return h
 
 
+def learned_scale() -> dict:
+    """What was actually trained, inferred from artifacts. Not the plan."""
+
+    out: dict = {}
+    for fam in FAMILIES_3D + FAMILIES_2D:
+        entry: dict = {}
+        meta = CAMPAIGN / fam / "supervised" / "experts" / "expert_meta.json"
+        if meta.exists():
+            payload = json.loads(meta.read_text())
+            entry["supervised_experts"] = len(payload) if isinstance(payload, list) else None
+        hist = CAMPAIGN / fam / "rl_seed0" / "training" / "training_history.json"
+        if hist.exists():
+            payload = json.loads(hist.read_text())
+            entry["rl_episodes_s0"] = len(payload) if isinstance(payload, list) else None
+            entry["rl_seeds"] = 1
+        if entry:
+            out[fam] = entry
+    return out
+
+
+def learned_deploy_rows(families=FAMILIES_3D + FAMILIES_2D) -> list[dict]:
+    """Last deploy iterate of supervised / RL. Not mixed into the VLA k-axis."""
+
+    rows: list[dict] = []
+    for fam in families:
+        b = PILOT_EQ[fam]
+        for method, fname in (
+            ("supervised", "records_supervised.json"),
+            ("rl_dqn_s0", "records_rl_dqn_s0.json"),
+        ):
+            recs = _series(fam, "canonical", fname)
+            if not recs:
+                continue
+            last = recs[-1]
+            n_eq = last.get("n_equations")
+            rows.append(
+                {
+                    "family": fam,
+                    "key": "canonical",
+                    "method": method,
+                    "solves": last.get("solve_index"),
+                    "n_eq": n_eq,
+                    "e_energy": last.get("e_energy"),
+                    "budget": b,
+                    "frac": (n_eq / b) if n_eq else None,
+                    "over_cap": bool(n_eq is not None and n_eq > b),
+                }
+            )
+    return rows
+
+
 def build_all_tables(campaign_dir: Path | None = None) -> dict:
     err = error_at_k_table()
     sp = speedup_table()
@@ -378,6 +433,8 @@ def build_all_tables(campaign_dir: Path | None = None) -> dict:
         "wilcoxon": wil,
         "ablation": ablation_rows(),
         "llm_fallback": llm_fallback_rate(),
+        "learned_scale": learned_scale(),
+        "learned_deploy": learned_deploy_rows(),
         "hypotheses": hyp,
         "campaign_dir": str(campaign_dir or CAMPAIGN),
     }
@@ -464,12 +521,33 @@ def render_results_md(tables: dict) -> str:
         json.dumps(tables.get("ablation", {}), indent=1, default=str),
         "```",
         "",
+        "## 学习方法部署账本（canonical；不升格为 H3）",
+        "",
+        "实际训练规模（从产物推断，小于 EXPERIMENT_PLAN 的 24 专家 / 120–300×3 种子）：",
+        "",
+        "```json",
+        json.dumps(tables.get("learned_scale", {}), indent=1, default=str),
+        "```",
+        "",
+        "| family | method | solves | n_eq | e_energy | budget frac | over cap |",
+        "|---|---|---:|---:|---:|---:|:---:|",
+    ]
+    for r in tables.get("learned_deploy", []) or []:
+        frac = r.get("frac")
+        lines.append(
+            f"| {r.get('family')} | {r.get('method')} | {r.get('solves')} | "
+            f"{r.get('n_eq')} | {_fmt(r.get('e_energy'))} | "
+            f"{_fmt(frac)} | {'yes' if r.get('over_cap') else 'no'} |"
+        )
+    lines += [
+        "",
         "## 诚实边界",
         "",
         "- Dörfler 的渐近最优性不在本文争夺范围；k* 交叉若出现必须画出。",
         "- 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。",
         "- LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。",
         "- 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。",
+        "- 学习方法按缩小规模登记：deck 监督 8 专家，plate_holes RL 80×1，deck RL 40×1。H3 仍为证据不足。",
         "",
     ]
     return "\n".join(lines) + "\n"

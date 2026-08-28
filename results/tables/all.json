@@ -1100,7 +1100,7 @@
   ]
  },
  "llm_fallback": {
-  "n": 2,
+  "n": 18,
   "n_fallback": 0,
   "rate": 0.0,
   "details": [
@@ -1110,12 +1110,197 @@
     "source": "llm_cache"
    },
    {
+    "family": "bearing_block",
+    "key": "test_9000",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9001",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9002",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9003",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9004",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9005",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9006",
+    "source": "llm_cache"
+   },
+   {
+    "family": "bearing_block",
+    "key": "test_9007",
+    "source": "llm_cache"
+   },
+   {
     "family": "deck_panel",
     "key": "canonical",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9000",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9001",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9002",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9003",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9004",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9005",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9006",
+    "source": "llm_cache"
+   },
+   {
+    "family": "deck_panel",
+    "key": "test_9007",
     "source": "llm_cache"
    }
   ]
  },
+ "learned_scale": {
+  "deck_panel": {
+   "supervised_experts": 8,
+   "rl_episodes_s0": 40,
+   "rl_seeds": 1
+  },
+  "lbracket": {
+   "supervised_experts": 24
+  },
+  "plate_holes": {
+   "supervised_experts": 24,
+   "rl_episodes_s0": 80,
+   "rl_seeds": 1
+  }
+ },
+ "learned_deploy": [
+  {
+   "family": "bearing_block",
+   "key": "canonical",
+   "method": "supervised",
+   "solves": 2,
+   "n_eq": 4038,
+   "e_energy": 0.2236722044407214,
+   "budget": 8000,
+   "frac": 0.50475,
+   "over_cap": false
+  },
+  {
+   "family": "bearing_block",
+   "key": "canonical",
+   "method": "rl_dqn_s0",
+   "solves": 2,
+   "n_eq": 8235,
+   "e_energy": 0.21412458392859293,
+   "budget": 8000,
+   "frac": 1.029375,
+   "over_cap": true
+  },
+  {
+   "family": "deck_panel",
+   "key": "canonical",
+   "method": "supervised",
+   "solves": 2,
+   "n_eq": 8635,
+   "e_energy": 0.3862817582034305,
+   "budget": 20000,
+   "frac": 0.43175,
+   "over_cap": false
+  },
+  {
+   "family": "deck_panel",
+   "key": "canonical",
+   "method": "rl_dqn_s0",
+   "solves": 3,
+   "n_eq": 21917,
+   "e_energy": 0.36607737681877967,
+   "budget": 20000,
+   "frac": 1.09585,
+   "over_cap": true
+  },
+  {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "supervised",
+   "solves": 2,
+   "n_eq": 8824,
+   "e_energy": 0.052392173245237615,
+   "budget": 8000,
+   "frac": 1.103,
+   "over_cap": true
+  },
+  {
+   "family": "lbracket",
+   "key": "canonical",
+   "method": "rl_dqn_s0",
+   "solves": 5,
+   "n_eq": 6804,
+   "e_energy": 0.12355314324780493,
+   "budget": 8000,
+   "frac": 0.8505,
+   "over_cap": false
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "supervised",
+   "solves": 2,
+   "n_eq": 9671,
+   "e_energy": 0.01991020162368504,
+   "budget": 8000,
+   "frac": 1.208875,
+   "over_cap": true
+  },
+  {
+   "family": "plate_holes",
+   "key": "canonical",
+   "method": "rl_dqn_s0",
+   "solves": 6,
+   "n_eq": 4552,
+   "e_energy": 0.05591273004381581,
+   "budget": 8000,
+   "frac": 0.569,
+   "over_cap": false
+  }
+ ],
  "hypotheses": {
   "H1": "\u4e0d\u6210\u7acb",
   "H2": "\u4e0d\u6210\u7acb",

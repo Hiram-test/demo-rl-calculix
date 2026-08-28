@@ -110,7 +110,7 @@
 
 ```json
 {
- "n": 2,
+ "n": 18,
  "n_fallback": 0,
  "rate": 0.0,
  "details": [
@@ -120,8 +120,88 @@
    "source": "llm_cache"
   },
   {
+   "family": "bearing_block",
+   "key": "test_9000",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9001",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9002",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9003",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9004",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9005",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9006",
+   "source": "llm_cache"
+  },
+  {
+   "family": "bearing_block",
+   "key": "test_9007",
+   "source": "llm_cache"
+  },
+  {
    "family": "deck_panel",
    "key": "canonical",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9000",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9001",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9002",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9003",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9004",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9005",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9006",
+   "source": "llm_cache"
+  },
+  {
+   "family": "deck_panel",
+   "key": "test_9007",
    "source": "llm_cache"
   }
  ]
@@ -295,10 +375,44 @@
 }
 ```
 
+## 学习方法部署账本（canonical；不升格为 H3）
+
+实际训练规模（从产物推断，小于 EXPERIMENT_PLAN 的 24 专家 / 120–300×3 种子）：
+
+```json
+{
+ "deck_panel": {
+  "supervised_experts": 8,
+  "rl_episodes_s0": 40,
+  "rl_seeds": 1
+ },
+ "lbracket": {
+  "supervised_experts": 24
+ },
+ "plate_holes": {
+  "supervised_experts": 24,
+  "rl_episodes_s0": 80,
+  "rl_seeds": 1
+ }
+}
+```
+
+| family | method | solves | n_eq | e_energy | budget frac | over cap |
+|---|---|---:|---:|---:|---:|:---:|
+| bearing_block | supervised | 2 | 4038 | 0.2237 | 0.5048 | no |
+| bearing_block | rl_dqn_s0 | 2 | 8235 | 0.2141 | 1.0294 | yes |
+| deck_panel | supervised | 2 | 8635 | 0.3863 | 0.4318 | no |
+| deck_panel | rl_dqn_s0 | 3 | 21917 | 0.3661 | 1.0958 | yes |
+| lbracket | supervised | 2 | 8824 | 0.0524 | 1.1030 | yes |
+| lbracket | rl_dqn_s0 | 5 | 6804 | 0.1236 | 0.8505 | no |
+| plate_holes | supervised | 2 | 9671 | 0.0199 | 1.2089 | yes |
+| plate_holes | rl_dqn_s0 | 6 | 4552 | 0.0559 | 0.5690 | no |
+
 ## 诚实边界
 
 - Dörfler 的渐近最优性不在本文争夺范围；k* 交叉若出现必须画出。
 - 局部预测是逐单元一步预测，不是分区方法；其预算偏差如实列入。
 - LLM 头失败回退 Scripted 时计入回退率，不把 Scripted 数字标成 LLM。
 - 训练期求解（监督专家库、RL episode）单列，不混进部署 k 轴。
+- 学习方法按缩小规模登记：deck 监督 8 专家，plate_holes RL 80×1，deck RL 40×1。H3 仍为证据不足。
 
