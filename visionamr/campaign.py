@@ -400,7 +400,6 @@ def gate_g2() -> dict:
     import ast
 
     root = Path(__file__).resolve().parent
-    banned = ("cells", "connectivity", "tetra", "triangles")
     hits = []
     for path in root.rglob("*.py"):
         if path.name == "mesher.py":
@@ -411,15 +410,15 @@ def gate_g2() -> dict:
         except SyntaxError:
             continue
         for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute) and node.attr in {
-                "cells", "cell_types",
-            }:
-                # reading mesh.cells after Gmsh is fine; assigning is not
-                continue
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
                 if node.func.attr in {"add_cells", "insert_cells"}:
                     hits.append(f"{path.name}:{node.lineno}")
-    return {"gate": "G2", "pass": True, "hits": hits, "note": "structural: only mesher.py calls gmsh"}
+    return {
+        "gate": "G2",
+        "pass": len(hits) == 0,
+        "hits": hits,
+        "note": "structural: only mesher.py calls gmsh",
+    }
 
 
 def gate_g4() -> dict:
