@@ -13,12 +13,25 @@ from visionamr.geometry import (
 )
 
 
+def _require_usable_gmsh():
+    """Skip when the gmsh Python wheel cannot load its native library.
+
+    ``pip install gmsh`` succeeds on GitHub-hosted runners, but importing
+    it still needs libGLU.  ``importorskip`` only catches ImportError.
+    """
+
+    try:
+        import gmsh  # noqa: F401
+    except (ImportError, OSError) as exc:
+        pytest.skip(f"gmsh not usable: {exc}")
+
+
 @pytest.mark.parametrize(
     "factory",
     [make_lbracket, make_plate_holes, make_bearing_block, make_deck_panel],
 )
 def test_resultant_mesh_independent(factory):
-    pytest.importorskip("gmsh")
+    _require_usable_gmsh()
     from visionamr.mesher import generate_uniform
 
     problem = factory()
