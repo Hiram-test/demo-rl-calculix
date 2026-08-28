@@ -354,6 +354,7 @@ def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
     h, info = calibrate_measured(
         part, proposed, feats, A,
         n_eq_budget=2400, eq_per_elem=1.5, cfg=PSOConfig(seed=3),
+        h_anchor=feats.h_meas,
     )
     R = resource_elems(h, feats.h_meas, feats.elems.astype(float), 2.0)
     assert R <= 1.10 * info["elems_budget"]

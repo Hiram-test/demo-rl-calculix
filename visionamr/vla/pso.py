@@ -124,14 +124,15 @@ def calibrate_measured(
     resource_drift: float = 1.0,
     cfg: PSOConfig | None = None,
     mode: str = "sk",
+    h_anchor: np.ndarray | None = None,
 ) -> tuple[np.ndarray, dict]:
     """Last-revision PSO: measured residual + budget.  No error surrogate.
 
-    Fitness uses the last solve's η² shares as weights and only a mesh-count
-    scaling N ~ h^{-d} for the hard cap.  ``h_ref`` is the last mesh's
-    measured region size (``feats.h_meas``), not the already-revised
-    proposal — otherwise communication can shrink h, the count looks
-    unchanged, and the next remesh blows the budget.
+    ``h_plus`` is the drawing prior.  ``h_anchor`` is the size field that
+    generated the current mesh (usually the same eye sizes).  Resource
+    scaling N ~ (h / h_anchor)^{-d} must not use smeared h_meas — Gmsh
+    gradation makes measured sizes coarser than the request, which makes
+    the eye field look over budget and the swarm coarsens it away.
     """
 
     cfg = cfg or PSOConfig()
@@ -140,7 +141,7 @@ def calibrate_measured(
     problem = partition.problem
     rng = np.random.default_rng(cfg.seed)
     d = float(problem.dim)
-    h_ref = np.maximum(feats.h_meas, 1e-12)
+    h_ref = np.maximum(h_anchor if h_anchor is not None else h_plus, 1e-12)
     n_ref = np.maximum(feats.elems.astype(float), 1.0)
     err = np.maximum(feats.err_sum, 1e-30)
     share = err / err.sum()
