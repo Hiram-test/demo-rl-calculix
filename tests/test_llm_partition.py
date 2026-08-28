@@ -120,6 +120,21 @@ def test_section_region_needs_cut():
         drawings_from_spec(spec, problem)
 
 
+def test_cached_drawing_partitioner_ignores_solved_field():
+    from pathlib import Path
+
+    from visionamr.vla.partition import CachedDrawingPartitioner
+
+    problem = make_bearing_block()
+    path = Path(__file__).resolve().parent / "fixtures" / "bearing_block_eye.json"
+    head = CachedDrawingPartitioner(str(path))
+    a = head.propose(problem)
+    b = head.propose(problem, post=object(), eta2=object())
+    assert [s.name for s in a] == [s.name for s in b]
+    assert head.last_info["source"] == "cached_drawing"
+    assert any(d.view == "section" for d in head.last_drawings)
+
+
 def test_eye_bearing_markup_assigns_varied_remainder():
     from pathlib import Path
 

@@ -353,6 +353,22 @@ class RandomSeedPartitioner:
 
 
 @dataclass
+class CachedDrawingPartitioner:
+    """Replay a human / agent drawing JSON.  Propose ignores any solved field."""
+
+    path: str
+    max_regions: int = 16
+
+    def propose(self, problem: Problem, post: PostState | None = None, eta2=None) -> list[Seed]:
+        del post, eta2
+        spec = json.loads(Path_read(self.path))
+        self.last_drawings = drawings_from_spec(spec, problem, max_regions=self.max_regions)
+        seeds = seeds_from_spec(spec, problem, max_seeds=self.max_regions)
+        self.last_info = {"source": "cached_drawing", "path": self.path, "n": len(seeds)}
+        return seeds
+
+
+@dataclass
 class LLMVisionPartitioner:
     """Multimodal-LLM vision head (OpenAI-compatible chat completions).
 

@@ -12,10 +12,12 @@ description: Real FEA meshing workflow for Visionamr VLA. Use when changing VLA,
 ```
 读图（零次求解）     图纸 / 几何 / 荷载印 / 支承 → 不规则区 + 每区一个尺寸
                      没画到的也要委派。允许拆剖面。
+预算尺度（零次求解） 相对粗细已定之后，用 Gmsh 单元数把整体尺度收到预算附近
 第一次求解           落在这张已画过的网格上（不是均匀 h0）
 读云图（用残差）     中间轮：通信 / 分裂，然后实测 PSO
 最后的修订          **只用实测 PSO**（不许通信、不许分裂、不许再画、不许 LP、不许误差代理）
 停                  QoI / 指示子 / 预算，一两轮定稿
+对照                同实例同方程预算，和一步局部预测比 e@k（LP 的 k=1 是均匀探针）
 ```
 
 画区 + 眼睛给尺寸 **禁止** 调用 CalculiX / `FemRunner.solve` / `post.vm_*` / `eta2`。
@@ -51,6 +53,7 @@ PSO 已经写好了。适应度 = 上次实测 η² 份额 + 单元数缩放 N ~
 - 第一次求解计入 k=1，可以成为交付解。不要把第一张网当成可丢的均匀探针。
 - 有求解之后：通信、分裂、**实测 PSO**、硬帽。不要 `predicted_sizes` / LP 几何平均涂初始化。
 - `run_vla` 只调用 `calibrate_measured`。`fit_surrogate` / `calibrate(` 不得出现在 `pipeline.py`。
+- 画完必须走完短循环，再和同档 LP 比。不要画完就停，也不要只用 Scripted 代替眼睛。
 
 ## 诚实
 

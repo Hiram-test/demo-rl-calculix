@@ -115,6 +115,42 @@ def drawings_size_fn(drawings: list[DrawnRegion], remainder_h: float, problem: P
     return fn
 
 
+def scale_drawings_to_elem_budget(
+    drawings: list[DrawnRegion],
+    remainder_h: float,
+    problem: Problem,
+    n_elem_budget: float,
+    *,
+    max_passes: int = 3,
+) -> tuple[list[DrawnRegion], float, int]:
+    """Global log-scale so the drawn mesh sits near the element budget.
+
+    Gmsh only.  Relative region ranking is unchanged.  No CalculiX.
+    """
+
+    from dataclasses import replace
+
+    from ..mesher import generate_mesh
+
+    ds = list(drawings)
+    rem = float(remainder_h)
+    n = 0
+    lo, hi = 0.72 * n_elem_budget, 1.12 * n_elem_budget
+    for _ in range(max_passes):
+        mesh = generate_mesh(problem, drawings_size_fn(ds, rem, problem))
+        n = mesh.n_cells
+        if lo <= n <= hi:
+            return ds, rem, n
+        s = float(np.clip((n / max(n_elem_budget, 1.0)) ** (1.0 / problem.dim), 0.72, 1.55))
+        ds = [
+            replace(d, h=float(np.clip(d.h * s, problem.h_min, problem.h0)))
+            for d in ds
+        ]
+        rem = float(np.clip(rem * s, problem.h_min, problem.h0))
+    mesh = generate_mesh(problem, drawings_size_fn(ds, rem, problem))
+    return ds, rem, mesh.n_cells
+
+
 def require_fineness(item: dict, label: str) -> float:
     if "fineness_fraction" not in item:
         raise ValueError(f"{label} missing fineness_fraction")
