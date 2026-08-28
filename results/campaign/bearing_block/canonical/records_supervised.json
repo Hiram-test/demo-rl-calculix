@@ -1,0 +1,54 @@
+{
+ "problem": "bearing_block-08d6af3a",
+ "params": {
+  "W": 400.0,
+  "D": 400.0,
+  "H": 120.0,
+  "patch": [
+   140.0,
+   140.0
+  ],
+  "offset": [
+   40.0,
+   0.0
+  ],
+  "pressure": 12.0
+ },
+ "method": "supervised",
+ "records": [
+  {
+   "method": "supervised",
+   "stage": "probe",
+   "solve_index": 1,
+   "n_nodes": 311,
+   "n_elems": 912,
+   "n_equations": 639,
+   "U_total": 338.6984553055273,
+   "qoi": 0.00288256151010595,
+   "wall_s": 0.020269875999929354,
+   "h_min": 38.397122825009745,
+   "h_max": 89.76497596057224,
+   "e_energy": 0.47663007235736804,
+   "e_qoi": 0.23167875307309624,
+   "extra": {}
+  },
+  {
+   "method": "supervised",
+   "stage": "deployed",
+   "solve_index": 2,
+   "n_nodes": 1622,
+   "n_elems": 6611,
+   "n_equations": 4038,
+   "U_total": 416.33504904538074,
+   "qoi": 0.003558264909915468,
+   "wall_s": 0.1347882780000873,
+   "h_min": 10.434097554054132,
+   "h_max": 72.39273502204115,
+   "e_energy": 0.2236722044407214,
+   "e_qoi": 0.05157599485812414,
+   "extra": {
+    "budget_scalar": 1.1797675490379333
+   }
+  }
+ ]
+}
