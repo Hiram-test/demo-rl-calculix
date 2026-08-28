@@ -94,6 +94,7 @@ class FemRunner:
         self.records: list[SolveRecord] = []
         self._counter = 0
         self.reference: Reference | None = None
+        self.last_mesh: TriMesh | None = None
 
     # ------------------------------------------------------------------
     def ensure_reference(self) -> Reference:
@@ -169,6 +170,7 @@ class FemRunner:
                 rec.extra["above_reference"] = True
         if count:
             self.records.append(rec)
+            self.last_mesh = mesh
         if not self.keep_files:
             for f in jobdir.glob("*"):
                 if f.suffix not in (".log",):
