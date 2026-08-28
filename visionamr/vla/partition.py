@@ -18,7 +18,7 @@ import base64
 import json
 import os
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -357,7 +357,9 @@ class CachedDrawingPartitioner:
     """Replay a human / agent drawing JSON.  Propose ignores any solved field."""
 
     path: str
+    revisions: list[str] = field(default_factory=list)
     max_regions: int = 16
+    _rev_i: int = 0
 
     def propose(self, problem: Problem, post: PostState | None = None, eta2=None) -> list[Seed]:
         del post, eta2
@@ -366,6 +368,38 @@ class CachedDrawingPartitioner:
         seeds = seeds_from_spec(spec, problem, max_seeds=self.max_regions)
         self.last_info = {"source": "cached_drawing", "path": self.path, "n": len(seeds)}
         return seeds
+
+    def revise(self, problem: Problem, observation: dict | None = None):
+        """Next decision: last result + leftover in, new sizes out.  No API."""
+
+        del problem
+        if self._rev_i >= len(self.revisions):
+            return None
+        path = self.revisions[self._rev_i]
+        self._rev_i += 1
+        spec = json.loads(Path_read(path))
+        current = {}
+        if observation and observation.get("sizes"):
+            current = {str(k): float(v) for k, v in observation["sizes"].items()}
+        elif self.last_drawings:
+            current = {d.name: float(d.h) for d in self.last_drawings}
+        scales = spec.get("scales") or {}
+        rem_s = float(spec.get("remainder_scale", 1.0))
+        sizes = {}
+        for name, h in current.items():
+            if name.lower() in REMAINDER_NAMES:
+                sizes[name] = float(h) * rem_s
+            else:
+                sizes[name] = float(h) * float(scales.get(name, rem_s))
+        info = {
+            "thought": spec.get("thought") or spec.get("note") or "",
+            "sizes": sizes,
+            "stop": bool(spec.get("stop", False)),
+            "source": path,
+            "remaining": None if not observation else observation.get("remaining"),
+        }
+        self.last_info = {**getattr(self, "last_info", {}), "revise": info}
+        return info
 
 
 @dataclass

@@ -1,18 +1,18 @@
 """The VLA short loop: real-workflow remeshing (skill: vla-real-workflow).
 
   draw             geometry / loads / supports; no CalculiX
-  solve 1          "first"      mesh from the drawing (not uniform h0)
-  last revision    (s, κ) PSO from the *eye* sizes — not a communication
-                   re-paint from η, not LP.  Remesh keeps the same polygons.
-  solve 2          "certified"
+  solve            first analysis on the drawn mesh
+  decide           this result + remaining resource → next sizes
+  PSO              only if that decision overshoots (unreliable)
+  solve            next analysis
+  ...              until the agent stops or the solve cap
 
-Communication / split stay as AB5 / AB4 only.  The main method is
-一两轮定稿.  Asymptotic optimality is ceded to Doerfler.
+The decision is the agent's.  PSO is not the allocator.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -21,7 +21,7 @@ from ..indicators import zz_indicator
 from ..mesher import generate_mesh
 from .agents import AgentConfig, communication_round
 from .drawing import drawings_size_fn, drawings_with_sizes
-from .pso import PSOConfig, calibrate_measured
+from .pso import PSOConfig, project_feasible
 from .regions import Partition
 
 
@@ -86,6 +86,31 @@ def vision_assigned_sizes(part, problem) -> np.ndarray:
     return np.clip(part.sizes(), problem.h_min, problem.h0)
 
 
+def _observation(rec, n_eq_budget: int, sizes: dict) -> dict:
+    """What the next decision sees: this solve + leftover resource."""
+
+    used = int(rec.n_equations)
+    remaining = max(n_eq_budget - used, 0)
+    return {
+        "n_equations": used,
+        "n_elems": int(rec.n_elems),
+        "budget": int(n_eq_budget),
+        "remaining": remaining,
+        "sizes": dict(sizes),
+    }
+
+
+def _sizes_for_part(part, decided: dict, problem) -> np.ndarray:
+    by_name = decided.get("sizes") or {}
+    h = []
+    for s in part.seeds:
+        if s.name in by_name:
+            h.append(float(by_name[s.name]))
+        else:
+            h.append(float(s.h))
+    return np.clip(np.asarray(h, float), problem.h_min, problem.h0)
+
+
 def run_vla(
     runner: FemRunner,
     partitioner,
@@ -106,7 +131,6 @@ def run_vla(
     )
     h_init = vision_assigned_sizes(part, problem)
     part = part.with_sizes(h_init)
-    h_eye = h_init.copy()
     seeds_initial = [s.name for s in seeds]
     sizes_initial = [float(v) for v in h_init]
     remainder_h = next(
@@ -126,63 +150,73 @@ def run_vla(
     cfg.agent.error_share_target = cfg.error_share_target
 
     stopped_early = False
-    round_info: dict = {"skipped": True, "reason": "no_revision_yet"}
-    pso_info: dict = {"s": 0.0, "kappa": 0.0, "R_pred_elems": None}
+    round_info: dict = {"skipped": True, "reason": "no_decision_yet"}
+    pso_info: dict = {"s": 0.0, "kappa": 0.0, "R_pred_elems": None, "applied": False}
     s_last, k_last = 0.0, 0.0
     solve_idx = 1
+    thoughts: list[str] = []
 
-    # ---- later solves: PSO from the eye sizes, same polygons ---------------
+    # ---- later solves: agent decides from this result + leftover -----------
     while solve_idx < cfg.max_solves:
-        next_is_final = solve_idx + 1 == cfg.max_solves
-        drift = 1.0
-        if cfg.use_resource_drift and pso_info.get("R_pred_elems"):
-            drift = rec.n_elems / max(pso_info["R_pred_elems"], 1.0)
-
-        part_next = part
-        if next_is_final:
-            round_info = {"skipped": True, "reason": "final_revision_pso"}
-            pso_cfg = replace(
-                cfg.pso,
-                pos_bound=cfg.pso_pos_bound_later,
-                budget_safety=cfg.final_budget_safety,
+        obs = _observation(
+            rec, cfg.n_eq_budget,
+            {s.name: float(h) for s, h in zip(part.seeds, part.sizes())},
+        )
+        rec.extra["observation"] = {
+            k: obs[k] for k in ("n_equations", "budget", "remaining")
+        }
+        decide = getattr(partitioner, "revise", None)
+        decision = decide(problem, obs) if callable(decide) else None
+        if decision is None and cfg.allow_communication:
+            adjacency = part.adjacency(mesh, labels)
+            h_agent, round_info = communication_round(
+                part, feats, adjacency,
+                n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem,
+                cfg=cfg.agent, p_vec=None,
             )
-        else:
-            if cfg.allow_communication:
-                adjacency = part.adjacency(mesh, labels)
-                h_agent, round_info = communication_round(
-                    part, feats, adjacency,
-                    n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem,
-                    cfg=cfg.agent, p_vec=None,
-                )
-                part_next = part.with_sizes(h_agent)
-            else:
-                round_info = {"skipped": True, "reason": "main_method_no_comm"}
-            if cfg.allow_split:
-                grown = part_next.split_concentrated(post, eta2, labels)
-                if len(grown.seeds) > len(part_next.seeds):
-                    part_next = grown
-                    labels = part_next.assign(mesh)
-                    feats = part_next.features(post, eta2, labels)
-            pso_cfg = replace(cfg.pso, pos_bound=cfg.pso_pos_bound_later)
+            decision = {
+                "thought": "AB5 communication",
+                "sizes": {s.name: float(h) for s, h in zip(part.seeds, h_agent)},
+                "stop": False,
+                "source": "ab5_comm",
+            }
+        if decision is None:
+            round_info = {"skipped": True, "reason": "no_further_decision"}
+            break
+        thoughts.append(str(decision.get("thought") or ""))
+        rec.extra["thought"] = thoughts[-1]
+        if decision.get("stop"):
+            rec.extra["stopped_by"] = "decision"
+            stopped_early = True
+            break
 
-        A = part_next.adjacency_matrix(mesh, labels)
+        h_decided = _sizes_for_part(part, decision, problem)
+        part_next = part.with_sizes(h_decided)
+        if cfg.allow_split:
+            grown = part_next.split_concentrated(post, eta2, labels)
+            if len(grown.seeds) > len(part_next.seeds):
+                part_next = grown
+                labels = part_next.assign(mesh)
+                feats = part_next.features(post, eta2, labels)
+                h_decided = part_next.sizes()
+
         if cfg.allow_pso:
-            # prior is the drawing, not an η-repaint
-            h_start = h_eye
-            if len(h_start) != len(part_next.seeds):
-                h_start = part_next.sizes()
-            h_cal, pso_info = calibrate_measured(
-                part_next, h_start, feats, A,
+            h_cal, pso_info = project_feasible(
+                part_next, h_decided, feats,
                 n_eq_budget=cfg.n_eq_budget,
-                eq_per_elem=eq_per_elem, resource_drift=drift, cfg=pso_cfg,
-                mode=cfg.pso_mode,
+                eq_per_elem=eq_per_elem,
+                h_anchor=part.sizes(),
+                cfg=cfg.pso,
             )
         else:
-            h_cal = part_next.sizes()
-            pso_info = {"s": 0.0, "kappa": 0.0, "R_pred_elems": None}
-        if next_is_final:
-            pso_info["final_revision"] = "pso"
-        s_last, k_last = pso_info["s"], pso_info["kappa"]
+            h_cal = h_decided
+            pso_info = {"s": 0.0, "kappa": 0.0, "applied": False, "role": "pso_off"}
+        s_last, k_last = float(pso_info.get("s", 0.0)), float(pso_info.get("kappa", 0.0))
+        round_info = {
+            "source": decision.get("source"),
+            "remaining": obs["remaining"],
+            "pso_applied": bool(pso_info.get("applied")),
+        }
 
         part = part_next.with_sizes(h_cal)
         drawings = drawings_with_sizes(
@@ -204,10 +238,11 @@ def run_vla(
         rec.extra.update(
             sum_eta2=float(eta2.sum()),
             regions={s.name: float(h) for s, h in zip(part.seeds, part.sizes())},
+            thought=thoughts[-1],
+            pso={k: v for k, v in pso_info.items() if k != "tau"},
+            final_revision="decision",
         )
         if is_final:
-            rec.extra["pso"] = {k: v for k, v in pso_info.items() if k != "tau"}
-            rec.extra["final_revision"] = "pso"
             break
         if (
             cfg.early_stop
@@ -248,5 +283,5 @@ def run_vla(
         n_distinct_gate=gate,
         solves=len(vla_records),
         stopped_early=stopped_early,
-        info={"round": round_info, "pso": pso_info},
+        info={"round": round_info, "pso": pso_info, "thoughts": thoughts},
     )

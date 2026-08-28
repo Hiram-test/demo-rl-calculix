@@ -263,10 +263,11 @@ def test_pipeline_has_no_error_surrogate():
     root = Path(__file__).resolve().parents[1]
     src = (root / "visionamr" / "vla" / "pipeline.py").read_text()
     assert "fit_surrogate" not in src
-    assert "calibrate_measured" in src
+    assert "calibrate_measured" not in src
+    assert "project_feasible" in src
+    assert "revise" in src
     assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
     assert "drawings_size_fn" in src
-    assert "h_eye" in src
     scripted = (root / "visionamr" / "vla" / "partition.py").read_text()
     propose_body = scripted.split("def propose")[1].split("def _drawing_frac")[0]
     assert "vm_node" not in propose_body
@@ -362,6 +363,67 @@ def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
     assert float(h.mean()) > 0.08
 
 
+def test_agent_revise_is_next_decision_from_result_and_leftover():
+    """VLA think: this solve + remaining resource → next sizes.  No API."""
+
+    from pathlib import Path
+
+    from visionamr.geometry import make_bearing_block
+    from visionamr.vla.partition import CachedDrawingPartitioner
+
+    root = Path(__file__).resolve().parents[1]
+    problem = make_bearing_block()
+    eye = root / "tests" / "fixtures" / "bearing_block_eye.json"
+    rev = root / "tests" / "fixtures" / "bearing_block_eye_revise1.json"
+    head = CachedDrawingPartitioner(str(eye), revisions=[str(rev)])
+    head.propose(problem)
+    sizes0 = {d.name: d.h for d in head.last_drawings}
+    sizes0["field"] = 0.72 * problem.h0
+    out = head.revise(
+        problem,
+        {"n_equations": 6591, "budget": 8000, "remaining": 1409, "sizes": sizes0},
+    )
+    assert out is not None
+    assert "还剩" in out["thought"] or "剩余" in out["thought"]
+    assert out["sizes"]["patch_rim_x0"] < sizes0["patch_rim_x0"]
+    assert out["sizes"]["patch_rim_x0"] < out["sizes"]["field"]
+    assert head.revise(problem, {"sizes": sizes0}) is None
+
+
+def test_project_feasible_only_pulls_back_overshoot():
+    from visionamr.vla.pso import PSOConfig, project_feasible, resource_elems
+    from visionamr.vla.regions import RegionFeatures
+
+    part, _A = two_region_partition()
+    feats = RegionFeatures(
+        err_sum=np.array([1.0, 1.0]),
+        elems=np.array([800.0, 800.0]),
+        vm_max=np.array([1.0, 1.0]),
+        vm_mean=np.array([1.0, 1.0]),
+        h_meas=np.array([0.2, 0.2]),
+        volume=np.array([1.0, 1.0]),
+        total_err=2.0,
+        total_elems=1600,
+    )
+    ok, info_ok = project_feasible(
+        part, np.array([0.2, 0.2]), feats,
+        n_eq_budget=4000, eq_per_elem=1.5, h_anchor=feats.h_meas,
+        cfg=PSOConfig(seed=1),
+    )
+    assert info_ok["applied"] is False
+    assert np.allclose(ok, [0.2, 0.2])
+    blown, info = project_feasible(
+        part, np.array([0.04, 0.04]), feats,
+        n_eq_budget=2400, eq_per_elem=1.5, h_anchor=feats.h_meas,
+        cfg=PSOConfig(seed=1),
+    )
+    assert info["applied"] is True
+    R = resource_elems(blown, feats.h_meas, feats.elems.astype(float), 2.0)
+    assert R <= 1.05 * info["elems_budget"]
+    assert "E_pred" not in info
+    assert "tau" not in info
+
+
 def test_drawings_with_sizes_keeps_polygons():
     from visionamr.geometry import make_bearing_block
     from visionamr.vla.drawing import DrawnRegion, drawings_with_sizes
@@ -380,8 +442,11 @@ def test_skill_locks_measured_pso_and_forbids_error_surrogate():
         Path(__file__).resolve().parents[1]
         / ".cursor" / "skills" / "vla-real-workflow" / "SKILL.md"
     ).read_text()
+    assert "project_feasible" in skill
     assert "calibrate_measured" in skill
     assert "fit_surrogate" in skill
+    assert "revise" in skill
+    assert "计算结果" in skill and "资源存量" in skill
     assert "不许误差代理" in skill or "禁止" in skill and "η ~ h^q" in skill
 
 

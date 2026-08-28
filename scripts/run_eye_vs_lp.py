@@ -2,7 +2,7 @@
 
   1. load the agent eye drawing (no solve)
   2. scale the drawn sizes to the element budget (Gmsh only; ranking fixed)
-  3. run_vla: first solve + one PSO from the eye sizes (default 2 solves)
+  3. run_vla: first solve + agent decision from result/leftover (PSO only if overshoot)
   4. one-step LP: probe + one predicted remesh
   5. compare e_E, e_qoi, N/B, and whether the drawing ranking survived
 
@@ -76,6 +76,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--problem", default="bearing_block")
     ap.add_argument("--eye", default="tests/fixtures/bearing_block_eye.json")
+    ap.add_argument(
+        "--revise",
+        default="tests/fixtures/bearing_block_eye_revise1.json",
+        help="agent's next decision after the first solve (no API)",
+    )
     ap.add_argument("--n-eq-budget", type=int, default=8000)
     ap.add_argument("--max-solves", type=int, default=2)
     ap.add_argument("--out", default="/opt/cursor/artifacts/vla_skill_walkthrough")
@@ -128,7 +133,8 @@ def main() -> int:
     h_eye = {d.name: d.h for d in scaled}
     h_eye["field"] = rem
 
-    head = CachedDrawingPartitioner(str(spec_path))
+    revisions = [args.revise] if args.revise else []
+    head = CachedDrawingPartitioner(str(spec_path), revisions=revisions)
     runner = FemRunner(problem, work, ccx_timeout=1800.0)
     ref_rec = runner.ensure_reference()
     print(f"[ref] N={ref_rec.n_equations} U={ref_rec.U_total:.6g}", flush=True)
@@ -173,6 +179,7 @@ def main() -> int:
             "allow_split": cfg.allow_split,
         },
         "first_mesh_elems": n_mesh,
+        "thoughts": (vla.info or {}).get("thoughts"),
         "vla": asdict(vla),
         "vla_records": [_row(r, args.n_eq_budget) for r in vla_recs],
         "lp_records": [_row(r, args.n_eq_budget) for r in lp_recs],

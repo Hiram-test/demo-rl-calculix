@@ -276,6 +276,53 @@ def calibrate_measured(
     }
 
 
+def project_feasible(
+    partition: Partition,
+    h_model: np.ndarray,
+    feats: RegionFeatures,
+    *,
+    n_eq_budget: int,
+    eq_per_elem: float,
+    h_anchor: np.ndarray | None = None,
+    cfg: PSOConfig | None = None,
+) -> tuple[np.ndarray, dict]:
+    """Reliability only: if the decision overshoots the budget, scale it back.
+
+    Does not re-rank by residual.  The next sizes come from the agent.
+    """
+
+    cfg = cfg or PSOConfig()
+    problem = partition.problem
+    d = float(problem.dim)
+    h_ref = np.maximum(h_anchor if h_anchor is not None else h_model, 1e-12)
+    n_ref = np.maximum(feats.elems.astype(float), 1.0)
+    cap = max(n_eq_budget / max(eq_per_elem, 1e-12), 1.0)
+    h = np.clip(np.asarray(h_model, float), problem.h_min, problem.h0)
+    R = resource_elems(h, h_ref, n_ref, d)
+    if R <= cap:
+        return h, {
+            "s": 0.0,
+            "kappa": 0.0,
+            "applied": False,
+            "role": "reliable",
+            "R_pred_elems": R,
+            "elems_budget": cap,
+            "mode": "project_feasible",
+        }
+    s = float(np.log(R / cap) / d)
+    h = np.clip(h * np.exp(s), problem.h_min, problem.h0)
+    R2 = resource_elems(h, h_ref, n_ref, d)
+    return h, {
+        "s": s,
+        "kappa": 0.0,
+        "applied": True,
+        "role": "unreliable_overshoot",
+        "R_pred_elems": R2,
+        "elems_budget": cap,
+        "mode": "project_feasible",
+    }
+
+
 def transfer_direction(sur: Surrogate) -> np.ndarray:
     """Resource-neutral transfer: refine where marginal efficiency is high."""
 
