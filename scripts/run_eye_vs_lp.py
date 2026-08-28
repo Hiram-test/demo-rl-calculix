@@ -1,10 +1,10 @@
 """Walk the vla-real-workflow skill on one 3-D instance.
 
   1. load the agent eye drawing (no solve)
-  2. scale the drawn sizes to the element budget (Gmsh only)
-  3. run_vla: first solve on that mesh, residual mid-rounds, last PSO
-  4. run one-step local prediction at the same equation budget
-  5. compare e@k honestly
+  2. scale the drawn sizes to the element budget (Gmsh only; ranking fixed)
+  3. run_vla: first solve + one PSO from the eye sizes (default 2 solves)
+  4. one-step LP: probe + one predicted remesh
+  5. compare e_E, e_qoi, N/B, and whether the drawing ranking survived
 
 Does not write into results/campaign/.
 """
@@ -18,6 +18,8 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
+import numpy as np
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from visionamr.baselines.local_prediction import run_local_prediction
@@ -30,19 +32,44 @@ from visionamr.vla.pipeline import VLAConfig, run_vla
 EQ_PER_ELEM = {2: 1.5, 3: 0.62}
 
 
-def _row(r) -> dict:
+def _row(r, n_eq_budget: int) -> dict:
     return {
         "k": r.solve_index,
         "method": r.method,
         "stage": r.stage,
         "n_equations": r.n_equations,
         "n_elems": r.n_elems,
+        "n_over_budget": r.n_equations / n_eq_budget,
         "e_energy": r.e_energy,
+        "e_qoi": r.e_qoi,
         "sum_eta2": r.extra.get("sum_eta2"),
-        "budget_ok": r.n_equations <= r.extra.get("n_eq_budget", 10**18)
-        if "n_eq_budget" in r.extra
-        else None,
+        "budget_ok": r.n_equations <= n_eq_budget,
+        "regions": r.extra.get("regions"),
     }
+
+
+def _spearman(a: list[float], b: list[float]) -> float | None:
+    if len(a) < 3 or len(a) != len(b):
+        return None
+    from scipy.stats import spearmanr
+
+    rho, _ = spearmanr(a, b)
+    return float(rho) if np.isfinite(rho) else None
+
+
+def _table(recs, n_eq_budget: int) -> str:
+    lines = [
+        f"{'k':>2} {'stage':18s} {'N_eq':>8} {'N/B':>6} {'e_E':>8} {'e_qoi':>8} {'Ση²':>10}"
+    ]
+    for r in recs:
+        e = r.e_energy if r.e_energy is not None else float("nan")
+        q = r.e_qoi if r.e_qoi is not None else float("nan")
+        eta = r.extra.get("sum_eta2", float("nan"))
+        lines.append(
+            f"{r.solve_index:2d} {r.stage:18s} {r.n_equations:8d} "
+            f"{r.n_equations / n_eq_budget:6.2f} {e:8.4f} {q:8.4f} {eta:10.3f}"
+        )
+    return "\n".join(lines)
 
 
 def main() -> int:
@@ -50,7 +77,7 @@ def main() -> int:
     ap.add_argument("--problem", default="bearing_block")
     ap.add_argument("--eye", default="tests/fixtures/bearing_block_eye.json")
     ap.add_argument("--n-eq-budget", type=int, default=8000)
-    ap.add_argument("--max-solves", type=int, default=4)
+    ap.add_argument("--max-solves", type=int, default=2)
     ap.add_argument("--out", default="/opt/cursor/artifacts/vla_skill_walkthrough")
     ap.add_argument(
         "--reference",
@@ -98,6 +125,8 @@ def main() -> int:
         )
     )
     print(f"[eye] budget-scaled mesh n_elem={n_mesh} target={n_elem}", flush=True)
+    h_eye = {d.name: d.h for d in scaled}
+    h_eye["field"] = rem
 
     head = CachedDrawingPartitioner(str(spec_path))
     runner = FemRunner(problem, work, ccx_timeout=1800.0)
@@ -109,45 +138,50 @@ def main() -> int:
     vla_recs = [r for r in runner.records if r.method == "vla_eye"]
     for r in vla_recs:
         r.extra.setdefault("n_eq_budget", args.n_eq_budget)
-    print(
-        f"[vla] solves={vla.solves} early={vla.stopped_early} "
-        f"s={vla.s_last:.3f} kappa={vla.kappa_last:.3f} "
-        f"final={vla.info.get('pso', {}).get('final_revision')} "
-        f"mode={vla.info.get('pso', {}).get('mode')}",
-        flush=True,
-    )
 
     runner.reset_counter()
-    # one-step LP: probe + one predicted remesh (rounds+1 solves).  k=1 is uniform.
     run_local_prediction(runner, budgets=[n_elem], rounds=1, method="lp_eye")
     lp_recs = [r for r in runner.records if r.method == "lp_eye"]
     for r in lp_recs:
         r.extra.setdefault("n_eq_budget", args.n_eq_budget)
 
-    def table(recs):
-        lines = [f"{'k':>2} {'stage':18s} {'N_eq':>8} {'e_E':>8} {'Ση²':>10} {'N/B':>6}"]
-        for r in recs:
-            e = r.e_energy if r.e_energy is not None else float("nan")
-            eta = r.extra.get("sum_eta2", float("nan"))
-            lines.append(
-                f"{r.solve_index:2d} {r.stage:18s} {r.n_equations:8d} "
-                f"{e:8.4f} {eta:10.3f} {r.n_equations / args.n_eq_budget:6.2f}"
-            )
-        return "\n".join(lines)
+    h_final = {
+        n: h for n, h in zip(vla.seeds_final, vla.sizes_final) if n in h_eye
+    }
+    names = [n for n in h_eye if n in h_final]
+    rho = _spearman([h_eye[n] for n in names], [h_final[n] for n in names])
+    rem_h = h_final.get("field") or rem
+    rims = [h_final[n] for n in names if "rim" in n or "patch" in n]
+    rank_ok = bool(rims) and rem_h > 0 and min(rims) < rem_h
 
-    print("\n[VLA eye]\n" + table(vla_recs), flush=True)
-    print("\n[LP one-step]\n" + table(lp_recs), flush=True)
+    print("\n[VLA eye]\n" + _table(vla_recs, args.n_eq_budget), flush=True)
+    print("\n[LP one-step]\n" + _table(lp_recs, args.n_eq_budget), flush=True)
+    print(
+        f"[rank] spearman(h_eye, h_final)={rho}  "
+        f"rims_finer_than_remainder={rank_ok}",
+        flush=True,
+    )
 
     payload = {
         "protocol": "vla-real-workflow",
         "problem": problem.instance_id,
         "n_eq_budget": args.n_eq_budget,
         "eye": args.eye,
-        "scaled_eye": str(spec_path),
+        "vla_defaults": {
+            "max_solves": cfg.max_solves,
+            "allow_communication": cfg.allow_communication,
+            "allow_split": cfg.allow_split,
+        },
         "first_mesh_elems": n_mesh,
         "vla": asdict(vla),
-        "vla_records": [_row(r) for r in vla_recs],
-        "lp_records": [_row(r) for r in lp_recs],
+        "vla_records": [_row(r, args.n_eq_budget) for r in vla_recs],
+        "lp_records": [_row(r, args.n_eq_budget) for r in lp_recs],
+        "drawing_rank": {
+            "spearman": rho,
+            "rims_finer_than_remainder": rank_ok,
+            "h_eye": h_eye,
+            "h_final": h_final,
+        },
         "note": "new-protocol trial; do not paste into old A2′ tables",
     }
     (out / "comparison.json").write_text(json.dumps(payload, indent=1, default=str))

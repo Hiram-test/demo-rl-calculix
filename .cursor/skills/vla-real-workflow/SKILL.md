@@ -10,14 +10,16 @@ description: Real FEA meshing workflow for Visionamr VLA. Use when changing VLA,
 ## 两段
 
 ```
-读图（零次求解）     图纸 / 几何 / 荷载印 / 支承 → 不规则区 + 每区一个尺寸
-                     没画到的也要委派。允许拆剖面。
-预算尺度（零次求解） 相对粗细已定之后，用 Gmsh 单元数把整体尺度收到预算附近
+读图（零次求解）     图纸定**相对粗细**（不规则区 + 每区一个尺寸 + remainder）
+预算尺度（零次求解） Gmsh 单元数把整体尺度收到预算附近。排序不许改。
 第一次求解           落在这张已画过的网格上（不是均匀 h0）
-读云图（用残差）     中间轮：通信 / 分裂，然后实测 PSO
-最后的修订          **只用实测 PSO**（不许通信、不许分裂、不许再画、不许 LP、不许误差代理）
-停                  QoI / 指示子 / 预算，一两轮定稿
-对照                同实例同方程预算，和一步局部预测比 e@k（LP 的 k=1 是均匀探针）
+一次修订             (s,κ) PSO：**先验是眼睛的尺寸**
+                     h_i = h_eye_i · exp(s + κ τ_i)
+                     τ 来自实测残差密度。多边形不重画。
+                     不许通信轮按 η 份额重谈，不许分裂，不许 LP 涂尺寸。
+停                  一两轮定稿
+对照                同预算一步 LP。轴：e_E、e_qoi、N/B、图纸排序还在不在。
+                    不能只比误差。
 ```
 
 画区 + 眼睛给尺寸 **禁止** 调用 CalculiX / `FemRunner.solve` / `post.vm_*` / `eta2`。
@@ -51,9 +53,11 @@ PSO 已经写好了。适应度 = 上次实测 η² 份额 + 单元数缩放 N ~
 - 提示词写图纸，不写响应场 / 应力场。没画到的给 `remainder_fineness_fraction`。允许 `view=section`。
 - 区域是不规则多边形，默认不是盒子。盒子只留 AB2。
 - 第一次求解计入 k=1，可以成为交付解。不要把第一张网当成可丢的均匀探针。
-- 有求解之后：通信、分裂、**实测 PSO**、硬帽。不要 `predicted_sizes` / LP 几何平均涂初始化。
+- 主方法：`allow_communication=False`，`allow_split=False`，`max_solves=2`。通信/分裂只留 AB。
+- 修订 PSO 的 `h+` 必须是眼睛尺寸，不是通信轮输出，也不是「按 η 重新给的尺寸」。
+- 重网格用 `drawings_size_fn`（同一批多边形），不要用旧网标签把图画糊掉。
 - `run_vla` 只调用 `calibrate_measured`。`fit_surrogate` / `calibrate(` 不得出现在 `pipeline.py`。
-- 画完必须走完短循环，再和同档 LP 比。不要画完就停，也不要只用 Scripted 代替眼睛。
+- 对照至少报 e_E、e_qoi、N、N/B、图纸排序（rim 仍细于 remainder）。不能只报一条误差曲线。
 
 ## 诚实
 

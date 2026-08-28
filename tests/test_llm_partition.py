@@ -162,6 +162,10 @@ def test_eye_vs_lp_script_is_one_step_and_not_old_a2prime():
     assert "rounds=1" in src
     assert "rounds=2" not in src
     assert "do not paste into old A2" in src
+    assert "e_qoi" in src
+    assert "n_over_budget" in src
+    assert "drawing_rank" in src
+    assert "max-solves\", type=int, default=2" in src or "default=2" in src
 
 
 def test_drawing_marks_follow_bcs_not_family_hardcode():

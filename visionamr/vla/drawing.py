@@ -7,7 +7,7 @@ gets an eye-assigned remainder size; it is not silently dumped at h0.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -113,6 +113,17 @@ def drawings_size_fn(drawings: list[DrawnRegion], remainder_h: float, problem: P
         return size_at_xyz((x, y, z), drawings, remainder_h, problem)
 
     return fn
+
+
+def drawings_with_sizes(
+    drawings: list[DrawnRegion],
+    names: list[str],
+    sizes: np.ndarray,
+) -> list[DrawnRegion]:
+    """Same polygons, new eye sizes.  Regions are not re-drawn from η."""
+
+    by_name = {n: float(h) for n, h in zip(names, sizes)}
+    return [replace(d, h=by_name[d.name]) if d.name in by_name else d for d in drawings]
 
 
 def scale_drawings_to_elem_budget(

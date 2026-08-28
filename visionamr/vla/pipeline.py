@@ -1,19 +1,13 @@
 """The VLA short loop: real-workflow remeshing (skill: vla-real-workflow).
 
-Global solve accounting (all through FemRunner):
-
   draw             geometry / loads / supports; no CalculiX
-  solve 1          "first"      mesh from eye sizes (not uniform h0)
-  revise (mid)     communication + optional split, then PSO
-  solve 2..k-1     "revise{r}"
-  last revision    PSO only (no communication, no split, no eye, no LP)
-  solve k          "certified"
+  solve 1          "first"      mesh from the drawing (not uniform h0)
+  last revision    (s, κ) PSO from the *eye* sizes — not a communication
+                   re-paint from η, not LP.  Remesh keeps the same polygons.
+  solve 2          "certified"
 
-The loop is adaptive: it stops early when the measured indicator meets
-the accuracy limit within the resource budget, and never exceeds
-``max_solves``.  PSO fitness is the last solve's η² plus N ~ h^{-d};
-there is no η ~ h^q error surrogate.  Asymptotic optimality is ceded
-to Doerfler.
+Communication / split stay as AB5 / AB4 only.  The main method is
+一两轮定稿.  Asymptotic optimality is ceded to Doerfler.
 """
 
 from __future__ import annotations
@@ -26,7 +20,7 @@ from ..experiment import FemRunner
 from ..indicators import zz_indicator
 from ..mesher import generate_mesh
 from .agents import AgentConfig, communication_round
-from .drawing import drawings_size_fn
+from .drawing import drawings_size_fn, drawings_with_sizes
 from .pso import PSOConfig, calibrate_measured
 from .regions import Partition
 
@@ -34,10 +28,10 @@ from .regions import Partition
 @dataclass
 class VLAConfig:
     n_eq_budget: int = 8000
-    max_solves: int = 4               # probe included; adaptive, not fixed
+    max_solves: int = 2               # first + one certified remesh
     error_share_target: float = 0.25  # accuracy limit vs first-solve indicator
     min_budget_use: float = 0.7       # early stop needs this utilization
-    allow_split: bool = True
+    allow_split: bool = False         # AB4; main method does not re-draw
     early_stop: bool = True
     gradation: float = 0.9
     init_ratio_bounds: tuple[float, float] = (1.0 / 8.0, 1.8)
@@ -46,7 +40,7 @@ class VLAConfig:
     min_predicted_gain: float = 0.15   # retired: was E_pred inplace stop
     inplace_min_use: float = 0.88      # retired with the error surrogate
     partition_mode: str = "drawn"      # drawn | geodesic | linf_box (AB2)
-    allow_communication: bool = True   # AB5
+    allow_communication: bool = False  # AB5; η-share talk is not the main method
     allow_pso: bool = True             # AB6
     pso_mode: str = "sk"               # sk | s_only | nelder (AB8)
     use_measured_exponents: bool = True  # AB9
@@ -112,6 +106,7 @@ def run_vla(
     )
     h_init = vision_assigned_sizes(part, problem)
     part = part.with_sizes(h_init)
+    h_eye = h_init.copy()
     seeds_initial = [s.name for s in seeds]
     sizes_initial = [float(v) for v in h_init]
     remainder_h = next(
@@ -136,25 +131,24 @@ def run_vla(
     s_last, k_last = 0.0, 0.0
     solve_idx = 1
 
-    # ---- later solves: residual revision; last revision is PSO only ------
+    # ---- later solves: PSO from the eye sizes, same polygons ---------------
     while solve_idx < cfg.max_solves:
         next_is_final = solve_idx + 1 == cfg.max_solves
         drift = 1.0
         if cfg.use_resource_drift and pso_info.get("R_pred_elems"):
             drift = rec.n_elems / max(pso_info["R_pred_elems"], 1.0)
 
+        part_next = part
         if next_is_final:
-            # last revision uses PSO only — no communication, no split, no eye
             round_info = {"skipped": True, "reason": "final_revision_pso"}
-            part_next = part
             pso_cfg = replace(
                 cfg.pso,
                 pos_bound=cfg.pso_pos_bound_later,
                 budget_safety=cfg.final_budget_safety,
             )
         else:
-            adjacency = part.adjacency(mesh, labels)
             if cfg.allow_communication:
+                adjacency = part.adjacency(mesh, labels)
                 h_agent, round_info = communication_round(
                     part, feats, adjacency,
                     n_eq_budget=cfg.n_eq_budget, eq_per_elem=eq_per_elem,
@@ -162,8 +156,7 @@ def run_vla(
                 )
                 part_next = part.with_sizes(h_agent)
             else:
-                round_info = {"skipped": True}
-                part_next = part
+                round_info = {"skipped": True, "reason": "main_method_no_comm"}
             if cfg.allow_split:
                 grown = part_next.split_concentrated(post, eta2, labels)
                 if len(grown.seeds) > len(part_next.seeds):
@@ -174,8 +167,10 @@ def run_vla(
 
         A = part_next.adjacency_matrix(mesh, labels)
         if cfg.allow_pso:
-            h_mesh = np.maximum(feats.h_meas, problem.h_min)
-            h_start = part_next.sizes() if not next_is_final else h_mesh
+            # prior is the drawing, not an η-repaint
+            h_start = h_eye
+            if len(h_start) != len(part_next.seeds):
+                h_start = part_next.sizes()
             h_cal, pso_info = calibrate_measured(
                 part_next, h_start, feats, A,
                 n_eq_budget=cfg.n_eq_budget,
@@ -190,12 +185,17 @@ def run_vla(
         s_last, k_last = pso_info["s"], pso_info["kappa"]
 
         part = part_next.with_sizes(h_cal)
-        labels = part.assign(mesh)
+        drawings = drawings_with_sizes(
+            drawings, [s.name for s in part.seeds], part.sizes()
+        )
+        remainder_h = next(
+            (s.h for s in part.seeds if s.origin == "coarse"), remainder_h
+        )
 
         solve_idx += 1
         is_final = solve_idx == cfg.max_solves
         stage = "certified" if is_final else f"revise{solve_idx}"
-        mesh = generate_mesh(problem, part.size_field(mesh, labels))
+        mesh = generate_mesh(problem, drawings_size_fn(drawings, remainder_h, problem))
         post, rec = runner.solve_mesh(mesh, method=method, stage=stage)
         eta2 = zz_indicator(problem, post)
         labels = part.assign(mesh)

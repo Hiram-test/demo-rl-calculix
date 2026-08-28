@@ -258,15 +258,23 @@ def test_pipeline_has_no_error_surrogate():
 
     from pathlib import Path
 
+    from visionamr.vla.pipeline import VLAConfig
+
     root = Path(__file__).resolve().parents[1]
     src = (root / "visionamr" / "vla" / "pipeline.py").read_text()
     assert "fit_surrogate" not in src
     assert "calibrate_measured" in src
     assert "from .pso import" in src and "calibrate," not in src.split("from .pso import", 1)[1].split("\n", 1)[0]
+    assert "drawings_size_fn" in src
+    assert "h_eye" in src
     scripted = (root / "visionamr" / "vla" / "partition.py").read_text()
     propose_body = scripted.split("def propose")[1].split("def _drawing_frac")[0]
     assert "vm_node" not in propose_body
     assert "del post, eta2" in propose_body
+    cfg = VLAConfig()
+    assert cfg.max_solves == 2
+    assert cfg.allow_communication is False
+    assert cfg.allow_split is False
 
 
 def test_calibrate_measured_respects_budget_without_predicting_error():
@@ -351,6 +359,17 @@ def test_calibrate_measured_anchors_on_last_mesh_not_proposal():
     assert R <= 1.10 * info["elems_budget"]
     # naive h_ref=h_plus would think N is still 1600 and accept 0.05
     assert float(h.mean()) > 0.08
+
+
+def test_drawings_with_sizes_keeps_polygons():
+    from visionamr.geometry import make_bearing_block
+    from visionamr.vla.drawing import DrawnRegion, drawings_with_sizes
+
+    problem = make_bearing_block()
+    d = DrawnRegion("patch_core", 0.3 * problem.h0, "top", ((0.0, 0.0), (1.0, 0.0), (0.5, 1.0)))
+    out = drawings_with_sizes([d], ["patch_core"], np.array([0.5 * problem.h0]))
+    assert out[0].polygon == d.polygon
+    assert out[0].h == 0.5 * problem.h0
 
 
 def test_skill_locks_measured_pso_and_forbids_error_surrogate():
