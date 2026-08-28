@@ -30,10 +30,10 @@ jobs:
           python-version: '3.12'
           cache: pip
 
-      - name: Install dependencies (no solver needed for unit tests)
+      - name: Install dependencies (no CalculiX; gmsh for G7 mesh tests)
         run: |
           python -m pip install --upgrade pip --quiet
-          python -m pip install numpy scipy pytest --quiet
+          python -m pip install numpy scipy pytest gmsh --quiet
 
       - name: Run unit tests
         run: python -m pytest tests/ -q
@@ -58,3 +58,6 @@ jobs:
 
       - name: "Gate G1: correctly deployed Doerfler must beat uniform"
         run: python3 scripts/run_smoke.py
+
+      - name: "Gate G7: load resultant is mesh-independent"
+        run: python -m pytest tests/test_load_consistency.py -q

@@ -34,12 +34,6 @@ from .vla.partition import (
     ScriptedVisionPartitioner,
 )
 from .vla.pipeline import VLAConfig, run_vla
-from .viz import (
-    plot_ablation_bars,
-    plot_budget_scatter,
-    plot_error_curves,
-    plot_error_vs_solves,
-)
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -685,6 +679,12 @@ def _method_series(records: list[dict], method: str) -> list[dict]:
 
 def step_s8() -> dict:
     from . import report
+    from .viz import (
+        plot_ablation_bars,
+        plot_budget_scatter,
+        plot_error_curves,
+        plot_error_vs_solves,
+    )
 
     tables = report.build_all_tables(CAMPAIGN)
     figdir = RESULTS / "figures"

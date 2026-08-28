@@ -52,21 +52,24 @@ def test_llm_fallback_without_api_key(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     part = LLMVisionPartitioner()
 
+    from visionamr.mesher import Mesh
+
+    # Synthetic tet — this path must not require Gmsh or a field render.
+    mesh = Mesh(
+        nodes=np.array(
+            [[0, 0, 0], [400, 0, 0], [0, 400, 0], [0, 0, 120]], dtype=float
+        ),
+        cells=np.array([[0, 1, 2, 3]]),
+        dim=3,
+    )
+
     class DummyPost:
-        mesh = None
-        vm_node = None
-        vm_elem = None
+        def __init__(self):
+            self.mesh = mesh
+            self.vm_node = np.array([1.0, 4.0, 2.0, 8.0])
+            self.vm_elem = np.array([3.75])
 
-    # Scripted fallback needs a real mesh; just check _fallback path with no key
-    # via propose would need a mesh.  Direct _fallback:
-    from visionamr.mesher import generate_uniform
-    from visionamr.fem_post import compute_post
-
-    mesh = generate_uniform(problem, problem.h0)
-    u = np.zeros((mesh.n_nodes, 3))
-    post = compute_post(mesh, problem, u)
-    eta2 = np.ones(mesh.n_cells)
-    seeds = part.propose(problem, post, eta2)
+    seeds = part.propose(problem, DummyPost(), np.ones(mesh.n_cells))
     assert seeds
     assert part.last_info["source"] == "scripted_fallback"
     assert "no_api_key" in part.last_info["errors"][0]

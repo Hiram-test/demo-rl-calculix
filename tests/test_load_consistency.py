@@ -11,7 +11,6 @@ from visionamr.geometry import (
     make_lbracket,
     make_plate_holes,
 )
-from visionamr.mesher import generate_uniform
 
 
 @pytest.mark.parametrize(
@@ -19,6 +18,9 @@ from visionamr.mesher import generate_uniform
     [make_lbracket, make_plate_holes, make_bearing_block, make_deck_panel],
 )
 def test_resultant_mesh_independent(factory):
+    pytest.importorskip("gmsh")
+    from visionamr.mesher import generate_uniform
+
     problem = factory()
     target = analytic_load_resultant(problem)
     rels = []

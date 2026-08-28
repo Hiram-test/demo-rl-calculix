@@ -323,8 +323,6 @@ class LLMVisionPartitioner:
     def propose(self, problem: Problem, post: PostState, eta2: np.ndarray) -> list[Seed]:
         from pathlib import Path
 
-        from ..viz import render_field_png
-
         errors: list[str] = []
         if self.cache_path and Path(self.cache_path).exists():
             seeds = load_seed_cache(self.cache_path, problem)
@@ -335,11 +333,6 @@ class LLMVisionPartitioner:
                 "cache": self.cache_path,
             }
             return seeds
-
-        png = render_field_png(problem, post)
-        if self.dump_dir:
-            Path(self.dump_dir).mkdir(parents=True, exist_ok=True)
-            (Path(self.dump_dir) / "probe_field.png").write_bytes(png)
 
         api_base = self.api_base
         api_key = self.api_key
@@ -352,6 +345,13 @@ class LLMVisionPartitioner:
 
         if not api_key:
             return self._fallback(problem, post, eta2, ["no_api_key"])
+
+        from ..viz import render_field_png
+
+        png = render_field_png(problem, post)
+        if self.dump_dir:
+            Path(self.dump_dir).mkdir(parents=True, exist_ok=True)
+            (Path(self.dump_dir) / "probe_field.png").write_bytes(png)
 
         for attempt in range(1, self.n_retries + 1):
             try:

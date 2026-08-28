@@ -119,6 +119,37 @@ def test_communication_round_uses_measured_exponents():
     assert d0 != d1  # measured rates differentiate otherwise identical regions
 
 
+def test_vla_deliverable_holds_certified_after_early_stop():
+    """A2′ must keep reporting the certified iterate for k > n_solves."""
+
+    from visionamr.campaign import vla_deliverable
+
+    recs = [
+        {"method": "vla", "n_equations": 1200, "e_energy": 0.48,
+         "extra": {"sum_eta2": 12.0}},
+        {"method": "vla", "n_equations": 7200, "e_energy": 0.21,
+         "extra": {"sum_eta2": 3.0}},
+        {"method": "vla", "n_equations": 7500, "e_energy": 0.198,
+         "extra": {"sum_eta2": 2.4}},
+    ]
+    pick3 = vla_deliverable(recs, 3, 8000)
+    pick6 = vla_deliverable(recs, 6, 8000)
+    assert pick3 is not None and pick6 is not None
+    assert pick3["e_energy"] == pick6["e_energy"] == 0.198
+
+
+def test_reference_floor_honours_lbracket_corner_grading():
+    """G3: reference mesh floor must be at least as fine as h_ref/48."""
+
+    from visionamr.experiment import reference_floor
+    from visionamr.geometry import make_lbracket
+
+    problem = make_lbracket()
+    floor = reference_floor(problem)
+    assert floor <= problem.h_ref / 48.0 + 1e-15
+    assert floor < problem.h_min
+
+
 def test_surrogate_dimension_changes_resource_scaling():
     sur2 = Surrogate(
         E_ref=np.array([1.0]), R_ref=np.array([1000.0]),
