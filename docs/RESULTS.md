@@ -85,22 +85,22 @@
  },
  "deck_panel": {
   "2": {
-   "n": 0,
-   "p": null,
-   "median_diff": null,
-   "judgment": "\u8bc1\u636e\u4e0d\u8db3"
+   "n": 8,
+   "p": 0.00390625,
+   "median_diff": -0.25774678926183725,
+   "judgment": "\u6210\u7acb"
   },
   "3": {
-   "n": 0,
-   "p": null,
-   "median_diff": null,
-   "judgment": "\u8bc1\u636e\u4e0d\u8db3"
+   "n": 8,
+   "p": 0.00390625,
+   "median_diff": -0.15655207663817278,
+   "judgment": "\u6210\u7acb"
   },
   "4": {
-   "n": 0,
-   "p": null,
-   "median_diff": null,
-   "judgment": "\u8bc1\u636e\u4e0d\u8db3"
+   "n": 8,
+   "p": 0.00390625,
+   "median_diff": -0.055071837310898236,
+   "judgment": "\u6210\u7acb"
   }
  }
 }
