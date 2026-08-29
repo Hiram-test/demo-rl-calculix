@@ -44,29 +44,21 @@ class GuardedToolGateway(DeterministicToolGateway):  # Add world-model bonus ref
         grades = self.validate(state, action)  # Validate the discrete bonus selection.
         bulk = self._regional_bulk(state, float(self.config.dorfler_theta))  # Approximate the Dörfler backbone in region space.
         bonus = np.asarray(action.deltas, dtype=int) < 0  # Decode only selected bonus regions.
-        raw_sizes = np.asarray(state.sizes, dtype=float).copy()  # Start from the latest realized mesh instead of resetting to absolute grade priors.
-        raw_sizes[bulk] *= float(self.config.dorfler_factor)  # Apply the regional preview of exact Dörfler.
-        raw_sizes[bonus] *= float(self.bonus_factors[1 if len(self.bonus_factors) > 1 else 0])  # Add a moderate semantic bonus in the preview.
-        raw_sizes = np.clip(raw_sizes, float(self.problem.h_min), float(self.problem.h0))  # Enforce physical mesh limits.
-        ratio = np.maximum(raw_sizes, 1.0e-12) / np.maximum(state.sizes, 1.0e-12)  # Measure relative changes from the real current state.
+        preview_sizes = np.asarray(state.sizes, dtype=float).copy()  # Start from the latest realized mesh instead of resetting to absolute grade priors.
+        preview_sizes[bulk] *= float(self.config.dorfler_factor)  # Apply the regional preview of exact Dörfler.
+        preview_sizes[bonus] *= float(self.bonus_factors[1 if len(self.bonus_factors) > 1 else 0])  # Add a moderate semantic bonus in the preview.
+        preview_sizes = np.clip(preview_sizes, float(self.problem.h_min), float(self.problem.h0))  # Enforce physical limits without coarsening any current region.
+        ratio = np.maximum(preview_sizes, 1.0e-12) / np.maximum(state.sizes, 1.0e-12)  # Measure relative changes from the real current state.
         predicted_elems = float(np.sum(np.maximum(state.elems, 1.0) * ratio ** (-float(self.problem.dim))))  # Predict regional element redistribution.
         eq_per_elem = float(state.n_equations) / max(float(state.elems.sum()), 1.0)  # Calibrate resource scaling on the latest real mesh.
-        predicted_equations = max(predicted_elems * eq_per_elem, 1.0)  # Obtain the unprojected equation prediction.
-        target = float(self.config.budget_safety * state.budget)  # Define the deterministic safe budget.
-        if predicted_equations > target:  # Project only the preview when the protected candidate is predicted to exceed resources.
-            scale = float((predicted_equations / max(target, 1.0)) ** (1.0 / float(self.problem.dim)))  # Solve the global resource law once.
-            preview_sizes = np.clip(raw_sizes * scale, float(self.problem.h_min), float(self.problem.h0))  # Produce a comparable world-model input.
-            ratio = np.maximum(preview_sizes, 1.0e-12) / np.maximum(state.sizes, 1.0e-12)  # Recompute projected changes.
-            predicted_elems = float(np.sum(np.maximum(state.elems, 1.0) * ratio ** (-float(self.problem.dim))))  # Recompute projected elements.
-            predicted_equations = max(predicted_elems * eq_per_elem, 1.0)  # Recompute projected equations.
-        else:  # Preserve all protected refinement when the preview is already feasible.
-            scale = 1.0  # Record that no preview projection occurred.
-            preview_sizes = raw_sizes  # Preserve the exact relative allocation.
+        uncapped_equations = max(predicted_elems * eq_per_elem, 1.0)  # Obtain the unconstrained equation prediction.
+        target = float(self.config.budget_safety * state.budget)  # Define the deterministic safe budget used by certification.
+        predicted_equations = min(float(uncapped_equations), float(target))  # Represent the certifier's strongest feasible bonus selection without altering target sizes.
         digest = hashlib.sha256()  # Create an idempotent guarded request id.
         digest.update(state.state_id.encode("ascii"))  # Bind the request to one state.
         digest.update(action.action_id.encode("utf-8"))  # Bind the request to one planner choice.
         digest.update(np.ascontiguousarray(bonus, dtype=np.uint8).tobytes())  # Bind the exact semantic bonus set.
-        audit = {"mapping_version": self.mapping_version, "state_id": state.state_id, "action_id": action.action_id, "request_id": digest.hexdigest()[:24], "global_preview_scale": float(scale), "predicted_equations": float(predicted_equations), "continuous_input_from_model": False, "dorfler_backbone": True, "bonus_regions": [state.names[i] for i in np.flatnonzero(bonus)]}  # Emit a strict MCP-style preview response.
+        audit = {"mapping_version": self.mapping_version, "state_id": state.state_id, "action_id": action.action_id, "request_id": digest.hexdigest()[:24], "preview_projection": "strongest_feasible_bonus_is_selected_by_mesh_only_certification", "uncapped_predicted_equations": float(uncapped_equations), "predicted_equations": float(predicted_equations), "continuous_input_from_model": False, "dorfler_backbone": True, "preview_never_coarsens_current_regions": True, "bonus_regions": [state.names[i] for i in np.flatnonzero(bonus)]}  # Emit a strict MCP-style preview response.
         return ToolPreview(action=action, grades=grades, sizes=preview_sizes, n_equations=float(predicted_equations), audit=audit)  # Return the action-conditioned world-model input.
     def certify(self, partition, state: WorldState, action: WorldAction, current_mesh, eta2: np.ndarray) -> CertifiedAction:  # Materialize an exact Dörfler backbone plus selected semantic refinement.
         if action.kind != "guarded":  # Keep exact v1 execution for all other methods.
