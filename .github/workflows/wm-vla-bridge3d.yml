@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - visionamr/bridge_scenarios.py
+      - visionamr/vla/bridge_partition.py
       - visionamr/vla/tool_contract.py
       - visionamr/vla/world_model.py
       - visionamr/vla/pipeline_world.py
@@ -11,8 +12,13 @@ on:
       - scripts/run_wm_vla_bridge3d.py
       - scripts/smoke_wm_vla_bridge3d.py
       - tests/test_world_vla.py
+      - tests/test_wm_vla_smoke_source.py
       - .github/workflows/wm-vla-bridge3d.yml
   workflow_dispatch:
+
+concurrency:
+  group: wm-vla-bridge3d-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -31,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip --quiet
           python -m pip install numpy scipy pytest --quiet
       - name: Test action contract, world model, planner, bridge scenario, and Dörfler gate
-        run: python -m pytest tests/test_world_vla.py -q
+        run: python -m pytest tests/test_world_vla.py tests/test_wm_vla_smoke_source.py -q
 
   bridge3d-native-smoke:
     runs-on: ubuntu-24.04
