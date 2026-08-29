@@ -138,7 +138,7 @@ class ResidualWorldModel:  # Learn corrections to a conservative action-conditio
         base_error_multiplier = 1.0 - state.dorfler_error_fraction * (1.0 - self.config.refine_factor ** exponent)  # Model exact Dörfler as partial regional refinement.
         base_resource_multiplier = 1.0 + state.dorfler_element_fraction * (self.config.refine_factor ** (-state.dim) - 1.0)  # Model exact Dörfler's local element growth.
         selected = depth > 0.0  # Identify regions receiving advance investment.
-        delegated_levels = 1.0 + depth  # Interpret depth as future hits beyond the current mandatory hit.
+        delegated_levels = depth  # Interpret one level as extending the current Dörfler atom over the selected region.
         full_error_multiplier = self.config.refine_factor ** (exponent * delegated_levels)  # Predict full-region error reduction for delegated regions.
         full_resource_multiplier = self.config.refine_factor ** (-state.dim * delegated_levels)  # Predict full-region element growth for delegated regions.
         error_multiplier = np.where(selected, np.minimum(base_error_multiplier, full_error_multiplier), base_error_multiplier)  # Preserve at least the Dörfler error reduction.
