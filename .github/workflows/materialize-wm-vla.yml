@@ -46,6 +46,7 @@ jobs:
                       raise RuntimeError(f"unsafe bundle member: {member.name}")  # Abort before writing unsafe content.
               source.extractall(root, filter="data")  # Restore only ordinary data members after path validation.
           shutil.rmtree(chunk_dir)  # Remove the temporary staged fragments from the final branch state.
+          (root / ".github" / "workflows" / "wm-vla-bridge3d.yml").unlink(missing_ok=True)  # Defer the final CI workflow to the connected GitHub writer.
           (root / ".github" / "workflows" / "materialize-wm-vla.yml").unlink()  # Remove this one-shot bootstrap workflow.
           PY
           git config user.name "github-actions[bot]"
