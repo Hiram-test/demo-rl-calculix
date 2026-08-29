@@ -22,7 +22,7 @@ description: Real FEA meshing workflow for Visionamr VLA. Use when changing VLA,
 不准的微调留给下一眼，像人一样。参数循环速度是核心。
 
 `calibrate_grades` 第一次 `feats=None` 评价 = 0；有上次网格时评价 ≤ 1。
-画区 + 判别 **禁止** 调用 CalculiX。没有 API 时代理自己写判别 JSON。
+画区 + 判别 **禁止** 调用 CalculiX。视觉头默认走火山方舟 `doubao-seed-evolving`（OpenAI 兼容，配置见 README「视觉模型（VLA 视觉头）配置」：`ARK_API_KEY` 或 `VISIONAMR_ARK_CONFIG`）；没有 API 时回退脚本头、代理自己写判别 JSON。
 **禁止** 眼睛输出 `fineness_fraction` / 缩放系数 / 连续尺寸。
 **禁止** 眼睛委派参数（包括「交给 PSO 选 h」）。
 **禁止** 把第一次 N 搜回预算：`scale_drawings_to_elem_budget` / Gmsh size-search / 粒子群不得出现在 live 路径或 `run_eye_vs_lp.py`。

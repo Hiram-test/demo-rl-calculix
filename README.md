@@ -20,6 +20,53 @@ sudo apt-get install calculix-ccx libglu1-mesa
 pip install -r requirements.txt
 ```
 
+## 视觉模型（VLA 视觉头）配置
+
+VLA 的视觉头 `visionamr/vla/partition.py::LLMVisionPartitioner` 把渲染出的正交三视图（PNG）发给一个**多模态大模型**，由它像工程师读图一样圈出命名区域并回严格 JSON。默认后端是**火山引擎方舟（Volcengine Ark）的 `doubao-seed-evolving`**，走 OpenAI 兼容的 `/chat/completions`，因此代码里没有任何厂商专用分支。
+
+- 默认端点（`DEFAULT_VLM_API_BASE`）：`https://ark.cn-beijing.volces.com/api/v3`
+- 默认模型（`DEFAULT_VLM_MODEL`）：`doubao-seed-evolving`（多模态，已验证可直接吃 `image_url` 的 base64 三视图并回 JSON）
+- 端点解析统一在 `resolve_vlm_endpoint()`，按以下优先级取凭据（仓库**不含任何密钥**，公开仓库禁止硬编码 key）：
+
+**方式 1：环境变量给 key（最简单）**
+
+```bash
+# Linux / macOS
+export ARK_API_KEY="你的方舟 API Key"
+# Windows PowerShell
+$env:ARK_API_KEY = "你的方舟 API Key"
+```
+
+**方式 2：指向本地方舟配置 JSON（可复用控制台导出的配置，文件留在本机、不要提交）**
+
+可直接复制模板 [`visionamr/vla/ark_config.example.json`](visionamr/vla/ark_config.example.json) 后填入 key：
+
+```json
+{
+  "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+  "api_key": "你的方舟 API Key",
+  "model": "doubao-seed-evolving"
+}
+```
+
+```bash
+export VISIONAMR_ARK_CONFIG="/path/to/evolving_api.json"   # PowerShell 用 $env:
+```
+
+读取兼容 UTF-8 BOM；文件缺失或损坏时按"未配置"处理，不会报错中断。
+
+**方式 3：换任意 OpenAI 兼容的多模态模型**
+
+```bash
+export VLM_API_BASE="https://你的端点/v1"
+export VLM_API_KEY="你的 key"
+export VLM_MODEL="你的视觉模型名"
+```
+
+历史的 `XAI_API_KEY`（xAI Grok）与 `OPENAI_API_KEY` 仍然兼容；也可以在代码里直接构造 `LLMVisionPartitioner(api_base=..., api_key=..., model=...)` 显式指定。
+
+**无 key 时的行为**：`resolve_vlm_endpoint()` 返回 `api_key=None`，视觉头记录 `no_api_key` 并**自动回退到 `ScriptedVisionPartitioner`**（按荷载/支承/角点/孔等结构锚点画图），所以离线环境、CI 和单元测试无需任何密钥即可跑通；`results/**/llm_dump/` 里会留下真实视觉头的图纸、原始回复和解析出的种子，便于审计。方舟为北京节点，请求会自动绕过本机代理直连。
+
 ## 快速验证
 
 ```bash

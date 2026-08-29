@@ -1,3 +1,4 @@
+import codecs
 import json
 
 import numpy as np
@@ -10,9 +11,12 @@ from visionamr.geometry import (
     make_lbracket,
 )
 from visionamr.vla.partition import (
+    DEFAULT_VLM_API_BASE,
+    DEFAULT_VLM_MODEL,
     LLMVisionPartitioner,
     RandomSeedPartitioner,
     parse_seed_json,
+    resolve_vlm_endpoint,
     seeds_from_spec,
 )
 from visionamr.vla.regions import Seed
@@ -216,11 +220,86 @@ def test_rejects_empty_seeds():
         seeds_from_spec({"seeds": []}, problem)
 
 
+_VLM_ENV_VARS = (
+    "VLM_API_BASE",
+    "VLM_MODEL",
+    "VLM_API_KEY",
+    "ARK_API_KEY",
+    "VOLC_API_KEY",
+    "XAI_API_KEY",
+    "OPENAI_API_KEY",
+    "VISIONAMR_ARK_CONFIG",
+)
+
+
+def _clear_vlm_env(monkeypatch):
+    for name in _VLM_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+
+def test_default_endpoint_is_ark_evolving(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    base, key, model = resolve_vlm_endpoint()
+    assert base == DEFAULT_VLM_API_BASE == "https://ark.cn-beijing.volces.com/api/v3"
+    assert model == DEFAULT_VLM_MODEL == "doubao-seed-evolving"
+    assert key is None  # no credential -> caller falls back to scripted head
+
+
+def test_ark_env_key_selects_evolving(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("ARK_API_KEY", "ark-test-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert "volces.com" in base
+    assert key == "ark-test-key"
+    assert model == "doubao-seed-evolving"
+
+
+def test_local_ark_config_file_is_loaded(monkeypatch, tmp_path):
+    _clear_vlm_env(monkeypatch)
+    cfg = tmp_path / "ark.json"
+    # Windows editors may save a UTF-8 BOM; the loader must tolerate it.
+    cfg.write_bytes(
+        codecs.BOM_UTF8
+        + json.dumps(
+            {
+                "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+                "api_key": "ark-local-key",
+                "model": "doubao-seed-evolving",
+            }
+        ).encode("utf-8")
+    )
+    monkeypatch.setenv("VISIONAMR_ARK_CONFIG", str(cfg))
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://ark.cn-beijing.volces.com/api/v3"
+    assert key == "ark-local-key"
+    assert model == "doubao-seed-evolving"
+
+
+def test_explicit_vlm_env_overrides_everything(monkeypatch, tmp_path):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("ARK_API_KEY", "ark-should-not-win")
+    monkeypatch.setenv("VISIONAMR_ARK_CONFIG", str(tmp_path / "missing.json"))
+    monkeypatch.setenv("VLM_API_BASE", "https://example.test/v1")
+    monkeypatch.setenv("VLM_MODEL", "custom-vision")
+    monkeypatch.setenv("VLM_API_KEY", "custom-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://example.test/v1"
+    assert key == "custom-key"
+    assert model == "custom-vision"
+
+
+def test_legacy_xai_env_still_supported(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("XAI_API_KEY", "xai-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://api.x.ai/v1"
+    assert key == "xai-key"
+    assert model == "grok-4"
+
+
 def test_llm_fallback_without_api_key(monkeypatch):
+    _clear_vlm_env(monkeypatch)
     problem = make_bearing_block()
-    monkeypatch.delenv("XAI_API_KEY", raising=False)
-    monkeypatch.delenv("VLM_API_KEY", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     part = LLMVisionPartitioner()
 
     from visionamr.mesher import Mesh

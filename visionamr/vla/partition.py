@@ -199,25 +199,115 @@ VLM_SYSTEM_PROMPT = """你是资深有限元网格工程师。你看到的是结
 不要给连续单元尺寸。等级就够了。"""
 
 
-def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
-    """Return (api_base, api_key, model).  Prefer SpaceXAI / xAI."""
+# ---------------------------------------------------------------------------
+# Vision-model endpoint resolution
+#
+# The default vision head is Volcengine Ark (火山引擎方舟) ``doubao-seed-evolving``,
+# a multimodal model served behind an OpenAI-compatible ``/chat/completions``
+# API, so ``LLMVisionPartitioner._chat`` needs no vendor-specific code path.
+# Credentials are never hard-coded in this public repository; they are read
+# from environment variables or a local-only JSON config.  See README
+# ("视觉模型（VLA 视觉头）配置") for the setup walkthrough.
+# ---------------------------------------------------------------------------
 
-    key = (
-        os.environ.get("XAI_API_KEY")
-        or os.environ.get("VLM_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
-    )
-    if os.environ.get("XAI_API_KEY") and not os.environ.get("VLM_API_BASE"):
-        base = "https://api.x.ai/v1"
-        model = os.environ.get("VLM_MODEL", "grok-4")
-    else:
-        base = os.environ.get("VLM_API_BASE") or (
-            "https://api.x.ai/v1" if os.environ.get("XAI_API_KEY")
-            else "https://api.openai.com/v1"
+DEFAULT_VLM_API_BASE = "https://ark.cn-beijing.volces.com/api/v3"
+DEFAULT_VLM_MODEL = "doubao-seed-evolving"
+
+# Environment variables that can carry an Ark / OpenAI-compatible key, in the
+# order they are consulted.
+_KEY_ENV_VARS = ("VLM_API_KEY", "ARK_API_KEY", "VOLC_API_KEY", "XAI_API_KEY", "OPENAI_API_KEY")
+
+
+def _read_local_ark_config() -> dict:
+    """Load a local Ark config JSON pointed to by ``VISIONAMR_ARK_CONFIG``.
+
+    The file uses the console schema ``{"base_url", "api_key", "model"}``
+    (``api_base`` is accepted as an alias).  It stays on the developer's
+    machine (see .gitignore) and is deliberately never packaged.  UTF-8 BOM
+    is tolerated because Windows editors often save JSON with one.
+    """
+
+    path = os.environ.get("VISIONAMR_ARK_CONFIG")
+    if not path:
+        return {}
+    try:
+        from pathlib import Path
+
+        data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        # An unreadable/malformed local config must behave like "not set" so
+        # that environment variables and the scripted fallback still work.
+        return {}
+
+
+def resolve_vlm_endpoint() -> tuple[str, str | None, str]:
+    """Return ``(api_base, api_key, model)`` for the multimodal vision head.
+
+    Resolution order (first non-empty wins per field):
+
+    1. Explicit overrides ``VLM_API_BASE`` / ``VLM_MODEL`` / ``VLM_API_KEY``
+       (point these at any other OpenAI-compatible vendor).
+    2. The local Ark config JSON at ``VISIONAMR_ARK_CONFIG``
+       (``{"base_url": ..., "api_key": ..., "model": ...}``).
+    3. ``ARK_API_KEY`` / ``VOLC_API_KEY`` with the Ark Beijing endpoint and
+       the default model ``doubao-seed-evolving``.
+    4. Legacy ``XAI_API_KEY`` (api.x.ai, grok-4) / ``OPENAI_API_KEY``
+       (api.openai.com, gpt-4o) for backward compatibility.
+
+    With no credential anywhere, the Ark endpoint/default model are returned
+    together with ``api_key=None``; ``LLMVisionPartitioner`` then records
+    ``no_api_key`` and falls back to the scripted head instead of failing.
+    """
+
+    env_base = os.environ.get("VLM_API_BASE")
+    env_model = os.environ.get("VLM_MODEL")
+    env_key = os.environ.get("VLM_API_KEY")
+
+    local = _read_local_ark_config()
+    base = env_base or local.get("base_url") or local.get("api_base")
+    model = env_model or local.get("model")
+    key = env_key or local.get("api_key")
+
+    ark_key = os.environ.get("ARK_API_KEY") or os.environ.get("VOLC_API_KEY")
+    xai_key = os.environ.get("XAI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+
+    # An Ark key (env or local config) selects the Volcengine default.
+    if key or ark_key or (base and "volces.com" in base):
+        return (
+            base or DEFAULT_VLM_API_BASE,
+            key or ark_key,
+            model or DEFAULT_VLM_MODEL,
         )
-        default_model = "grok-4" if "x.ai" in base else "gpt-4o"
-        model = os.environ.get("VLM_MODEL", default_model)
-    return base, key, model
+
+    # A caller-pinned third-party endpoint keeps its base; key/model fall back
+    # through the legacy vendors and the Ark default model.
+    if base:
+        return base, (xai_key or openai_key), (model or DEFAULT_VLM_MODEL)
+
+    # Legacy vendor defaults.
+    if xai_key:
+        return "https://api.x.ai/v1", xai_key, model or "grok-4"
+    if openai_key:
+        return "https://api.openai.com/v1", openai_key, model or "gpt-4o"
+
+    # No credential: Ark endpoint + evolving model, but no key -> scripted fallback.
+    return DEFAULT_VLM_API_BASE, None, model or DEFAULT_VLM_MODEL
+
+
+def _open_chat_response(req: urllib.request.Request, api_base: str, timeout: float):
+    """POST a chat request, bypassing local proxies for the Ark Beijing node.
+
+    The Ark endpoint is a mainland-China address that must be reached
+    directly; a local Clash/TUN proxy otherwise breaks the connection.  Other
+    (overseas) endpoints keep the default system-proxy behaviour.
+    """
+
+    if "volces.com" in (api_base or ""):
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        return opener.open(req, timeout=timeout)
+    return urllib.request.urlopen(req, timeout=timeout)
 
 
 def _bbox_center(problem: Problem) -> tuple[float, float, float]:
@@ -455,6 +545,12 @@ class CachedDrawingPartitioner:
 class LLMVisionPartitioner:
     """Multimodal-LLM vision head (OpenAI-compatible chat completions).
 
+    Default backend is Volcengine Ark ``doubao-seed-evolving`` (see
+    ``resolve_vlm_endpoint`` and the README vision-model section); pass
+    ``model`` / ``api_base`` / ``api_key`` explicitly, or set the
+    ``VLM_*`` / ``ARK_API_KEY`` / ``VISIONAMR_ARK_CONFIG`` environment
+    variables, to use another OpenAI-compatible multimodal model.
+
     Contract: 3 retries, strict JSON seeds, low temperature; on persistent
     failure fall back to ScriptedVisionPartitioner and record the fallback
     in ``last_info`` (campaign reports the fallback rate; never silently
@@ -606,6 +702,6 @@ class LLMVisionPartitioner:
                 "Authorization": f"Bearer {api_key}",
             },
         )
-        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
+        with _open_chat_response(req, api_base, self.timeout_s) as resp:
             body = json.loads(resp.read())
         return body["choices"][0]["message"]["content"]
