@@ -1,0 +1,76 @@
+name: world-model-vla-freeze  # Name the one-shot source-consistency and cleanup workflow.
+
+on:  # Define automatic and manual entry points.
+  push:  # Run when this final consistency gate is added.
+    branches:  # Restrict execution to the dedicated WM-VLA branch.
+      - "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole implementation branch.
+    paths:  # Avoid retriggering after self-removal.
+      - ".github/workflows/world-model-vla-freeze.yml"  # Trigger only from this one-shot freeze definition.
+  workflow_dispatch:  # Permit an explicit rerun if required.
+
+permissions:  # Grant only the branch mutation required for cleanup.
+  contents: write  # Permit the workflow token to remove temporary machinery after verification.
+
+jobs:  # Define the isolated source-freeze job.
+  freeze:  # Verify all production sentinels, run tests, and remove temporary files.
+    runs-on: ubuntu-latest  # Use a reproducible Linux environment.
+    timeout-minutes: 25  # Bound dependency installation and focused unit testing.
+    steps:  # Execute checkout, sentinel checks, tests, cleanup, and commit.
+      - name: Check out implementation branch  # Materialize the writable branch.
+        uses: actions/checkout@v4  # Use the maintained checkout action.
+        with:  # Configure exact branch checkout.
+          ref: "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole implementation branch.
+          fetch-depth: 0  # Retain branch history for a cleanup commit.
+      - name: Set up Python  # Select the supported interpreter.
+        uses: actions/setup-python@v5  # Use the maintained Python setup action.
+        with:  # Configure the interpreter version.
+          python-version: "3.11"  # Match permanent verification.
+      - name: Verify complete production source  # Require every finalized scientific and runtime contract.
+        run: |  # Execute deterministic exact-text source gates.
+          grep -q "if not receipt.budget_pass:" visionamr/vla/world_controller.py  # Require all-action pre-solve budget rejection.
+          grep -q "def _record_equations(record)" visionamr/vla/world_controller.py  # Require record-interface compatibility.
+          grep -q "def _partition_assign" visionamr/vla/world_controller.py  # Require semantic assignment compatibility.
+          grep -q "def _partition_adjacency" visionamr/vla/world_controller.py  # Require deterministic semantic graph construction.
+          grep -q "def _feature_anchor" visionamr/bridge_diaphragm.py  # Require keyword-safe bridge semantic anchors.
+          grep -q "test_world = RegionalWorldModel.load(model_path, config=config)" scripts/run_world_model_vla_bridge.py  # Require independent frozen test snapshots.
+          grep -q "run_local_prediction_multistep" scripts/run_world_model_vla_bridge.py  # Require the independent LP baseline.
+          grep -q "def aggregate_local_prediction_gate" scripts/run_world_model_vla_bridge.py  # Require the four-dimensional LP gate.
+          grep -q "def test_dorfler_floor_uses_best_so_far_pareto_envelopes" tests/test_world_controller.py  # Require the Pareto regression test.
+          ! grep -q "local_prediction_runner" visionamr/vla/world_controller.py  # Forbid LP evaluation code from entering WM-VLA.
+          ! grep -q "predicted_sizes(" visionamr/vla/world_controller.py  # Forbid LP target fields from entering WM-VLA.
+      - name: Install repository  # Install Python dependencies and Pytest.
+        run: |  # Execute deterministic Python installation commands.
+          python -m pip install --upgrade pip  # Upgrade the package installer.
+          python -m pip install -e . pytest  # Install the editable repository and test runner.
+      - name: Run final focused unit suite  # Verify syntax, planning, persistence, purity, domination, and Pareto logic.
+        run: |  # Execute the complete focused source test set.
+          python -m py_compile visionamr/vla/world_controller.py  # Compile the canonical controller.
+          python -m py_compile visionamr/bridge_diaphragm.py  # Compile the medium-complexity bridge benchmark.
+          python -m py_compile visionamr/local_prediction_runner.py  # Compile the independent LP baseline.
+          python -m py_compile scripts/run_world_model_vla_bridge.py  # Compile the complete campaign runner.
+          python -m pytest -q tests/test_world_controller.py  # Run all focused scientific unit gates.
+      - name: Remove temporary finalizers and gates  # Keep only production code, permanent CI, documentation, and measured evidence.
+        run: |  # Delete all known one-shot maintenance files idempotently.
+          rm -f scripts/finalize_world_model_vla.py  # Remove the source-contract finalizer.
+          rm -f scripts/finalize_world_model_vla_runtime.py  # Remove the runtime-interface finalizer.
+          rm -f scripts/finalize_world_model_vla_split.py  # Remove the held-out isolation finalizer.
+          rm -f scripts/finalize_world_model_vla_pareto.py  # Remove the Pareto-envelope finalizer.
+          rm -f scripts/finalize_world_model_vla_lp_gate.py  # Remove the independent-LP finalizer.
+          rm -f scripts/finalize_world_model_vla_composite_gate.py  # Remove the composite-evaluation finalizer.
+          rm -f .github/workflows/finalize-world-model-vla.yml  # Remove the source-contract workflow.
+          rm -f .github/workflows/finalize-world-model-vla-runtime.yml  # Remove the runtime-interface workflow.
+          rm -f .github/workflows/finalize-world-model-vla-split.yml  # Remove the held-out isolation workflow.
+          rm -f .github/workflows/finalize-world-model-vla-pareto.yml  # Remove the Pareto-envelope workflow.
+          rm -f .github/workflows/finalize-world-model-vla-lp-gate.yml  # Remove the independent-LP workflow.
+          rm -f .github/workflows/finalize-world-model-vla-composite.yml  # Remove the composite-evaluation workflow.
+          rm -f .github/workflows/world-model-vla-heldout-gate.yml  # Remove the superseded held-out gate.
+          rm -f .github/workflows/world-model-vla-final-acceptance.yml  # Remove the one-shot final acceptance workflow definition.
+          rm -f .github/workflows/world-model-vla-freeze.yml  # Remove this one-shot freeze workflow definition.
+      - name: Commit frozen source tree  # Persist only verified production code and cleanup.
+        run: |  # Create and push one auditable freeze commit.
+          git config user.name "github-actions[bot]"  # Set the standard automation author name.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"  # Set the standard automation author email.
+          git add -A  # Stage production files, measured evidence, and one-shot removals.
+          git diff --cached --quiet || git commit -m "chore: freeze verified WM-VLA source tree"  # Commit only a material source-tree change.
+          git pull --rebase origin feat/world-model-vla-bridge-diaphragm-ready3  # Reconcile any concurrent evidence commit.
+          git push origin HEAD:feat/world-model-vla-bridge-diaphragm-ready3  # Update the sole implementation branch.
