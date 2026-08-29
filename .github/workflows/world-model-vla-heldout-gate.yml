@@ -1,0 +1,96 @@
+name: world-model-vla-heldout-gate  # Name the one-shot reference-based held-out scientific gate.
+
+on:  # Define automatic and manual entry points.
+  push:  # Run when this workflow is added to the implementation branch.
+    branches:  # Restrict execution to the dedicated WM-VLA branch.
+      - "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole implementation branch.
+    paths:  # Avoid retriggering after self-removal.
+      - ".github/workflows/world-model-vla-heldout-gate.yml"  # Trigger only from this one-shot gate definition.
+  workflow_dispatch:  # Permit an explicit rerun if required.
+
+permissions:  # Grant only the branch mutation required to retain measured evidence.
+  contents: write  # Permit the workflow token to commit the concise gate record and remove itself.
+
+jobs:  # Define the isolated reference-based bridge campaign.
+  heldout-gate:  # Run unit checks, independent training, frozen-snapshot tests, and scientific acceptance.
+    runs-on: ubuntu-latest  # Use a reproducible Linux environment.
+    timeout-minutes: 120  # Bound the medium-complexity three-dimensional finite-element campaign.
+    steps:  # Execute checkout, installation, verification, campaign, evidence, cleanup, and enforcement.
+      - name: Check out implementation branch  # Materialize the writable branch rather than a detached merge commit.
+        uses: actions/checkout@v4  # Use the maintained checkout action.
+        with:  # Configure the exact implementation branch.
+          ref: "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole WM-VLA branch.
+          fetch-depth: 0  # Retain branch history for an evidence commit.
+      - name: Set up Python  # Select the supported scientific interpreter.
+        uses: actions/setup-python@v5  # Use the maintained Python setup action.
+        with:  # Configure the interpreter version.
+          python-version: "3.11"  # Match permanent project verification.
+      - name: Install native finite-element tools  # Install the actual mesher and structural solver.
+        run: |  # Execute deterministic Ubuntu package installation.
+          sudo apt-get update  # Refresh package metadata.
+          sudo apt-get install -y calculix-ccx gmsh libglu1-mesa  # Install CalculiX, Gmsh, and the Gmsh runtime library.
+      - name: Install repository  # Install Python dependencies and the focused test runner.
+        run: |  # Execute deterministic Python installation commands.
+          python -m pip install --upgrade pip  # Upgrade the package installer.
+          python -m pip install -e . pytest  # Install the editable repository and Pytest.
+      - name: Verify scientific unit contracts  # Reject syntax, local-prediction leakage, and Dörfler-shield regressions.
+        id: unit_gate  # Expose the unit outcome to later evidence steps.
+        continue-on-error: true  # Preserve a truthful evidence record when source verification fails.
+        run: |  # Execute the focused deterministic unit suite.
+          python -m py_compile visionamr/vla/world_controller.py  # Compile the canonical controller.
+          python -m py_compile visionamr/bridge_diaphragm.py  # Compile the medium-complexity bridge benchmark.
+          python -m py_compile scripts/run_world_model_vla_bridge.py  # Compile the independent campaign runner.
+          python -m pytest -q tests/test_world_controller.py  # Run action, planning, persistence, purity, and domination gates.
+      - name: Run reference-based frozen-snapshot campaign  # Execute the actual world-model advantage test.
+        id: campaign_gate  # Expose the physical campaign outcome.
+        if: steps.unit_gate.outcome == 'success'  # Launch native solves only after unit contracts pass.
+        continue-on-error: true  # Preserve the full campaign even when its Dörfler floor fails.
+        run: |  # Run independent transition collection and held-out bridge evaluation.
+          python scripts/run_world_model_vla_bridge.py --seed 20260830 --train-cases 2 --test-cases 2 --max-solves 6 --horizon 4 --n-eq-cap 150000 --output artifacts/world_model_vla_bridge_heldout  # Use reference-based metrics because --no-reference is intentionally absent.
+      - name: Write concise held-out evidence  # Extract only measured acceptance fields and per-case gains.
+        if: always()  # Retain evidence after unit, execution, floor, or advantage failures.
+        run: |  # Execute a deterministic line-commented evidence writer.
+          python - <<'PY'  # Start the inline evidence program.
+          from pathlib import Path  # Import portable filesystem paths.
+          import json  # Import structured campaign parsing and serialization.
+          source = Path("artifacts/world_model_vla_bridge_heldout/campaign.json")  # Select the canonical full campaign result.
+          payload = json.loads(source.read_text(encoding="utf-8")) if source.exists() else {}  # Read measured results only when execution produced them.
+          cases = []  # Allocate compact held-out case summaries.
+          for case in payload.get("tests", []):  # Visit every measured held-out bridge instance.
+              comparison = case.get("comparison", {})  # Read its Dörfler-envelope comparison.
+              world = case.get("world", {})  # Read its world-controller execution summary.
+              cases.append({"index": case.get("index"), "not_weaker": comparison.get("not_weaker"), "best_gain": comparison.get("best_gain"), "solve_saving": comparison.get("solve_saving"), "world_advantage": comparison.get("world_advantage"), "world_actions": world.get("world_actions"), "dorfler_fallbacks": world.get("dorfler_fallbacks"), "world_transition_rows": world.get("transition_rows")})  # Preserve only auditable acceptance quantities.
+          evidence = {"schema": 1, "unit_gate_outcome": "${{ steps.unit_gate.outcome }}", "campaign_step_outcome": "${{ steps.campaign_gate.outcome }}", "execution_completed": source.exists(), "reference_metric_requested": True, "train_cases": 2, "test_cases": 2, "max_real_solves_per_method": 6, "planning_horizon": 4, "equation_cap": 150000, "dorfler_floor_pass": payload.get("dorfler_floor_pass"), "world_model_advantage_observed": payload.get("world_model_advantage_observed"), "world_model_rows": payload.get("world_model_rows"), "local_prediction_used": payload.get("local_prediction_used"), "cases": cases, "source": str(source)}  # Build the truthful concise gate record.
+          destination = Path("docs/WM_VLA_HELDOUT_GATE.json")  # Select the stable review evidence path.
+          destination.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")  # Persist the exact measured acceptance result.
+          PY
+      - name: Remove one-shot gate  # Keep the final branch free of temporary orchestration.
+        if: always()  # Clean the gate definition after all outcomes.
+        run: |  # Delete only this one-shot workflow.
+          rm -f .github/workflows/world-model-vla-heldout-gate.yml  # Remove the temporary held-out workflow definition.
+      - name: Commit measured held-out evidence  # Persist the concise truthful gate record before returning status.
+        if: always()  # Commit evidence after success or failure.
+        run: |  # Create and push one auditable evidence commit.
+          git config user.name "github-actions[bot]"  # Set the standard automation author name.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"  # Set the standard automation author email.
+          git add -A  # Stage the concise evidence and one-shot workflow removal.
+          git diff --cached --quiet || git commit -m "test: record reference-based WM-VLA held-out gate"  # Commit only a material evidence change.
+          git pull --rebase origin feat/world-model-vla-bridge-diaphragm-ready3  # Reconcile any preceding one-shot finalizer commit.
+          git push origin HEAD:feat/world-model-vla-bridge-diaphragm-ready3  # Update the sole implementation branch.
+      - name: Enforce complete scientific acceptance  # Require execution, the Dörfler floor, and observed world-model value.
+        if: always()  # Evaluate the committed evidence after every prior outcome.
+        run: |  # Parse the concise evidence and return a deterministic acceptance code.
+          python - <<'PY'  # Start the inline acceptance program.
+          from pathlib import Path  # Import portable path handling.
+          import json  # Import structured evidence parsing.
+          evidence = json.loads(Path("docs/WM_VLA_HELDOUT_GATE.json").read_text(encoding="utf-8"))  # Read the exact committed gate record.
+          accepted = bool(evidence.get("execution_completed")) and evidence.get("unit_gate_outcome") == "success" and bool(evidence.get("dorfler_floor_pass")) and bool(evidence.get("world_model_advantage_observed")) and evidence.get("local_prediction_used") is False  # Apply all scientific acceptance conditions jointly.
+          raise SystemExit(0 if accepted else 2)  # Pass only a complete non-weaker and advantageous independent campaign.
+          PY
+      - name: Upload full held-out evidence  # Preserve meshes, solver decks, logs, metrics, and model transitions.
+        if: always()  # Upload artifacts after both accepted and rejected campaigns.
+        uses: actions/upload-artifact@v4  # Use the maintained artifact uploader.
+        with:  # Configure the complete campaign payload.
+          name: world-model-vla-heldout-evidence  # Name the downloadable scientific evidence bundle.
+          path: artifacts/world_model_vla_bridge_heldout  # Upload the complete isolated campaign directory.
+          if-no-files-found: warn  # Surface an explicit warning when execution failed before artifact creation.
