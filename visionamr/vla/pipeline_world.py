@@ -8,7 +8,8 @@ from ..experiment import FemRunner, SolveRecord  # Reuse the single accountable 
 from ..indicators import zz_indicator  # Measure real post-solve regional error evidence.
 from .grades import grade_from_frac  # Recover ordinal state when a partitioner omits cached grades.
 from .regions import Partition  # Hold the fixed one-shot visual region graph.
-from .tool_contract import MaterializedAction, MeshAction, MeshCertificate, certify_action_mesh  # Enforce deterministic parameter ownership.
+from .budget_certificate import certify_action_mesh_targeted  # Use bidirectional exact Gmsh budget targeting before every real solve.
+from .tool_contract import MaterializedAction, MeshAction, MeshCertificate  # Enforce deterministic action and certificate ownership.
 from .world_model import HybridGraphWorldModel, PlanResult, WorldModelConfig, WorldPlanner, WorldPlannerConfig, WorldState, build_world_state, dorfler_region_action  # Close the model-based control loop.
 
 
@@ -19,7 +20,7 @@ class WorldVLAConfig:  # Keep experimental limits and controller behavior explic
     target_error_ratio: float = 0.32  # Stop after reducing the first-state estimator to this fraction.
     min_budget_use: float = 0.55  # Prevent declaring success on an unnecessarily coarse mesh.
     exact_budget_safety: float = 0.985  # Reserve a narrow hard-cap margin during exact Gmsh certification.
-    max_mesh_attempts: int = 4  # Bound mesh-only certification calls per executed action.
+    max_mesh_attempts: int = 6  # Bound bidirectional exact Gmsh certification calls per executed action.
     early_stop: bool = True  # Permit evidence-based termination before the real solve cap.
     guard_mode: str = "off"  # Choose "off" for pure WM-VLA or "dorfler_region_candidate" for a disclosed guard action.
     model_checkpoint_in: str | None = None  # Optionally load transferable transition memory from earlier instances.
@@ -130,7 +131,7 @@ def run_world_vla(runner: FemRunner, partitioner: Any, config: WorldVLAConfig | 
     partition = Partition(seeds, problem, gradation=0.9, assign_mode="drawn", drawings=drawings)  # Freeze the visual region graph for online identification.
     grades = _partition_grades(partitioner, partition)  # Read the one-shot ordinal visual judgment.
     initial = _initial_materialization(partition, grades)  # Bind the visual prior to the deterministic tool contract.
-    certificate = certify_action_mesh(problem, partition, drawings, initial, cfg.n_eq_budget, cfg.exact_budget_safety, cfg.max_mesh_attempts)  # Generate and exact-certify the initial mesh without CalculiX.
+    certificate = certify_action_mesh_targeted(problem, partition, drawings, initial, cfg.n_eq_budget, cfg.exact_budget_safety, cfg.max_mesh_attempts)  # Generate and exact-certify the initial mesh without CalculiX.
     mesh_certifications = int(certificate.attempts)  # Account for initial Gmsh-only work separately.
     if not certificate.budget_ok:  # Refuse to start from a mesh that violates the hard resource contract.
         raise RuntimeError(f"initial visual mesh could not meet equation budget {cfg.n_eq_budget}")  # Fail transparently before an expensive solve.
@@ -168,7 +169,7 @@ def run_world_vla(runner: FemRunner, partitioner: Any, config: WorldVLAConfig | 
             stopped_reason = str(plan.diagnostics.get("reason", "planner_stop"))  # Preserve the planner's exact rationale.
             measured.record.extra["world_stop"] = stopped_reason  # Attach the terminal decision to the last real state.
             break  # Avoid a pointless remesh and solve.
-        next_certificate = certify_action_mesh(problem, partition, drawings, plan.materialized, cfg.n_eq_budget, cfg.exact_budget_safety, cfg.max_mesh_attempts)  # Exact-certify only the selected first action.
+        next_certificate = certify_action_mesh_targeted(problem, partition, drawings, plan.materialized, cfg.n_eq_budget, cfg.exact_budget_safety, cfg.max_mesh_attempts)  # Exact-certify only the selected first action.
         mesh_certifications += int(next_certificate.attempts)  # Account for all Gmsh-only correction attempts.
         action_log = {"step": int(measured.state.solve_index + 1), "action": plan.action.to_dict(), "materialized": plan.materialized.to_dict(), "certificate": next_certificate.to_dict(), "plan_score": float(plan.score), "predicted_gain": float(plan.predicted_gain), "uncertainty": float(plan.uncertainty)}  # Build the executable action audit record.
         actions.append(action_log)  # Preserve the selected action before execution.
