@@ -1,0 +1,55 @@
+name: finalize-world-model-vla-lp-gate  # Name the one-shot independent-LP evaluation workflow.
+
+on:  # Define automatic and manual entry points.
+  push:  # Run when this finalizer is added to the implementation branch.
+    branches:  # Restrict execution to the dedicated WM-VLA branch.
+      - "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole writable branch.
+    paths:  # Avoid retriggering after self-removal.
+      - ".github/workflows/finalize-world-model-vla-lp-gate.yml"  # Trigger from this one-shot workflow.
+      - "scripts/finalize_world_model_vla_lp_gate.py"  # Trigger from the paired source finalizer.
+  workflow_dispatch:  # Permit an explicit rerun if required.
+
+permissions:  # Grant only the branch mutation required after verification.
+  contents: write  # Permit the workflow token to commit the expanded evaluation protocol.
+
+jobs:  # Define the isolated independent-baseline finalization job.
+  finalize:  # Apply, verify, and self-remove the LP comparison patch.
+    runs-on: ubuntu-latest  # Use a reproducible Linux environment.
+    timeout-minutes: 25  # Bound dependency installation and focused source tests.
+    steps:  # Execute checkout, correction, verification, cleanup, and commit.
+      - name: Check out implementation branch  # Materialize the writable branch.
+        uses: actions/checkout@v4  # Use the maintained checkout action.
+        with:  # Configure exact branch checkout.
+          ref: "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the dedicated implementation branch.
+          fetch-depth: 0  # Retain branch history for a normal commit.
+      - name: Set up Python  # Select the supported interpreter.
+        uses: actions/setup-python@v5  # Use the maintained Python setup action.
+        with:  # Configure the interpreter version.
+          python-version: "3.11"  # Match permanent verification.
+      - name: Apply independent-LP evaluation patch  # Add the baseline without touching the controller.
+        run: |  # Execute the deterministic source finalizer.
+          python scripts/finalize_world_model_vla_lp_gate.py  # Add held-out LP trajectories and acceptance fields.
+      - name: Install repository  # Install Python dependencies and Pytest.
+        run: |  # Execute deterministic Python installation commands.
+          python -m pip install --upgrade pip  # Upgrade the package installer.
+          python -m pip install -e . pytest  # Install the editable repository and test runner.
+      - name: Verify independence and source contracts  # Reject syntax errors or WM-to-LP dependency leakage.
+        run: |  # Execute focused deterministic checks.
+          python -m py_compile visionamr/local_prediction_runner.py  # Compile the independent repeated LP baseline.
+          python -m py_compile scripts/run_world_model_vla_bridge.py  # Compile the expanded held-out campaign.
+          python -m pytest -q tests/test_world_controller.py  # Re-run controller purity and Dörfler-shield gates.
+          grep -q "run_local_prediction_multistep" scripts/run_world_model_vla_bridge.py  # Require the independent LP evaluation path.
+          ! grep -q "local_prediction_runner" visionamr/vla/world_controller.py  # Forbid the evaluation baseline from entering WM-VLA.
+          ! grep -q "predicted_sizes(" visionamr/vla/world_controller.py  # Forbid the LP continuous size field from entering WM-VLA.
+      - name: Remove one-shot files  # Keep the final pull request free of maintenance machinery.
+        run: |  # Delete only the paired temporary files.
+          rm scripts/finalize_world_model_vla_lp_gate.py  # Remove the temporary source finalizer.
+          rm .github/workflows/finalize-world-model-vla-lp-gate.yml  # Remove this one-shot workflow definition.
+      - name: Commit independent-LP evaluation  # Persist only production baseline and campaign changes.
+        run: |  # Create and push one auditable branch update.
+          git config user.name "github-actions[bot]"  # Set the standard automation author name.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"  # Set the standard automation author email.
+          git add -A  # Stage production source changes and temporary-file removals.
+          git diff --cached --quiet || git commit -m "feat: gate WM-VLA against independent local prediction"  # Commit only a material change.
+          git pull --rebase origin feat/world-model-vla-bridge-diaphragm-ready3  # Reconcile any preceding solver-evidence commit.
+          git push origin HEAD:feat/world-model-vla-bridge-diaphragm-ready3  # Update the sole implementation branch.
