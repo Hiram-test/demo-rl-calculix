@@ -211,7 +211,7 @@ def main() -> int:  # Execute transition collection, held-out comparison, and th
         args.max_solves = min(args.max_solves, 3)  # Use three real states while preserving multi-step behaviour.
     config = WorldControllerConfig(max_solves=args.max_solves, planning_horizon=args.horizon, require_reference=not args.no_reference and not args.smoke)  # Build the common immutable method contract.
     training_config = replace(config, min_predicted_gain=0.0, max_log_error_sigma=0.80, budget_safety=1.0, require_reference=False)  # Permit safe independent action exploration during transition collection.
-    world = RegionalWorldModel(config)  # Initialize one cross-case regional transition library.
+    world = RegionalWorldModel(training_config)  # Initialize the independent training transition library with the exploration contract.
     training: list[dict[str, Any]] = []  # Allocate transition-collection summaries.
     for index in range(args.train_cases):  # Collect real action-conditioned transitions on independent family members.
         problem = _case_problem(rng, args.smoke)  # Draw one training geometry and load state.
@@ -227,7 +227,8 @@ def main() -> int:  # Execute transition collection, held-out comparison, and th
         dorfler_runner = _make_runner(problem, args.output / "test" / f"case_{index:02d}" / "dorfler")  # Isolate the baseline execution.
         dorfler_summary = run_certified_dorfler(dorfler_runner, args.n_eq_cap, config, method="dorfler_certified")  # Run the exact certified baseline.
         world_runner = _make_runner(problem, args.output / "test" / f"case_{index:02d}" / "world")  # Isolate the world-model execution.
-        world_summary = run_world_model_vla(world_runner, _make_partitioner(), args.n_eq_cap, config=config, model=world, method="wm_vla")  # Run the held-out multi-step controller.
+        test_world = RegionalWorldModel.load(model_path, config=config)  # Restore the same frozen training snapshot independently for this held-out case.
+        world_summary = run_world_model_vla(world_runner, _make_partitioner(), args.n_eq_cap, config=config, model=test_world, method="wm_vla")  # Run within-case online correction without cross-test leakage.
         dorfler_points = _method_points(dorfler_runner, "dorfler_certified")  # Normalize the baseline trajectory.
         world_points = _method_points(world_runner, "wm_vla")  # Normalize the world-model trajectory.
         comparison = compare_to_dorfler(dorfler_points, world_points)  # Enforce the same-solves and same-equations performance floor.
