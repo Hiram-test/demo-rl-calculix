@@ -1,0 +1,47 @@
+name: finalize-world-model-vla-split  # Name the one-shot held-out isolation workflow.
+
+on:  # Define automatic and manual entry points.
+  push:  # Run when this finalizer is added to the implementation branch.
+    branches:  # Restrict execution to the dedicated WM-VLA branch.
+      - "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the sole writable branch.
+    paths:  # Avoid retriggering after self-removal.
+      - ".github/workflows/finalize-world-model-vla-split.yml"  # Trigger from this one-shot workflow.
+      - "scripts/finalize_world_model_vla_split.py"  # Trigger from the paired scientific finalizer.
+  workflow_dispatch:  # Permit an explicit rerun if required.
+
+permissions:  # Grant only the branch mutation needed after verification.
+  contents: write  # Permit the workflow token to commit the corrected campaign protocol.
+
+jobs:  # Define the isolated scientific-split job.
+  finalize:  # Apply, verify, and self-remove the held-out isolation patch.
+    runs-on: ubuntu-latest  # Use a reproducible Linux environment.
+    timeout-minutes: 15  # Bound dependency installation and focused unit verification.
+    steps:  # Execute checkout, correction, verification, cleanup, and commit.
+      - name: Check out implementation branch  # Materialize the writable branch.
+        uses: actions/checkout@v4  # Use the maintained checkout action.
+        with:  # Configure the exact branch checkout.
+          ref: "feat/world-model-vla-bridge-diaphragm-ready3"  # Select the dedicated implementation branch.
+          fetch-depth: 0  # Retain branch history for a normal commit.
+      - name: Set up Python  # Select the supported interpreter.
+        uses: actions/setup-python@v5  # Use the maintained Python setup action.
+        with:  # Configure the interpreter version.
+          python-version: "3.11"  # Match permanent CI.
+      - name: Apply held-out isolation patch  # Freeze one training snapshot per independent test case.
+        run: |  # Execute the deterministic source finalizer.
+          python scripts/finalize_world_model_vla_split.py  # Remove cross-test online-state leakage.
+      - name: Verify campaign source  # Reject syntax and import regressions before committing.
+        run: |  # Execute focused source checks.
+          python -m py_compile scripts/run_world_model_vla_bridge.py  # Compile the corrected held-out campaign.
+          grep -q "test_world = RegionalWorldModel.load(model_path, config=config)" scripts/run_world_model_vla_bridge.py  # Require independent model restoration in every test loop.
+          grep -q "world = RegionalWorldModel(training_config)" scripts/run_world_model_vla_bridge.py  # Require training-model configuration alignment.
+      - name: Remove one-shot files  # Keep the final pull request free of maintenance machinery.
+        run: |  # Delete only the paired temporary files.
+          rm scripts/finalize_world_model_vla_split.py  # Remove the temporary source finalizer.
+          rm .github/workflows/finalize-world-model-vla-split.yml  # Remove this one-shot workflow definition.
+      - name: Commit corrected protocol  # Persist only the scientific campaign correction.
+        run: |  # Create and push one auditable branch update.
+          git config user.name "github-actions[bot]"  # Set the standard automation author name.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"  # Set the standard automation author email.
+          git add -A  # Stage the corrected campaign and temporary-file removals.
+          git diff --cached --quiet || git commit -m "fix: isolate held-out WM-VLA adaptation"  # Commit only a material change.
+          git push origin HEAD:feat/world-model-vla-bridge-diaphragm-ready3  # Update the sole implementation branch.
