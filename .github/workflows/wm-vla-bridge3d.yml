@@ -4,8 +4,10 @@ on:
   pull_request:
     paths:
       - visionamr/bridge_scenarios.py
+      - visionamr/bridge_reference.py
       - visionamr/vla/bridge_partition.py
       - visionamr/vla/tool_contract.py
+      - visionamr/vla/budget_certificate.py
       - visionamr/vla/world_model.py
       - visionamr/vla/pipeline_world.py
       - visionamr/vla/dominance.py
@@ -67,4 +69,39 @@ jobs:
         with:
           name: wm-vla-bridge3d-smoke
           path: artifacts/wm_vla_bridge3d_smoke/smoke.json
+          if-no-files-found: error
+
+  bridge3d-dorfler-development-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    needs: world-model-units
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install Gmsh, CalculiX, and Python dependencies
+        run: |
+          python -m pip install --upgrade pip --quiet
+          python -m pip install gmsh numpy scipy pytest --quiet
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1
+      - name: Run pure WM-VLA and independent Dörfler at matched limits
+        run: |
+          python scripts/run_wm_vla_bridge3d.py \
+            --budget 9000 \
+            --max-solves 3 \
+            --horizon 3 \
+            --beam-width 16 \
+            --guard off \
+            --theta 0.50 \
+            --skip-local-prediction \
+            --out artifacts/wm_vla_bridge3d_gate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wm-vla-bridge3d-development-gate
+          path: artifacts/wm_vla_bridge3d_gate/comparison.json
           if-no-files-found: error
