@@ -94,14 +94,26 @@ def _rank_regions(state: WorldState, config: PlannerConfig) -> np.ndarray:  # Ra
     score = state.error_share + 0.22 * neighbour_error + config.persistence_weight * persistence  # Form the regional action-enumeration score.
     return np.argsort(score)[::-1]  # Return descending regional indices.
 
+def _is_proactive_mechanism(name: str) -> bool:  # Separate named bridge mechanisms from generic remainder regions.
+    normalized = name.strip().lower()  # Normalize the semantic region name.
+    forbidden = {"field", "background", "bulk", "remainder", "domain", "interior"}  # List generic regions that cannot establish a semantic world-model advantage.
+    if normalized in forbidden:  # Reject an exact generic remainder name.
+        return False  # Leave its refinement entirely to exact Dörfler marking.
+    forbidden_prefixes = ("field_", "background_", "bulk_", "remainder_", "domain_", "interior_")  # List generated generic-region prefixes.
+    if normalized.startswith(forbidden_prefixes):  # Reject a numbered or decorated remainder region.
+        return False  # Prevent broad background refinement from being labelled a world-model action.
+    return True  # Permit only a named load, opening, intersection, support, or other structural mechanism.
+
 def enumerate_actions(state: WorldState, config: PlannerConfig) -> list[RegionAction]:  # Enumerate a bounded deterministic discrete action set.
     count = state.n_regions  # Read the regional action dimension.
     zero = tuple(0 for _ in range(count))  # Construct the exact pure-Dörfler action.
     actions: list[RegionAction] = [RegionAction(zero, source="dorfler")]  # Keep pure Dörfler as the first and permanent candidate.
-    ranked = _rank_regions(state, config)[: min(config.candidate_regions, count)]  # Restrict branching to the strongest physical candidates.
+    ranked_all = _rank_regions(state, config)  # Rank every region before applying the scientific action boundary.
+    eligible = [int(region) for region in ranked_all if _is_proactive_mechanism(state.names[int(region)])]  # Retain only named structural mechanisms for proactive investment.
+    ranked = np.asarray(eligible[: min(config.candidate_regions, len(eligible))], dtype=int)  # Bound branching after excluding generic field regions.
     for region in ranked:  # Add one-region advance actions.
         depth_one = [0] * count  # Allocate a sparse regional action.
-        depth_one[int(region)] = 1  # Extend standard Dörfler over the selected region.
+        depth_one[int(region)] = 1  # Extend standard Dörfler over the selected structural mechanism.
         actions.append(RegionAction(tuple(depth_one)))  # Store the one-level action.
         if config.max_extra_depth >= 2 and (state.hit_count[region] >= 1.0 or state.dorfler_error_fraction[region] >= 0.25):  # Reserve deeper delegation for persistent evidence.
             depth_two = [0] * count  # Allocate a second sparse action.
@@ -109,17 +121,17 @@ def enumerate_actions(state: WorldState, config: PlannerConfig) -> list[RegionAc
             actions.append(RegionAction(tuple(depth_two)))  # Store the two-level action.
     if config.max_extra_regions >= 2:  # Add bounded two-region resource-allocation actions.
         pair_pool = list(ranked[: min(4, len(ranked))])  # Keep pair enumeration computationally small.
-        for first, second in combinations(pair_pool, 2):  # Enumerate unique high-value pairs.
+        for first, second in combinations(pair_pool, 2):  # Enumerate unique high-value structural-mechanism pairs.
             paired = [0] * count  # Allocate a two-region sparse action.
-            paired[int(first)] = 1  # Advance the first persistent region.
-            paired[int(second)] = 1  # Advance the second persistent region.
+            paired[int(first)] = 1  # Advance the first persistent mechanism.
+            paired[int(second)] = 1  # Advance the second persistent mechanism.
             actions.append(RegionAction(tuple(paired)))  # Store the paired action.
     unique: dict[tuple[int, ...], RegionAction] = {}  # Allocate a deterministic deduplication map.
     for action in actions:  # Deduplicate equivalent sparse actions.
         values = action.array(count)  # Validate the action against the state.
         if int(np.count_nonzero(values)) <= config.max_extra_regions and int(np.max(values, initial=0)) <= config.max_extra_depth:  # Enforce the action-space contract.
             unique.setdefault(tuple(int(value) for value in values), action)  # Preserve the first deterministic label.
-    return list(unique.values())  # Return pure Dörfler plus all legal proactive actions.
+    return list(unique.values())  # Return pure Dörfler plus all legal structural-mechanism actions.
 
 def _robust_cost(prediction: WorldPrediction, root_error: float, root_equations: float, budget: float, config: PlannerConfig) -> float:  # Score one predicted transition on a dimensionless scale.
     error_ratio = prediction.state.total_error / max(root_error, 1.0e-30)  # Normalize predicted estimator mass by the current real solve.
@@ -161,7 +173,7 @@ class WorldModelPlanner:  # Select a proactive action only when it robustly beat
             expanded: list[_BeamNode] = []  # Allocate the next-depth candidate beam.
             for node in beam:  # Expand every retained partial trajectory.
                 planning_state = node.state if depth == 0 else regional_dorfler_proxy(node.state, config.theta)  # Use exact current exposure and proxy future exposures.
-                for action in enumerate_actions(planning_state, config):  # Evaluate pure and proactive regional actions.
+                for action in enumerate_actions(planning_state, config):  # Evaluate pure and proactive structural-mechanism actions.
                     prediction = self.model.predict(planning_state, action)  # Roll the action through the regional world model.
                     sequences_evaluated += 1  # Record the model evaluation.
                     upper_equations = max(prediction.member_equations)  # Use the most conservative ensemble resource member.
