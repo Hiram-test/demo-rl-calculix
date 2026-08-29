@@ -1,0 +1,32 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# solver scratch inside tracked campaign dirs (records*.json stay tracked)
+results/**/solves/
+# ad-hoc script outputs, never campaign evidence
+results/bench_*/
+results/smoke_*/
+results/*_test/
+# gate G1 rerun scratch (summary lives in results/gates.json)
+results/gates/
+
+# local CalculiX binaries (not distributed)
+tools/ccx_2.23.bin
+tools/lib/
+.grok_scheme.md
+
+# LaTeX aux
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.spl
+paper/*.toc
+
+# local vision-model credentials/configs — never commit API keys
+.env
+.config/
+**/evolving_api.json
+*_api_key*.json
+

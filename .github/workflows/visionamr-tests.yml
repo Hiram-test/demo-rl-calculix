@@ -1,0 +1,63 @@
+name: visionamr tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - visionamr/**
+      - tests/**
+      - scripts/**
+      - .github/workflows/visionamr-tests.yml
+  pull_request:
+    paths:
+      - visionamr/**
+      - tests/**
+      - scripts/**
+      - .github/workflows/visionamr-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies (no Gmsh/CalculiX native libs)
+        run: |
+          python -m pip install --upgrade pip --quiet
+          python -m pip install numpy scipy pytest --quiet
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -q
+
+  gate-g1-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install Gmsh, CalculiX and Python deps
+        run: |
+          python -m pip install --upgrade pip --quiet
+          python -m pip install gmsh numpy scipy matplotlib pytest --quiet
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1
+
+      - name: "Gate G1: correctly deployed Doerfler must beat uniform"
+        run: python3 scripts/run_smoke.py
+
+      - name: "Gate G7: load resultant is mesh-independent"
+        run: python -m pytest tests/test_load_consistency.py -q

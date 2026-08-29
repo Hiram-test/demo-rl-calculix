@@ -1,0 +1,333 @@
+import codecs
+import json
+
+import numpy as np
+import pytest
+
+from visionamr.geometry import (
+    drawing_bc_marks,
+    make_bearing_block,
+    make_deck_panel,
+    make_lbracket,
+)
+from visionamr.vla.partition import (
+    DEFAULT_VLM_API_BASE,
+    DEFAULT_VLM_MODEL,
+    LLMVisionPartitioner,
+    RandomSeedPartitioner,
+    parse_seed_json,
+    resolve_vlm_endpoint,
+    seeds_from_spec,
+)
+from visionamr.vla.regions import Seed
+
+
+def test_seeds_from_spec_clips_and_names():
+    problem = make_bearing_block()
+    spec = {
+        "seeds": [
+            {"name": "patch_edge", "x": 200.0, "y": 200.0, "z": 120.0,
+             "fineness_fraction": 0.3},
+            {"name": "field", "x": -50.0, "y": 10.0, "z": 0.0,
+             "fineness_fraction": 0.9},
+        ]
+    }
+    seeds = seeds_from_spec(spec, problem)
+    assert len(seeds) == 2
+    assert seeds[0].name == "patch_edge"
+    assert seeds[1].xyz[0] == pytest.approx(0.0, abs=1e-9)  # clipped to bbox
+    assert np.isclose(seeds[0].h, 0.3 * problem.h0)
+
+
+def test_regions_from_spec_are_drawn_polygons():
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ]
+    }
+    drawings = drawings_from_spec(spec, problem)
+    assert drawings[0].name == "patch"
+    assert drawings[0].view == "top"
+    assert len(drawings[0].polygon) == 4
+    assert np.isclose(drawings[0].h, 0.25 * problem.h0)
+
+
+def test_parse_fenced_json():
+    problem = make_bearing_block()
+    content = """```json
+{"seeds": [{"name": "a", "x": 1, "y": 2, "z": 3, "fineness_fraction": 0.4}],
+ "remainder_fineness_fraction": 0.8}
+```"""
+    seeds = parse_seed_json(content, problem)
+    assert seeds[0].name == "a"
+    assert any(s.origin == "coarse" for s in seeds)
+
+
+def test_regions_spec_assigns_remainder():
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ],
+        "remainder_fineness_fraction": 0.72,
+    }
+    seeds = seeds_from_spec(spec, problem)
+    field = next(s for s in seeds if s.origin == "coarse")
+    assert np.isclose(field.h, 0.72 * problem.h0)
+
+
+def test_regions_spec_requires_remainder():
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "patch",
+                "view": "top",
+                "fineness_fraction": 0.25,
+                "polygon": [[100, 100], [250, 80], [260, 220], [90, 210]],
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match="remainder"):
+        seeds_from_spec(spec, problem)
+
+
+def test_section_region_needs_cut():
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = {
+        "regions": [
+            {
+                "name": "column",
+                "view": "section",
+                "plane": "xz",
+                "fineness_fraction": 0.3,
+                "polygon": [[150, 40], [300, 50], [280, 120], [160, 110]],
+            }
+        ]
+    }
+    with pytest.raises(ValueError, match="cut"):
+        drawings_from_spec(spec, problem)
+
+
+def test_cached_drawing_partitioner_ignores_solved_field():
+    from pathlib import Path
+
+    from visionamr.vla.partition import CachedDrawingPartitioner
+
+    problem = make_bearing_block()
+    path = Path(__file__).resolve().parent / "fixtures" / "bearing_block_eye.json"
+    head = CachedDrawingPartitioner(str(path))
+    a = head.propose(problem)
+    b = head.propose(problem, post=object(), eta2=object())
+    assert [s.name for s in a] == [s.name for s in b]
+    assert head.last_info["source"] == "cached_drawing"
+    assert any(d.view == "section" for d in head.last_drawings)
+
+
+def test_eye_bearing_markup_assigns_varied_remainder():
+    from pathlib import Path
+
+    from visionamr.vla.partition import drawings_from_spec
+
+    problem = make_bearing_block()
+    spec = json.loads(
+        (Path(__file__).resolve().parent / "fixtures" / "bearing_block_eye.json").read_text()
+    )
+    drawings = drawings_from_spec(spec, problem)
+    seeds = seeds_from_spec(spec, problem)
+    gs = [d.grade for d in drawings if d.grade is not None]
+    assert len(set(gs)) >= 4
+    assert min(gs) == 1
+    assert any(s.origin == "coarse" for s in seeds)
+    assert any(d.view == "section" for d in drawings)
+    field = next(s for s in seeds if s.origin == "coarse")
+    rim = next(d for d in drawings if "rim" in d.name)
+    assert rim.grade == 1
+    assert field.h > rim.h
+
+
+def test_eye_vs_lp_script_is_one_step_and_not_old_a2prime():
+    """Skill walk: 一步 LP, and do not paste the trial into old A2′ tables."""
+
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "scripts" / "run_eye_vs_lp.py").read_text()
+    assert "rounds=1" in src
+    assert "rounds=2" not in src
+    assert "do not paste into old A2" in src
+    assert "e_qoi" in src
+    assert "n_over_budget" in src
+    assert "drawing_rank" in src
+    assert "scale_drawings_to_elem_budget" not in src
+    assert "max-solves\", type=int, default=2" in src or "default=2" in src
+
+
+def test_drawing_marks_follow_bcs_not_family_hardcode():
+    """Eye canvas must not caption a deck as a fully-clamped bearing."""
+
+    bearing = drawing_bc_marks(make_bearing_block())
+    assert bearing["full_bottom_clamp"] is True
+    assert bearing["load_patch_label"] == "girder patch"
+
+    deck = drawing_bc_marks(make_deck_panel())
+    assert deck["full_bottom_clamp"] is False
+    assert deck["load_patch_label"] == "wheel patch"
+
+    plate = drawing_bc_marks(make_lbracket())
+    assert plate["full_bottom_clamp"] is False
+    assert plate["load_patch_label"] is None
+
+
+def test_drawing_png_uses_bc_marks():
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "visionamr" / "viz.py").read_text()
+    assert "drawing_bc_marks" in src
+    assert "full_bottom_clamp" in src
+    assert 'marks["load_patch_label"]' in src
+
+
+def test_prompt_requires_remainder_and_allows_section():
+    from visionamr.vla.partition import VLM_SYSTEM_PROMPT
+
+    assert "remainder_grade" in VLM_SYSTEM_PROMPT
+    assert "grade" in VLM_SYSTEM_PROMPT
+    assert "不要给连续单元尺寸" in VLM_SYSTEM_PROMPT
+    assert "不要委派参数" in VLM_SYSTEM_PROMPT or "不要调参" in VLM_SYSTEM_PROMPT
+    assert "拆结构剖面" in VLM_SYSTEM_PROMPT
+    assert "图纸" in VLM_SYSTEM_PROMPT
+    assert "leave the unpainted bulk coarse" not in VLM_SYSTEM_PROMPT
+
+
+def test_rejects_empty_seeds():
+    problem = make_bearing_block()
+    with pytest.raises(ValueError):
+        seeds_from_spec({"seeds": []}, problem)
+
+
+_VLM_ENV_VARS = (
+    "VLM_API_BASE",
+    "VLM_MODEL",
+    "VLM_API_KEY",
+    "ARK_API_KEY",
+    "VOLC_API_KEY",
+    "XAI_API_KEY",
+    "OPENAI_API_KEY",
+    "VISIONAMR_ARK_CONFIG",
+)
+
+
+def _clear_vlm_env(monkeypatch):
+    for name in _VLM_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+
+def test_default_endpoint_is_ark_evolving(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    base, key, model = resolve_vlm_endpoint()
+    assert base == DEFAULT_VLM_API_BASE == "https://ark.cn-beijing.volces.com/api/v3"
+    assert model == DEFAULT_VLM_MODEL == "doubao-seed-evolving"
+    assert key is None  # no credential -> caller falls back to scripted head
+
+
+def test_ark_env_key_selects_evolving(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("ARK_API_KEY", "ark-test-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert "volces.com" in base
+    assert key == "ark-test-key"
+    assert model == "doubao-seed-evolving"
+
+
+def test_local_ark_config_file_is_loaded(monkeypatch, tmp_path):
+    _clear_vlm_env(monkeypatch)
+    cfg = tmp_path / "ark.json"
+    # Windows editors may save a UTF-8 BOM; the loader must tolerate it.
+    cfg.write_bytes(
+        codecs.BOM_UTF8
+        + json.dumps(
+            {
+                "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+                "api_key": "ark-local-key",
+                "model": "doubao-seed-evolving",
+            }
+        ).encode("utf-8")
+    )
+    monkeypatch.setenv("VISIONAMR_ARK_CONFIG", str(cfg))
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://ark.cn-beijing.volces.com/api/v3"
+    assert key == "ark-local-key"
+    assert model == "doubao-seed-evolving"
+
+
+def test_explicit_vlm_env_overrides_everything(monkeypatch, tmp_path):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("ARK_API_KEY", "ark-should-not-win")
+    monkeypatch.setenv("VISIONAMR_ARK_CONFIG", str(tmp_path / "missing.json"))
+    monkeypatch.setenv("VLM_API_BASE", "https://example.test/v1")
+    monkeypatch.setenv("VLM_MODEL", "custom-vision")
+    monkeypatch.setenv("VLM_API_KEY", "custom-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://example.test/v1"
+    assert key == "custom-key"
+    assert model == "custom-vision"
+
+
+def test_legacy_xai_env_still_supported(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    monkeypatch.setenv("XAI_API_KEY", "xai-key")
+    base, key, model = resolve_vlm_endpoint()
+    assert base == "https://api.x.ai/v1"
+    assert key == "xai-key"
+    assert model == "grok-4"
+
+
+def test_llm_fallback_without_api_key(monkeypatch):
+    _clear_vlm_env(monkeypatch)
+    problem = make_bearing_block()
+    part = LLMVisionPartitioner()
+
+    from visionamr.mesher import Mesh
+
+    # Synthetic tet — this path must not require Gmsh or a field render.
+    mesh = Mesh(
+        nodes=np.array(
+            [[0, 0, 0], [400, 0, 0], [0, 400, 0], [0, 0, 120]], dtype=float
+        ),
+        cells=np.array([[0, 1, 2, 3]]),
+        dim=3,
+    )
+
+    class DummyPost:
+        def __init__(self):
+            self.mesh = mesh
+            self.vm_node = np.array([1.0, 4.0, 2.0, 8.0])
+            self.vm_elem = np.array([3.75])
+
+    seeds = part.propose(problem, DummyPost(), np.ones(mesh.n_cells))
+    assert seeds
+    assert part.last_info["source"] == "scripted_fallback"
+    assert "no_api_key" in part.last_info["errors"][0]
+
+
+def test_random_partitioner_reproducible():
+    problem = make_bearing_block()
+    a = RandomSeedPartitioner(n_seeds=7, rng_seed=3).propose(problem, None, None)
+    b = RandomSeedPartitioner(n_seeds=7, rng_seed=3).propose(problem, None, None)
+    assert [s.xyz for s in a] == [s.xyz for s in b]
+    assert len(a) == 7

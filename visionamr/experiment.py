@@ -1,0 +1,250 @@
+"""Experiment orchestration: solve accounting, reference caching, metrics.
+
+Every CalculiX invocation made by any method goes through ``FemRunner``,
+so the "number of global solves" axis in the paper is an honest count.
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+
+import numpy as np
+
+from . import calculix
+from .fem_post import PostState, compute_post
+from .geometry import Problem
+from .mesher import Mesh, generate_mesh, generate_uniform
+
+
+@dataclass
+class SolveRecord:
+    method: str
+    stage: str
+    solve_index: int          # 1-based, cumulative per method run
+    n_nodes: int
+    n_elems: int
+    n_equations: int
+    U_total: float
+    qoi: float
+    wall_s: float
+    h_min: float
+    h_max: float
+    e_energy: float | None = None   # relative energy-norm error vs reference
+    e_qoi: float | None = None
+    extra: dict = field(default_factory=dict)
+
+
+@dataclass
+class Reference:
+    U_total: float
+    qoi: float
+    n_equations: int
+    n_elems: int
+    h_ref: float
+
+
+def _dist_point_segment(pts: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    ab = b - a
+    denom = float(ab @ ab)
+    t = np.clip((pts - a) @ ab / max(denom, 1e-30), 0.0, 1.0)
+    proj = a + t[:, None] * ab
+    return np.linalg.norm(pts - proj, axis=1)
+
+
+def reference_size_fn(problem: Problem):
+    """Strongly graded reference field.
+
+    Background h_ref with power-law grading into corner singularities
+    (r^0.55), towards singular line segments (patch edges, support-strip
+    reaction lines; r^0.6, floor 1/8) and hole edges.  The reference
+    resolves every method mesh near the error-dominating features so the
+    Galerkin energy gap stays positive.
+    """
+
+    d_grade = 0.3 * problem.diameter
+    corner_floor = 1.0 / 48.0
+    seg_floor = 1.0 / 8.0
+    holes = [f for f in problem.features if f.kind == "hole" and f.r > 0]
+    points = [np.asarray(p, dtype=float) for p in problem.singular_points]
+    segments = [
+        (np.asarray(a, dtype=float), np.asarray(b, dtype=float))
+        for a, b in problem.singular_segments
+    ]
+    seg_grade = 0.12 * problem.diameter
+
+    def size(x: float, y: float, z: float = 0.0) -> float:
+        p = np.array([[x, y, z]])
+        h = problem.h_ref
+        for sp in points:
+            dd = float(np.linalg.norm(p[0] - sp))
+            h = min(h, problem.h_ref * max((dd / d_grade) ** 0.55, corner_floor))
+        for a, b in segments:
+            dd = float(_dist_point_segment(p, a, b)[0])
+            h = min(h, problem.h_ref * max((dd / seg_grade) ** 0.6, seg_floor))
+        for f in holes:
+            d_edge = abs(float(np.linalg.norm(p[0, :2] - f.xyz[:2])) - f.r)
+            h = min(h, problem.h_ref * max((d_edge / (1.5 * f.r)) ** 0.7, 0.2))
+        return h
+
+    return size
+
+
+def reference_floor(problem: Problem) -> float:
+    """Meshing floor for the reference: the grading field's own minimum.
+
+    Clipping the reference mesh coarser than the field's floors lets a
+    deep adaptive run (e.g. a top-tier Doerfler overshoot round) locally
+    out-resolve the reference and trip gate G3: the L-bracket corner
+    grading bottoms at h_ref/48, far below the h_ref/8 segment floor.
+    """
+
+    floor = problem.h_ref / 8.0  # singular-segment floor
+    if problem.singular_points:
+        floor = min(floor, problem.h_ref / 48.0)
+    if any(f.kind == "hole" and f.r > 0 for f in problem.features):
+        floor = min(floor, 0.2 * problem.h_ref)
+    return float(min(problem.h_min, floor))
+
+
+class FemRunner:
+    """Solves meshes for one problem instance and records every solve."""
+
+    def __init__(
+        self,
+        problem: Problem,
+        workdir: Path,
+        *,
+        keep_files: bool = False,
+        ccx_timeout: float = 600.0,
+    ) -> None:
+        self.problem = problem
+        self.workdir = Path(workdir)
+        self.workdir.mkdir(parents=True, exist_ok=True)
+        self.keep_files = keep_files
+        self.ccx_timeout = ccx_timeout
+        self.records: list[SolveRecord] = []
+        self._counter = 0
+        self.reference: Reference | None = None
+        self.last_mesh: Mesh | None = None
+
+    # ------------------------------------------------------------------
+    def ensure_reference(self) -> Reference:
+        """Solve (or load) the graded fine reference for this instance."""
+
+        ref_path = self.workdir / "reference.json"
+        if self.reference is not None:
+            return self.reference
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            self.reference = Reference(**data)
+            return self.reference
+        # Honour the grading field's own floors even when the method-mesh
+        # h_min is coarser (otherwise an adaptive loop can locally beat
+        # the "reference" and trip gate G3).
+        mesh = generate_mesh(
+            self.problem,
+            reference_size_fn(self.problem),
+            h_floor=reference_floor(self.problem),
+        )
+        post, rec = self._solve(mesh, method="reference", stage="reference", count=False)
+        self.reference = Reference(
+            U_total=post.U_total,
+            qoi=post.qoi,
+            n_equations=rec.n_equations,
+            n_elems=mesh.n_cells,
+            h_ref=self.problem.h_ref,
+        )
+        ref_path.write_text(json.dumps(asdict(self.reference), indent=1))
+        return self.reference
+
+    # ------------------------------------------------------------------
+    def solve_mesh(
+        self, mesh: Mesh, *, method: str, stage: str, extra: dict | None = None
+    ) -> tuple[PostState, SolveRecord]:
+        return self._solve(mesh, method=method, stage=stage, count=True, extra=extra)
+
+    def _solve(
+        self,
+        mesh: Mesh,
+        *,
+        method: str,
+        stage: str,
+        count: bool,
+        extra: dict | None = None,
+    ) -> tuple[PostState, SolveRecord]:
+        if count:
+            self._counter += 1
+        idx = self._counter if count else 0
+        jobname = f"{method}_{idx:03d}_{stage}"[:60].replace("/", "_")
+        jobdir = self.workdir / "solves" / jobname
+        res = calculix.solve(
+            mesh,
+            self.problem,
+            jobdir,
+            "model",
+            heading=f"{self.problem.instance_id} {method} {stage}",
+            timeout=self.ccx_timeout,
+        )
+        post = compute_post(mesh, self.problem, res.u)
+        sizes = mesh.cell_sizes
+        rec = SolveRecord(
+            method=method,
+            stage=stage,
+            solve_index=idx,
+            n_nodes=mesh.n_nodes,
+            n_elems=mesh.n_cells,
+            n_equations=res.n_equations,
+            U_total=post.U_total,
+            qoi=post.qoi,
+            wall_s=res.wall_s,
+            h_min=float(sizes.min()),
+            h_max=float(sizes.max()),
+            extra=extra or {},
+        )
+        if self.reference is not None:
+            rec.e_energy = self.energy_error(post.U_total)
+            rec.e_qoi = self.qoi_error(post.qoi)
+            if post.U_total > self.reference.U_total:
+                rec.extra["above_reference"] = True
+        if count:
+            self.records.append(rec)
+            self.last_mesh = mesh
+        if not self.keep_files:
+            for f in jobdir.glob("*"):
+                if f.suffix not in (".log",):
+                    f.unlink(missing_ok=True)
+        return post, rec
+
+    # ------------------------------------------------------------------
+    def energy_error(self, U: float) -> float:
+        """Relative energy-norm error sqrt(1 - U_h/U_ref) (Galerkin gap)."""
+
+        ref = self.ensure_reference()
+        gap = max(ref.U_total - U, 0.0)
+        return float(math.sqrt(gap / ref.U_total))
+
+    def qoi_error(self, qoi: float) -> float:
+        ref = self.ensure_reference()
+        return float(abs(qoi - ref.qoi) / abs(ref.qoi))
+
+    # ------------------------------------------------------------------
+    def reset_counter(self) -> None:
+        self._counter = 0
+
+    def dump(self, path: Path | None = None) -> Path:
+        path = path or (self.workdir / "records.json")
+        payload = {
+            "problem": self.problem.instance_id,
+            "params": self.problem.params,
+            "reference": asdict(self.reference) if self.reference else None,
+            "records": [asdict(r) for r in self.records],
+        }
+        path.write_text(json.dumps(payload, indent=1, default=str))
+        return path
+
+
+def initial_mesh(problem: Problem) -> Mesh:
+    return generate_uniform(problem, problem.h0)
