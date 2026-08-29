@@ -9,6 +9,7 @@ on:
       - visionamr/vla/pipeline_world.py
       - visionamr/vla/dominance.py
       - scripts/run_wm_vla_bridge3d.py
+      - scripts/smoke_wm_vla_bridge3d.py
       - tests/test_world_vla.py
       - .github/workflows/wm-vla-bridge3d.yml
   workflow_dispatch:
@@ -34,7 +35,7 @@ jobs:
 
   bridge3d-native-smoke:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,16 +51,14 @@ jobs:
             calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1
       - name: Run a two-solve native bridge-component closure test
         run: |
-          python scripts/run_wm_vla_bridge3d.py \
+          python scripts/smoke_wm_vla_bridge3d.py \
             --budget 9000 \
             --max-solves 2 \
             --horizon 2 \
             --beam-width 8 \
-            --guard dorfler_region_candidate \
-            --skip-local-prediction \
             --out artifacts/wm_vla_bridge3d_smoke
       - uses: actions/upload-artifact@v4
         with:
           name: wm-vla-bridge3d-smoke
-          path: artifacts/wm_vla_bridge3d_smoke/comparison.json
+          path: artifacts/wm_vla_bridge3d_smoke/smoke.json
           if-no-files-found: error
