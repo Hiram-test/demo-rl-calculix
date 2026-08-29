@@ -12,10 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # Make local repos
 
 from visionamr.baselines.dorfler import run_dorfler  # Run the exact element-level classical AFEM baseline independently.
 from visionamr.baselines.local_prediction import run_local_prediction  # Run the independent strong few-shot classical comparator.
+from visionamr.bridge_reference import BridgeReferenceRunner, bridge_reference_profile  # Use the moderate-cost geometry-aware independent reference.
 from visionamr.bridge_scenarios import make_bridge_pier_cap  # Build the medium-complexity three-dimensional bridge component.
-from visionamr.experiment import FemRunner  # Route every CalculiX call through honest solve accounting.
+from visionamr.vla.bridge_partition import BridgePierCapVisionPartitioner  # Use true three-dimensional section-aware geometry markup.
 from visionamr.vla.dominance import DominanceConfig, evaluate_dorfler_floor  # Enforce pre-registered non-inferiority gates.
-from visionamr.vla.partition import ScriptedVisionPartitioner  # Provide a deterministic solve-free stand-in for one VLM drawing.
 from visionamr.vla.pipeline_world import WorldVLAConfig, run_world_vla  # Run the new multi-step world-model-guided controller.
 from visionamr.vla.world_model import WorldPlannerConfig  # Configure finite-horizon counterfactual search.
 
@@ -29,9 +29,12 @@ def _record_dict(record) -> dict:  # Serialize one SolveRecord with only JSON-co
     return payload  # Return the complete record.
 
 
-def _copy_reference(source: Path, destination: Path) -> None:  # Reuse an identical reference without mixing method trajectories.
+def _copy_reference(source_directory: Path, destination: Path) -> None:  # Reuse an identical reference without mixing method trajectories.
     destination.mkdir(parents=True, exist_ok=True)  # Create the independent method work directory.
-    shutil.copy2(source, destination / "reference.json")  # Copy the exact reference artifact and metadata.
+    shutil.copy2(source_directory / "reference.json", destination / "reference.json")  # Copy the exact reference result and metadata.
+    profile_source = source_directory / "reference_profile.json"  # Locate the specialized reference-field declaration.
+    if profile_source.exists():  # Preserve the exact reference prescription when available.
+        shutil.copy2(profile_source, destination / "reference_profile.json")  # Copy the field declaration without recomputation.
 
 
 def _print_table(records: list, budget: int) -> None:  # Print a compact real-solve comparison for human inspection.
@@ -53,6 +56,7 @@ def main() -> int:  # Execute the complete independent benchmark and release gat
     parser.add_argument("--beam-width", type=int, default=24, help="world-model beam width")  # Set cheap internal search breadth.
     parser.add_argument("--guard", choices=("off", "dorfler_region_candidate"), default="off", help="disclosed WM action guard mode")  # Select pure or guarded action space.
     parser.add_argument("--theta", type=float, default=0.50, help="exact Dörfler bulk parameter")  # Set the classical baseline parameter.
+    parser.add_argument("--checkpoint-in", default=None, help="optional independent bridge-family world-model checkpoint")  # Allow clean transfer learning without LP or Dörfler labels.
     parser.add_argument("--skip-local-prediction", action="store_true", help="omit the independent LP comparator")  # Allow a faster WM-versus-Dörfler run.
     parser.add_argument("--strict-gate", action="store_true", help="return exit status 2 when the Dörfler floor fails")  # Make scientific release gating machine enforceable.
     parser.add_argument("--keep-files", action="store_true", help="retain CalculiX input and result files")  # Preserve solver files for deep debugging.
@@ -61,31 +65,30 @@ def main() -> int:  # Execute the complete independent benchmark and release gat
     output.mkdir(parents=True, exist_ok=True)  # Create the artifact directory.
     problem = make_bridge_pier_cap()  # Build the canonical medium-complexity three-dimensional bridge component.
     shared = output / "reference"  # Isolate the independently computed reference solution.
-    reference_runner = FemRunner(problem, shared, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the reference runner.
-    reference = reference_runner.ensure_reference()  # Solve or load the graded independent reference exactly once.
-    reference_path = shared / "reference.json"  # Identify the reusable reference artifact.
+    reference_runner = BridgeReferenceRunner(problem, shared, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the geometry-aware reference runner.
+    reference = reference_runner.ensure_reference()  # Solve or load the independent moderate-cost reference exactly once.
     wm_work = output / "wm_vla"  # Isolate the pure or guarded WM-VLA trajectory.
     dorfler_work = output / "dorfler"  # Isolate the exact Dörfler trajectory.
     lp_work = output / "local_prediction"  # Isolate the local-prediction trajectory.
-    _copy_reference(reference_path, wm_work)  # Reuse the identical reference for WM-VLA.
-    _copy_reference(reference_path, dorfler_work)  # Reuse the identical reference for Dörfler.
+    _copy_reference(shared, wm_work)  # Reuse the identical reference for WM-VLA.
+    _copy_reference(shared, dorfler_work)  # Reuse the identical reference for Dörfler.
     if not args.skip_local_prediction:  # Prepare the independent LP comparator only when requested.
-        _copy_reference(reference_path, lp_work)  # Reuse the identical reference for LP.
+        _copy_reference(shared, lp_work)  # Reuse the identical reference for LP.
     planner = WorldPlannerConfig(horizon=int(args.horizon), beam_width=int(args.beam_width), dorfler_theta=float(args.theta))  # Configure bounded multi-step counterfactual planning.
-    wm_config = WorldVLAConfig(n_eq_budget=int(args.budget), max_solves=int(args.max_solves), guard_mode=str(args.guard), planner=planner, model_checkpoint_out=str(output / "world_model.json"))  # Configure the accountable real feedback loop.
-    wm_runner = FemRunner(problem, wm_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent WM-VLA runner.
-    wm_result = run_world_vla(wm_runner, ScriptedVisionPartitioner(), wm_config, method="wm_vla" if args.guard == "off" else "wm_vla_guarded")  # Execute one visual call plus multi-step model-based control.
-    dorfler_runner = FemRunner(problem, dorfler_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent exact Dörfler runner.
+    wm_config = WorldVLAConfig(n_eq_budget=int(args.budget), max_solves=int(args.max_solves), guard_mode=str(args.guard), model_checkpoint_in=args.checkpoint_in, planner=planner, model_checkpoint_out=str(output / "world_model.json"))  # Configure the accountable real feedback loop.
+    wm_runner = BridgeReferenceRunner(problem, wm_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent WM-VLA runner.
+    wm_method = "wm_vla" if args.guard == "off" else "wm_vla_guarded"  # Preserve the exact method label used in records and gates.
+    wm_result = run_world_vla(wm_runner, BridgePierCapVisionPartitioner(), wm_config, method=wm_method)  # Execute one geometry observation plus multi-step model-based control.
+    dorfler_runner = BridgeReferenceRunner(problem, dorfler_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent exact Dörfler runner.
     run_dorfler(dorfler_runner, theta=float(args.theta), max_rounds=max(int(args.max_solves) - 1, 0), n_eq_cap=int(args.budget), method="dorfler_zz")  # Execute the exact element-level classical loop.
     all_records = list(wm_runner.records) + list(dorfler_runner.records)  # Combine independent real records only for reporting.
     lp_result = None  # Initialize the optional LP result summary.
     if not args.skip_local_prediction:  # Execute LP independently when requested.
-        lp_runner = FemRunner(problem, lp_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent LP runner.
+        lp_runner = BridgeReferenceRunner(problem, lp_work, keep_files=bool(args.keep_files), ccx_timeout=2400.0)  # Create the independent LP runner.
         element_budget = max(int(round(float(args.budget) / _EQ_PER_ELEM_3D)), 1)  # Convert the equation budget to LP's element target.
         run_local_prediction(lp_runner, budgets=[element_budget], rounds=max(int(args.max_solves) - 1, 0), method="local_prediction")  # Execute repeated fresh-indicator LP corrections.
         all_records.extend(lp_runner.records)  # Add LP records only after its independent run completes.
         lp_result = {"element_budget": element_budget, "solves": len(lp_runner.records)}  # Preserve LP protocol details.
-    wm_method = "wm_vla" if args.guard == "off" else "wm_vla_guarded"  # Preserve the exact method label used above.
     gate_config = DominanceConfig()  # Freeze the pre-registered Dörfler-floor tolerances.
     gate = evaluate_dorfler_floor(all_records, wm_method, "dorfler_zz", int(args.budget), gate_config)  # Evaluate matched-solve non-inferiority.
     _print_table(all_records, int(args.budget))  # Print all measured trajectories.
@@ -95,14 +98,15 @@ def main() -> int:  # Execute the complete independent benchmark and release gat
         "problem": problem.instance_id,  # Preserve exact scenario parameters through the instance hash.
         "problem_params": problem.params,  # Preserve the full human-readable scenario definition.
         "reference": asdict(reference),  # Preserve independent reference metadata.
+        "reference_profile": bridge_reference_profile(problem),  # Preserve the complete moderate-cost geometry-aware field contract.
         "budget": int(args.budget),  # Preserve the common hard equation cap.
         "max_solves": int(args.max_solves),  # Preserve the common real-solve horizon.
-        "world_planning": {"horizon": int(args.horizon), "beam_width": int(args.beam_width), "guard": str(args.guard)},  # Preserve cheap internal planning limits.
+        "world_planning": {"horizon": int(args.horizon), "beam_width": int(args.beam_width), "guard": str(args.guard), "checkpoint_in": args.checkpoint_in},  # Preserve cheap planning and transfer limits.
         "wm_result": asdict(wm_result),  # Preserve the complete WM-VLA control trace.
         "local_prediction": lp_result,  # Preserve the optional LP protocol summary.
         "dorfler_floor": gate,  # Preserve the pre-registered release decision.
         "records": [_record_dict(record) for record in all_records],  # Preserve every measured real solve.
-        "purity": {"wm_imports_local_prediction": False, "methods_share_state": False, "shared_object_only": "reference solution"},  # Lock method independence explicitly.
+        "purity": {"wm_imports_local_prediction": False, "methods_share_state": False, "shared_object_only": "independent reference result"},  # Lock method independence explicitly.
     }  # Finish the complete artifact payload.
     result_path = output / "comparison.json"  # Select the canonical artifact path.
     result_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")  # Write the human-auditable experiment record.
