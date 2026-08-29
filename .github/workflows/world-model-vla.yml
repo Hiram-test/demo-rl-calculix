@@ -1,0 +1,110 @@
+name: world-model VLA  # Name the dedicated bridge-component validation workflow.
+
+on:  # Define automatic and explicit validation entry points.
+  pull_request:  # Run a bounded real three-dimensional smoke test on relevant pull requests.
+    paths:  # Avoid consuming solver time for unrelated repository edits.
+      - "visionamr/bridge_cases.py"  # Re-run when the bridge component changes.
+      - "visionamr/vla/world_model.py"  # Re-run when transition prediction changes.
+      - "visionamr/vla/planner.py"  # Re-run when multi-step search changes.
+      - "visionamr/vla/mcp_tools.py"  # Re-run when parameter certification changes.
+      - "visionamr/vla/world_pipeline.py"  # Re-run when the real adaptive loop changes.
+      - "scripts/run_world_model_vla.py"  # Re-run when the benchmark changes.
+      - "scripts/build_world_model_library.py"  # Re-run when transition acquisition changes.
+      - "tests/test_world_model_vla.py"  # Re-run when the method contract changes.
+      - ".github/workflows/world-model-vla.yml"  # Re-run when this workflow changes.
+  workflow_dispatch:  # Permit an explicit full reference-based dominance run.
+    inputs:  # Define the full-run resource contract.
+      max_solves:  # Expose the real CalculiX solve limit.
+        description: "Maximum counted solves per method"  # Explain the solve input.
+        required: true  # Require an explicit full-run choice.
+        default: "6"  # Use the intended multi-step trajectory by default.
+      budget:  # Expose the common equation cap.
+        description: "Equation-count budget"  # Explain the resource input.
+        required: true  # Require an explicit resource cap.
+        default: "60000"  # Use the canonical bridge-component budget.
+      horizon:  # Expose the internal world-model rollout horizon.
+        description: "World-model planning horizon"  # Explain the prediction-depth input.
+        required: true  # Require an explicit prediction depth.
+        default: "4"  # Use a genuine multi-step default.
+
+permissions:  # Apply least-privilege workflow permissions.
+  contents: read  # Read the repository without mutating it.
+
+jobs:  # Define contract, smoke, and optional full validation jobs.
+  contracts:  # Run solver-free unit contracts first.
+    runs-on: ubuntu-24.04  # Use the pinned Ubuntu runner generation.
+    timeout-minutes: 10  # Bound unit-test resource use.
+    steps:  # Execute the contract checks in order.
+      - uses: actions/checkout@v4  # Check out the exact pull-request commit.
+      - uses: actions/setup-python@v5  # Install a reproducible Python runtime.
+        with:  # Configure the Python runtime.
+          python-version: "3.12"  # Match the repository test workflow.
+          cache: pip  # Reuse downloaded Python packages.
+      - name: Install solver-free dependencies  # Install only packages needed by the unit contracts.
+        run: |  # Execute deterministic package installation.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install numpy scipy pytest --quiet  # Install numerical and test dependencies.
+      - name: Validate world-model contracts  # Run the focused purity and safety tests.
+        run: python -m pytest tests/test_world_model_vla.py -q  # Execute only the new method contract suite.
+
+  bridge-smoke:  # Execute one bounded real Gmsh and CalculiX trajectory on every relevant PR.
+    runs-on: ubuntu-24.04  # Use the pinned Ubuntu runner generation.
+    timeout-minutes: 45  # Bound native meshing and solver time.
+    needs: contracts  # Avoid native work when method contracts already fail.
+    steps:  # Execute installation, real solves, and evidence checks.
+      - uses: actions/checkout@v4  # Check out the exact pull-request commit.
+      - uses: actions/setup-python@v5  # Install a reproducible Python runtime.
+        with:  # Configure the Python runtime.
+          python-version: "3.12"  # Match the repository test workflow.
+          cache: pip  # Reuse downloaded Python packages.
+      - name: Install Gmsh and CalculiX  # Install the real finite-element toolchain.
+        run: |  # Execute Python and system package installation.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install gmsh numpy scipy matplotlib pytest --quiet  # Install the repository numerical stack.
+          sudo apt-get update -qq  # Refresh Ubuntu package metadata quietly.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1  # Install CalculiX and Gmsh runtime libraries.
+      - name: Run common-probe bridge smoke  # Run two counted solves for each competing method.
+        run: python scripts/run_world_model_vla.py --output results/world_model_vla_ci --no-reference --compare-dorfler --max-solves 2 --horizon 2 --beam-width 8 --budget 120000  # Exercise geometry, planning, certification, remeshing, and solving.
+      - name: Verify structural Dörfler floor  # Check the nodewise action guarantee from generated evidence.
+        run: |  # Execute a small transparent evidence assertion.
+          python - <<'PY'  # Start an inline Python validation program.
+          import json  # Parse the generated evidence file.
+          from pathlib import Path  # Address the generated summary path.
+          path = Path("results/world_model_vla_ci/summary.json")  # Select the smoke-test evidence.
+          data = json.loads(path.read_text(encoding="utf-8"))  # Read the complete structured summary.
+          assert data["contract"]["common_probe"] == "uniform_h0"  # Require the same probe as Dörfler.
+          assert data["contract"]["world_model_reads_local_prediction"] is False  # Require method independence.
+          assert data["contract"]["dorfler_candidate_always_present"] is True  # Require the permanent fallback policy.
+          assert data["contract"]["nodewise_target_never_coarser_than_dorfler"] is True  # Require exact target-field dominance.
+          PY  # End the inline Python validation program.
+      - uses: actions/upload-artifact@v4  # Preserve the real smoke-test evidence outside the runner.
+        with:  # Configure the evidence artifact.
+          name: world-model-vla-smoke  # Assign a stable artifact name.
+          path: results/world_model_vla_ci  # Upload summaries and solver records.
+          if-no-files-found: error  # Fail rather than silently losing evidence.
+
+  full-dominance:  # Run the expensive reference-based empirical gate only on explicit dispatch.
+    if: github.event_name == 'workflow_dispatch'  # Prevent full reference solves on ordinary pull requests.
+    runs-on: ubuntu-24.04  # Use the pinned Ubuntu runner generation.
+    timeout-minutes: 180  # Permit reference meshing and both multi-step trajectories.
+    needs: contracts  # Require method contracts before the expensive run.
+    steps:  # Execute installation, full comparison, and artifact preservation.
+      - uses: actions/checkout@v4  # Check out the explicitly selected commit.
+      - uses: actions/setup-python@v5  # Install a reproducible Python runtime.
+        with:  # Configure the Python runtime.
+          python-version: "3.12"  # Match the repository runtime.
+          cache: pip  # Reuse downloaded Python packages.
+      - name: Install Gmsh and CalculiX  # Install the real finite-element toolchain.
+        run: |  # Execute Python and system package installation.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install gmsh numpy scipy matplotlib pytest --quiet  # Install the repository numerical stack.
+          sudo apt-get update -qq  # Refresh Ubuntu package metadata quietly.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1  # Install CalculiX and Gmsh runtime libraries.
+      - name: Run reference-based empirical dominance gate  # Compare true energy errors at equal real solve counts.
+        run: python scripts/run_world_model_vla.py --output results/world_model_vla_full --compare-dorfler --enforce-dominance --max-solves "${{ inputs.max_solves }}" --horizon "${{ inputs.horizon }}" --budget "${{ inputs.budget }}"  # Fail when the real equal-solve gate is not met.
+      - uses: actions/upload-artifact@v4  # Preserve all full-run evidence even when later inspection is needed.
+        if: always()  # Upload evidence after both success and empirical-gate failure.
+        with:  # Configure the full-run artifact.
+          name: world-model-vla-full  # Assign a stable artifact name.
+          path: results/world_model_vla_full  # Upload summaries, references, and solver records.
+          if-no-files-found: warn  # Preserve the original failure when a solver stops before writing evidence.
