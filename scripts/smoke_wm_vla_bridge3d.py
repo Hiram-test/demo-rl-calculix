@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # Add the reposito
 
 from visionamr.bridge_scenarios import make_bridge_pier_cap  # Build the canonical medium-complexity bridge component.
 from visionamr.experiment import FemRunner  # Reuse the accountable CalculiX solve path.
-from visionamr.vla.partition import ScriptedVisionPartitioner  # Supply the deterministic one-shot visual partition.
+from visionamr.vla.bridge_partition import BridgePierCapVisionPartitioner  # Supply true three-dimensional section-aware geometry markup.
 from visionamr.vla.pipeline_world import WorldVLAConfig, run_world_vla  # Execute the real multi-step WM-VLA loop.
 from visionamr.vla.world_model import WorldPlannerConfig  # Configure the bounded counterfactual planner.
 
@@ -35,7 +35,7 @@ def main() -> int:  # Execute the native two-solve closure test.
     runner = SmokeFemRunner(problem, output / "run", keep_files=False, ccx_timeout=900.0)  # Create an accountable native runner without a reference solve.
     planner = WorldPlannerConfig(horizon=int(args.horizon), beam_width=int(args.beam_width))  # Configure bounded model-based lookahead.
     config = WorldVLAConfig(n_eq_budget=int(args.budget), max_solves=int(args.max_solves), early_stop=False, guard_mode="off", planner=planner, model_checkpoint_out=str(output / "world_model.json"))  # Require the requested number of real feedback states.
-    result = run_world_vla(runner, ScriptedVisionPartitioner(), config, method="wm_vla_native_smoke")  # Execute the pure WM-VLA closure without Dörfler or local prediction.
+    result = run_world_vla(runner, BridgePierCapVisionPartitioner(), config, method="wm_vla_native_smoke")  # Execute the pure WM-VLA closure on a true three-dimensional fixed partition.
     payload = {  # Assemble the complete native smoke artifact.
         "problem": problem.instance_id,  # Preserve the exact parameterized scenario identity.
         "budget": int(args.budget),  # Preserve the hard free-equation cap.
@@ -44,6 +44,7 @@ def main() -> int:  # Execute the native two-solve closure test.
         "reference_constructed": False,  # State explicitly why benchmark-relative errors are absent.
         "local_prediction_used": False,  # Lock the scientific separation from LP.
         "dorfler_used": False,  # Lock the pure controller path for this closure check.
+        "partition": "bridge_pier_cap_section_aware",  # Disclose the true three-dimensional geometry partition.
     }  # Finish the artifact payload.
     path = output / "smoke.json"  # Select the canonical native closure artifact.
     path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")  # Persist the complete machine-readable evidence.
