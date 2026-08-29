@@ -3,6 +3,7 @@
 from __future__ import annotations  # Enable postponed type-annotation evaluation.
 
 import hashlib  # Import hashing for immutable action and mesh receipts.
+import inspect  # Import constructor signature inspection for repository compatibility.
 import json  # Import JSON support for persistent transition libraries.
 import math  # Import scalar logarithms used by the planner objective.
 from dataclasses import asdict  # Import dataclass serialization for audit records.
@@ -173,6 +174,85 @@ class WorldVLAResult:  # Summarize a complete multi-step world-model VLA executi
     receipts: tuple[ActionReceipt, ...]  # Preserve every deterministic action-compilation receipt.
 
 
+def _record_equations(record) -> int:  # Read the actual CalculiX equation count across repository record revisions.
+    for field in ("n_equations", "n_eq", "equations"):  # Enumerate supported explicit record fields.
+        value = getattr(record, field, None)  # Read one candidate field safely.
+        if value is not None:  # Accept the first materialized count.
+            return int(value)  # Return a normalized integer equation count.
+    extra = getattr(record, "extra", {}) or {}  # Read structured diagnostics as a final compatibility path.
+    for field in ("n_equations", "n_eq", "equations"):  # Enumerate supported diagnostic keys.
+        if field in extra:  # Accept an explicitly recorded equation count.
+            return int(extra[field])  # Return the normalized diagnostic count.
+    raise AttributeError("solve record contains no equation count")  # Reject unauditable resource accounting.
+
+
+def _partition_assign(partition, mesh: Mesh) -> np.ndarray:  # Apply the fixed semantic partition across repository method spellings.
+    for name in ("assign", "assign_cells", "labels"):  # Enumerate supported assignment method names.
+        method = getattr(partition, name, None)  # Read one candidate method.
+        if callable(method):  # Require an executable assignment method.
+            values = method(mesh)  # Apply the semantic partition to the realized Gmsh mesh.
+            labels = np.asarray(values, dtype=int)  # Normalize the assignment to integral region labels.
+            if labels.shape != (mesh.n_cells,):  # Require exactly one stable region per element.
+                raise ValueError("partition assignment width does not match the mesh")  # Reject a malformed semantic state.
+            return labels  # Return the validated element labels.
+    raise AttributeError("partition exposes no cell-assignment method")  # Reject an unsupported repository contract.
+
+
+def _partition_features(partition, post, eta2: np.ndarray, labels: np.ndarray):  # Aggregate solve evidence across repository method spellings.
+    for name in ("features", "aggregate_features", "region_features"):  # Enumerate supported regional aggregation methods.
+        method = getattr(partition, name, None)  # Read one candidate method.
+        if not callable(method):  # Skip absent aggregation methods.
+            continue  # Search the next supported spelling.
+        parameters = inspect.signature(method).parameters  # Read the bound-method argument contract.
+        context = {"post": post, "state": post, "solution": post, "eta2": eta2, "indicator": eta2, "indicators": eta2, "labels": labels, "assignment": labels, "mesh": post.mesh}  # Map semantic argument names to observed data.
+        kwargs: dict[str, object] = {}  # Allocate accepted keyword arguments only.
+        unresolved: list[str] = []  # Track required arguments not represented by the compatibility map.
+        for parameter_name, parameter in parameters.items():  # Resolve each declared bound-method parameter.
+            if parameter.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):  # Ignore variadic compatibility escape hatches.
+                continue  # Resolve explicit parameters only.
+            if parameter_name in context:  # Supply a known semantic argument.
+                kwargs[parameter_name] = context[parameter_name]  # Store the exact observed value.
+            elif parameter.default is inspect.Parameter.empty:  # Record an unsupported required argument.
+                unresolved.append(parameter_name)  # Preserve the exact missing field name.
+        if unresolved:  # Try the next method spelling when this signature is incompatible.
+            continue  # Avoid speculative positional calls.
+        return method(**kwargs)  # Return the repository regional-feature object.
+    raise AttributeError("partition exposes no compatible regional-feature method")  # Reject an unsupported aggregation contract.
+
+
+def _partition_adjacency(partition, mesh: Mesh, labels: np.ndarray, n_regions: int) -> np.ndarray:  # Build the stable semantic graph with a deterministic fallback.
+    for name in ("adjacency_matrix", "region_adjacency", "adjacency"):  # Enumerate supported graph methods.
+        method = getattr(partition, name, None)  # Read one candidate method.
+        if not callable(method):  # Skip absent graph methods.
+            continue  # Search the next supported spelling.
+        parameters = inspect.signature(method).parameters  # Read the bound-method argument contract.
+        context = {"mesh": mesh, "labels": labels, "assignment": labels}  # Map graph argument names to current data.
+        kwargs: dict[str, object] = {}  # Allocate accepted keyword arguments only.
+        unresolved: list[str] = []  # Track unsupported required arguments.
+        for parameter_name, parameter in parameters.items():  # Resolve each declared bound-method parameter.
+            if parameter.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):  # Ignore variadic parameters.
+                continue  # Resolve explicit parameters only.
+            if parameter_name in context:  # Supply a known graph argument.
+                kwargs[parameter_name] = context[parameter_name]  # Store the exact current value.
+            elif parameter.default is inspect.Parameter.empty:  # Record an unsupported required argument.
+                unresolved.append(parameter_name)  # Preserve the missing name.
+        if unresolved:  # Try another repository graph spelling when incompatible.
+            continue  # Avoid speculative positional calls.
+        matrix = np.asarray(method(**kwargs), dtype=float)  # Normalize the repository graph matrix.
+        if matrix.shape == (n_regions, n_regions):  # Accept only a complete square semantic graph.
+            return matrix  # Return the validated graph matrix.
+    matrix = np.zeros((n_regions, n_regions), dtype=float)  # Allocate the deterministic face-adjacency fallback graph.
+    pairs, _ = mesh.cell_adjacency  # Read all face-adjacent simplex pairs.
+    for left, right in np.asarray(pairs, dtype=int):  # Visit every neighboring element pair.
+        left_region = int(labels[left])  # Read the first element's semantic region.
+        right_region = int(labels[right])  # Read the second element's semantic region.
+        if left_region == right_region:  # Ignore graph edges internal to one semantic region.
+            continue  # Preserve only cross-region interaction edges.
+        matrix[left_region, right_region] = 1.0  # Add the directed forward graph edge.
+        matrix[right_region, left_region] = 1.0  # Add the symmetric reverse graph edge.
+    return matrix  # Return the deterministic semantic adjacency graph.
+
+
 def semantic_persistence(name: str) -> float:  # Convert a vision-supplied structural name to a weak persistence prior.
     lowered = name.lower()  # Normalize the semantic label for stable keyword matching.
     score = 0.0  # Start from a neutral mechanism prior.
@@ -328,7 +408,7 @@ class RegionalWorldModel:  # Learn action-conditioned residuals around a finite-
 
 
 def build_regional_state(partition: Partition, post: PostState, eta2: np.ndarray, labels: np.ndarray, marked: np.ndarray, n_equations: int, step: int, previous_hits: np.ndarray | None = None) -> tuple[RegionalState, RegionFeatures]:  # Convert one real solve into the world-model state contract.
-    features = partition.features(post, eta2, labels)  # Aggregate element-wise physical evidence by stable semantic region.
+    features = _partition_features(partition, post, eta2, labels)  # Aggregate element-wise physical evidence through the repository-compatible adapter.
     n_regions = len(partition.seeds)  # Read the semantic graph order.
     marked_mask = np.zeros(len(eta2), dtype=bool)  # Allocate an element-level exact-Dörfler mask.
     marked_mask[np.asarray(marked, dtype=int)] = True  # Mark the exact selected elements.
@@ -343,7 +423,7 @@ def build_regional_state(partition: Partition, post: PostState, eta2: np.ndarray
     marked_element_fraction = marked_count / np.maximum(features.elems.astype(float), 1.0)  # Compute the within-region marked-element fraction.
     hits = np.zeros(n_regions, dtype=float) if previous_hits is None else np.asarray(previous_hits, dtype=float).copy()  # Carry forward previous exact-Dörfler hit counts.
     hits += (marked_count > 0.0).astype(float)  # Increment every region hit in the current real solve.
-    adjacency = partition.adjacency_matrix(post.mesh, labels)  # Build the realized semantic-region adjacency graph.
+    adjacency = _partition_adjacency(partition, post.mesh, labels, n_regions)  # Build the realized semantic graph through the repository-compatible adapter.
     state = RegionalState(names=tuple(seed.name for seed in partition.seeds), err_sum=np.maximum(features.err_sum.astype(float), 1.0e-30), elems=np.maximum(features.elems.astype(float), 1.0), sizes=np.clip(features.h_meas.astype(float), partition.problem.h_min, partition.problem.h0), vm_max=np.maximum(features.vm_max.astype(float), 0.0), volume=np.maximum(features.volume.astype(float), 1.0e-30), adjacency=adjacency.astype(float), hit_count=hits, marked_error_fraction=np.clip(marked_error_fraction, 0.0, 1.0), marked_element_fraction=np.clip(marked_element_fraction, 0.0, 1.0), n_equations=int(n_equations), step=int(step), h0=float(partition.problem.h0), h_min=float(partition.problem.h_min), dim=int(partition.problem.dim))  # Freeze all observed decision-relevant evidence.
     return state, features  # Return both the model state and the existing regional diagnostics.
 
@@ -556,8 +636,8 @@ def run_world_model_vla(runner: FemRunner, partitioner, n_eq_cap: int, config: W
         post, record = runner.solve_mesh(mesh, method=method, stage=f"cycle{step}")  # Execute one real CalculiX solve through the audited runner.
         eta2 = zz_indicator(problem, post)  # Compute the common element-wise ZZ indicator.
         marked = dorfler_mark(eta2, cfg.theta)  # Compute the exact classical bulk-marking support.
-        labels = partition.assign(mesh)  # Reapply the fixed semantic drawings to the realized Gmsh mesh.
-        state, features = build_regional_state(partition, post, eta2, labels, marked, record.n_equations, step, hit_count)  # Build the observed regional world state.
+        labels = _partition_assign(partition, mesh)  # Reapply the fixed semantic partition through the repository-compatible adapter.
+        state, features = build_regional_state(partition, post, eta2, labels, marked, _record_equations(record), step, hit_count)  # Build the observed regional world state.
         hit_count = state.hit_count.copy()  # Carry the updated exact-Dörfler hit history forward.
         if previous_state is not None and previous_action is not None:  # Learn only after a complete real action-conditioned transition exists.
             world.observe(previous_state, previous_action, state)  # Correct the physics prior from real Gmsh and CalculiX evidence.
@@ -570,7 +650,7 @@ def run_world_model_vla(runner: FemRunner, partitioner, n_eq_cap: int, config: W
             stopped_by = "solve_cap"  # Record the configured terminal condition.
             record.extra["stop"] = stopped_by  # Preserve the condition in the counted solve record.
             break  # End the adaptive loop.
-        if record.n_equations >= n_eq_cap:  # Stop after reaching or exceeding the same hard cap as Dörfler.
+        if _record_equations(record) >= n_eq_cap:  # Stop after reaching or exceeding the same hard cap as Dörfler.
             stopped_by = "equation_cap"  # Record the resource terminal condition.
             record.extra["stop"] = stopped_by  # Preserve the condition in the counted solve record.
             break  # End the adaptive loop.
@@ -599,7 +679,7 @@ def run_world_model_vla(runner: FemRunner, partitioner, n_eq_cap: int, config: W
             record.extra["stop"] = stopped_by  # Preserve the failure in the counted solve record.
             receipts.append(receipt)  # Retain the failed receipt for diagnosis.
             break  # End the adaptive loop without another solve.
-        if not receipt.budget_pass and receipt.fallback_used:  # Stop when even exact Dörfler's next realized mesh would violate the safety-adjusted cap.
+        if not receipt.budget_pass:  # Stop when even exact Dörfler's next realized mesh would violate the safety-adjusted cap.
             stopped_by = "next_dorfler_mesh_over_budget"  # Record the fair resource stop.
             record.extra["stop"] = stopped_by  # Preserve the stop in the counted solve record.
             receipts.append(receipt)  # Retain the resource receipt.

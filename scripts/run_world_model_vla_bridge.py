@@ -8,6 +8,7 @@ import importlib  # Import dynamic discovery of the repository vision head.
 import inspect  # Import constructor signature inspection for repository compatibility.
 import json  # Import structured result serialization.
 import math  # Import finite-value and square-root utilities.
+import pkgutil  # Import package traversal for structural vision-head discovery.
 import sys  # Import deterministic campaign failure exit codes.
 from dataclasses import asdict  # Import dataclass serialization for campaign metadata.
 from dataclasses import replace  # Import immutable configuration specialization.
@@ -39,34 +40,39 @@ def _make_runner(problem: Any, directory: Path) -> FemRunner:  # Instantiate the
     return FemRunner(problem, directory)  # Fall back to the historical positional workspace contract.
 
 
-def _make_partitioner() -> Any:  # Discover the existing scripted vision-region head without coupling to one legacy filename.
-    module_names = ("visionamr.vla.vision", "visionamr.vla.eye", "visionamr.vla.heads", "visionamr.vla.pipeline")  # Enumerate repository locations used across VLA revisions.
-    preferred_names = ("ScriptedVisionPartitioner", "ScriptedVisionHead", "ScriptedEye", "ScriptedVision", "VisionPartitioner")  # Enumerate explicit deterministic vision-head names first.
-    for module_name in module_names:  # Search each possible repository module.
-        try:  # Isolate optional module-layout differences.
-            module = importlib.import_module(module_name)  # Import the current VLA module.
-        except ImportError:  # Ignore layouts not present in this branch.
-            continue  # Search the next module.
-        for name in preferred_names:  # Try explicit stable class names first.
+def _make_partitioner() -> Any:  # Discover the existing semantic vision head by structural contract.
+    package = importlib.import_module("visionamr.vla")  # Import the repository VLA package.
+    module_names = ["visionamr.vla.vision", "visionamr.vla.eye", "visionamr.vla.heads", "visionamr.vla.pipeline"]  # Seed discovery with historically used module locations.
+    package_paths = list(getattr(package, "__path__", []))  # Read the package search paths for installed-module traversal.
+    for module_info in pkgutil.iter_modules(package_paths, package.__name__ + "."):  # Enumerate every current VLA module.
+        if module_info.name not in module_names:  # Preserve stable seed order while adding current modules.
+            module_names.append(module_info.name)  # Add the discovered module exactly once.
+    preferred_names = ("ScriptedVisionPartitioner", "ScriptedVisionHead", "ScriptedEye", "ScriptedVision", "CachedDrawingPartitioner", "CachedDrawingEye", "VisionPartitioner")  # Rank deterministic or cached semantic heads before generic classes.
+    for module_name in module_names:  # Search each current repository VLA module.
+        try:  # Isolate optional module dependencies.
+            module = importlib.import_module(module_name)  # Import one candidate module.
+        except Exception:  # Skip modules requiring unavailable optional services.
+            continue  # Search the next module without weakening the finite-element path.
+        ordered: list[tuple[str, object]] = []  # Allocate a stable class candidate sequence.
+        for name in preferred_names:  # Add explicitly preferred class names first.
             candidate = getattr(module, name, None)  # Read the named candidate safely.
-            if inspect.isclass(candidate):  # Require a constructible class.
-                for kwargs in ({}, {"seed": 0}):  # Try no-argument and deterministic-seed constructors.
-                    try:  # Isolate constructor signature differences.
-                        instance = candidate(**kwargs)  # Construct the scripted vision head.
-                    except TypeError:  # Ignore an incompatible constructor variant.
-                        continue  # Try the next constructor form.
-                    if callable(getattr(instance, "propose", None)):  # Require the semantic-region proposal contract.
-                        return instance  # Return the compatible repository vision head.
-        for name, candidate in inspect.getmembers(module, inspect.isclass):  # Fall back to structural discovery within the VLA namespace.
-            if "script" not in name.lower() and "vision" not in name.lower():  # Exclude unrelated classes.
+            if inspect.isclass(candidate):  # Retain only constructible classes.
+                ordered.append((name, candidate))  # Preserve the preferred class order.
+        for name, candidate in inspect.getmembers(module, inspect.isclass):  # Add structurally plausible classes not already listed.
+            lowered = name.lower()  # Normalize the class name for filtering.
+            if not any(token in lowered for token in ("script", "cached", "vision", "eye", "partitioner")):  # Exclude unrelated classes.
                 continue  # Search the next class.
-            try:  # Attempt the safest no-argument construction.
-                instance = candidate()  # Construct the discovered class.
-            except TypeError:  # Ignore classes requiring unrelated dependencies.
-                continue  # Search the next class.
-            if callable(getattr(instance, "propose", None)):  # Require the semantic-region proposal contract.
-                return instance  # Return the structurally compatible vision head.
-    raise RuntimeError("no scripted VLA vision partitioner with propose(problem) was found")  # Fail explicitly instead of silently removing the VLA component.
+            if all(candidate is not existing for _, existing in ordered):  # Avoid duplicate class attempts.
+                ordered.append((name, candidate))  # Append the structurally plausible class.
+        for _, candidate in ordered:  # Attempt deterministic constructor variants in stable order.
+            for kwargs in ({}, {"seed": 0}, {"random_seed": 0}):  # Try common no-service constructor contracts.
+                try:  # Isolate constructor signature differences.
+                    instance = candidate(**kwargs)  # Construct one semantic vision head.
+                except Exception:  # Skip constructors requiring external clients or mandatory fixtures.
+                    continue  # Try the next deterministic constructor form.
+                if callable(getattr(instance, "propose", None)):  # Require the exact semantic-region proposal contract.
+                    return instance  # Return the repository-compatible vision head.
+    raise RuntimeError("no deterministic or cached VLA partitioner with propose(problem) was found")  # Fail explicitly instead of replacing VLA with a non-visual baseline.
 
 
 def _record_equations(record: Any) -> int:  # Read the actual equation count across repository record revisions.
