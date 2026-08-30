@@ -1,0 +1,308 @@
+{
+  "TEST_NOT_RUN": true,
+  "allow_unqualified_references": true,
+  "common_gradation": 1.0,
+  "model_artifacts": [
+    {
+      "method": "world_model",
+      "name": "world_model_v0",
+      "path": "training/world_model/world_model_v0.json",
+      "sha256": "aa32253839578cd0db0a90b489131bf6fb609f462afd82ffcc3094e589a12b77"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260831",
+      "path": "training/supervised/candidates/seed_20260831/model.pt",
+      "seed": 20260831,
+      "sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260832",
+      "path": "training/supervised/candidates/seed_20260832/model.pt",
+      "seed": 20260832,
+      "sha256": "47c0e7b28ad5c3620dc8c37177226486534152e1ecaae80e84c980f858f52d86"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260833",
+      "path": "training/supervised/candidates/seed_20260833/model.pt",
+      "seed": 20260833,
+      "sha256": "e04225f766e4b050bbef3c6b7e50a794028d9c44fae9b9c2676aed373b5c7a62"
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260901",
+      "path": "models/rl/rl_seed20260901.pt",
+      "seed": 20260901,
+      "sha256": "650c5aa53cf138360595e0551d3117c8e3feeada863c31d8e1307cb925958ed1"
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260902",
+      "path": "models/rl/rl_seed20260902.pt",
+      "seed": 20260902,
+      "sha256": "badf435716e78a2251c03a8534f16415483a92689bc5bbc5a43031ae287f94ae"
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260903",
+      "path": "models/rl/rl_seed20260903.pt",
+      "seed": 20260903,
+      "sha256": "47c3a7127fa53d002fa81eb95d5bd168f8de0521dab699878d1c27cb36a1a823"
+    }
+  ],
+  "partition_root": "protocol/partitions",
+  "rl_seeds": [
+    20260901,
+    20260902,
+    20260903
+  ],
+  "scientific_config": {
+    "beam_width": 20,
+    "budget_safety": 0.97,
+    "ensemble_size": 5,
+    "failure_limit": 0.42,
+    "horizon": 4,
+    "max_extra_depth": 2,
+    "max_extra_regions": 2,
+    "min_relative_gain": 0.018,
+    "regression_tolerance": 0.03,
+    "ridge": 0.001,
+    "uncertainty_limit": 0.34
+  },
+  "selected_supervised_seed": 20260831,
+  "training_cost_sources": [
+    {
+      "method": "world_model",
+      "name": "world_model_training_cost",
+      "path": "training/world_model/training_costs.json",
+      "sha256": "580e9ce0da254970f028483c7c70d37c668f5733f2bb8138144c260cd3d9ed6f"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_training_cost",
+      "path": "training/supervised/training_summary.json",
+      "sha256": "4d63161f33dfbd99e25ccfc0f4116ca122de249d42b35b7a3f91aebedc46bc38"
+    },
+    {
+      "method": "rl",
+      "name": "rl_training_cost",
+      "path": "models/rl/rl_training_cost.json",
+      "sha256": "aec87ed6dd2f1f91884a28f1689b3f5d056a603177e2e7ac168e58926ffadb76"
+    }
+  ],
+  "training_validation_artifacts": [
+    {
+      "method": "world_model",
+      "name": "world_model_training_summary",
+      "path": "training/world_model/training_summary.json",
+      "phase": "training",
+      "sha256": "efd9477d7f616d0cbb7fcdd9163edbc927ddd48d8572da3be3d4b8d90f6664dc"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_config",
+      "path": "training/supervised/supervised_config.json",
+      "phase": "training",
+      "sha256": "6e57f81831dffa7ce9a85f3594539b215dbdac9d6d5e03d65181bfc08ba7c566"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_training_plan",
+      "path": "training/supervised/training_plan.json",
+      "phase": "training",
+      "sha256": "1c6017759749ef9a9096142c1cde5be5560c6ae66f2f1b55e0db01a4225ad1b5"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_expert_dataset",
+      "path": "training/supervised/expert_dataset.npz",
+      "phase": "training",
+      "sha256": "f9eb64a405fe864e648cdaad87d2beeb3c5b214c184ecd67804eb2a2bcfc8b36"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_expert_dataset_metadata",
+      "path": "training/supervised/expert_dataset_metadata.json",
+      "phase": "training",
+      "sha256": "6c5baa99d58b148c044a984d2b42972ae8adc3f955b63a9810e9fe1509cc9a5c"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_network_training_summary",
+      "path": "training/supervised/network_training_summary.json",
+      "phase": "training",
+      "sha256": "013955705d607a41007e121f81287dc38000db567309a79be5f4a758e2ae0a64"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_training_summary",
+      "path": "training/supervised/training_summary.json",
+      "phase": "training",
+      "sha256": "4d63161f33dfbd99e25ccfc0f4116ca122de249d42b35b7a3f91aebedc46bc38"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_model_selection",
+      "path": "training/supervised/selected_model.json",
+      "phase": "validation",
+      "sha256": "981ea4f495d89c9294c7c55c22b4e6b09fd5f1bfdf8676f9206f3cd4a7057f25"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_validation_rows",
+      "path": "training/supervised/validation_rows.json",
+      "phase": "validation",
+      "sha256": "af64a8ba9eeb2c0700bc4e92f9a0873d003a30c991a824265789a026199cd67b"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_validation_assembly",
+      "path": "training/supervised/PARALLEL_VALIDATION_ASSEMBLY.json",
+      "phase": "validation",
+      "sha256": "6220601d6519f1d83622c28af2d1f6aee61e4b3ab752d6c5a520044ee64842bb"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_point_receipt_archive",
+      "path": "training/supervised/POINT_RECEIPT_ARCHIVE.json",
+      "phase": "validation",
+      "sha256": "7d7ecae627d31c4e0e07b0f8f0b39c1623728c96d048ea50fe53f33b5f2c9268"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_operational_cutover",
+      "path": "training/supervised/OPERATIONAL_CUTOVER_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "3ec99e1ab6646bea82a580a43991772c3a213d6364d94dc09281f66180fe0bd9"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260831_validation_receipt",
+      "path": "training/supervised/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "3210883e75ba73b062c81a49509bdee2020285b9c2e5aecc66601c901d943848"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260832_validation_receipt",
+      "path": "training/supervised/validation/seed_20260832/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "a033537f00f2532fd1885ff41ce976a9f2a99367880137e47bf7132bae79b025"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260833_validation_receipt",
+      "path": "training/supervised/validation/seed_20260833/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "e22f8713a5764de1b9d313cb5062eb9566dff147c82d0c5247b6aba90316b83c"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_validation_orchestrator",
+      "path": "training/supervised/PARALLEL_VALIDATION_ORCHESTRATOR.py",
+      "phase": "validation",
+      "sha256": "97887865d34a4719b5527f908eaf31a552afb80f91f8888c080ad8266c3dba5d"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_worker",
+      "path": "training/supervised/PARALLEL_POINT_VALIDATION_WORKER.py",
+      "phase": "validation",
+      "sha256": "a743775ea595b48f71e21f12aa23474403d9d31992cd42f792f51f24fb304755"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_assembler",
+      "path": "training/supervised/PARALLEL_POINT_VALIDATION_ASSEMBLER.py",
+      "phase": "validation",
+      "sha256": "8dc702069c89eb2b24ee0bbd927e2ed12a8b774c387eb361ff40cca227cf119c"
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_receipt_archiver",
+      "path": "training/supervised/PARALLEL_POINT_RECEIPT_ARCHIVER.py",
+      "phase": "validation",
+      "sha256": "f1e8a86d8fee0385403c284f677da7741a00f6af8e50a98bddd6dc7252d66571"
+    },
+    {
+      "method": "rl",
+      "name": "rl_training_plan",
+      "path": "models/rl/rl_training_plan.json",
+      "phase": "training",
+      "sha256": "2c649ca2da0633013d3cc34ee29e715d079e1e019b7823433bafdab258fa2f5a"
+    },
+    {
+      "method": "rl",
+      "name": "rl_shard_receipts",
+      "path": "models/rl/rl_shard_receipts.json",
+      "phase": "training",
+      "sha256": "0ddca742ddc61d3a5862d3b908bf4e1ef16666e59590b70caafb119a344433ee"
+    },
+    {
+      "method": "rl",
+      "name": "rl_training_cost",
+      "path": "models/rl/rl_training_cost.json",
+      "phase": "training",
+      "sha256": "aec87ed6dd2f1f91884a28f1689b3f5d056a603177e2e7ac168e58926ffadb76"
+    },
+    {
+      "method": "rl",
+      "name": "rl_validation_index",
+      "path": "models/rl/rl_freeze_index.json",
+      "phase": "validation",
+      "sha256": "bced1c3fb1aa1ade7975893b25fb25c63f8001c2b877ddabdec5b6697e818b5f"
+    }
+  ],
+  "world_model_config": {
+    "ensemble_size": 5,
+    "error_power": 1.65,
+    "max_log_residual": 0.7,
+    "max_rows": 3000,
+    "min_rows": 10,
+    "neighbor_spill": 0.18,
+    "prior_uncertainty": 0.24,
+    "refine_factor": 0.5,
+    "ridge": 0.001,
+    "uncertainty_scale": 1.8
+  },
+  "world_model_runtime": {
+    "artifact_dir": null,
+    "audit_slack": 0.08,
+    "core_theta": 0.72,
+    "fallback_cooldown": 1,
+    "max_solves": 6,
+    "method_name": "world_model_vla",
+    "n_equation_cap": 120000,
+    "refine_factor": 0.5,
+    "require_reference": true,
+    "stagnation_steps": 2,
+    "stagnation_tolerance": 0.002,
+    "theta": 0.5
+  },
+  "world_model_seed": 271828,
+  "world_planner": {
+    "beam_width": 20,
+    "budget_safety": 0.97,
+    "candidate_regions": 5,
+    "discount": 0.84,
+    "failure_limit": 0.42,
+    "failure_weight": 1.1,
+    "horizon": 4,
+    "max_extra_depth": 2,
+    "max_extra_regions": 2,
+    "min_robust_gain": 0.018,
+    "resource_weight": 0.17,
+    "uncertainty_limit": 0.34,
+    "uncertainty_weight": 0.75,
+    "warmup_transitions": 1
+  },
+  "world_tool_config": {
+    "budget_safety": 1.0,
+    "core_theta": 0.72,
+    "max_extra_depth": 2,
+    "refine_factor": 0.5,
+    "theta": 0.5
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "config_sha256": "3ec87d721e8f707f8ff85f1d4fd2855a219e9804e5a6b6efb694f6cfd556e88f",
+  "deployment": {
+    "common_probe": "uniform_h0",
+    "hold_last_after_solve": 2,
+    "preflight_bisections": 8,
+    "preflight_expansions": 10,
+    "real_solves": 2
+  },
+  "expert": {
+    "equation_budget": 120000,
+    "gradation": 1.0,
+    "max_solves": 6,
+    "theta": 0.5
+  },
+  "feature_count": 9,
+  "network": {
+    "batch_size": 4096,
+    "epochs": 300,
+    "hidden": 64,
+    "learning_rate": 0.002,
+    "seeds": [
+      20260831,
+      20260832,
+      20260833
+    ]
+  },
+  "protocol_id": "WMVLA-4WAY-P1",
+  "schema": "wmvla-four-way-supervised-v1",
+  "validation": {
+    "budgets": [
+      30000,
+      60000,
+      120000
+    ],
+    "failure_error": 10.0,
+    "selection_order": [
+      "failure_point_count",
+      "energy_error_log_mean",
+      "qoi_error_log_mean",
+      "budget_violation_count",
+      "seed"
+    ],
+    "split": "validation"
+  }
+}

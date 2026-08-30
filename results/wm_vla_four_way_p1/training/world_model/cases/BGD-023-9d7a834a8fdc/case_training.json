@@ -1,0 +1,5136 @@
+{
+  "actions": [
+    {
+      "action_index": 1,
+      "candidate_mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "0dc098dd250d50b3b37ddfe1f11efb19518428ea7fd8402bcba981a9dd6cfc78",
+        "base_raw_target_sha256": "28f994b6f42193753628070e1ae0cb924e5f1e5121504e900ba95961d7ab9801",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 1054,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 5877,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "28f994b6f42193753628070e1ae0cb924e5f1e5121504e900ba95961d7ab9801",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.10880034940608355,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 5689,
+        "predicted_error_ratio_upper": 0.8187199456343797,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.10880034940608355
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.7922926192031352,
+        "equation_ratio_upper": 1.8577949777938452,
+        "error_ratio_mean": 0.7747337874167843,
+        "error_ratio_upper": 0.8187199456343797,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.013986399745789642,
+            0.004906259930092151,
+            0.018247788202632415,
+            0.009783682872577058,
+            0.39724245312996503,
+            0.08596417285826378
+          ],
+          "dorfler_error_fraction": [
+            0.08053047138779497,
+            0.0012141802099538412,
+            0.1460252845112445,
+            0.081865114633425,
+            0.6246881886151727,
+            0.2900721265185315
+          ],
+          "elems": [
+            377.8780341243461,
+            259.8890230695975,
+            122.94282940165282,
+            116.1122413263208,
+            723.5682823559794,
+            4039.5963605849392
+          ],
+          "eq_per_elem": 0.972990149348586,
+          "err_sum": [
+            14.506208105522184,
+            3.122656126542522,
+            4.584431377921431,
+            4.512525795851277,
+            123.24520751400905,
+            280.28030884469683
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "n_equations": 5488,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            29.711625407839623,
+            28.003499898186334,
+            42.945664360856036,
+            41.55211400767445,
+            25.935925685102134,
+            41.73037445800496
+          ],
+          "step": 1,
+          "total_elements": 5639.986770862835,
+          "total_error": 430.25133776454334,
+          "vm_max": [
+            14.16346539727484,
+            8.98516155051518,
+            5.24601948297772,
+            5.060736664703933,
+            15.09956131296402,
+            14.18167774913463
+          ],
+          "volume": [
+            677085.6805379931,
+            385436.2504708597,
+            412228.524463876,
+            428055.4156583166,
+            1027934.8447478227,
+            13797850.32672806
+          ]
+        },
+        "uncertainty": 0.030679226898495737
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_solve_index": 1,
+      "timing_s": {
+        "gmsh_remeshing": 10.167133095994359,
+        "parameter_tools": 0.014308835001429543,
+        "tool_total": 10.181441930995788,
+        "world_model_planning": 0.9092520830017747
+      }
+    },
+    {
+      "action_index": 2,
+      "candidate_mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "0bf01c37b8a5a96041691054dfba828ca37d92c158fd33501f4046ba47abc1db",
+        "base_raw_target_sha256": "1c3d9013e262bbdeebfe7aa366b465962bf80105ffe9047c5bcb8c7594379426",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 2034,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 11202,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "1c3d9013e262bbdeebfe7aa366b465962bf80105ffe9047c5bcb8c7594379426",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.12982631107294662,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 10474,
+        "predicted_error_ratio_upper": 0.8391677037720149,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.12982631107294662
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.7236685383699166,
+        "equation_ratio_upper": 1.7821763853308648,
+        "error_ratio_mean": 0.797160538426281,
+        "error_ratio_upper": 0.8391677037720149,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.011417660850450165,
+            0.00392904073587385,
+            0.002233902759526938,
+            0.0018265440210249674,
+            0.3676434782261382,
+            0.09370585994348132
+          ],
+          "dorfler_error_fraction": [
+            0.04644185482797903,
+            0.0009408684705612344,
+            0.001431108211155303,
+            0.0015977077178811513,
+            0.6070294564194025,
+            0.2622950527821932
+          ],
+          "elems": [
+            628.7076667951611,
+            362.961363795396,
+            188.8454986573009,
+            163.1202330222388,
+            2099.280056615437,
+            7051.2385304504105
+          ],
+          "eq_per_elem": 0.9653416557161629,
+          "err_sum": [
+            15.095581459785691,
+            2.6664781323833155,
+            3.9212153549078814,
+            4.506883755722501,
+            158.22494749090154,
+            270.82108233939056
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            2.0,
+            0.0,
+            1.0,
+            1.0,
+            2.0,
+            2.0
+          ],
+          "n_equations": 10130,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            25.30498146858622,
+            23.867208213374546,
+            30.23904635612127,
+            34.92607415896887,
+            16.319084773332968,
+            30.69663462325798
+          ],
+          "step": 2,
+          "total_elements": 10494.153349335944,
+          "total_error": 455.2361885330915,
+          "vm_max": [
+            14.801169139451403,
+            11.362659523878927,
+            6.234775556584453,
+            4.523020648881675,
+            20.46630786547595,
+            23.633215060407398
+          ],
+          "volume": [
+            651705.2313061,
+            367733.50006767455,
+            449014.88540841604,
+            440903.61951651913,
+            1031140.8040901826,
+            13781280.830722008
+          ]
+        },
+        "uncertainty": 0.028530269390879392
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_solve_index": 2,
+      "timing_s": {
+        "gmsh_remeshing": 19.467661976988893,
+        "parameter_tools": 0.028896791016450152,
+        "tool_total": 19.496558768005343,
+        "world_model_planning": 0.6877410779998172
+      }
+    },
+    {
+      "action_index": 3,
+      "candidate_mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "45ad5cfe17ba1a87844831be6a8a726982bb980f1d26820c9fcc8fce4c687234",
+        "base_raw_target_sha256": "03e112d3ccf208a6a734e78299d6972da26ec6d7e5cc8e1e98f97d84abeccd12",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 3830,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 24425,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "03e112d3ccf208a6a734e78299d6972da26ec6d7e5cc8e1e98f97d84abeccd12",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.08026505710547469,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 22679,
+        "predicted_error_ratio_upper": 0.8385402365500457,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.08026505710547469
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.948580610605249,
+        "equation_ratio_upper": 2.024528988045523,
+        "error_ratio_mean": 0.7906363814093065,
+        "error_ratio_upper": 0.8385402365500457,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.041234183037629324,
+            0.0027406851712928233,
+            0.023996164835275134,
+            0.06574951508838354,
+            0.21876777198554392,
+            0.14401374995709104
+          ],
+          "dorfler_error_fraction": [
+            0.16460134305546764,
+            0.0009239412085521843,
+            0.11541023913845756,
+            0.2362495203072403,
+            0.44570917238039687,
+            0.39228787139752447
+          ],
+          "elems": [
+            1175.841883169526,
+            464.5526258702684,
+            263.44084847632274,
+            311.413838327175,
+            5179.414857468456,
+            15982.468058083781
+          ],
+          "eq_per_elem": 0.9337334333583396,
+          "err_sum": [
+            13.90837948924998,
+            2.740707502626675,
+            2.9489485287152855,
+            3.507686340762705,
+            146.10184697933133,
+            284.7209953771009
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            3.0,
+            0.0,
+            2.0,
+            2.0,
+            3.0,
+            3.0
+          ],
+          "n_equations": 21828,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            20.847000759778737,
+            22.052820316208198,
+            27.360101931137226,
+            29.022682345508976,
+            11.750142376990194,
+            22.06415362528578
+          ],
+          "step": 3,
+          "total_elements": 23377.132111395527,
+          "total_error": 453.92856421778686,
+          "vm_max": [
+            18.746977145653442,
+            11.892393663786539,
+            6.128261276560042,
+            4.5828142275544845,
+            28.79413436032255,
+            38.76530927136252
+          ],
+          "volume": [
+            632868.4190892229,
+            389861.0713684185,
+            432849.5278114105,
+            445556.3313233672,
+            1024050.9776590939,
+            13795142.270307217
+          ]
+        },
+        "uncertainty": 0.032680221769994765
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_solve_index": 3,
+      "timing_s": {
+        "gmsh_remeshing": 29.867050291009946,
+        "parameter_tools": 0.05716708798718173,
+        "tool_total": 29.924217378997128,
+        "world_model_planning": 0.9582531619962538
+      }
+    },
+    {
+      "action_index": 4,
+      "candidate_mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "7a812f39b725476b94e05cf6ada02b1c242e1dba94f474a244746076d5ee0be6",
+        "base_raw_target_sha256": "6d8bdbebda112f43cd92a0295c5c8a94d035a1b44ef463d506310a2dfa65ead3",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 8313,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 51154,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "6d8bdbebda112f43cd92a0295c5c8a94d035a1b44ef463d506310a2dfa65ead3",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.04384266480397933,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 46439,
+        "predicted_error_ratio_upper": 0.8458215723951236,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.04384266480397933
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.8393858751279426,
+        "equation_ratio_upper": 1.9012743079412149,
+        "error_ratio_mean": 0.803837184460975,
+        "error_ratio_upper": 0.8458215723951236,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.05238891445156267,
+            0.014612613146769149,
+            0.10738586029247774,
+            0.07456169346348102,
+            0.19075705402014903,
+            0.17632798427436658
+          ],
+          "dorfler_error_fraction": [
+            0.16450463100445697,
+            0.09338278595985622,
+            0.30656766142797814,
+            0.2055554538529085,
+            0.39905900416938195,
+            0.4180363001268215
+          ],
+          "elems": [
+            2539.3505104015753,
+            820.3421789636237,
+            678.846943433885,
+            606.2800800933057,
+            12186.825745277414,
+            35136.36629150588
+          ],
+          "eq_per_elem": 0.8645099635436945,
+          "err_sum": [
+            13.2811129288521,
+            2.4704996971058377,
+            2.920551281593685,
+            3.111314506671952,
+            127.56806528413455,
+            259.4527004534849
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            4.0,
+            1.0,
+            3.0,
+            3.0,
+            4.0,
+            4.0
+          ],
+          "n_equations": 44927,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            13.900872386946046,
+            17.25658665601111,
+            20.51060417640166,
+            20.200015352329142,
+            8.743145776402814,
+            15.296055352413681
+          ],
+          "step": 4,
+          "total_elements": 51968.01174967569,
+          "total_error": 408.804244151843,
+          "vm_max": [
+            23.97289552228644,
+            15.152914340848396,
+            5.487657115367752,
+            5.123139918594482,
+            41.15892352892241,
+            57.11862075033718
+          ],
+          "volume": [
+            641789.9352334044,
+            396084.7996743414,
+            441282.1989054684,
+            439813.40782562806,
+            1021026.6787654534,
+            13779507.675876033
+          ]
+        },
+        "uncertainty": 0.0282842712474619
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_solve_index": 4,
+      "timing_s": {
+        "gmsh_remeshing": 30.67903864099935,
+        "parameter_tools": 0.13557783800933976,
+        "tool_total": 30.81461647900869,
+        "world_model_planning": 1.051788567987387
+      }
+    },
+    {
+      "action_index": 5,
+      "candidate_mesh_sha256": "2a0f1de257abdd53f10dff62e1b0e66700aebdedaa7ff20202f47117174a84bd",
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "385b98448ca26cbec97240159a51a10c24854ce59b4b170f348bfb34cbd67a3e",
+        "base_raw_target_sha256": "e27349ccce77abf516e0f0139272d9cac614aa3c8ed869289a48f8e707191fc0",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 17298,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 77042,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "e27349ccce77abf516e0f0139272d9cac614aa3c8ed869289a48f8e707191fc0",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 3.46780151526495,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 80004,
+        "predicted_error_ratio_upper": 0.8490266669921477,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 3.5279999999999996,
+        "selected_cost": -0.060198484735049684
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.5046917152128865,
+        "equation_ratio_upper": 1.5639740997405436,
+        "error_ratio_mean": 0.8000236549133394,
+        "error_ratio_upper": 0.8490266669921477,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.07791351569629122,
+            0.022886337620963496,
+            0.02002845246037406,
+            0.02144083672749125,
+            0.2306787300864352,
+            0.14579885975896353
+          ],
+          "dorfler_error_fraction": [
+            0.21659288059642826,
+            0.1175713483375439,
+            0.08048523351015004,
+            0.08978434029270169,
+            0.46820600182673255,
+            0.3807704293886061
+          ],
+          "elems": [
+            5294.675709936596,
+            1487.7134146915178,
+            916.9471297711158,
+            904.2644792140536,
+            23939.88091048006,
+            63643.587287627546
+          ],
+          "eq_per_elem": 0.8002190066484162,
+          "err_sum": [
+            11.438799682814732,
+            2.2475711160668865,
+            1.9087650818219624,
+            1.94521298473703,
+            105.86095186474802,
+            209.05294379311664
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            5.0,
+            2.0,
+            4.0,
+            4.0,
+            5.0,
+            5.0
+          ],
+          "n_equations": 76971,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            10.846069761037858,
+            14.063184132198549,
+            16.00121021162521,
+            16.205921269530627,
+            6.8060961846212065,
+            10.61186979121894
+          ],
+          "step": 5,
+          "total_elements": 96187.06893172089,
+          "total_error": 332.45424452330525,
+          "vm_max": [
+            24.416586844946167,
+            14.818989667644056,
+            7.332301032037786,
+            6.079708438192226,
+            49.065954115975146,
+            100.73991672746853
+          ],
+          "volume": [
+            651494.0131443068,
+            384481.83117683243,
+            435795.1009187588,
+            435316.423989984,
+            1017453.4652287641,
+            13794351.280949028
+          ]
+        },
+        "uncertainty": 0.03302738879464081
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_solve_index": 5,
+      "timing_s": {
+        "gmsh_remeshing": 37.95226520499273,
+        "parameter_tools": 0.3234482030093204,
+        "tool_total": 38.27571340800205,
+        "world_model_planning": 1.0213731539988657
+      }
+    }
+  ],
+  "case_id": "BGD-023-9d7a834a8fdc",
+  "complete": true,
+  "equation_budget": 120000,
+  "failures": [],
+  "geometry_hash": "e0d8ff59baa3231561ad88745c2a45fb9117ae23afb71e4725f268e762f095c5",
+  "partition_spec_sha256": "65d7b4ece92a5a15423cd3f4e92073f37ee137cf877e1fa99eebdf2755b97b77",
+  "phase": "case_acquisition",
+  "planned_real_solve_count": 6,
+  "protocol_id": "WMVLA-4WAY-P1",
+  "real_solve_attempt_count": 6,
+  "real_solve_count": 6,
+  "schema": "wmvla-four-way-world-training-v1",
+  "scientific_boundary": {
+    "reads_local_prediction": false,
+    "reads_rl_labels": false,
+    "reads_supervised_labels": false,
+    "reference_solve_count": 0
+  },
+  "solver_logs": [
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_001_cycle0/model.log",
+      "sha256": "f1714b6ab4373dd7af393e1551762d6542367d4e91598539811904dff0c33d3f",
+      "size_bytes": 2265
+    },
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_002_cycle1/model.log",
+      "sha256": "b05e97f990d34c30006493c9da4a385f0219d1a75bdaf886c7ee90b47ba3936f",
+      "size_bytes": 2265
+    },
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_003_cycle2/model.log",
+      "sha256": "e887eb441cd073958db5d5290def250738da419f98351af274804de7894b9308",
+      "size_bytes": 2267
+    },
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_004_cycle3/model.log",
+      "sha256": "070f6254704f1e98ae6b8aeb9fe2925278d0e645a05ecd1ee5ce6e059a7859d4",
+      "size_bytes": 2267
+    },
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_005_cycle4/model.log",
+      "sha256": "4283523d93090d810d2c92832044ab543ee48b132dc7ead20c612003a6342136",
+      "size_bytes": 2267
+    },
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-023-9d7a834a8fdc/solves/world_model_training_006_cycle5/model.log",
+      "sha256": "62b194e3d9ee93a6959f685a41bfd64fcdd31b4c325be5c72de34972a818ce63",
+      "size_bytes": 2268
+    }
+  ],
+  "solves": [
+    {
+      "budget_violation": false,
+      "indicator_sum": 555.3537805536298,
+      "mesh_sha256": "d616bc7869471d315969d4b4e08af247c727c2b38f43b52fa5687462f53810f2",
+      "solve_index": 1,
+      "solver_record": {
+        "U_total": 721.5179012450658,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "d616bc7869471d315969d4b4e08af247c727c2b38f43b52fa5687462f53810f2",
+          "split": "train"
+        },
+        "h_max": 55.05980784108214,
+        "h_min": 16.624301719077312,
+        "method": "world_model_training",
+        "n_elems": 3147,
+        "n_equations": 3062,
+        "n_nodes": 1054,
+        "qoi": 0.02426805655617406,
+        "solve_index": 1,
+        "stage": "cycle0",
+        "wall_s": 0.08006573999591637
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.013333333333333334,
+          0.0,
+          0.02631578947368421,
+          0.0125,
+          0.6333333333333333,
+          0.04053489343919766
+        ],
+        "dorfler_error_fraction": [
+          0.12024343302318621,
+          0.0,
+          0.23216437093571307,
+          0.12895334008689616,
+          0.9058243552495566,
+          0.29732315534355525
+        ],
+        "elems": [
+          225.0,
+          193.0,
+          76.0,
+          80.0,
+          180.0,
+          2393.0
+        ],
+        "eq_per_elem": 0.972990149348586,
+        "err_sum": [
+          18.448676460834395,
+          3.7461087215070314,
+          6.427832900871387,
+          5.905396939543897,
+          194.61166381827758,
+          326.21410171259555
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          1.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "n_equations": 3062,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          29.987491943433085,
+          28.003499898186334,
+          43.73621215612895,
+          41.913699830226044,
+          40.23037526975519,
+          42.919484845276415
+        ],
+        "step": 0,
+        "total_elements": 3147.0,
+        "total_error": 555.3537805536298,
+        "vm_max": [
+          14.16346539727484,
+          8.98516155051518,
+          5.24601948297772,
+          5.060736664703933,
+          15.09956131296402,
+          14.18167774913463
+        ],
+        "volume": [
+          677085.6805379931,
+          385436.2504708597,
+          412228.524463876,
+          428055.4156583166,
+          1027934.8447478227,
+          13797850.32672806
+        ]
+      }
+    },
+    {
+      "budget_violation": false,
+      "indicator_sum": 571.0721574750785,
+      "mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+      "solve_index": 2,
+      "solver_record": {
+        "U_total": 856.1222531032429,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+          "split": "train"
+        },
+        "h_max": 45.54029770620257,
+        "h_min": 13.82010377096396,
+        "method": "world_model_training",
+        "n_elems": 6088,
+        "n_equations": 5877,
+        "n_nodes": 2034,
+        "qoi": 0.02881199130237298,
+        "solve_index": 2,
+        "stage": "cycle1",
+        "wall_s": 0.18640020400926005
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.009280742459396751,
+          0.0,
+          0.0,
+          0.0,
+          0.5790273556231003,
+          0.05807333181507629
+        ],
+        "dorfler_error_fraction": [
+          0.06587913445648072,
+          0.0,
+          0.0,
+          0.0,
+          0.85910433139816,
+          0.2681391929020892
+        ],
+        "elems": [
+          431.0,
+          299.0,
+          170.0,
+          139.0,
+          658.0,
+          4391.0
+        ],
+        "eq_per_elem": 0.9653416557161629,
+        "err_sum": [
+          17.756509871296522,
+          2.985021041020453,
+          4.54036696513755,
+          5.06892440813874,
+          235.99484239532504,
+          304.7264927941602
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          2.0,
+          0.0,
+          1.0,
+          1.0,
+          2.0,
+          2.0
+        ],
+        "n_equations": 5877,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          25.468291117661977,
+          23.867208213374546,
+          30.23904635612127,
+          34.92607415896887,
+          24.37813068304684,
+          31.957483968375286
+        ],
+        "step": 1,
+        "total_elements": 6088.0,
+        "total_error": 571.0721574750785,
+        "vm_max": [
+          14.801169139451403,
+          11.362659523878927,
+          6.234775556584453,
+          4.523020648881675,
+          20.46630786547595,
+          23.633215060407398
+        ],
+        "volume": [
+          651705.2313061,
+          367733.50006767455,
+          449014.88540841604,
+          440903.61951651913,
+          1031140.8040901826,
+          13781280.830722008
+        ]
+      }
+    },
+    {
+      "budget_violation": false,
+      "indicator_sum": 574.130630579712,
+      "mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+      "solve_index": 3,
+      "solver_record": {
+        "U_total": 1021.7445741111136,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+          "split": "train"
+        },
+        "h_max": 44.54120147884879,
+        "h_min": 8.881957208379836,
+        "method": "world_model_training",
+        "n_elems": 11997,
+        "n_equations": 11202,
+        "n_nodes": 3830,
+        "qoi": 0.03444030780031767,
+        "solve_index": 3,
+        "stage": "cycle2",
+        "wall_s": 0.35438043999602087
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.05945121951219512,
+          0.0,
+          0.03664921465968586,
+          0.10429447852760736,
+          0.3258875149581173,
+          0.14549510472177468
+        ],
+        "dorfler_error_fraction": [
+          0.25633566258866636,
+          0.0,
+          0.1841585327552966,
+          0.37844725720417843,
+          0.6211325423619679,
+          0.45538098490866324
+        ],
+        "elems": [
+          656.0,
+          411.0,
+          191.0,
+          163.0,
+          2507.0,
+          8069.0
+        ],
+        "eq_per_elem": 0.9337334333583396,
+        "err_sum": [
+          18.09542449667539,
+          2.947016381581371,
+          3.9294419928308395,
+          5.142363154866405,
+          193.312960542266,
+          350.7034240114921
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          3.0,
+          0.0,
+          2.0,
+          2.0,
+          3.0,
+          3.0
+        ],
+        "n_equations": 11202,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          21.724019431233838,
+          22.052820316208198,
+          28.064042149970547,
+          31.198471332166285,
+          14.728043093447862,
+          24.405385016881738
+        ],
+        "step": 2,
+        "total_elements": 11997.0,
+        "total_error": 574.130630579712,
+        "vm_max": [
+          18.746977145653442,
+          11.892393663786539,
+          6.128261276560042,
+          4.5828142275544845,
+          28.79413436032255,
+          38.76530927136252
+        ],
+        "volume": [
+          632868.4190892229,
+          389861.0713684185,
+          432849.5278114105,
+          445556.3313233672,
+          1024050.9776590939,
+          13795142.270307217
+        ]
+      }
+    },
+    {
+      "budget_violation": false,
+      "indicator_sum": 508.56597835290836,
+      "mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+      "solve_index": 4,
+      "solver_record": {
+        "U_total": 1161.0241737721788,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+          "split": "train"
+        },
+        "h_max": 43.97756626861037,
+        "h_min": 5.73785739255788,
+        "method": "world_model_training",
+        "n_elems": 28253,
+        "n_equations": 24425,
+        "n_nodes": 8313,
+        "qoi": 0.03916579569307163,
+        "solve_index": 4,
+        "stage": "cycle3",
+        "wall_s": 1.0638255910016596
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.07741935483870968,
+          0.020700636942675158,
+          0.1716867469879518,
+          0.11864406779661017,
+          0.2740228013029316,
+          0.2020975528550025
+        ],
+        "dorfler_error_fraction": [
+          0.25567245652966397,
+          0.14887093258191625,
+          0.4919199080096899,
+          0.3290819412081909,
+          0.5512413954504961,
+          0.4927389090287579
+        ],
+        "elems": [
+          1550.0,
+          628.0,
+          332.0,
+          354.0,
+          7368.0,
+          18021.0
+        ],
+        "eq_per_elem": 0.8645099635436945,
+        "err_sum": [
+          16.917469748710264,
+          3.0593288186589573,
+          4.456502815478197,
+          4.30769596340798,
+          161.8633818482145,
+          317.9615991584385
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          4.0,
+          1.0,
+          3.0,
+          3.0,
+          4.0,
+          4.0
+        ],
+        "n_equations": 24425,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          14.667213187576714,
+          17.50597924753037,
+          23.10262422558558,
+          21.93143872266495,
+          10.57199142557332,
+          17.5961182547804
+        ],
+        "step": 3,
+        "total_elements": 28253.0,
+        "total_error": 508.56597835290836,
+        "vm_max": [
+          23.97289552228644,
+          15.152914340848396,
+          5.487657115367752,
+          5.123139918594482,
+          41.15892352892241,
+          57.11862075033718
+        ],
+        "volume": [
+          641789.9352334044,
+          396084.7996743414,
+          441282.1989054684,
+          439813.40782562806,
+          1021026.6787654534,
+          13779507.675876033
+        ]
+      }
+    },
+    {
+      "budget_violation": false,
+      "indicator_sum": 415.55551824191696,
+      "mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+      "solve_index": 5,
+      "solver_record": {
+        "U_total": 1283.7487720346903,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+          "split": "train"
+        },
+        "h_max": 37.60500484236561,
+        "h_min": 4.7109922439476195,
+        "method": "world_model_training",
+        "n_elems": 63925,
+        "n_equations": 51154,
+        "n_nodes": 17298,
+        "qoi": 0.04332641509509201,
+        "solve_index": 5,
+        "stage": "cycle4",
+        "wall_s": 2.6922153679915937
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.11946614583333333,
+          0.034703196347031964,
+          0.03058823529411765,
+          0.032926829268292684,
+          0.34347856789774733,
+          0.14649304527966855
+        ],
+        "dorfler_error_fraction": [
+          0.33883728541971114,
+          0.18765660735773784,
+          0.12811817762497882,
+          0.14306939968087132,
+          0.6599914867589943,
+          0.43492419469345256
+        ],
+        "elems": [
+          3072.0,
+          1095.0,
+          850.0,
+          820.0,
+          14161.0,
+          43927.0
+        ],
+        "eq_per_elem": 0.8002190066484162,
+        "err_sum": [
+          15.0379467974972,
+          2.826358784049412,
+          2.4286066036339466,
+          2.4963631799818318,
+          136.2359058752429,
+          256.5303370015116
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          5.0,
+          2.0,
+          4.0,
+          4.0,
+          5.0,
+          5.0
+        ],
+        "n_equations": 51154,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          11.78244135509863,
+          14.40556731392207,
+          16.344092329854497,
+          16.580044352976277,
+          8.635657991593401,
+          11.746019386206148
+        ],
+        "step": 4,
+        "total_elements": 63925.0,
+        "total_error": 415.5555182419169,
+        "vm_max": [
+          24.416586844946167,
+          14.818989667644056,
+          7.332301032037786,
+          6.079708438192226,
+          49.065954115975146,
+          100.73991672746853
+        ],
+        "volume": [
+          651494.0131443068,
+          384481.83117683243,
+          435795.1009187588,
+          435316.423989984,
+          1017453.4652287641,
+          13794351.280949028
+        ]
+      }
+    },
+    {
+      "budget_violation": false,
+      "indicator_sum": 371.19888873820224,
+      "mesh_sha256": "2a0f1de257abdd53f10dff62e1b0e66700aebdedaa7ff20202f47117174a84bd",
+      "solve_index": 6,
+      "solver_record": {
+        "U_total": 1328.630974154924,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "2a0f1de257abdd53f10dff62e1b0e66700aebdedaa7ff20202f47117174a84bd",
+          "split": "train"
+        },
+        "h_max": 36.81588426261865,
+        "h_min": 4.447877214050491,
+        "method": "world_model_training",
+        "n_elems": 100216,
+        "n_equations": 77042,
+        "n_nodes": 26004,
+        "qoi": 0.04482371848723776,
+        "solve_index": 6,
+        "stage": "cycle5",
+        "wall_s": 7.387070758995833
+      },
+      "state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.033541598158500496,
+          0.013966480446927373,
+          0.05198487712665406,
+          0.12540192926045016,
+          0.43286788399570353,
+          0.09122902371084993
+        ],
+        "dorfler_error_fraction": [
+          0.1439574599251106,
+          0.08702313180741689,
+          0.19847387617192466,
+          0.4543905613656218,
+          0.756024302586002,
+          0.3797246722509674
+        ],
+        "elems": [
+          6082.0,
+          1790.0,
+          1058.0,
+          933.0,
+          16758.0,
+          73595.0
+        ],
+        "eq_per_elem": 0.7687594795242276,
+        "err_sum": [
+          11.842000569127148,
+          2.4485241164831653,
+          2.4002118703887705,
+          2.700282498407678,
+          128.59409059824486,
+          223.21377908555058
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          6.0,
+          3.0,
+          5.0,
+          5.0,
+          6.0,
+          6.0
+        ],
+        "n_equations": 77042,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          9.46000721485199,
+          12.058907301109324,
+          13.34950080006272,
+          14.630930623235244,
+          8.313884048252863,
+          10.107759118398047
+        ],
+        "step": 5,
+        "total_elements": 100216.0,
+        "total_error": 371.1988887382022,
+        "vm_max": [
+          25.291001877305742,
+          15.694909278267499,
+          7.968713091317459,
+          6.042649354096944,
+          48.57882496848293,
+          74.55998809441063
+        ],
+        "volume": [
+          641860.1429223374,
+          394590.58616388973,
+          437223.87360886973,
+          432545.18235635886,
+          1018250.9083270975,
+          13794036.214581398
+        ]
+      }
+    }
+  ],
+  "split": "train",
+  "status": "ok",
+  "timing_s": {
+    "calculix": 11.763958101990283,
+    "gmsh_remeshing": 128.24956007798028,
+    "offline_total": 147.58340485199005,
+    "parameter_tools": 0.5593987550237216,
+    "world_model_planning": 4.6284080449840985
+  },
+  "transition_count": 5,
+  "transitions": [
+    {
+      "action_timing_s": {
+        "gmsh_remeshing": 10.167133095994359,
+        "parameter_tools": 0.014308835001429543,
+        "tool_total": 10.181441930995788,
+        "world_model_planning": 0.9092520830017747
+      },
+      "actual": {
+        "equation_delta": 2815,
+        "equation_ratio": 1.919333768778576,
+        "regional_delta_log_elements": [
+          0.6500076878993276,
+          0.43775338448580087,
+          0.8050650967639307,
+          0.5524472984568102,
+          1.2962480804351069,
+          0.6070091826533441
+        ],
+        "regional_delta_log_eta2": [
+          -0.03824042937685836,
+          -0.22711083122305642,
+          -0.3476296139166867,
+          -0.15273802151166171,
+          0.1928038451727537,
+          -0.06813929016402401
+        ],
+        "state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.009280742459396751,
+            0.0,
+            0.0,
+            0.0,
+            0.5790273556231003,
+            0.05807333181507629
+          ],
+          "dorfler_error_fraction": [
+            0.06587913445648072,
+            0.0,
+            0.0,
+            0.0,
+            0.85910433139816,
+            0.2681391929020892
+          ],
+          "elems": [
+            431.0,
+            299.0,
+            170.0,
+            139.0,
+            658.0,
+            4391.0
+          ],
+          "eq_per_elem": 0.9653416557161629,
+          "err_sum": [
+            17.756509871296522,
+            2.985021041020453,
+            4.54036696513755,
+            5.06892440813874,
+            235.99484239532504,
+            304.7264927941602
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            2.0,
+            0.0,
+            1.0,
+            1.0,
+            2.0,
+            2.0
+          ],
+          "n_equations": 5877,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            25.468291117661977,
+            23.867208213374546,
+            30.23904635612127,
+            34.92607415896887,
+            24.37813068304684,
+            31.957483968375286
+          ],
+          "step": 1,
+          "total_elements": 6088.0,
+          "total_error": 571.0721574750785,
+          "vm_max": [
+            14.801169139451403,
+            11.362659523878927,
+            6.234775556584453,
+            4.523020648881675,
+            20.46630786547595,
+            23.633215060407398
+          ],
+          "volume": [
+            651705.2313061,
+            367733.50006767455,
+            449014.88540841604,
+            440903.61951651913,
+            1031140.8040901826,
+            13781280.830722008
+          ]
+        },
+        "total_error_ratio": 1.0283033580968497
+      },
+      "actual_mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+      "actual_solve_index": 2,
+      "actual_solver_record": {
+        "U_total": 856.1222531032429,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+          "split": "train"
+        },
+        "h_max": 45.54029770620257,
+        "h_min": 13.82010377096396,
+        "method": "world_model_training",
+        "n_elems": 6088,
+        "n_equations": 5877,
+        "n_nodes": 2034,
+        "qoi": 0.02881199130237298,
+        "solve_index": 2,
+        "stage": "cycle1",
+        "wall_s": 0.18640020400926005
+      },
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "0dc098dd250d50b3b37ddfe1f11efb19518428ea7fd8402bcba981a9dd6cfc78",
+        "base_raw_target_sha256": "28f994b6f42193753628070e1ae0cb924e5f1e5121504e900ba95961d7ab9801",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 1054,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 5877,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "28f994b6f42193753628070e1ae0cb924e5f1e5121504e900ba95961d7ab9801",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.10880034940608355,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 5689,
+        "predicted_error_ratio_upper": 0.8187199456343797,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.10880034940608355
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.7922926192031352,
+        "equation_ratio_upper": 1.8577949777938452,
+        "error_ratio_mean": 0.7747337874167843,
+        "error_ratio_upper": 0.8187199456343797,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.013986399745789642,
+            0.004906259930092151,
+            0.018247788202632415,
+            0.009783682872577058,
+            0.39724245312996503,
+            0.08596417285826378
+          ],
+          "dorfler_error_fraction": [
+            0.08053047138779497,
+            0.0012141802099538412,
+            0.1460252845112445,
+            0.081865114633425,
+            0.6246881886151727,
+            0.2900721265185315
+          ],
+          "elems": [
+            377.8780341243461,
+            259.8890230695975,
+            122.94282940165282,
+            116.1122413263208,
+            723.5682823559794,
+            4039.5963605849392
+          ],
+          "eq_per_elem": 0.972990149348586,
+          "err_sum": [
+            14.506208105522184,
+            3.122656126542522,
+            4.584431377921431,
+            4.512525795851277,
+            123.24520751400905,
+            280.28030884469683
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "n_equations": 5488,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            29.711625407839623,
+            28.003499898186334,
+            42.945664360856036,
+            41.55211400767445,
+            25.935925685102134,
+            41.73037445800496
+          ],
+          "step": 1,
+          "total_elements": 5639.986770862835,
+          "total_error": 430.25133776454334,
+          "vm_max": [
+            14.16346539727484,
+            8.98516155051518,
+            5.24601948297772,
+            5.060736664703933,
+            15.09956131296402,
+            14.18167774913463
+          ],
+          "volume": [
+            677085.6805379931,
+            385436.2504708597,
+            412228.524463876,
+            428055.4156583166,
+            1027934.8447478227,
+            13797850.32672806
+          ]
+        },
+        "uncertainty": 0.030679226898495737
+      },
+      "previous_state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.013333333333333334,
+          0.0,
+          0.02631578947368421,
+          0.0125,
+          0.6333333333333333,
+          0.04053489343919766
+        ],
+        "dorfler_error_fraction": [
+          0.12024343302318621,
+          0.0,
+          0.23216437093571307,
+          0.12895334008689616,
+          0.9058243552495566,
+          0.29732315534355525
+        ],
+        "elems": [
+          225.0,
+          193.0,
+          76.0,
+          80.0,
+          180.0,
+          2393.0
+        ],
+        "eq_per_elem": 0.972990149348586,
+        "err_sum": [
+          18.448676460834395,
+          3.7461087215070314,
+          6.427832900871387,
+          5.905396939543897,
+          194.61166381827758,
+          326.21410171259555
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          1.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "n_equations": 3062,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          29.987491943433085,
+          28.003499898186334,
+          43.73621215612895,
+          41.913699830226044,
+          40.23037526975519,
+          42.919484845276415
+        ],
+        "step": 0,
+        "total_elements": 3147.0,
+        "total_error": 555.3537805536298,
+        "vm_max": [
+          14.16346539727484,
+          8.98516155051518,
+          5.24601948297772,
+          5.060736664703933,
+          15.09956131296402,
+          14.18167774913463
+        ],
+        "volume": [
+          677085.6805379931,
+          385436.2504708597,
+          412228.524463876,
+          428055.4156583166,
+          1027934.8447478227,
+          13797850.32672806
+        ]
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_mesh_sha256": "d616bc7869471d315969d4b4e08af247c727c2b38f43b52fa5687462f53810f2",
+      "source_solve_index": 1,
+      "source_solver_record": {
+        "U_total": 721.5179012450658,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "d616bc7869471d315969d4b4e08af247c727c2b38f43b52fa5687462f53810f2",
+          "split": "train"
+        },
+        "h_max": 55.05980784108214,
+        "h_min": 16.624301719077312,
+        "method": "world_model_training",
+        "n_elems": 3147,
+        "n_equations": 3062,
+        "n_nodes": 1054,
+        "qoi": 0.02426805655617406,
+        "solve_index": 1,
+        "stage": "cycle0",
+        "wall_s": 0.08006573999591637
+      },
+      "transition_index": 1,
+      "underperformed": true
+    },
+    {
+      "action_timing_s": {
+        "gmsh_remeshing": 19.467661976988893,
+        "parameter_tools": 0.028896791016450152,
+        "tool_total": 19.496558768005343,
+        "world_model_planning": 0.6877410779998172
+      },
+      "actual": {
+        "equation_delta": 5325,
+        "equation_ratio": 1.9060745278203164,
+        "regional_delta_log_elements": [
+          0.4200526988403412,
+          0.31814964110554816,
+          0.11647499099636811,
+          0.15927626767607062,
+          1.3376371668329763,
+          0.6084725672867891
+        ],
+        "regional_delta_log_eta2": [
+          0.018906914079664962,
+          -0.012813533266310562,
+          -0.1445104088691081,
+          0.014384084766617058,
+          -0.19949951771536434,
+          0.14052629110776596
+        ],
+        "state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.05945121951219512,
+            0.0,
+            0.03664921465968586,
+            0.10429447852760736,
+            0.3258875149581173,
+            0.14549510472177468
+          ],
+          "dorfler_error_fraction": [
+            0.25633566258866636,
+            0.0,
+            0.1841585327552966,
+            0.37844725720417843,
+            0.6211325423619679,
+            0.45538098490866324
+          ],
+          "elems": [
+            656.0,
+            411.0,
+            191.0,
+            163.0,
+            2507.0,
+            8069.0
+          ],
+          "eq_per_elem": 0.9337334333583396,
+          "err_sum": [
+            18.09542449667539,
+            2.947016381581371,
+            3.9294419928308395,
+            5.142363154866405,
+            193.312960542266,
+            350.7034240114921
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            3.0,
+            0.0,
+            2.0,
+            2.0,
+            3.0,
+            3.0
+          ],
+          "n_equations": 11202,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            21.724019431233838,
+            22.052820316208198,
+            28.064042149970547,
+            31.198471332166285,
+            14.728043093447862,
+            24.405385016881738
+          ],
+          "step": 2,
+          "total_elements": 11997.0,
+          "total_error": 574.130630579712,
+          "vm_max": [
+            18.746977145653442,
+            11.892393663786539,
+            6.128261276560042,
+            4.5828142275544845,
+            28.79413436032255,
+            38.76530927136252
+          ],
+          "volume": [
+            632868.4190892229,
+            389861.0713684185,
+            432849.5278114105,
+            445556.3313233672,
+            1024050.9776590939,
+            13795142.270307217
+          ]
+        },
+        "total_error_ratio": 1.0053556683942642
+      },
+      "actual_mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+      "actual_solve_index": 3,
+      "actual_solver_record": {
+        "U_total": 1021.7445741111136,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+          "split": "train"
+        },
+        "h_max": 44.54120147884879,
+        "h_min": 8.881957208379836,
+        "method": "world_model_training",
+        "n_elems": 11997,
+        "n_equations": 11202,
+        "n_nodes": 3830,
+        "qoi": 0.03444030780031767,
+        "solve_index": 3,
+        "stage": "cycle2",
+        "wall_s": 0.35438043999602087
+      },
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "0bf01c37b8a5a96041691054dfba828ca37d92c158fd33501f4046ba47abc1db",
+        "base_raw_target_sha256": "1c3d9013e262bbdeebfe7aa366b465962bf80105ffe9047c5bcb8c7594379426",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 2034,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 11202,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "1c3d9013e262bbdeebfe7aa366b465962bf80105ffe9047c5bcb8c7594379426",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.12982631107294662,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 10474,
+        "predicted_error_ratio_upper": 0.8391677037720149,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.12982631107294662
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.7236685383699166,
+        "equation_ratio_upper": 1.7821763853308648,
+        "error_ratio_mean": 0.797160538426281,
+        "error_ratio_upper": 0.8391677037720149,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.011417660850450165,
+            0.00392904073587385,
+            0.002233902759526938,
+            0.0018265440210249674,
+            0.3676434782261382,
+            0.09370585994348132
+          ],
+          "dorfler_error_fraction": [
+            0.04644185482797903,
+            0.0009408684705612344,
+            0.001431108211155303,
+            0.0015977077178811513,
+            0.6070294564194025,
+            0.2622950527821932
+          ],
+          "elems": [
+            628.7076667951611,
+            362.961363795396,
+            188.8454986573009,
+            163.1202330222388,
+            2099.280056615437,
+            7051.2385304504105
+          ],
+          "eq_per_elem": 0.9653416557161629,
+          "err_sum": [
+            15.095581459785691,
+            2.6664781323833155,
+            3.9212153549078814,
+            4.506883755722501,
+            158.22494749090154,
+            270.82108233939056
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            2.0,
+            0.0,
+            1.0,
+            1.0,
+            2.0,
+            2.0
+          ],
+          "n_equations": 10130,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            25.30498146858622,
+            23.867208213374546,
+            30.23904635612127,
+            34.92607415896887,
+            16.319084773332968,
+            30.69663462325798
+          ],
+          "step": 2,
+          "total_elements": 10494.153349335944,
+          "total_error": 455.2361885330915,
+          "vm_max": [
+            14.801169139451403,
+            11.362659523878927,
+            6.234775556584453,
+            4.523020648881675,
+            20.46630786547595,
+            23.633215060407398
+          ],
+          "volume": [
+            651705.2313061,
+            367733.50006767455,
+            449014.88540841604,
+            440903.61951651913,
+            1031140.8040901826,
+            13781280.830722008
+          ]
+        },
+        "uncertainty": 0.028530269390879392
+      },
+      "previous_state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.009280742459396751,
+          0.0,
+          0.0,
+          0.0,
+          0.5790273556231003,
+          0.05807333181507629
+        ],
+        "dorfler_error_fraction": [
+          0.06587913445648072,
+          0.0,
+          0.0,
+          0.0,
+          0.85910433139816,
+          0.2681391929020892
+        ],
+        "elems": [
+          431.0,
+          299.0,
+          170.0,
+          139.0,
+          658.0,
+          4391.0
+        ],
+        "eq_per_elem": 0.9653416557161629,
+        "err_sum": [
+          17.756509871296522,
+          2.985021041020453,
+          4.54036696513755,
+          5.06892440813874,
+          235.99484239532504,
+          304.7264927941602
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          2.0,
+          0.0,
+          1.0,
+          1.0,
+          2.0,
+          2.0
+        ],
+        "n_equations": 5877,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          25.468291117661977,
+          23.867208213374546,
+          30.23904635612127,
+          34.92607415896887,
+          24.37813068304684,
+          31.957483968375286
+        ],
+        "step": 1,
+        "total_elements": 6088.0,
+        "total_error": 571.0721574750785,
+        "vm_max": [
+          14.801169139451403,
+          11.362659523878927,
+          6.234775556584453,
+          4.523020648881675,
+          20.46630786547595,
+          23.633215060407398
+        ],
+        "volume": [
+          651705.2313061,
+          367733.50006767455,
+          449014.88540841604,
+          440903.61951651913,
+          1031140.8040901826,
+          13781280.830722008
+        ]
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+      "source_solve_index": 2,
+      "source_solver_record": {
+        "U_total": 856.1222531032429,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "c17370f8806715e97bb68f247bc1c9575639b74bbc7dce90cb39e6bb38fa1f70",
+          "split": "train"
+        },
+        "h_max": 45.54029770620257,
+        "h_min": 13.82010377096396,
+        "method": "world_model_training",
+        "n_elems": 6088,
+        "n_equations": 5877,
+        "n_nodes": 2034,
+        "qoi": 0.02881199130237298,
+        "solve_index": 2,
+        "stage": "cycle1",
+        "wall_s": 0.18640020400926005
+      },
+      "transition_index": 2,
+      "underperformed": true
+    },
+    {
+      "action_timing_s": {
+        "gmsh_remeshing": 29.867050291009946,
+        "parameter_tools": 0.05716708798718173,
+        "tool_total": 29.924217378997128,
+        "world_model_planning": 0.9582531619962538
+      },
+      "actual": {
+        "equation_delta": 13223,
+        "equation_ratio": 2.180414211747902,
+        "regional_delta_log_elements": [
+          0.8598494209692032,
+          0.423946951971964,
+          0.5528615408698587,
+          0.7755467123270121,
+          1.0780594797768492,
+          0.8035081856697645
+        ],
+        "regional_delta_log_eta2": [
+          -0.06731231511886185,
+          0.037402289126669847,
+          0.12586690711427045,
+          -0.17710954964543596,
+          -0.1775577753025406,
+          -0.09801030233670346
+        ],
+        "state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.07741935483870968,
+            0.020700636942675158,
+            0.1716867469879518,
+            0.11864406779661017,
+            0.2740228013029316,
+            0.2020975528550025
+          ],
+          "dorfler_error_fraction": [
+            0.25567245652966397,
+            0.14887093258191625,
+            0.4919199080096899,
+            0.3290819412081909,
+            0.5512413954504961,
+            0.4927389090287579
+          ],
+          "elems": [
+            1550.0,
+            628.0,
+            332.0,
+            354.0,
+            7368.0,
+            18021.0
+          ],
+          "eq_per_elem": 0.8645099635436945,
+          "err_sum": [
+            16.917469748710264,
+            3.0593288186589573,
+            4.456502815478197,
+            4.30769596340798,
+            161.8633818482145,
+            317.9615991584385
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            4.0,
+            1.0,
+            3.0,
+            3.0,
+            4.0,
+            4.0
+          ],
+          "n_equations": 24425,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            14.667213187576714,
+            17.50597924753037,
+            23.10262422558558,
+            21.93143872266495,
+            10.57199142557332,
+            17.5961182547804
+          ],
+          "step": 3,
+          "total_elements": 28253.0,
+          "total_error": 508.56597835290836,
+          "vm_max": [
+            23.97289552228644,
+            15.152914340848396,
+            5.487657115367752,
+            5.123139918594482,
+            41.15892352892241,
+            57.11862075033718
+          ],
+          "volume": [
+            641789.9352334044,
+            396084.7996743414,
+            441282.1989054684,
+            439813.40782562806,
+            1021026.6787654534,
+            13779507.675876033
+          ]
+        },
+        "total_error_ratio": 0.8858018563465223
+      },
+      "actual_mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+      "actual_solve_index": 4,
+      "actual_solver_record": {
+        "U_total": 1161.0241737721788,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+          "split": "train"
+        },
+        "h_max": 43.97756626861037,
+        "h_min": 5.73785739255788,
+        "method": "world_model_training",
+        "n_elems": 28253,
+        "n_equations": 24425,
+        "n_nodes": 8313,
+        "qoi": 0.03916579569307163,
+        "solve_index": 4,
+        "stage": "cycle3",
+        "wall_s": 1.0638255910016596
+      },
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "45ad5cfe17ba1a87844831be6a8a726982bb980f1d26820c9fcc8fce4c687234",
+        "base_raw_target_sha256": "03e112d3ccf208a6a734e78299d6972da26ec6d7e5cc8e1e98f97d84abeccd12",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 3830,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 24425,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "03e112d3ccf208a6a734e78299d6972da26ec6d7e5cc8e1e98f97d84abeccd12",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.08026505710547469,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 22679,
+        "predicted_error_ratio_upper": 0.8385402365500457,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.08026505710547469
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.948580610605249,
+        "equation_ratio_upper": 2.024528988045523,
+        "error_ratio_mean": 0.7906363814093065,
+        "error_ratio_upper": 0.8385402365500457,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.041234183037629324,
+            0.0027406851712928233,
+            0.023996164835275134,
+            0.06574951508838354,
+            0.21876777198554392,
+            0.14401374995709104
+          ],
+          "dorfler_error_fraction": [
+            0.16460134305546764,
+            0.0009239412085521843,
+            0.11541023913845756,
+            0.2362495203072403,
+            0.44570917238039687,
+            0.39228787139752447
+          ],
+          "elems": [
+            1175.841883169526,
+            464.5526258702684,
+            263.44084847632274,
+            311.413838327175,
+            5179.414857468456,
+            15982.468058083781
+          ],
+          "eq_per_elem": 0.9337334333583396,
+          "err_sum": [
+            13.90837948924998,
+            2.740707502626675,
+            2.9489485287152855,
+            3.507686340762705,
+            146.10184697933133,
+            284.7209953771009
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            3.0,
+            0.0,
+            2.0,
+            2.0,
+            3.0,
+            3.0
+          ],
+          "n_equations": 21828,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            20.847000759778737,
+            22.052820316208198,
+            27.360101931137226,
+            29.022682345508976,
+            11.750142376990194,
+            22.06415362528578
+          ],
+          "step": 3,
+          "total_elements": 23377.132111395527,
+          "total_error": 453.92856421778686,
+          "vm_max": [
+            18.746977145653442,
+            11.892393663786539,
+            6.128261276560042,
+            4.5828142275544845,
+            28.79413436032255,
+            38.76530927136252
+          ],
+          "volume": [
+            632868.4190892229,
+            389861.0713684185,
+            432849.5278114105,
+            445556.3313233672,
+            1024050.9776590939,
+            13795142.270307217
+          ]
+        },
+        "uncertainty": 0.032680221769994765
+      },
+      "previous_state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.05945121951219512,
+          0.0,
+          0.03664921465968586,
+          0.10429447852760736,
+          0.3258875149581173,
+          0.14549510472177468
+        ],
+        "dorfler_error_fraction": [
+          0.25633566258866636,
+          0.0,
+          0.1841585327552966,
+          0.37844725720417843,
+          0.6211325423619679,
+          0.45538098490866324
+        ],
+        "elems": [
+          656.0,
+          411.0,
+          191.0,
+          163.0,
+          2507.0,
+          8069.0
+        ],
+        "eq_per_elem": 0.9337334333583396,
+        "err_sum": [
+          18.09542449667539,
+          2.947016381581371,
+          3.9294419928308395,
+          5.142363154866405,
+          193.312960542266,
+          350.7034240114921
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          3.0,
+          0.0,
+          2.0,
+          2.0,
+          3.0,
+          3.0
+        ],
+        "n_equations": 11202,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          21.724019431233838,
+          22.052820316208198,
+          28.064042149970547,
+          31.198471332166285,
+          14.728043093447862,
+          24.405385016881738
+        ],
+        "step": 2,
+        "total_elements": 11997.0,
+        "total_error": 574.130630579712,
+        "vm_max": [
+          18.746977145653442,
+          11.892393663786539,
+          6.128261276560042,
+          4.5828142275544845,
+          28.79413436032255,
+          38.76530927136252
+        ],
+        "volume": [
+          632868.4190892229,
+          389861.0713684185,
+          432849.5278114105,
+          445556.3313233672,
+          1024050.9776590939,
+          13795142.270307217
+        ]
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+      "source_solve_index": 3,
+      "source_solver_record": {
+        "U_total": 1021.7445741111136,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "cd43c4895d28f1696a275b87f3f4f93fc1e82865706b4c3d10a705a63e7c1e21",
+          "split": "train"
+        },
+        "h_max": 44.54120147884879,
+        "h_min": 8.881957208379836,
+        "method": "world_model_training",
+        "n_elems": 11997,
+        "n_equations": 11202,
+        "n_nodes": 3830,
+        "qoi": 0.03444030780031767,
+        "solve_index": 3,
+        "stage": "cycle2",
+        "wall_s": 0.35438043999602087
+      },
+      "transition_index": 3,
+      "underperformed": false
+    },
+    {
+      "action_timing_s": {
+        "gmsh_remeshing": 30.67903864099935,
+        "parameter_tools": 0.13557783800933976,
+        "tool_total": 30.81461647900869,
+        "world_model_planning": 1.051788567987387
+      },
+      "actual": {
+        "equation_delta": 26729,
+        "equation_ratio": 2.094329580348004,
+        "regional_delta_log_elements": [
+          0.6840738843542705,
+          0.5559694757824025,
+          0.9401013805678735,
+          0.8400074271245245,
+          0.653345408287916,
+          0.8909914206575555
+        ],
+        "regional_delta_log_eta2": [
+          -0.11777000787848804,
+          -0.07920631713198432,
+          -0.6070466576120717,
+          -0.5455682371987356,
+          -0.17236467243653816,
+          -0.2146836875975068
+        ],
+        "state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.11946614583333333,
+            0.034703196347031964,
+            0.03058823529411765,
+            0.032926829268292684,
+            0.34347856789774733,
+            0.14649304527966855
+          ],
+          "dorfler_error_fraction": [
+            0.33883728541971114,
+            0.18765660735773784,
+            0.12811817762497882,
+            0.14306939968087132,
+            0.6599914867589943,
+            0.43492419469345256
+          ],
+          "elems": [
+            3072.0,
+            1095.0,
+            850.0,
+            820.0,
+            14161.0,
+            43927.0
+          ],
+          "eq_per_elem": 0.8002190066484162,
+          "err_sum": [
+            15.0379467974972,
+            2.826358784049412,
+            2.4286066036339466,
+            2.4963631799818318,
+            136.2359058752429,
+            256.5303370015116
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            5.0,
+            2.0,
+            4.0,
+            4.0,
+            5.0,
+            5.0
+          ],
+          "n_equations": 51154,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            11.78244135509863,
+            14.40556731392207,
+            16.344092329854497,
+            16.580044352976277,
+            8.635657991593401,
+            11.746019386206148
+          ],
+          "step": 4,
+          "total_elements": 63925.0,
+          "total_error": 415.5555182419169,
+          "vm_max": [
+            24.416586844946167,
+            14.818989667644056,
+            7.332301032037786,
+            6.079708438192226,
+            49.065954115975146,
+            100.73991672746853
+          ],
+          "volume": [
+            651494.0131443068,
+            384481.83117683243,
+            435795.1009187588,
+            435316.423989984,
+            1017453.4652287641,
+            13794351.280949028
+          ]
+        },
+        "total_error_ratio": 0.8171123038701404
+      },
+      "actual_mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+      "actual_solve_index": 5,
+      "actual_solver_record": {
+        "U_total": 1283.7487720346903,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+          "split": "train"
+        },
+        "h_max": 37.60500484236561,
+        "h_min": 4.7109922439476195,
+        "method": "world_model_training",
+        "n_elems": 63925,
+        "n_equations": 51154,
+        "n_nodes": 17298,
+        "qoi": 0.04332641509509201,
+        "solve_index": 5,
+        "stage": "cycle4",
+        "wall_s": 2.6922153679915937
+      },
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "7a812f39b725476b94e05cf6ada02b1c242e1dba94f474a244746076d5ee0be6",
+        "base_raw_target_sha256": "6d8bdbebda112f43cd92a0295c5c8a94d035a1b44ef463d506310a2dfa65ead3",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 8313,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 51154,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "6d8bdbebda112f43cd92a0295c5c8a94d035a1b44ef463d506310a2dfa65ead3",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 0.04384266480397933,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 46439,
+        "predicted_error_ratio_upper": 0.8458215723951236,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 0.0,
+        "selected_cost": 0.04384266480397933
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.8393858751279426,
+        "equation_ratio_upper": 1.9012743079412149,
+        "error_ratio_mean": 0.803837184460975,
+        "error_ratio_upper": 0.8458215723951236,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.05238891445156267,
+            0.014612613146769149,
+            0.10738586029247774,
+            0.07456169346348102,
+            0.19075705402014903,
+            0.17632798427436658
+          ],
+          "dorfler_error_fraction": [
+            0.16450463100445697,
+            0.09338278595985622,
+            0.30656766142797814,
+            0.2055554538529085,
+            0.39905900416938195,
+            0.4180363001268215
+          ],
+          "elems": [
+            2539.3505104015753,
+            820.3421789636237,
+            678.846943433885,
+            606.2800800933057,
+            12186.825745277414,
+            35136.36629150588
+          ],
+          "eq_per_elem": 0.8645099635436945,
+          "err_sum": [
+            13.2811129288521,
+            2.4704996971058377,
+            2.920551281593685,
+            3.111314506671952,
+            127.56806528413455,
+            259.4527004534849
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            4.0,
+            1.0,
+            3.0,
+            3.0,
+            4.0,
+            4.0
+          ],
+          "n_equations": 44927,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            13.900872386946046,
+            17.25658665601111,
+            20.51060417640166,
+            20.200015352329142,
+            8.743145776402814,
+            15.296055352413681
+          ],
+          "step": 4,
+          "total_elements": 51968.01174967569,
+          "total_error": 408.804244151843,
+          "vm_max": [
+            23.97289552228644,
+            15.152914340848396,
+            5.487657115367752,
+            5.123139918594482,
+            41.15892352892241,
+            57.11862075033718
+          ],
+          "volume": [
+            641789.9352334044,
+            396084.7996743414,
+            441282.1989054684,
+            439813.40782562806,
+            1021026.6787654534,
+            13779507.675876033
+          ]
+        },
+        "uncertainty": 0.0282842712474619
+      },
+      "previous_state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.07741935483870968,
+          0.020700636942675158,
+          0.1716867469879518,
+          0.11864406779661017,
+          0.2740228013029316,
+          0.2020975528550025
+        ],
+        "dorfler_error_fraction": [
+          0.25567245652966397,
+          0.14887093258191625,
+          0.4919199080096899,
+          0.3290819412081909,
+          0.5512413954504961,
+          0.4927389090287579
+        ],
+        "elems": [
+          1550.0,
+          628.0,
+          332.0,
+          354.0,
+          7368.0,
+          18021.0
+        ],
+        "eq_per_elem": 0.8645099635436945,
+        "err_sum": [
+          16.917469748710264,
+          3.0593288186589573,
+          4.456502815478197,
+          4.30769596340798,
+          161.8633818482145,
+          317.9615991584385
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          4.0,
+          1.0,
+          3.0,
+          3.0,
+          4.0,
+          4.0
+        ],
+        "n_equations": 24425,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          14.667213187576714,
+          17.50597924753037,
+          23.10262422558558,
+          21.93143872266495,
+          10.57199142557332,
+          17.5961182547804
+        ],
+        "step": 3,
+        "total_elements": 28253.0,
+        "total_error": 508.56597835290836,
+        "vm_max": [
+          23.97289552228644,
+          15.152914340848396,
+          5.487657115367752,
+          5.123139918594482,
+          41.15892352892241,
+          57.11862075033718
+        ],
+        "volume": [
+          641789.9352334044,
+          396084.7996743414,
+          441282.1989054684,
+          439813.40782562806,
+          1021026.6787654534,
+          13779507.675876033
+        ]
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+      "source_solve_index": 4,
+      "source_solver_record": {
+        "U_total": 1161.0241737721788,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "f9f00f00108d00d3aa882b492f795fb0b5f99490445fae9a72960230428a9065",
+          "split": "train"
+        },
+        "h_max": 43.97756626861037,
+        "h_min": 5.73785739255788,
+        "method": "world_model_training",
+        "n_elems": 28253,
+        "n_equations": 24425,
+        "n_nodes": 8313,
+        "qoi": 0.03916579569307163,
+        "solve_index": 4,
+        "stage": "cycle3",
+        "wall_s": 1.0638255910016596
+      },
+      "transition_index": 4,
+      "underperformed": false
+    },
+    {
+      "action_timing_s": {
+        "gmsh_remeshing": 37.95226520499273,
+        "parameter_tools": 0.3234482030093204,
+        "tool_total": 38.27571340800205,
+        "world_model_planning": 1.0213731539988657
+      },
+      "actual": {
+        "equation_delta": 25888,
+        "equation_ratio": 1.5060796809633654,
+        "regional_delta_log_elements": [
+          0.6830047739697471,
+          0.4914612565841995,
+          0.21889926293388248,
+          0.12910086058904494,
+          0.16838404895017292,
+          0.5160479234508604
+        ],
+        "regional_delta_log_eta2": [
+          -0.23892421090902694,
+          -0.14350379286162424,
+          -0.011760665959121359,
+          0.07852145185412991,
+          -0.05772712612969886,
+          -0.13911696767157755
+        ],
+        "state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.033541598158500496,
+            0.013966480446927373,
+            0.05198487712665406,
+            0.12540192926045016,
+            0.43286788399570353,
+            0.09122902371084993
+          ],
+          "dorfler_error_fraction": [
+            0.1439574599251106,
+            0.08702313180741689,
+            0.19847387617192466,
+            0.4543905613656218,
+            0.756024302586002,
+            0.3797246722509674
+          ],
+          "elems": [
+            6082.0,
+            1790.0,
+            1058.0,
+            933.0,
+            16758.0,
+            73595.0
+          ],
+          "eq_per_elem": 0.7687594795242276,
+          "err_sum": [
+            11.842000569127148,
+            2.4485241164831653,
+            2.4002118703887705,
+            2.700282498407678,
+            128.59409059824486,
+            223.21377908555058
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            6.0,
+            3.0,
+            5.0,
+            5.0,
+            6.0,
+            6.0
+          ],
+          "n_equations": 77042,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            9.46000721485199,
+            12.058907301109324,
+            13.34950080006272,
+            14.630930623235244,
+            8.313884048252863,
+            10.107759118398047
+          ],
+          "step": 5,
+          "total_elements": 100216.0,
+          "total_error": 371.1988887382022,
+          "vm_max": [
+            25.291001877305742,
+            15.694909278267499,
+            7.968713091317459,
+            6.042649354096944,
+            48.57882496848293,
+            74.55998809441063
+          ],
+          "volume": [
+            641860.1429223374,
+            394590.58616388973,
+            437223.87360886973,
+            432545.18235635886,
+            1018250.9083270975,
+            13794036.214581398
+          ]
+        },
+        "total_error_ratio": 0.893259438133866
+      },
+      "actual_mesh_sha256": "2a0f1de257abdd53f10dff62e1b0e66700aebdedaa7ff20202f47117174a84bd",
+      "actual_solve_index": 6,
+      "actual_solver_record": {
+        "U_total": 1328.630974154924,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "2a0f1de257abdd53f10dff62e1b0e66700aebdedaa7ff20202f47117174a84bd",
+          "split": "train"
+        },
+        "h_max": 36.81588426261865,
+        "h_min": 4.447877214050491,
+        "method": "world_model_training",
+        "n_elems": 100216,
+        "n_equations": 77042,
+        "n_nodes": 26004,
+        "qoi": 0.04482371848723776,
+        "solve_index": 6,
+        "stage": "cycle5",
+        "wall_s": 7.387070758995833
+      },
+      "certificate": {
+        "accepted": true,
+        "base_compiled_field_sha256": "385b98448ca26cbec97240159a51a10c24854ce59b4b170f348bfb34cbd67a3e",
+        "base_raw_target_sha256": "e27349ccce77abf516e0f0139272d9cac614aa3c8ed869289a48f8e707191fc0",
+        "base_target_included": true,
+        "compiled_dorfler_included": true,
+        "compiled_field_gradation": 1.0,
+        "compiled_field_node_count": 17298,
+        "compiled_max_dorfler_violation": 0.0,
+        "equation_cap": 120000,
+        "estimated_equations": 77042,
+        "executed_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "no_coarsening": true,
+        "reason": "exact_dorfler",
+        "requested_action": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "schema_version": "wmvla.mcp-tool.v2",
+        "source": "dorfler",
+        "target_sha256": "e27349ccce77abf516e0f0139272d9cac614aa3c8ed869289a48f8e707191fc0",
+        "world_compiled_field_sha256": null,
+        "world_raw_target_sha256": null
+      },
+      "decision": {
+        "accepted": false,
+        "action": {
+          "extra_depth": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source": "dorfler"
+        },
+        "baseline_cost": 3.46780151526495,
+        "path": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "predicted_equations_upper": 80004,
+        "predicted_error_ratio_upper": 0.8490266669921477,
+        "reason": "dorfler_is_optimal",
+        "robust_gain": 3.5279999999999996,
+        "selected_cost": -0.060198484735049684
+      },
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prediction": {
+        "equation_ratio_mean": 1.5046917152128865,
+        "equation_ratio_upper": 1.5639740997405436,
+        "error_ratio_mean": 0.8000236549133394,
+        "error_ratio_upper": 0.8490266669921477,
+        "failure_risk": 0.06,
+        "next_state": {
+          "adjacency": [
+            [
+              0.0,
+              0.3333333333333333,
+              0.0,
+              0.0,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5
+            ],
+            [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.0
+            ]
+          ],
+          "dim": 3,
+          "dorfler_element_fraction": [
+            0.07791351569629122,
+            0.022886337620963496,
+            0.02002845246037406,
+            0.02144083672749125,
+            0.2306787300864352,
+            0.14579885975896353
+          ],
+          "dorfler_error_fraction": [
+            0.21659288059642826,
+            0.1175713483375439,
+            0.08048523351015004,
+            0.08978434029270169,
+            0.46820600182673255,
+            0.3807704293886061
+          ],
+          "elems": [
+            5294.675709936596,
+            1487.7134146915178,
+            916.9471297711158,
+            904.2644792140536,
+            23939.88091048006,
+            63643.587287627546
+          ],
+          "eq_per_elem": 0.8002190066484162,
+          "err_sum": [
+            11.438799682814732,
+            2.2475711160668865,
+            1.9087650818219624,
+            1.94521298473703,
+            105.86095186474802,
+            209.05294379311664
+          ],
+          "h0": 48.0,
+          "h_min": 6.0,
+          "hit_count": [
+            5.0,
+            2.0,
+            4.0,
+            4.0,
+            5.0,
+            5.0
+          ],
+          "n_equations": 76971,
+          "names": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "sizes": [
+            10.846069761037858,
+            14.063184132198549,
+            16.00121021162521,
+            16.205921269530627,
+            6.8060961846212065,
+            10.61186979121894
+          ],
+          "step": 5,
+          "total_elements": 96187.06893172089,
+          "total_error": 332.45424452330525,
+          "vm_max": [
+            24.416586844946167,
+            14.818989667644056,
+            7.332301032037786,
+            6.079708438192226,
+            49.065954115975146,
+            100.73991672746853
+          ],
+          "volume": [
+            651494.0131443068,
+            384481.83117683243,
+            435795.1009187588,
+            435316.423989984,
+            1017453.4652287641,
+            13794351.280949028
+          ]
+        },
+        "uncertainty": 0.03302738879464081
+      },
+      "previous_state": {
+        "adjacency": [
+          [
+            0.0,
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5
+          ],
+          [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.0
+          ]
+        ],
+        "dim": 3,
+        "dorfler_element_fraction": [
+          0.11946614583333333,
+          0.034703196347031964,
+          0.03058823529411765,
+          0.032926829268292684,
+          0.34347856789774733,
+          0.14649304527966855
+        ],
+        "dorfler_error_fraction": [
+          0.33883728541971114,
+          0.18765660735773784,
+          0.12811817762497882,
+          0.14306939968087132,
+          0.6599914867589943,
+          0.43492419469345256
+        ],
+        "elems": [
+          3072.0,
+          1095.0,
+          850.0,
+          820.0,
+          14161.0,
+          43927.0
+        ],
+        "eq_per_elem": 0.8002190066484162,
+        "err_sum": [
+          15.0379467974972,
+          2.826358784049412,
+          2.4286066036339466,
+          2.4963631799818318,
+          136.2359058752429,
+          256.5303370015116
+        ],
+        "h0": 48.0,
+        "h_min": 6.0,
+        "hit_count": [
+          5.0,
+          2.0,
+          4.0,
+          4.0,
+          5.0,
+          5.0
+        ],
+        "n_equations": 51154,
+        "names": [
+          "diaphragm_joints",
+          "inspection_opening",
+          "left_bearing",
+          "right_bearing",
+          "wheel_load",
+          "field_remainder"
+        ],
+        "sizes": [
+          11.78244135509863,
+          14.40556731392207,
+          16.344092329854497,
+          16.580044352976277,
+          8.635657991593401,
+          11.746019386206148
+        ],
+        "step": 4,
+        "total_elements": 63925.0,
+        "total_error": 415.5555182419169,
+        "vm_max": [
+          24.416586844946167,
+          14.818989667644056,
+          7.332301032037786,
+          6.079708438192226,
+          49.065954115975146,
+          100.73991672746853
+        ],
+        "volume": [
+          651494.0131443068,
+          384481.83117683243,
+          435795.1009187588,
+          435316.423989984,
+          1017453.4652287641,
+          13794351.280949028
+        ]
+      },
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+      "source_solve_index": 5,
+      "source_solver_record": {
+        "U_total": 1283.7487720346903,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "case_id": "BGD-023-9d7a834a8fdc",
+          "equation_budget": 120000,
+          "mesh_sha256": "385bd3b98978f2000461d9935b6aca1cb42186f61b125abdc04a19b0170bb7dc",
+          "split": "train"
+        },
+        "h_max": 37.60500484236561,
+        "h_min": 4.7109922439476195,
+        "method": "world_model_training",
+        "n_elems": 63925,
+        "n_equations": 51154,
+        "n_nodes": 17298,
+        "qoi": 0.04332641509509201,
+        "solve_index": 5,
+        "stage": "cycle4",
+        "wall_s": 2.6922153679915937
+      },
+      "transition_index": 5,
+      "underperformed": false
+    }
+  ]
+}

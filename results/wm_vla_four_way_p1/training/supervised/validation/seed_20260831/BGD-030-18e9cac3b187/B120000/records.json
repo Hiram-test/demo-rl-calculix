@@ -1,0 +1,83 @@
+{
+ "problem": "box_girder_diaphragm-37a4b45e",
+ "params": {
+  "length": 600.0,
+  "width": 360.0,
+  "height": 260.0,
+  "top_thickness": 24.0,
+  "bottom_thickness": 20.0,
+  "web_thickness": 18.0,
+  "diaphragm_thickness": 33.226708141031,
+  "opening_radius": 53.545083820172,
+  "frame_width": 18.0,
+  "wheel_size": [
+   150.0,
+   110.0
+  ],
+  "wheel_offset": [
+   -85.493722454682,
+   49.481752422568
+  ],
+  "pressure": 5.51286816388,
+  "support_width": 78.642525157514
+ },
+ "reference": {
+  "U_total": 4009.0506668086055,
+  "qoi": 0.08909051683461881,
+  "n_equations": 152775,
+  "n_elems": 220138,
+  "h_ref": 14.4
+ },
+ "records": [
+  {
+   "method": "supervised",
+   "stage": "probe",
+   "solve_index": 1,
+   "n_nodes": 1046,
+   "n_elems": 3110,
+   "n_equations": 3038,
+   "U_total": 2055.943766252849,
+   "qoi": 0.04556979352476519,
+   "wall_s": 0.10919916599232238,
+   "h_min": 16.703335768317622,
+   "h_max": 56.4247481145685,
+   "e_energy": 0.6979788047062573,
+   "e_qoi": 0.4885000655080085,
+   "extra": {
+    "common_probe": "uniform_h0",
+    "equation_budget": 120000,
+    "sum_eta2": 2087.716288651952
+   }
+  },
+  {
+   "method": "supervised",
+   "stage": "deployed",
+   "solve_index": 2,
+   "n_nodes": 40515,
+   "n_elems": 162163,
+   "n_equations": 119897,
+   "U_total": 4839.068999942888,
+   "qoi": 0.10769593708294392,
+   "wall_s": 22.12048160500126,
+   "h_min": 4.217616771451885,
+   "h_max": 25.572353269441674,
+   "e_energy": 0.0,
+   "e_qoi": 0.2088372692108506,
+   "extra": {
+    "budget_scalar": 0.5926620578944781,
+    "equation_budget": 120000,
+    "preflight_equations": 119897,
+    "preflight_feasible": true,
+    "preflight_trial_count": 10,
+    "target_sha256": "7ca6fcb51993f9db4506e3dec32cb85e14802e47a1249434bda22e1464b335fa",
+    "mesh_sha256": "dfcc47e0ca9d7176cdade8539b94b8213a3a2eef96b0b7b87b38992c8fc4a6ab",
+    "common_probe": "uniform_h0",
+    "deployment_contract": "probe_plus_one_predicted_remesh",
+    "hold_last_after_solve": 2,
+    "above_reference": true,
+    "sum_eta2": 1507.731426294723,
+    "measured_budget_violation": false
+   }
+  }
+ ]
+}

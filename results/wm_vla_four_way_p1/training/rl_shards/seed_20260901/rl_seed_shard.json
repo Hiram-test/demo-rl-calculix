@@ -1,0 +1,166 @@
+{
+  "TEST_NOT_RUN": true,
+  "artifacts": {
+    "model": {
+      "path": "rl_seed20260901.pt",
+      "sha256": "650c5aa53cf138360595e0551d3117c8e3feeada863c31d8e1307cb925958ed1"
+    },
+    "training_cost": {
+      "path": "rl_training_cost.json",
+      "sha256": "05c71e7d8811f5a20bca87e5fb229ca5e7b1f96749592b959ed0e31c0fedfe35"
+    },
+    "training_history": {
+      "path": "seed_20260901/training_history.json",
+      "sha256": "648cda6832fccdb01b346d8c8ccbbc45f41a544f7142ed626a006bbc025fba17"
+    },
+    "validation_history": {
+      "path": "seed_20260901/validation_history.json",
+      "sha256": "21812e3c41136af3f437430245d0f04036065cf4435da36ec517f4740f32ef1b"
+    }
+  },
+  "checkpoint_contract": {
+    "budgets": [
+      30000,
+      60000,
+      120000
+    ],
+    "episodes": [
+      25,
+      50,
+      75,
+      100,
+      125,
+      150,
+      175,
+      200,
+      225,
+      250,
+      275,
+      300
+    ],
+    "selection_order": [
+      "failure_points",
+      "finite_penalty_energy_log_mean",
+      "finite_penalty_qoi_log_mean",
+      "budget_violations",
+      "checkpoint_episode"
+    ],
+    "validation_case_count": 8
+  },
+  "cost": {
+    "budget_episode_counts": {
+      "120000": 100,
+      "30000": 100,
+      "60000": 100
+    },
+    "episodes_attempted": 300,
+    "gradient_updates": 1356,
+    "model_parameter_count": 1410,
+    "numeric_failure_episodes": 0,
+    "optimizer_training_wall_s": 3788.364477664014,
+    "seed": 20260901,
+    "selected_checkpoint_episode": 150,
+    "selected_validation_key": {
+      "budget_violations": 0,
+      "checkpoint_episode": 150,
+      "failure_points": 0,
+      "finite_penalty_energy_log_mean": -0.4784129293711328,
+      "finite_penalty_qoi_log_mean": -0.9566116607548419
+    },
+    "training_and_validation_wall_s": 7601.122035878012,
+    "training_real_solve_attempts": 1629,
+    "validation_real_solve_attempts": 1728,
+    "validation_reference_policy": {
+      "allow_unqualified_references": true,
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "expedited_reference_levels": 2,
+      "reference_execution_amendment": {
+        "authorization": "user_authorized_nonblocking_2026-08-30",
+        "expedited_levels": 2,
+        "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+        "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+        "size_bytes": 2647
+      }
+    },
+    "validation_wall_s": 3812.757558213998
+  },
+  "dqn_config": {
+    "batch_size": 32,
+    "discount": 0.95,
+    "eps_decay_frac": 0.6,
+    "eps_end": 0.05,
+    "eps_start": 1.0,
+    "gamma_refine": 0.7,
+    "hidden": 32,
+    "lr": 0.001,
+    "max_steps": 5,
+    "n_eq_budget": 120000,
+    "replay_size": 4000,
+    "reward_budget_penalty": 2.0,
+    "reward_error_scale": 10.0,
+    "reward_solve_cost": 0.15,
+    "reward_stop_bonus": 1.0,
+    "seed": 20260901,
+    "target_sync": 200
+  },
+  "episode_contract": {
+    "budgets": [
+      30000,
+      60000,
+      120000
+    ],
+    "episodes": 300,
+    "episodes_per_budget": 100
+  },
+  "finite_element_contract": {
+    "nodal_gradation": 1.0,
+    "source": "PR40_V0_default_tool_behavior"
+  },
+  "manifest_file": "case_manifest.json",
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "phase": "seed_shard",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "schema": "wmvla.bridge-rl.v1",
+  "seed": 20260901,
+  "selected": {
+    "budget_conditioned": true,
+    "checkpoint_episode": 150,
+    "checkpoint_file": "seed_20260901/checkpoints/episode_0150.pt",
+    "checkpoint_sha256": "650c5aa53cf138360595e0551d3117c8e3feeada863c31d8e1307cb925958ed1",
+    "model_file": "rl_seed20260901.pt",
+    "model_sha256": "650c5aa53cf138360595e0551d3117c8e3feeada863c31d8e1307cb925958ed1",
+    "seed": 20260901,
+    "selection_key": {
+      "budget_violations": 0,
+      "checkpoint_episode": 150,
+      "failure_points": 0,
+      "finite_penalty_energy_log_mean": -0.4784129293711328,
+      "finite_penalty_qoi_log_mean": -0.9566116607548419
+    },
+    "validation_reference_policy": {
+      "allow_unqualified_references": true,
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "expedited_reference_levels": 2,
+      "reference_execution_amendment": {
+        "authorization": "user_authorized_nonblocking_2026-08-30",
+        "expedited_levels": 2,
+        "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+        "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+        "size_bytes": 2647
+      }
+    }
+  },
+  "test_split_access": false,
+  "validation_reference_policy": {
+    "allow_unqualified_references": true,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "expedited_reference_levels": 2,
+    "reference_execution_amendment": {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "expedited_levels": 2,
+      "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+      "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+      "size_bytes": 2647
+    }
+  }
+}

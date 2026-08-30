@@ -1,0 +1,565 @@
+{
+  "TEST_NOT_RUN": true,
+  "allow_unqualified_references": true,
+  "budgets": [
+    30000,
+    60000,
+    120000
+  ],
+  "case_manifest_path": "protocol/case_manifest.json",
+  "case_manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "code_hashes": {
+    "path": "protocol/code_hashes.json",
+    "role": "code_hash_inventory",
+    "sha256": "54eb338b37b16430560aab89afcda567fa934335c52d5fc26a5f784d4a8f1fa4",
+    "size_bytes": 12041
+  },
+  "code_sha256": {
+    ".github/workflows/wm-vla-four-way-p1.yml": "39648646615ab705b80308afd88d6017e5b860534c555d6fa504f94def6a90e8",
+    "requirements.txt": "89b22289172055b14aa48bb9c9e7f3f39a8f16e7ba19b2d72ea8e8a22191344e",
+    "scripts/analyze_four_way_bridge.py": "b8be1d7f6f92d737efebea744344bedb6460d538804d39ea73e0001d99d1506c",
+    "scripts/build_bridge_references.py": "e73426e9a4ba25e0773cb50cdb245ce7a2030cea1240b448bf53b58bce2df7b5",
+    "scripts/freeze_four_way_protocol.py": "573dcc904a5f7d2a7a57c56d811c9063683d7664585920eca10381345125ba60",
+    "scripts/make_bridge_case_manifest.py": "bf1372ba83400185d84f668ec45122193e6db448009e2de7d552a58185bb9ef4",
+    "scripts/make_bridge_partition_specs.py": "5895147b4f0d7e6ca9e4823a2eb66fccdb08dd44b4caf26ce7e64a244befe376",
+    "scripts/run_four_way_bridge_ablations.py": "c47ae9bc356f7742512d17710b53c0148bf5c26988a545b55b32c589c8d710f3",
+    "scripts/run_four_way_bridge_benchmark.py": "b2290675e1acae099b6c82aa6dafbea92d3598532c910971b3d7e633da335473",
+    "scripts/train_bridge_rl.py": "c410dcf50f3e2a881ae978c959b20504a1ec86f54b8a6eefd39683a7089ba912",
+    "scripts/train_bridge_supervised.py": "5757e566ac6c29c98ba2a6b21ffc011513ed984ffa7aea33777e58adb796d0a7",
+    "scripts/train_bridge_world_model.py": "3e0b086d798172eedce7c340c18a974c69caa73b7f86dd0a2b6f6f740472ce3c",
+    "visionamr/baselines/bridge_rl.py": "8e089b3a833a2669e6dd0195dfc40780c304a4615ca487382ce5cdaf1a8270b7",
+    "visionamr/baselines/bridge_supervised.py": "22582622b6372154b5b1c2ececf9c1413f79b0e4747ce58c11fb5c1e681cf701",
+    "visionamr/baselines/dorfler.py": "4ef639036c5433ac76b918038f7a430c7375ba48bdb4aba46de34394b1e42009",
+    "visionamr/baselines/local_prediction.py": "7d797a9756566031b305156f9d165540f8e27de4709d4a18f171fb4cc1fc4260",
+    "visionamr/baselines/rl_dqn.py": "5d0f69f1de0f28bc4c912aecf65c630f02e24a3adf513eea6f49716f3396bc16",
+    "visionamr/baselines/supervised.py": "85db0802956cd02dbaf1efe351f3e3e8424a11c7918423f75db0e6c269686009",
+    "visionamr/bridge_case_manifest.py": "e5061c9f8277c199f13a6149c2f18b590e6943cde92ea86c5ecc2bf982819729",
+    "visionamr/bridge_cases.py": "d89786f6fed984fbc76c934bf55c76f7ce3fe18702b483187f0f511b074d2a89",
+    "visionamr/calculix.py": "9a59ffb516135f19820c204d722c70e8cf55c1c4f0b23f612f5d5c575478242e",
+    "visionamr/experiment.py": "b22971255988c478c7ecca4a0fb43cd1a1d62f55e455a6384aa1dfc900329ed9",
+    "visionamr/indicators.py": "a04d7822742a58255da1a6c61cc9b726d9fad9502d0fdb3d0f268b72d1b191e9",
+    "visionamr/marking.py": "0791b27eecaf3c24beb7e7803450677d08021b262c47aed1d32fec1bc4b2cf14",
+    "visionamr/mesher.py": "b76b05f9e8abb8c0b75de4ca4b81cb625afa1f09567f12a4a24f857bea585598",
+    "visionamr/sizefield.py": "2625a2b4f24865d340d3ae8755e2128b20738d0aa40e83a21ca60d3c7f659969",
+    "visionamr/vla/four_way_ablations.py": "c4ace9cdd9aab281806a00c1283a616d5d6350e37865b244db69005dceda0bef",
+    "visionamr/vla/four_way_analysis.py": "38ee3364e8fe51a280692115d4833b3b4eb5bada5e15790be907e1e9bb5e5627",
+    "visionamr/vla/four_way_benchmark.py": "80151ba80bb54bddbd60e200a09e5162fd1e0bb346a02bafb1a6905aee01c85d",
+    "visionamr/vla/four_way_freeze.py": "8a6e6e9334819c80ca66176377ae3040be3b5873a4fa189539e9c45569a1f9fd",
+    "visionamr/vla/four_way_reference_campaign.py": "8c6f4d7253365920e9fd6fa3d8f31f2a6bcbffef9de17fab96b0480bfe097829",
+    "visionamr/vla/four_way_references.py": "75e044e331a2aad4a42e74315b826650fe2815a3a4d531ab354c1581ef8e9eb8",
+    "visionamr/vla/four_way_stats.py": "58ad1503749f988acd3cffaeb494e08ac8590b41f283987001911365de334ea3",
+    "visionamr/vla/four_way_world_training.py": "03dd68e1f1c12d2f928fff4b7dfcb4fb014cb7d3a63520a9831df0dfdc001acc",
+    "visionamr/vla/mcp_tools.py": "928cb9fc9101e845b84c1d79d8f310fee188f3ce6f2713e91629b6c720eff198",
+    "visionamr/vla/partition_spec.py": "809d89109301f3692f71463e399ad164699bd6b6088f02b0e10acb64ab577347",
+    "visionamr/vla/planner.py": "9aa6547c002c9b00a9b42c767251a8a5eaffa5d3c0483d71353cee2d26e50c8c",
+    "visionamr/vla/world/model.py": "80d5bbc85456238d2e3cd7646a007fc2f8f15630804a1ec5f30d17d88dc21ec8",
+    "visionamr/vla/world/pipeline.py": "1488ff3411ba9323b2299a12de6820b8e78968533eeeaf53ce71a37ce0ca2e64",
+    "visionamr/vla/world/planner.py": "1758b5d988aacdaa36339d89ce180a42c38256493877594b9b488395b3c7a15b",
+    "visionamr/vla/world/tool_gateway.py": "e1a9bdd0743d62fa97f80c9f2a89a7cef2d76f8c2b7c39e665f1e7dc19088dc3",
+    "visionamr/vla/world/vision_partition.py": "d31f094011bf04f0eb991f69a2f9b73ec0cf29f0eb175ae5a7517e7a187606cb",
+    "visionamr/vla/world_model.py": "1ca6f245f7920c6c78b1ee422544e182a24e6bb35f2d7b1ab6dab27e2c02913d",
+    "visionamr/vla/world_pipeline.py": "13610e32af952ad24c1ab9ad4d69f53717695def9538271d68a6e8d5603a85b5"
+  },
+  "common_gradation": 1.0,
+  "complete_v0_config": {
+    "common_gradation": 1.0,
+    "world_model_config": {
+      "ensemble_size": 5,
+      "error_power": 1.65,
+      "max_log_residual": 0.7,
+      "max_rows": 3000,
+      "min_rows": 10,
+      "neighbor_spill": 0.18,
+      "prior_uncertainty": 0.24,
+      "refine_factor": 0.5,
+      "ridge": 0.001,
+      "uncertainty_scale": 1.8
+    },
+    "world_model_runtime": {
+      "artifact_dir": null,
+      "audit_slack": 0.08,
+      "core_theta": 0.72,
+      "fallback_cooldown": 1,
+      "max_solves": 6,
+      "method_name": "world_model_vla",
+      "n_equation_cap": 120000,
+      "refine_factor": 0.5,
+      "require_reference": true,
+      "stagnation_steps": 2,
+      "stagnation_tolerance": 0.002,
+      "theta": 0.5
+    },
+    "world_model_seed": 271828,
+    "world_planner": {
+      "beam_width": 20,
+      "budget_safety": 0.97,
+      "candidate_regions": 5,
+      "discount": 0.84,
+      "failure_limit": 0.42,
+      "failure_weight": 1.1,
+      "horizon": 4,
+      "max_extra_depth": 2,
+      "max_extra_regions": 2,
+      "min_robust_gain": 0.018,
+      "resource_weight": 0.17,
+      "uncertainty_limit": 0.34,
+      "uncertainty_weight": 0.75,
+      "warmup_transitions": 1
+    },
+    "world_tool_config": {
+      "budget_safety": 1.0,
+      "core_theta": 0.72,
+      "max_extra_depth": 2,
+      "refine_factor": 0.5,
+      "theta": 0.5
+    }
+  },
+  "config_source_sha256": "e54f3758640933e915d37dc616497352e3068e66f84372347195b901f5b6230c",
+  "environment": {
+    "path": "protocol/environment.json",
+    "role": "environment_lock",
+    "sha256": "d7afecabe5ad53400d23a4574b4e1579bda0fe1c9d7970b9e7bc77e2cf6b68ad",
+    "size_bytes": 2458
+  },
+  "expedited_reference_levels": 2,
+  "freeze_git_ref": "refs/tags/wmvla-p1-freeze",
+  "frozen_utc": "2026-08-30T09:15:21.846351Z",
+  "git_state": {
+    "path": "protocol/git_state.json",
+    "role": "implementation_git_state",
+    "sha256": "cd1586750549be0d117ba7c5c36b3cfd1a861a12dd28dcb4af715a748645d4eb",
+    "size_bytes": 70167
+  },
+  "implementation_commit_sha": "b23fcc0c71db5755dba3a73deb24edeb62c15935",
+  "max_solves": 6,
+  "model_artifacts": [
+    {
+      "method": "world_model",
+      "name": "world_model_v0",
+      "path": "training/world_model/world_model_v0.json",
+      "sha256": "aa32253839578cd0db0a90b489131bf6fb609f462afd82ffcc3094e589a12b77",
+      "size_bytes": 267245
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260831",
+      "path": "training/supervised/candidates/seed_20260831/model.pt",
+      "seed": 20260831,
+      "sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f",
+      "size_bytes": 22141
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260832",
+      "path": "training/supervised/candidates/seed_20260832/model.pt",
+      "seed": 20260832,
+      "sha256": "47c0e7b28ad5c3620dc8c37177226486534152e1ecaae80e84c980f858f52d86",
+      "size_bytes": 22141
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260833",
+      "path": "training/supervised/candidates/seed_20260833/model.pt",
+      "seed": 20260833,
+      "sha256": "e04225f766e4b050bbef3c6b7e50a794028d9c44fae9b9c2676aed373b5c7a62",
+      "size_bytes": 22141
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260901",
+      "path": "models/rl/rl_seed20260901.pt",
+      "seed": 20260901,
+      "sha256": "650c5aa53cf138360595e0551d3117c8e3feeada863c31d8e1307cb925958ed1",
+      "size_bytes": 9235
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260902",
+      "path": "models/rl/rl_seed20260902.pt",
+      "seed": 20260902,
+      "sha256": "badf435716e78a2251c03a8534f16415483a92689bc5bbc5a43031ae287f94ae",
+      "size_bytes": 9235
+    },
+    {
+      "method": "rl",
+      "name": "rl_seed_20260903",
+      "path": "models/rl/rl_seed20260903.pt",
+      "seed": 20260903,
+      "sha256": "47c3a7127fa53d002fa81eb95d5bd168f8de0521dab699878d1c27cb36a1a823",
+      "size_bytes": 9235
+    }
+  ],
+  "model_hashes": {
+    "path": "protocol/model_hashes.json",
+    "role": "model_hash_inventory",
+    "sha256": "76abc36f6a224a28f2b842d9489a784d9a55b2fad4d2f66df0b0d218526e603c",
+    "size_bytes": 1984
+  },
+  "partition_hashes": {
+    "path": "protocol/partition_hashes.json",
+    "role": "partition_hash_inventory",
+    "sha256": "872a9904daf36d9800ca49be6627be19bf01a2c17c0c05501c23be430403cddf",
+    "size_bytes": 21556
+  },
+  "partition_root": "protocol/partitions",
+  "partition_spec_sha256": {
+    "BGD-001-9b0c353acbb6": "78a6b076b9322ae7751a237c8e4531207b5ca1e626b73a5ef105de2be2d91da1",
+    "BGD-002-0d35762816f9": "cc1d8455888e2eb43a9d859bc89355da6423456431b0ec395f1b765d99e385bd",
+    "BGD-003-02fe1025238c": "51acd155fa3c12c897a58fb5b3d0738623b5fbf17ba5e55eb348ed8564d8eb8b",
+    "BGD-004-f065941b3ed0": "2f06da0aa40d5dc1023ccc91b2f6a205c461c9666dd085a6b6e2ee73f10f3194",
+    "BGD-005-bf699e48f21e": "f188b02422f26824d8aade3b907c63d0d39d080964672fcaca80977add0d80b0",
+    "BGD-006-be62cd3cf423": "85158effa219d8a1521dbd7575ed3a6eaeada6792442bb457977a3577688a537",
+    "BGD-007-53c63a33a823": "a5da43dbfd6d83dfab75f403279047dcecaf99530757dedf03960083fb5b2084",
+    "BGD-008-99c543e07d78": "83a51bb6e54c29da6197caca0b51a46c6607910497bf4fa010ed7d06f4c0ece7",
+    "BGD-009-0d8fb9d501d5": "3a30e88a75f404f6d51317ffa62767f9608da366b618d8ebd4b93a19d5e94b92",
+    "BGD-010-9b748af2d2d8": "b2eadd56c7e102347729aa6eaca334fbb3ef43cea137c4276c3edc66881423c2",
+    "BGD-011-38c0a3fb798b": "52b548da96cc60d49ba9884951fb4ebcd1fbd61e4083f11296d27f7501e32c32",
+    "BGD-012-fb36c407e8b3": "0209aa5e975ab9a5eb2ebc27d59c917cd076caff9488f6ea90e475e6ed76407d",
+    "BGD-013-3069b9bfe543": "09cd8d1d82d2a89a23adc1eab83646b0021f21c521cd69df61074259a26a1e79",
+    "BGD-014-60e534ea9979": "099a1106922cda9b9e2ea3c817e77dfd7bab19e70fe17f7fa82cc065e3b5a47d",
+    "BGD-015-3e9d4dec32a1": "e6a82b84a5eab6c23e2595ce3d53e030d05ec1d37f6b855db3f2b652dba3610a",
+    "BGD-016-6b11ec1e5d0b": "a54ac9e8aff3f4aed9d22130d310cec4c94ad42d1d30c6c08c46dfe5e293aab7",
+    "BGD-017-c53992da6413": "5787153f47fcbd0769670b6d7f619def5e9d7d3170a46c4704d8a6514cbdf4c0",
+    "BGD-018-3995cc18feae": "aea2a65f38ff227db151d2d836aca113cfb5c64414574bf880345e24590e1cc0",
+    "BGD-019-900def8c1c61": "eefd12f1a1f6d2c2f1b3a87d8f981fd795bdb8bca522ea8bc5b372e59ade0a55",
+    "BGD-020-5233f66a1eeb": "af226040378f91bf476138182d28e8e2fc4486dce06600955be1a546ad3096d9",
+    "BGD-021-f58ba64107f8": "c3a5715398309b47e98948774ade86f03076f28b742af8d50638e8f67bf2c27e",
+    "BGD-022-c25fded28316": "8f115dc2dadd48870298b6afd0e70b01563c3dcfeb891348cb5b3512b55cf65a",
+    "BGD-023-9d7a834a8fdc": "142a312c67a6601d23d44142bccc9be67fd38ca85b59d12083368ed99302889b",
+    "BGD-024-f2c3c99e4d57": "41e7f09d8f1c93a12490f2d26a79c7dd6e5d31228323c538fbd4308bf45e780a",
+    "BGD-025-80dbdbf223da": "c8e8bf618524b9d635d02ae8b7a315969ee9fa3922a36ae6f9357594641f0c5a",
+    "BGD-026-37b64786683a": "179a73a50442ab5df836400b12a58c49c3eae733dbc531bd3f1ed53ca0581982",
+    "BGD-027-1141b1282ce8": "f51d075d6bbfea577e116067c7e5f7389e17f1eb21abb6a3ef19075acb068d34",
+    "BGD-028-d0cb4d33a43d": "af1073ffd0f9c05eb5553f1a1e4f153e59acd540aaa4c593c1895b75457347d8",
+    "BGD-029-cfb7b4c18a0e": "97c1be8059468bc3c8c6faebd1a97f4cd2c34a73e23669da1e69f7e10595bf19",
+    "BGD-030-18e9cac3b187": "bedd46739a57b5596d6d7d86e9ba56bb2b87b7e17e9d2b9df8b4d47df1f65401",
+    "BGD-031-05e28fa59371": "468b00c6f5c7b895e4d622d30dc835f91b06ef195ea8eb1f27daf21296f80ab8",
+    "BGD-032-6aeee149a81a": "988f78a711fe8faad786a336c34c2a36cb182093cc8287b76e1a4e15193bb568",
+    "BGD-033-04a3f9b20025": "c9646f8e2c780a7478d78dba6904ff057e4d4bad0dedf097bd76aadc112e07b3",
+    "BGD-034-8d4faa7b4a69": "85e1b88584123502e2ac1c377084eb736d88e7e079c622dbed66147b82136a05",
+    "BGD-035-229450b37603": "9c4b64f8da3845d4e544fbc2874bc15c282b4a296c421e6476359bc67df921cf",
+    "BGD-036-cea97c8331a1": "4f7decab43166befedafc997b91b1a8d24652cb6f6507371b7a603ae0e6ecec1",
+    "BGD-037-04194cd230f1": "bcf52d438736e54f02dc18893f3e8797e25ea814419e9e48a20e1ec7e158fc35",
+    "BGD-038-90b83e65fb68": "bde00373325607d22f85972ea7451612b1daa5d3524fd813f066e4374758a629",
+    "BGD-039-b2da2def1ef5": "cc261e3a971ae35632e7491542803f3400ee5662da8967be8f48a1a37124df50",
+    "BGD-040-2414039554ce": "82b407ce16c1f45ce95ac04e7ae953f70747d6542cbcf51f195c241a52e2c388",
+    "BGD-041-a29fbf8f6b08": "00b671d61067293e271ed80552b7727f04c4b1226ec65d5bf59b09d81aaefb4a",
+    "BGD-042-ce9bc31afaa6": "4e51f80a017cac728aca3ccfb10a339a5a89b9c6f1b1190fc4d9daa9c7b5d352",
+    "BGD-043-6f7ca7b029eb": "56138610618aee4919b23648d206d8cb076a66fa403684ba0ece0ebd13e04d3f",
+    "BGD-044-87c518abf6ee": "898fd1cf5ff125beeb3d2862f9be1027a3967b8f0ee7453d2b752765d5d8b09d",
+    "BGD-045-57d94dfe3aad": "af29571d8659a5b82bd8c9fa008a944ab7762a4353c608cba1262abe8beed1d7",
+    "BGD-046-72e4b00c981c": "c17dd5e69ace299fc456a55880256df18a2b31e836a4c78ea2aa1f0b18300ef3",
+    "BGD-047-2d1094dc2680": "1f704c9ceb6799d5b1d62e0f61b209772033280446e17156b3a8ec6978db4ef0",
+    "BGD-048-27d80b19deb3": "8eef708b165f2670afd586bb1c7f1a88ec4c0b80b43f223b4d0a7f1650ec39b1"
+  },
+  "protocol_id": "WMVLA-4WAY-P1",
+  "reference_config": {
+    "agreement_rtol": 0.005,
+    "background_scales": [
+      1.0,
+      0.8,
+      0.64,
+      0.512,
+      0.4096,
+      0.32768
+    ],
+    "local_floor_scales": [
+      1.0,
+      0.7,
+      0.49,
+      0.343,
+      0.2401,
+      0.16807
+    ],
+    "zero_guard": 1e-30
+  },
+  "reference_execution_amendment": {
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "expedited_levels": 2,
+    "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+    "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+    "size_bytes": 2647
+  },
+  "rl_seeds": [
+    20260901,
+    20260902,
+    20260903
+  ],
+  "schema": "wmvla-four-way-frozen-config-v1",
+  "scientific_config": {
+    "beam_width": 20,
+    "budget_safety": 0.97,
+    "ensemble_size": 5,
+    "failure_limit": 0.42,
+    "horizon": 4,
+    "max_extra_depth": 2,
+    "max_extra_regions": 2,
+    "min_relative_gain": 0.018,
+    "regression_tolerance": 0.03,
+    "ridge": 0.001,
+    "uncertainty_limit": 0.34
+  },
+  "scientific_config_index": {
+    "beam_width": 20,
+    "budget_safety": 0.97,
+    "ensemble_size": 5,
+    "failure_limit": 0.42,
+    "horizon": 4,
+    "max_extra_depth": 2,
+    "max_extra_regions": 2,
+    "min_relative_gain": 0.018,
+    "regression_tolerance": 0.03,
+    "ridge": 0.001,
+    "uncertainty_limit": 0.34
+  },
+  "selected_supervised_seed": 20260831,
+  "solve_limits": [
+    2,
+    3,
+    4,
+    6
+  ],
+  "theta": 0.5,
+  "training_costs": {
+    "path": "training/training_costs.json",
+    "role": "training_cost_aggregate",
+    "sha256": "6abf2fd732fa0778b51573d78487d6388aded65a8eb1669eb9492574b08a2204",
+    "size_bytes": 21895
+  },
+  "training_validation_artifacts": [
+    {
+      "method": "world_model",
+      "name": "world_model_training_summary",
+      "path": "training/world_model/training_summary.json",
+      "phase": "training",
+      "sha256": "efd9477d7f616d0cbb7fcdd9163edbc927ddd48d8572da3be3d4b8d90f6664dc",
+      "size_bytes": 3106
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_config",
+      "path": "training/supervised/supervised_config.json",
+      "phase": "training",
+      "sha256": "6e57f81831dffa7ce9a85f3594539b215dbdac9d6d5e03d65181bfc08ba7c566",
+      "size_bytes": 954
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_training_plan",
+      "path": "training/supervised/training_plan.json",
+      "phase": "training",
+      "sha256": "1c6017759749ef9a9096142c1cde5be5560c6ae66f2f1b55e0db01a4225ad1b5",
+      "size_bytes": 6624
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_expert_dataset",
+      "path": "training/supervised/expert_dataset.npz",
+      "phase": "training",
+      "sha256": "f9eb64a405fe864e648cdaad87d2beeb3c5b214c184ecd67804eb2a2bcfc8b36",
+      "size_bytes": 675511
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_expert_dataset_metadata",
+      "path": "training/supervised/expert_dataset_metadata.json",
+      "phase": "training",
+      "sha256": "6c5baa99d58b148c044a984d2b42972ae8adc3f955b63a9810e9fe1509cc9a5c",
+      "size_bytes": 9035
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_network_training_summary",
+      "path": "training/supervised/network_training_summary.json",
+      "phase": "training",
+      "sha256": "013955705d607a41007e121f81287dc38000db567309a79be5f4a758e2ae0a64",
+      "size_bytes": 2500
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_training_summary",
+      "path": "training/supervised/training_summary.json",
+      "phase": "training",
+      "sha256": "4d63161f33dfbd99e25ccfc0f4116ca122de249d42b35b7a3f91aebedc46bc38",
+      "size_bytes": 1894
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_model_selection",
+      "path": "training/supervised/selected_model.json",
+      "phase": "validation",
+      "sha256": "981ea4f495d89c9294c7c55c22b4e6b09fd5f1bfdf8676f9206f3cd4a7057f25",
+      "size_bytes": 3632
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_validation_rows",
+      "path": "training/supervised/validation_rows.json",
+      "phase": "validation",
+      "sha256": "af64a8ba9eeb2c0700bc4e92f9a0873d003a30c991a824265789a026199cd67b",
+      "size_bytes": 69076
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_validation_assembly",
+      "path": "training/supervised/PARALLEL_VALIDATION_ASSEMBLY.json",
+      "phase": "validation",
+      "sha256": "6220601d6519f1d83622c28af2d1f6aee61e4b3ab752d6c5a520044ee64842bb",
+      "size_bytes": 726
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_point_receipt_archive",
+      "path": "training/supervised/POINT_RECEIPT_ARCHIVE.json",
+      "phase": "validation",
+      "sha256": "7d7ecae627d31c4e0e07b0f8f0b39c1623728c96d048ea50fe53f33b5f2c9268",
+      "size_bytes": 121454
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_operational_cutover",
+      "path": "training/supervised/OPERATIONAL_CUTOVER_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "3ec99e1ab6646bea82a580a43991772c3a213d6364d94dc09281f66180fe0bd9",
+      "size_bytes": 2913
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260831_validation_receipt",
+      "path": "training/supervised/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "3210883e75ba73b062c81a49509bdee2020285b9c2e5aecc66601c901d943848",
+      "size_bytes": 22135
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260832_validation_receipt",
+      "path": "training/supervised/validation/seed_20260832/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "a033537f00f2532fd1885ff41ce976a9f2a99367880137e47bf7132bae79b025",
+      "size_bytes": 22574
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_seed_20260833_validation_receipt",
+      "path": "training/supervised/validation/seed_20260833/PARALLEL_SHARD_RECEIPT.json",
+      "phase": "validation",
+      "sha256": "e22f8713a5764de1b9d313cb5062eb9566dff147c82d0c5247b6aba90316b83c",
+      "size_bytes": 22575
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_validation_orchestrator",
+      "path": "training/supervised/PARALLEL_VALIDATION_ORCHESTRATOR.py",
+      "phase": "validation",
+      "sha256": "97887865d34a4719b5527f908eaf31a552afb80f91f8888c080ad8266c3dba5d",
+      "size_bytes": 19938
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_worker",
+      "path": "training/supervised/PARALLEL_POINT_VALIDATION_WORKER.py",
+      "phase": "validation",
+      "sha256": "a743775ea595b48f71e21f12aa23474403d9d31992cd42f792f51f24fb304755",
+      "size_bytes": 22320
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_assembler",
+      "path": "training/supervised/PARALLEL_POINT_VALIDATION_ASSEMBLER.py",
+      "phase": "validation",
+      "sha256": "8dc702069c89eb2b24ee0bbd927e2ed12a8b774c387eb361ff40cca227cf119c",
+      "size_bytes": 31921
+    },
+    {
+      "method": "supervised",
+      "name": "supervised_parallel_point_receipt_archiver",
+      "path": "training/supervised/PARALLEL_POINT_RECEIPT_ARCHIVER.py",
+      "phase": "validation",
+      "sha256": "f1e8a86d8fee0385403c284f677da7741a00f6af8e50a98bddd6dc7252d66571",
+      "size_bytes": 31154
+    },
+    {
+      "method": "rl",
+      "name": "rl_training_plan",
+      "path": "models/rl/rl_training_plan.json",
+      "phase": "training",
+      "sha256": "2c649ca2da0633013d3cc34ee29e715d079e1e019b7823433bafdab258fa2f5a",
+      "size_bytes": 6150
+    },
+    {
+      "method": "rl",
+      "name": "rl_shard_receipts",
+      "path": "models/rl/rl_shard_receipts.json",
+      "phase": "training",
+      "sha256": "0ddca742ddc61d3a5862d3b908bf4e1ef16666e59590b70caafb119a344433ee",
+      "size_bytes": 4144
+    },
+    {
+      "method": "rl",
+      "name": "rl_training_cost",
+      "path": "models/rl/rl_training_cost.json",
+      "phase": "training",
+      "sha256": "aec87ed6dd2f1f91884a28f1689b3f5d056a603177e2e7ac168e58926ffadb76",
+      "size_bytes": 9509
+    },
+    {
+      "method": "rl",
+      "name": "rl_validation_index",
+      "path": "models/rl/rl_freeze_index.json",
+      "phase": "validation",
+      "sha256": "bced1c3fb1aa1ade7975893b25fb25c63f8001c2b877ddabdec5b6697e818b5f",
+      "size_bytes": 12140
+    }
+  ],
+  "world_model_config": {
+    "ensemble_size": 5,
+    "error_power": 1.65,
+    "max_log_residual": 0.7,
+    "max_rows": 3000,
+    "min_rows": 10,
+    "neighbor_spill": 0.18,
+    "prior_uncertainty": 0.24,
+    "refine_factor": 0.5,
+    "ridge": 0.001,
+    "uncertainty_scale": 1.8
+  },
+  "world_model_runtime": {
+    "artifact_dir": null,
+    "audit_slack": 0.08,
+    "core_theta": 0.72,
+    "fallback_cooldown": 1,
+    "max_solves": 6,
+    "method_name": "world_model_vla",
+    "n_equation_cap": 120000,
+    "refine_factor": 0.5,
+    "require_reference": true,
+    "stagnation_steps": 2,
+    "stagnation_tolerance": 0.002,
+    "theta": 0.5
+  },
+  "world_model_seed": 271828,
+  "world_planner": {
+    "beam_width": 20,
+    "budget_safety": 0.97,
+    "candidate_regions": 5,
+    "discount": 0.84,
+    "failure_limit": 0.42,
+    "failure_weight": 1.1,
+    "horizon": 4,
+    "max_extra_depth": 2,
+    "max_extra_regions": 2,
+    "min_robust_gain": 0.018,
+    "resource_weight": 0.17,
+    "uncertainty_limit": 0.34,
+    "uncertainty_weight": 0.75,
+    "warmup_transitions": 1
+  },
+  "world_tool_config": {
+    "budget_safety": 1.0,
+    "core_theta": 0.72,
+    "max_extra_depth": 2,
+    "refine_factor": 0.5,
+    "theta": 0.5
+  }
+}

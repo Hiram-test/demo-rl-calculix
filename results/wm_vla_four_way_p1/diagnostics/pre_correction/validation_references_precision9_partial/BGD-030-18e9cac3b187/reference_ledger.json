@@ -1,0 +1,122 @@
+{
+  "authorization": "user_authorized_nonblocking_2026-08-30",
+  "case_id": "BGD-030-18e9cac3b187",
+  "completed_utc": null,
+  "config": {
+    "agreement_rtol": 0.005,
+    "background_scales": [
+      1.0,
+      0.8
+    ],
+    "local_floor_scales": [
+      1.0,
+      0.7
+    ],
+    "zero_guard": 1e-30
+  },
+  "config_signature": "68b2e07d2f41604faf266a7d7cde4755df20b652fe4f9a51dc1e31621d875997",
+  "created_utc": "2026-08-30T04:57:40.718777+00:00",
+  "execution_amendment": {
+    "agreement_rtol_unchanged": true,
+    "allow_unqualified": true,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "effective_config": {
+      "agreement_rtol": 0.005,
+      "background_scales": [
+        1.0,
+        0.8
+      ],
+      "local_floor_scales": [
+        1.0,
+        0.7
+      ],
+      "zero_guard": 1e-30
+    },
+    "effective_config_sha256": "68b2e07d2f41604faf266a7d7cde4755df20b652fe4f9a51dc1e31621d875997",
+    "expedited_levels": 2,
+    "native_failure_fallback_allowed": false,
+    "original_config": {
+      "agreement_rtol": 0.005,
+      "background_scales": [
+        1.0,
+        0.8,
+        0.64,
+        0.512,
+        0.4096,
+        0.32768
+      ],
+      "local_floor_scales": [
+        1.0,
+        0.7,
+        0.49,
+        0.343,
+        0.2401,
+        0.16807
+      ],
+      "zero_guard": 1e-30
+    },
+    "original_config_sha256": "1088aafa96c631fbf55195abf1c9ca6f903bb1258ced4ed38cd8b0f212ea96f5",
+    "original_schedule_levels": 6,
+    "reason": "user_authorized_nonblocking_2026-08-30"
+  },
+  "failure": null,
+  "final_pair": null,
+  "integrity_sha256": "c0643eb8e0df3c4a9deddcc29c199ec5420bdd6debe1c307ea84e78c21060184",
+  "levels": [],
+  "problem": {
+    "bbox": [
+      0.0,
+      0.0,
+      0.0,
+      600.0,
+      360.0,
+      284.0
+    ],
+    "dim": 3,
+    "h0": 48.0,
+    "h_min": 6.0,
+    "h_ref": 18.0,
+    "instance_id": "box_girder_diaphragm-37a4b45e",
+    "material": {
+      "E": 210000.0,
+      "nu": 0.3,
+      "thickness": 1.0
+    },
+    "name": "box_girder_diaphragm",
+    "params": {
+      "bottom_thickness": 20.0,
+      "diaphragm_thickness": 33.226708141031,
+      "frame_width": 18.0,
+      "height": 260.0,
+      "length": 600.0,
+      "opening_radius": 53.545083820172,
+      "pressure": 5.51286816388,
+      "support_width": 78.642525157514,
+      "top_thickness": 24.0,
+      "web_thickness": 18.0,
+      "wheel_offset": [
+        -85.493722454682,
+        49.481752422568
+      ],
+      "wheel_size": [
+        150.0,
+        110.0
+      ],
+      "width": 360.0
+    }
+  },
+  "problem_signature": "77acbeb5ddbeab001d49b3bd993939a4a0f4a54087e8a3e0813ef575edc5e301",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "qualification": null,
+  "reference_b": null,
+  "reference_b_artifact": "reference_B.json",
+  "schema": "wmvla-four-way-reference-ladder-v3",
+  "source_contract": {
+    "method_mesh_input_allowed": false,
+    "online_solve_counted": false,
+    "reference_A": "existing_strong_graded_reference",
+    "reference_B_and_upgrades": "same_analytical_grading_shape_with_preregistered_finer_background_and_local_floor"
+  },
+  "status": "building",
+  "upgrade_history": []
+}
