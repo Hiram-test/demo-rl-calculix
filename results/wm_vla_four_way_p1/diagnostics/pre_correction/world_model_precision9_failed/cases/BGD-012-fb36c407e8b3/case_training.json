@@ -1,0 +1,47 @@
+{
+  "actions": [],
+  "case_id": "BGD-012-fb36c407e8b3",
+  "complete": false,
+  "equation_budget": 120000,
+  "failures": [
+    {
+      "exception_type": "CalculiXExecutionError",
+      "message": "under\ncertain conditions, see gpl.htm\n\n************************************************************\n\nYou are using an executable made on Sat Jul 29 10:52:01 CEST 2023\n\n  The numbers below are estimated upper bounds\n\n  number of:\n\n   nodes:         1072\n   elements:         3190\n   one-dimensional elements:            0\n   two-dimensional elements:            0\n   integration points per element:            1\n   degrees of freedom per node:            3\n   layers per element:            1\n\n   distributed facial loads:            0\n   distributed volumetric loads:            0\n   concentrated loads:           24\n   single point constraints:          100\n   multiple point constraints:            1\n   terms in all multiple point constraints:            1\n   tie constraints:            0\n   dependent nodes tied by cyclic constraints:            0\n   dependent nodes in pre-tension constraints:            0\n\n   sets:            2\n   terms in all sets:         7452\n\n   materials:            1\n   constants per material and temperature:            2\n   temperature points per material:            1\n   plastic data points per material:            0\n\n   orientations:            0\n   amplitudes:            2\n   data points in all amplitudes:            2\n   print requests:            0\n   transformations:            0\n   property cards:            0\n\n\n STEP            1\n\n Static analysis was selected\n\n Decascading the MPC's\n\n Determining the structure of the matrix:\n Using up to 1 cpu(s) for setting up the structure of the matrix.\n number of equations\n 3116\n number of nonzero lower triangular matrix elements\n 48589\n\n Using up to 1 cpu(s) for the stress calculation.\n\n Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1102\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1335\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1572\n\n",
+      "solve_attempt": 1,
+      "stage": "calculix_solve"
+    }
+  ],
+  "geometry_hash": "d8eedefdb24c210760f15f9582ad0ef6c76bf1e732f3dbb99325eb4b38b38e69",
+  "partition_spec_sha256": "c4fe1522c0a57ec1f90162f725b089148869b7420aee4a7da95cef83545b5615",
+  "phase": "case_acquisition",
+  "planned_real_solve_count": 6,
+  "protocol_id": "WMVLA-4WAY-P1",
+  "real_solve_attempt_count": 1,
+  "real_solve_count": 0,
+  "schema": "wmvla-four-way-world-training-v1",
+  "scientific_boundary": {
+    "reads_local_prediction": false,
+    "reads_rl_labels": false,
+    "reads_supervised_labels": false,
+    "reference_solve_count": 0
+  },
+  "solver_logs": [
+    {
+      "path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/cases/BGD-012-fb36c407e8b3/solves/world_model_training_001_cycle0/model.log",
+      "sha256": "80381a683976417fd29a816e09a7c767efc839fe5e4b454ec92cb14d7aa6e559",
+      "size_bytes": 2228
+    }
+  ],
+  "solves": [],
+  "split": "train",
+  "status": "failed",
+  "timing_s": {
+    "calculix": 0.0,
+    "gmsh_remeshing": 0.21353959699627012,
+    "offline_total": 0.3234472170006484,
+    "parameter_tools": 0.0,
+    "world_model_planning": 0.0
+  },
+  "transition_count": 0,
+  "transitions": []
+}

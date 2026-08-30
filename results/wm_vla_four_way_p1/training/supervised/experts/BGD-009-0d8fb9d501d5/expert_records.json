@@ -1,0 +1,163 @@
+{
+ "problem": "box_girder_diaphragm-cf703b8e",
+ "params": {
+  "length": 600.0,
+  "width": 360.0,
+  "height": 260.0,
+  "top_thickness": 24.0,
+  "bottom_thickness": 20.0,
+  "web_thickness": 18.0,
+  "diaphragm_thickness": 26.23774442499,
+  "opening_radius": 55.737214317498,
+  "frame_width": 18.0,
+  "wheel_size": [
+   150.0,
+   110.0
+  ],
+  "wheel_offset": [
+   18.857704206899,
+   38.63869411017
+  ],
+  "pressure": 4.484932791,
+  "support_width": 75.199360920261
+ },
+ "reference": null,
+ "records": [
+  {
+   "method": "supervised_expert",
+   "stage": "probe",
+   "solve_index": 1,
+   "n_nodes": 1067,
+   "n_elems": 3160,
+   "n_equations": 3101,
+   "U_total": 937.9157538284965,
+   "qoi": 0.025659919891353467,
+   "wall_s": 0.1311018449923722,
+   "h_min": 20.171130689397714,
+   "h_max": 50.1472779042081,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "sum_eta2": 582.4758777257255,
+    "n_marked": 318,
+    "next_preflight_equations": 7099
+   }
+  },
+  {
+   "method": "supervised_expert",
+   "stage": "cycle1",
+   "solve_index": 2,
+   "n_nodes": 2451,
+   "n_elems": 7396,
+   "n_equations": 7099,
+   "U_total": 1087.7243867310572,
+   "qoi": 0.029809847565433072,
+   "wall_s": 0.23501572200621013,
+   "h_min": 10.515354058665336,
+   "h_max": 46.046240089614855,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "preflight_equations": 7099,
+    "sum_eta2": 531.9316526005156,
+    "n_marked": 937,
+    "next_preflight_equations": 14889
+   }
+  },
+  {
+   "method": "supervised_expert",
+   "stage": "cycle2",
+   "solve_index": 3,
+   "n_nodes": 5113,
+   "n_elems": 16101,
+   "n_equations": 14889,
+   "U_total": 1241.2657452257758,
+   "qoi": 0.034066225525962994,
+   "wall_s": 0.5716375159972813,
+   "h_min": 6.5255590432203325,
+   "h_max": 40.35474060138895,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "preflight_equations": 14889,
+    "sum_eta2": 496.5596774663371,
+    "n_marked": 2923,
+    "next_preflight_equations": 32818
+   }
+  },
+  {
+   "method": "supervised_expert",
+   "stage": "cycle3",
+   "solve_index": 4,
+   "n_nodes": 11188,
+   "n_elems": 38196,
+   "n_equations": 32818,
+   "U_total": 1362.358801249183,
+   "qoi": 0.03744857752641167,
+   "wall_s": 2.016883890988538,
+   "h_min": 5.39389404775581,
+   "h_max": 36.99601635318163,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "preflight_equations": 32818,
+    "sum_eta2": 412.42606977653594,
+    "n_marked": 7465,
+    "next_preflight_equations": 64831
+   }
+  },
+  {
+   "method": "supervised_expert",
+   "stage": "cycle4",
+   "solve_index": 5,
+   "n_nodes": 21953,
+   "n_elems": 81019,
+   "n_equations": 64831,
+   "U_total": 1446.8651078199707,
+   "qoi": 0.03974238879539116,
+   "wall_s": 3.8014785739942454,
+   "h_min": 4.203246990904094,
+   "h_max": 32.07518941377279,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "preflight_equations": 64831,
+    "sum_eta2": 331.6737611717108,
+    "n_marked": 13633,
+    "next_preflight_equations": 92944
+   }
+  },
+  {
+   "method": "supervised_expert",
+   "stage": "cycle5",
+   "solve_index": 6,
+   "n_nodes": 31413,
+   "n_elems": 120877,
+   "n_equations": 92944,
+   "U_total": 1479.7777362016932,
+   "qoi": 0.04063912366545246,
+   "wall_s": 6.096146793992375,
+   "h_min": 3.991418793130574,
+   "h_max": 27.75104952661094,
+   "e_energy": null,
+   "e_qoi": null,
+   "extra": {
+    "theta": 0.5,
+    "equation_budget": 120000,
+    "preflight_equations": 92944,
+    "sum_eta2": 295.0274261322642,
+    "stop": "max_solves"
+   }
+  }
+ ]
+}

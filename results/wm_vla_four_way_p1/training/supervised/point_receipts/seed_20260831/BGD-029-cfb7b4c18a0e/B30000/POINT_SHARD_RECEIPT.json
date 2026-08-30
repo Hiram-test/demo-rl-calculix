@@ -1,0 +1,42 @@
+{
+  "TEST_NOT_RUN": true,
+  "case_id": "BGD-029-cfb7b4c18a0e",
+  "equation_budget": 30000,
+  "execution_mode": "pristine_external_single_point_production_loop",
+  "manifest_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/case_manifest.json",
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised/candidates/seed_20260831/model.pt",
+  "model_sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f",
+  "output": "/workspace/scratch/cc3bbc935e00/supervised_point_shards/seed_20260831/BGD-029-cfb7b4c18a0e/B30000",
+  "production_entrypoint": "visionamr.baselines.bridge_supervised.validate_candidate_networks",
+  "production_monkeypatch_scope": [
+    "NETWORK_SEEDS",
+    "EXPECTED_SPLIT_COUNTS.validation",
+    "validation_score.completeness",
+    "select_validation_checkpoint.cardinality"
+  ],
+  "protocol_id": "WMVLA-4WAY-P1",
+  "records_sha256": "74299f827845183d7cbe28362208dd2c9473888ac9e35e4c5353645cf4e36e74",
+  "reference_authorization": "user_authorized_nonblocking_2026-08-30",
+  "reference_b_sha256": "f99d0b9ed3307bb19f34b8e89501b534a1a80dd97c76c9dac98a0a34555e8c98",
+  "reference_policy": {
+    "allow_unqualified_references": true,
+    "expedited_reference_levels": 2
+  },
+  "reference_qualification": false,
+  "reference_root": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/references",
+  "reference_status": "complete_unqualified",
+  "schema": "wmvla-four-way-supervised-validation-point-shard-v1",
+  "seed": 20260831,
+  "status": "ok",
+  "test_results_used": false,
+  "test_split_accessed": false,
+  "thread_environment": {
+    "GMSH_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "validation_result_sha256": "234c3e8c48f64edf2f4c609feb93e9f1486279aac3d67f12133c88a42fe4d8c0",
+  "validation_rows_sha256": "21f62749974a744efe6db4dc402a0f31a6d52f05c4bbbc7de39ec13f4ae6769b"
+}

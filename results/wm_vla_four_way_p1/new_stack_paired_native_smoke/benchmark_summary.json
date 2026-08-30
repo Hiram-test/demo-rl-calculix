@@ -1,0 +1,149 @@
+{
+  "configuration": {
+    "smoke": true,
+    "max_solves": 1,
+    "n_equation_cap": 1000000,
+    "theta": 0.5,
+    "refine_factor": 0.5,
+    "noninferiority_tolerance": 0.03,
+    "require_reference": false
+  },
+  "dorfler": {
+    "records": [
+      {
+        "method": "dorfler",
+        "stage": "cycle0",
+        "solve_index": 1,
+        "n_nodes": 739,
+        "n_elems": 2149,
+        "n_equations": 2129,
+        "U_total": 120.017061434988,
+        "qoi": 0.009277325439034513,
+        "wall_s": 0.056095004998496734,
+        "h_min": 23.874866563351365,
+        "h_max": 49.049771832531896,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "wmvla_schema": "wmvla.mcp-tool.v1",
+          "baseline": "exact_dorfler",
+          "theta": 0.5,
+          "refine_factor": 0.5,
+          "indicator_sum": 87.7135080444406
+        }
+      }
+    ],
+    "indicator_sums": [
+      87.7135080444406
+    ],
+    "metrics": [
+      9.36554899856066
+    ],
+    "equations": [
+      2129
+    ],
+    "stop_reason": "max_solves",
+    "certificates": []
+  },
+  "world_vla": {
+    "records": [
+      {
+        "method": "world_model_vla",
+        "stage": "cycle0",
+        "solve_index": 1,
+        "n_nodes": 739,
+        "n_elems": 2149,
+        "n_equations": 2129,
+        "U_total": 120.017061434988,
+        "qoi": 0.009277325439034513,
+        "wall_s": 0.057861474007950164,
+        "h_min": 23.874866563351365,
+        "h_max": 49.049771832531896,
+        "e_energy": null,
+        "e_qoi": null,
+        "extra": {
+          "wmvla_schema": "wmvla.mcp-tool.v1",
+          "wmvla_step": 0,
+          "wmvla_indicator_sum": 87.7135080444406,
+          "wmvla_regions": [
+            "diaphragm_joints",
+            "inspection_opening",
+            "left_bearing",
+            "right_bearing",
+            "wheel_load",
+            "field_remainder"
+          ],
+          "wmvla_region_error": [
+            7.4842761874399635,
+            1.2494280618690865,
+            1.1737954809256226,
+            1.1931969531774338,
+            22.947368347745776,
+            53.665443013282726
+          ],
+          "wmvla_region_elements": [
+            151.0,
+            134.0,
+            51.0,
+            50.0,
+            105.0,
+            1658.0
+          ],
+          "wmvla_dorfler_error_fraction": [
+            0.5498741579305316,
+            0.0,
+            0.09558992067891843,
+            0.1917218133681445,
+            0.9003109079877846,
+            0.35073663559267737
+          ],
+          "wmvla_dorfler_element_fraction": [
+            0.10596026490066225,
+            0.0,
+            0.0196078431372549,
+            0.04,
+            0.6571428571428571,
+            0.06875753920386007
+          ],
+          "wmvla_model_transitions": 0
+        }
+      }
+    ],
+    "indicator_sums": [
+      87.7135080444406
+    ],
+    "metrics": [
+      9.36554899856066
+    ],
+    "equations": [
+      2129
+    ],
+    "stop_reason": "max_solves",
+    "actions": [],
+    "decisions": [],
+    "certificates": [],
+    "timing_s": {
+      "visual_partition": 0.00022527399414684623,
+      "world_model_planning": 0.0,
+      "parameter_tools": 0.0,
+      "gmsh_remeshing": 0.09014478800236247,
+      "calculix": 0.057861474007950164,
+      "non_solver_total": 0.09037006199650932,
+      "trajectory_total": 0.1718602940090932,
+      "unattributed_python": 0.02362875800463371
+    }
+  },
+  "gates": {
+    "world_action_count": 0,
+    "dorfler_inclusion_all": true,
+    "solvewise_noninferior": true,
+    "budgetwise_noninferior": true,
+    "terminal_advantage": false,
+    "solvewise_ratios": [
+      1.0
+    ],
+    "budgetwise_ratios": [
+      1.0
+    ]
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "allow_unqualified_references": true,
+  "config_sha256": "3ec87d721e8f707f8ff85f1d4fd2855a219e9804e5a6b6efb694f6cfd556e88f",
+  "expedited_reference_levels": 2,
+  "protocol_id": "WMVLA-4WAY-P1",
+  "reference_qualification_by_case": {
+    "BGD-025-80dbdbf223da": false,
+    "BGD-026-37b64786683a": false,
+    "BGD-027-1141b1282ce8": false,
+    "BGD-028-d0cb4d33a43d": false,
+    "BGD-029-cfb7b4c18a0e": false,
+    "BGD-030-18e9cac3b187": false,
+    "BGD-031-05e28fa59371": false,
+    "BGD-032-6aeee149a81a": false
+  },
+  "schema": "wmvla-four-way-supervised-v1",
+  "scores": [
+    {
+      "budget_violation_count": 0,
+      "energy_error_geometric_mean": 1.9641774296916042e-238,
+      "energy_error_log_mean": -547.3401785857476,
+      "failure_error": 10.0,
+      "failure_point_count": 0,
+      "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised/candidates/seed_20260831/model.pt",
+      "model_sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f",
+      "point_count": 24,
+      "qoi_error_geometric_mean": 0.05529375775090929,
+      "qoi_error_log_mean": -2.8950952565556367,
+      "seed": 20260831,
+      "selection_key": [
+        0,
+        -547.3401785857476,
+        -2.8950952565556367,
+        0,
+        20260831
+      ]
+    },
+    {
+      "budget_violation_count": 0,
+      "energy_error_geometric_mean": 5.704324646564835e-226,
+      "energy_error_log_mean": -518.643006419565,
+      "failure_error": 10.0,
+      "failure_point_count": 0,
+      "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised/candidates/seed_20260832/model.pt",
+      "model_sha256": "47c0e7b28ad5c3620dc8c37177226486534152e1ecaae80e84c980f858f52d86",
+      "point_count": 24,
+      "qoi_error_geometric_mean": 0.06725184776115241,
+      "qoi_error_log_mean": -2.699310784875381,
+      "seed": 20260832,
+      "selection_key": [
+        0,
+        -518.643006419565,
+        -2.699310784875381,
+        0,
+        20260832
+      ]
+    },
+    {
+      "budget_violation_count": 0,
+      "energy_error_geometric_mean": 5.898251628341491e-226,
+      "energy_error_log_mean": -518.6095750438377,
+      "failure_error": 10.0,
+      "failure_point_count": 0,
+      "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised/candidates/seed_20260833/model.pt",
+      "model_sha256": "e04225f766e4b050bbef3c6b7e50a794028d9c44fae9b9c2676aed373b5c7a62",
+      "point_count": 24,
+      "qoi_error_geometric_mean": 0.0710332161997208,
+      "qoi_error_log_mean": -2.6446076775420493,
+      "seed": 20260833,
+      "selection_key": [
+        0,
+        -518.6095750438377,
+        -2.6446076775420493,
+        0,
+        20260833
+      ]
+    }
+  ],
+  "selected_model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised/selected_model.pt",
+  "selected_model_sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f",
+  "selected_seed": 20260831,
+  "selection_rule": [
+    "failure_point_count",
+    "energy_error_log_mean",
+    "qoi_error_log_mean",
+    "budget_violation_count",
+    "seed"
+  ],
+  "validation_case_count": 8,
+  "validation_execution_mode": "three_disjoint_seed_grids_parallel",
+  "validation_parallel_makespan_upper_bound_s": 10476.670263979991,
+  "validation_point_count_per_seed": 24,
+  "validation_seed_online_wall_s": {
+    "20260831": 9671.582986132009,
+    "20260832": 10476.670263979991,
+    "20260833": 9543.042043454043
+  },
+  "validation_wall_s": 29691.295293566043
+}

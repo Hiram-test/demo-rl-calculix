@@ -1,0 +1,218 @@
+{
+  "authorization": "user_authorized_nonblocking_2026-08-30",
+  "case_id": "BGD-032-6aeee149a81a",
+  "completed_utc": "2026-08-30T06:22:53.543577+00:00",
+  "config": {
+    "agreement_rtol": 0.005,
+    "background_scales": [
+      1.0,
+      0.8
+    ],
+    "local_floor_scales": [
+      1.0,
+      0.7
+    ],
+    "zero_guard": 1e-30
+  },
+  "config_signature": "68b2e07d2f41604faf266a7d7cde4755df20b652fe4f9a51dc1e31621d875997",
+  "created_utc": "2026-08-30T06:14:10.458425+00:00",
+  "execution_amendment": {
+    "agreement_rtol_unchanged": true,
+    "allow_unqualified": true,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "effective_config": {
+      "agreement_rtol": 0.005,
+      "background_scales": [
+        1.0,
+        0.8
+      ],
+      "local_floor_scales": [
+        1.0,
+        0.7
+      ],
+      "zero_guard": 1e-30
+    },
+    "effective_config_sha256": "68b2e07d2f41604faf266a7d7cde4755df20b652fe4f9a51dc1e31621d875997",
+    "expedited_levels": 2,
+    "native_failure_fallback_allowed": false,
+    "original_config": {
+      "agreement_rtol": 0.005,
+      "background_scales": [
+        1.0,
+        0.8,
+        0.64,
+        0.512,
+        0.4096,
+        0.32768
+      ],
+      "local_floor_scales": [
+        1.0,
+        0.7,
+        0.49,
+        0.343,
+        0.2401,
+        0.16807
+      ],
+      "zero_guard": 1e-30
+    },
+    "original_config_sha256": "1088aafa96c631fbf55195abf1c9ca6f903bb1258ced4ed38cd8b0f212ea96f5",
+    "original_schedule_levels": 6,
+    "reason": "user_authorized_nonblocking_2026-08-30"
+  },
+  "failure": {
+    "agreement_rtol": 0.005,
+    "attempted_levels": 2,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "kind": "reference_qualification_not_met",
+    "nonblocking": true
+  },
+  "final_pair": {
+    "a_level": 0,
+    "agreement_rtol": 0.005,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "b_level": 1,
+    "converged": false,
+    "decision": "publish_finest_successful_as_operational_reference_B",
+    "energy_relative_difference": 0.1005190985460692,
+    "passed": false,
+    "qoi_relative_difference": 0.10054407760345073,
+    "qualification": false,
+    "reference_A_mesh_sha": "18eacd790756cdd296248ebbf5d67be88ce5888e23efa9c054b57403d1297356",
+    "reference_B_mesh_sha": "ef30a6c52ae10d7b20b39f9c44c9ad0776e53374f6655c00f184bbe361c5347c"
+  },
+  "integrity_sha256": "c2a85eeb6d13e3e8abe4dadcfdd597cbd4fa762aaead7f4a03de3c16c04c68a1",
+  "levels": [
+    {
+      "U_total": 2495.9354576417736,
+      "background_scale": 1.0,
+      "h_background_target": 18.0,
+      "h_local_floor_target": 2.25,
+      "h_realized_max": 26.814581839128824,
+      "h_realized_min": 1.5976536614856307,
+      "level_index": 0,
+      "local_floor_scale": 1.0,
+      "mesh_sha": "18eacd790756cdd296248ebbf5d67be88ce5888e23efa9c054b57403d1297356",
+      "mesh_source": "preregistered_analytical_reference_field",
+      "mesh_wall_s": 188.40093621599954,
+      "n_elems": 97654,
+      "n_equations": 74804,
+      "n_nodes": 25110,
+      "qoi": 0.08618233488218359,
+      "role": "reference_A_initial",
+      "solver_inputs": [],
+      "solver_logs": [
+        {
+          "path": "solver_logs/ref_l00.log",
+          "sha256": "cf044782554fac032835725b64c166f51abb5a4c2b15318dd28bb5fc2988589e",
+          "size_bytes": 2268,
+          "source_count": 1
+        }
+      ],
+      "solver_wall_s": 3.9635550570092164,
+      "status": "success",
+      "total_wall_s": 193.36010160499427
+    },
+    {
+      "U_total": 2774.862093911406,
+      "background_scale": 0.8,
+      "comparison_to_previous": {
+        "a_level": 0,
+        "agreement_rtol": 0.005,
+        "b_level": 1,
+        "energy_relative_difference": 0.1005190985460692,
+        "passed": false,
+        "qoi_relative_difference": 0.10054407760345073,
+        "reference_A_mesh_sha": "18eacd790756cdd296248ebbf5d67be88ce5888e23efa9c054b57403d1297356",
+        "reference_B_mesh_sha": "ef30a6c52ae10d7b20b39f9c44c9ad0776e53374f6655c00f184bbe361c5347c"
+      },
+      "h_background_target": 14.4,
+      "h_local_floor_target": 1.575,
+      "h_realized_max": 23.46193839783045,
+      "h_realized_min": 1.1206732216059876,
+      "level_index": 1,
+      "local_floor_scale": 0.7,
+      "mesh_sha": "ef30a6c52ae10d7b20b39f9c44c9ad0776e53374f6655c00f184bbe361c5347c",
+      "mesh_source": "preregistered_analytical_reference_field",
+      "mesh_wall_s": 316.66846544599684,
+      "n_elems": 211988,
+      "n_equations": 148505,
+      "n_nodes": 49758,
+      "qoi": 0.09581607362432575,
+      "role": "reference_B_candidate",
+      "solver_inputs": [],
+      "solver_logs": [
+        {
+          "path": "solver_logs/ref_l01.log",
+          "sha256": "3f596ea86de5498d03bac73a900d1cc8b447b4d897894c0594649a665b2cd3df",
+          "size_bytes": 2270,
+          "source_count": 1
+        }
+      ],
+      "solver_wall_s": 10.835041230006027,
+      "status": "success",
+      "total_wall_s": 329.70702979799535
+    }
+  ],
+  "problem": {
+    "bbox": [
+      0.0,
+      0.0,
+      0.0,
+      600.0,
+      360.0,
+      284.0
+    ],
+    "dim": 3,
+    "h0": 48.0,
+    "h_min": 6.0,
+    "h_ref": 18.0,
+    "instance_id": "box_girder_diaphragm-f8e339c8",
+    "material": {
+      "E": 210000.0,
+      "nu": 0.3,
+      "thickness": 1.0
+    },
+    "name": "box_girder_diaphragm",
+    "params": {
+      "bottom_thickness": 20.0,
+      "diaphragm_thickness": 25.714104016976,
+      "frame_width": 18.0,
+      "height": 260.0,
+      "length": 600.0,
+      "opening_radius": 51.017419348608,
+      "pressure": 3.534511516334,
+      "support_width": 80.525904616524,
+      "top_thickness": 24.0,
+      "web_thickness": 18.0,
+      "wheel_offset": [
+        -126.819700783751,
+        -41.864152633021
+      ],
+      "wheel_size": [
+        150.0,
+        110.0
+      ],
+      "width": 360.0
+    }
+  },
+  "problem_signature": "81f44c7b44b9903dfecfe8042e33694082bdf4d0be17e9381c7b3bebc25b2cf8",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "qualification": false,
+  "reference_b": {
+    "U_total": 2774.862093911406,
+    "h_ref": 14.4,
+    "n_elems": 211988,
+    "n_equations": 148505,
+    "qoi": 0.09581607362432575
+  },
+  "reference_b_artifact": "reference_B.json",
+  "schema": "wmvla-four-way-reference-ladder-v3",
+  "source_contract": {
+    "method_mesh_input_allowed": false,
+    "online_solve_counted": false,
+    "reference_A": "existing_strong_graded_reference",
+    "reference_B_and_upgrades": "same_analytical_grading_shape_with_preregistered_finer_background_and_local_floor"
+  },
+  "status": "complete_unqualified",
+  "upgrade_history": []
+}

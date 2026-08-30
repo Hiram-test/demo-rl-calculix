@@ -24,6 +24,17 @@ class CcxResult:
     jobname: str
 
 
+class CalculiXExecutionError(RuntimeError):  # Expose one typed numerical-backend failure to protocol runners.
+    """Carry the native return code and retained-log provenance for one failed solve."""  # Document the audit contract.
+
+    def __init__(self, message: str, *, returncode: int | None, wall_s: float, log_path: Path, workdir: Path) -> None:  # Require all available native evidence at construction.
+        super().__init__(message)  # Preserve the conventional exception message and traceback behavior.
+        self.returncode = None if returncode is None else int(returncode)  # Retain an explicit absent code for launch timeouts.
+        self.wall_s = float(wall_s)  # Retain measured native wall time up to failure.
+        self.log_path = str(log_path)  # Retain the exact already-written combined stdout/stderr log.
+        self.workdir = str(workdir)  # Retain the isolated CalculiX working directory.
+
+
 def assemble_nodal_forces(mesh: Mesh, problem: Problem) -> np.ndarray:
     """Consistent nodal forces from boundary tractions.
 
@@ -60,7 +71,7 @@ def write_inp(path: Path, mesh: Mesh, problem: Problem, heading: str) -> None:
     lines.append(heading)
     lines.append("*NODE, NSET=NALL")
     for i, (x, y, z) in enumerate(mesh.nodes, start=1):
-        lines.append(f"{i}, {x:.9g}, {y:.9g}, {z:.9g}")
+        lines.append(f"{i}, {x:.17g}, {y:.17g}, {z:.17g}")  # Preserve IEEE-754 coordinates so thin valid tetrahedra do not collapse into zero-Jacobian deck elements.
     lines.append(f"*ELEMENT, TYPE={etype}, ELSET=EALL")
     for i, conn in enumerate(mesh.cells + 1, start=1):
         lines.append(f"{i}, " + ", ".join(str(c) for c in conn))
@@ -121,24 +132,31 @@ def run_ccx(
 
     ccx = ccx_cmd or default_ccx_cmd()
     t0 = time.perf_counter()
-    proc = subprocess.run(
-        [ccx, "-i", jobname],
-        cwd=str(workdir),
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "2")},
-    )
+    log_path = Path(workdir) / f"{jobname}.log"  # Resolve the durable combined native log before launching the process.
+    try:  # Convert only native launch timeout into the typed numerical-backend contract.
+        proc = subprocess.run(  # Launch exactly one isolated native CalculiX process and wait for its terminal result.
+            [ccx, "-i", jobname],  # Pass the resolved executable, input selector, and deterministic job name without a shell.
+            cwd=str(workdir),  # Keep all solver files inside the pre-resolved per-attempt evidence directory.
+            capture_output=True,  # Retain both native output streams for the durable combined solver log.
+            text=True,  # Decode native output as text for equation parsing and bounded diagnostics.
+            timeout=timeout,  # Apply only the caller's operational wall-clock limit to this native process.
+            env={**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "2")},  # Preserve the environment while bounding default solver threads.
+        )  # Return the completed process receipt or raise the explicitly handled timeout exception.
+    except subprocess.TimeoutExpired as error:  # Retain partial output and elapsed time for an interrupted native solve.
+        wall = time.perf_counter() - t0  # Measure the complete time spent before timeout propagation.
+        stdout = error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else (error.stdout or "")  # Normalize captured standard output safely.
+        stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else (error.stderr or "")  # Normalize captured standard error safely.
+        out = str(stdout) + str(stderr)  # Preserve the same combined-log convention as completed processes.
+        log_path.write_text(out)  # Persist partial native output before raising retained numerical evidence.
+        raise CalculiXExecutionError(f"ccx timed out after {wall:.1f}s in {workdir}", returncode=None, wall_s=wall, log_path=log_path, workdir=Path(workdir)) from error  # Surface one typed failure without hiding its cause.
     wall = time.perf_counter() - t0
     out = proc.stdout + proc.stderr
     frd = Path(workdir) / f"{jobname}.frd"
+    log_path.write_text(out)  # Persist stdout and stderr before any failure is raised so numerical failures remain auditable.
     if proc.returncode != 0 or not frd.exists():
-        raise RuntimeError(
-            f"ccx failed (rc={proc.returncode}, {wall:.1f}s) in {workdir}:\n{out[-2000:]}"
-        )
+        raise CalculiXExecutionError(f"ccx failed (rc={proc.returncode}, {wall:.1f}s) in {workdir}:\n{out[-2000:]}", returncode=proc.returncode, wall_s=wall, log_path=log_path, workdir=Path(workdir))  # Surface only this native failure as finite benchmark evidence.
     m = _EQ_RE.search(out)
     n_eq = int(m.group(1)) if m else -1
-    (Path(workdir) / f"{jobname}.log").write_text(out)
     return out, n_eq
 
 
@@ -195,5 +213,9 @@ def solve(
     t0 = time.perf_counter()
     _, n_eq = run_ccx(workdir, jobname, ccx_cmd=ccx_cmd, timeout=timeout)
     wall = time.perf_counter() - t0
-    u = read_frd_displacements(workdir / f"{jobname}.frd", mesh.n_nodes)
+    try:  # Reclassify a malformed native result file as a typed CalculiX execution failure.
+        u = read_frd_displacements(workdir / f"{jobname}.frd", mesh.n_nodes)  # Parse the completed native displacement dataset.
+    except RuntimeError as error:  # Catch only the parser's explicit missing-result failure.
+        log_path = workdir / f"{jobname}.log"  # Reuse the combined native log written before result parsing.
+        raise CalculiXExecutionError(str(error), returncode=0, wall_s=wall, log_path=log_path, workdir=workdir) from error  # Retain rc=0 while reporting an unusable native result.
     return CcxResult(u=u, n_equations=n_eq, wall_s=wall, workdir=str(workdir), jobname=jobname)

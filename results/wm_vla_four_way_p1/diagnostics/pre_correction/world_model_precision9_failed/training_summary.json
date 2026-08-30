@@ -1,0 +1,92 @@
+{
+  "TEST_NOT_RUN": true,
+  "complete_case_count": 23,
+  "eligible_for_freeze": false,
+  "external_labels_accessed": {
+    "local_prediction": false,
+    "rl": false,
+    "supervised": false
+  },
+  "failures": [
+    {
+      "case_id": "BGD-012-fb36c407e8b3",
+      "failures": [
+        {
+          "exception_type": "CalculiXExecutionError",
+          "message": "under\ncertain conditions, see gpl.htm\n\n************************************************************\n\nYou are using an executable made on Sat Jul 29 10:52:01 CEST 2023\n\n  The numbers below are estimated upper bounds\n\n  number of:\n\n   nodes:         1072\n   elements:         3190\n   one-dimensional elements:            0\n   two-dimensional elements:            0\n   integration points per element:            1\n   degrees of freedom per node:            3\n   layers per element:            1\n\n   distributed facial loads:            0\n   distributed volumetric loads:            0\n   concentrated loads:           24\n   single point constraints:          100\n   multiple point constraints:            1\n   terms in all multiple point constraints:            1\n   tie constraints:            0\n   dependent nodes tied by cyclic constraints:            0\n   dependent nodes in pre-tension constraints:            0\n\n   sets:            2\n   terms in all sets:         7452\n\n   materials:            1\n   constants per material and temperature:            2\n   temperature points per material:            1\n   plastic data points per material:            0\n\n   orientations:            0\n   amplitudes:            2\n   data points in all amplitudes:            2\n   print requests:            0\n   transformations:            0\n   property cards:            0\n\n\n STEP            1\n\n Static analysis was selected\n\n Decascading the MPC's\n\n Determining the structure of the matrix:\n Using up to 1 cpu(s) for setting up the structure of the matrix.\n number of equations\n 3116\n number of nonzero lower triangular matrix elements\n 48589\n\n Using up to 1 cpu(s) for the stress calculation.\n\n Using up to 1 cpu(s) for the symmetric stiffness/mass contributions.\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1102\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1335\n\n *ERROR in e_c3d: nonpositive jacobian\n        determinant in element        1572\n\n",
+          "solve_attempt": 1,
+          "stage": "calculix_solve"
+        }
+      ]
+    }
+  ],
+  "fitted_transition_count": 115,
+  "manifest_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/case_manifest.json",
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/world_model_v0.json",
+  "model_sha256": "94d306eb91eb09b4c24290bb04ccc99061a6f1821f4a7e4752dbee614c1a5e0d",
+  "model_sidecar_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/world_model_v0.sha256",
+  "partition_root": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/partitions",
+  "phase": "model_freeze",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "real_training_solve_count": 139,
+  "reference_errors_accessed": false,
+  "schema": "wmvla-four-way-world-training-v1",
+  "scientific_config": {
+    "acquisition_planner": {
+      "beam_width": 16,
+      "budget_safety": 0.95,
+      "candidate_regions": 5,
+      "discount": 0.84,
+      "failure_limit": 0.95,
+      "failure_weight": 1.1,
+      "horizon": 3,
+      "max_extra_depth": 2,
+      "max_extra_regions": 2,
+      "min_relative_gain": -1.0,
+      "min_robust_gain": -1.0,
+      "resource_weight": 0.08,
+      "uncertainty_limit": 1.0,
+      "uncertainty_weight": 0.75,
+      "warmup_transitions": 1
+    },
+    "deployment_policy_source": "unchanged visionamr.vla.world.model/planner defaults; acquisition envelope is training-only",
+    "runtime": {
+      "audit_slack": 0.08,
+      "ccx_timeout": 1800.0,
+      "equation_budget": 120000,
+      "fallback_cooldown": 1,
+      "regression_tolerance": 0.08,
+      "solves_per_case": 6
+    },
+    "tool_gateway": {
+      "core_theta": 0.72,
+      "equation_cap_fraction": 1.0,
+      "max_extra_depth": 2,
+      "nodal_gradation": 1.0,
+      "refine_factor": 0.5,
+      "theta": 0.5
+    },
+    "world_model": {
+      "ensemble_size": 5,
+      "error_power": 1.65,
+      "max_log_residual": 0.7,
+      "max_rows": 3000,
+      "min_rows": 10,
+      "neighbor_spill": 0.18,
+      "prior_uncertainty": 0.24,
+      "refine_factor": 0.5,
+      "ridge": 0.001,
+      "seed": 271828,
+      "uncertainty_scale": 1.8
+    }
+  },
+  "successful_real_training_solve_count": 138,
+  "test_split_accessed": false,
+  "training_case_count": 24,
+  "training_cost_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/training_costs.json",
+  "training_cost_sha256": "c0b42586ffc9b17e3fa290168a270ba84dbd93f9901f794631b314c8cf6fc8e9",
+  "training_plan_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/training_plan.json",
+  "training_plan_sha256": "37a99d2eca08b150f9bac1ede45859ffb2a78c3db7e66dadd99428f08d41d4d1",
+  "validation_split_accessed": false
+}

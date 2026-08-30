@@ -1,0 +1,175 @@
+{
+  "adjacency": {
+    "matrix": [
+      [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ]
+    ],
+    "rule": "shared-face-cross-label-on-common-uniform-probe",
+    "version": "visionamr.partition-adjacency.v1"
+  },
+  "assignment": {
+    "active_threshold": 1.0,
+    "centroid": "arithmetic-mean-of-element-nodes",
+    "overlap": "minimum-score-then-region-order",
+    "rule": "anisotropic-ellipsoid-centroid-min-score-with-background",
+    "score": "l2((centroid-center)/radius)/priority",
+    "version": "visionamr.cached-vision-partition.assign.v1"
+  },
+  "background": {
+    "mesh_size_prior": null,
+    "name": "field_remainder",
+    "rule": "outside-all-active-ellipsoids"
+  },
+  "bbox": [
+    0.0,
+    0.0,
+    0.0,
+    600.0,
+    360.0,
+    284.0
+  ],
+  "factory": "visionamr.bridge_cases.make_box_girder_diaphragm",
+  "geometry_hash": "82c24acc6b834764856beb6a1243bdc0c30db9aa7970cfcc6b6e2186a8c64ce6",
+  "probe": {
+    "cell_count": 3188,
+    "mesh_sha256": "50b059440af97e696211d3ce6739f67476bde4b9d0807cabb6a773c461d4ce9f",
+    "node_count": 1070,
+    "semantic_region_sizes_forbidden": true,
+    "size_rule": "global-constant-problem-h0",
+    "uniform_size": 48.0
+  },
+  "problem_geometry_fingerprint": "8fedaff69f656aabc01be50bb6188b05f85f4207999af3932270cf1c67ff9a55",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "region_order": [
+    "diaphragm_joints",
+    "inspection_opening",
+    "left_bearing",
+    "right_bearing",
+    "wheel_load",
+    "field_remainder"
+  ],
+  "regions": [
+    {
+      "center": [
+        300.0,
+        180.0,
+        143.0
+      ],
+      "name": "diaphragm_joints",
+      "priority": 0.95,
+      "radius": [
+        96.0,
+        122.4,
+        119.28
+      ]
+    },
+    {
+      "center": [
+        300.0,
+        180.0,
+        130.0
+      ],
+      "name": "inspection_opening",
+      "priority": 1.25,
+      "radius": [
+        90.0,
+        90.0,
+        79.52000000000001
+      ]
+    },
+    {
+      "center": [
+        72.0,
+        180.0,
+        0.0
+      ],
+      "name": "left_bearing",
+      "priority": 1.05,
+      "radius": [
+        132.0,
+        61.2,
+        45.44
+      ]
+    },
+    {
+      "center": [
+        528.0,
+        180.0,
+        0.0
+      ],
+      "name": "right_bearing",
+      "priority": 1.05,
+      "radius": [
+        132.0,
+        61.2,
+        45.44
+      ]
+    },
+    {
+      "center": [
+        272.424023606529,
+        139.619747393101,
+        284.0
+      ],
+      "name": "wheel_load",
+      "priority": 1.1,
+      "radius": [
+        144.0,
+        79.2,
+        45.44
+      ]
+    }
+  ],
+  "schema": "wmvla.partition-spec.v1",
+  "size_field": {
+    "nodal_gradation": 1.0,
+    "source": "PR40_V0_default_tool_behavior"
+  },
+  "spec_sha256": "c1a1ba506adea543ab073d4b65bc527d3cf9a96a75244b2effdbb8a07ee6150d"
+}

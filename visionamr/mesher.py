@@ -15,6 +15,11 @@ from functools import cached_property
 import numpy as np
 
 _GMSH_INITIALIZED = False
+_MIN_TETRA_SCALED_JACOBIAN = 1.0e-12  # Reject only numerically collapsed tetrahedra through a method-independent geometry-quality floor.
+
+
+class GmshMeshingError(RuntimeError):  # Expose an explicitly identified native meshing failure to protocol runners.
+    """Report a Gmsh numerical/materialization failure with no usable simplex mesh."""  # Document the narrow retained-failure category.
 
 _EDGE_LOCAL = {
     2: [(0, 1), (1, 2), (2, 0)],
@@ -24,6 +29,44 @@ _FACET_LOCAL = {
     2: [(0, 1), (1, 2), (2, 0)],
     3: [(0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)],
 }
+
+
+def _minimum_tetra_scaled_jacobian(nodes: np.ndarray, cells: np.ndarray) -> float:  # Measure the signed determinant relative to the longest-edge cube for every tetrahedron.
+    points = np.asarray(nodes, dtype=float)  # Normalize node coordinates without mutating the generated mesh.
+    tetrahedra = np.asarray(cells, dtype=np.int64)  # Normalize zero-based tetrahedral connectivity for indexed geometry operations.
+    if points.ndim != 2 or points.shape[1] != 3 or tetrahedra.ndim != 2 or tetrahedra.shape[1] != 4 or len(tetrahedra) == 0:  # Require one nonempty three-dimensional linear-tetrahedron mesh.
+        return float("-inf")  # Force deterministic fallback or a typed failure for an unusable mesh.
+    element_points = points[tetrahedra]  # Gather the four coordinates belonging to every tetrahedron.
+    jacobians = np.stack((element_points[:, 1] - element_points[:, 0], element_points[:, 2] - element_points[:, 0], element_points[:, 3] - element_points[:, 0]), axis=2)  # Build signed C3D4 Jacobian matrices in connectivity order.
+    determinants = np.linalg.det(jacobians)  # Compute signed six-times-volume values before text serialization.
+    edge_lengths = np.column_stack([np.linalg.norm(element_points[:, left] - element_points[:, right], axis=1) for left, right in _EDGE_LOCAL[3]])  # Measure all six tetrahedral edges under one scale convention.
+    longest_edges = np.max(edge_lengths, axis=1)  # Select the local length scale without using physics, errors, budgets, or method identity.
+    denominators = np.maximum(longest_edges**3, np.finfo(float).tiny)  # Protect the dimensionless ratio from a literal zero-length denominator.
+    qualities = determinants / denominators  # Retain orientation while normalizing away absolute geometry scale.
+    if np.any(~np.isfinite(qualities)):  # Treat NaN or infinity as invalid native geometry evidence.
+        return float("-inf")  # Trigger the same deterministic fallback used for a collapsed signed Jacobian.
+    return float(np.min(qualities))  # Report the worst element so no isolated sliver is hidden by an aggregate statistic.
+
+
+def _current_gmsh_tetra_quality(gmsh_module) -> float:  # Inspect the active Gmsh model before exporting its connectivity to CalculiX.
+    tags, coordinates, _ = gmsh_module.model.mesh.getNodes()  # Read all generated node tags and double-precision coordinates.
+    node_tags = np.asarray(tags, dtype=np.int64)  # Normalize opaque one-based Gmsh node identifiers.
+    node_coordinates = np.asarray(coordinates, dtype=float).reshape(-1, 3)  # Restore the three-coordinate node matrix.
+    if node_tags.size == 0:  # Reject an empty generated node collection explicitly.
+        return float("-inf")  # Trigger fallback before downstream tag remapping can fail.
+    order = np.argsort(node_tags)  # Establish the same deterministic node order used by the returned Mesh.
+    node_tags = node_tags[order]  # Sort identifiers before building a dense remapping table.
+    node_coordinates = node_coordinates[order]  # Keep coordinates aligned with their sorted identifiers.
+    remap = np.full(int(node_tags.max()) + 1, -1, dtype=np.int64)  # Allocate a dense tag-to-row mapping for generated connectivity.
+    remap[node_tags] = np.arange(len(node_tags), dtype=np.int64)  # Map every present one-based tag to its sorted zero-based coordinate row.
+    element_types, _, element_nodes = gmsh_module.model.mesh.getElements(3)  # Read only volume-element blocks from the active model.
+    blocks = [np.asarray(connectivity, dtype=np.int64).reshape(-1, 4) for element_type, connectivity in zip(element_types, element_nodes) if int(element_type) == 4]  # Select every linear four-node tetrahedron block without accepting another element family.
+    if not blocks:  # Reject a volume mesh with no supported C3D4 elements.
+        return float("-inf")  # Trigger fallback before the public empty-simplex error boundary.
+    tetrahedra = remap[np.vstack(blocks)]  # Convert Gmsh tags to the deterministic zero-based Mesh convention.
+    if np.any(tetrahedra < 0):  # Reject connectivity that references a node absent from the generated node table.
+        return float("-inf")  # Trigger the common fallback instead of indexing an unrelated row.
+    return _minimum_tetra_scaled_jacobian(node_coordinates, tetrahedra)  # Apply the pure signed and scale-normalized quality metric.
 
 
 def _ensure_gmsh() -> None:
@@ -200,8 +243,16 @@ def generate_mesh(
             return max(float(size_fn(x, y, z)), h_floor)
 
         gmsh.model.mesh.setSizeCallback(cb)
-        gmsh.model.mesh.generate(problem.dim)
-        gmsh.model.mesh.removeSizeCallback()
+        try:  # Guarantee callback cleanup after successful generation, native failure, or rejected fallback geometry.
+            gmsh.model.mesh.generate(problem.dim)  # Generate the requested-dimensional mesh with the frozen primary algorithm and size callback.
+            if problem.dim == 3 and _current_gmsh_tetra_quality(gmsh) <= _MIN_TETRA_SCALED_JACOBIAN:  # Apply one common geometry-only quality rule before any solver, estimator, or method can inspect the mesh.
+                gmsh.model.mesh.clear()  # Discard the complete invalid HXT mesh without deleting selected elements or creating internal cracks.
+                gmsh.option.setNumber("Mesh.Algorithm3D", 1)  # Retry deterministically with Gmsh Delaunay under the unchanged size callback and geometry.
+                gmsh.model.mesh.generate(problem.dim)  # Regenerate the entire conforming volume mesh through the shared fallback path.
+                if _current_gmsh_tetra_quality(gmsh) <= _MIN_TETRA_SCALED_JACOBIAN:  # Require the fallback mesh to satisfy the identical signed quality floor.
+                    raise GmshMeshingError("Gmsh produced collapsed tetrahedra after deterministic Delaunay fallback")  # Preserve a typed native failure instead of passing invalid physics to CalculiX.
+        finally:  # Clear the model-owned callback even when quality validation raises.
+            gmsh.model.mesh.removeSizeCallback()  # Prevent a failed model from leaking its Python callback into the next Gmsh model.
 
         tags, coords, _ = gmsh.model.mesh.getNodes()
         tags = np.asarray(tags, dtype=np.int64)
@@ -221,7 +272,7 @@ def generate_mesh(
                     np.asarray(conn, dtype=np.int64).reshape(-1, problem.dim + 1)
                 )
         if not blocks:
-            raise RuntimeError("Gmsh produced no linear simplices")
+            raise GmshMeshingError("Gmsh produced no linear simplices")  # Preserve this native empty-mesh outcome as typed numerical evidence.
         cells = remap[np.vstack(blocks)]
 
         used = np.zeros(len(coords), dtype=bool)

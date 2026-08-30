@@ -1,0 +1,80 @@
+{
+  "TEST_NOT_RUN": true,
+  "complete_case_count": 24,
+  "eligible_for_freeze": true,
+  "external_labels_accessed": {
+    "local_prediction": false,
+    "rl": false,
+    "supervised": false
+  },
+  "failures": [],
+  "fitted_transition_count": 120,
+  "manifest_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/case_manifest.json",
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "model_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/world_model_v0.json",
+  "model_sha256": "aa32253839578cd0db0a90b489131bf6fb609f462afd82ffcc3094e589a12b77",
+  "model_sidecar_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/world_model_v0.sha256",
+  "partition_root": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/partitions",
+  "phase": "model_freeze",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "real_training_solve_count": 144,
+  "reference_errors_accessed": false,
+  "schema": "wmvla-four-way-world-training-v1",
+  "scientific_config": {
+    "acquisition_planner": {
+      "beam_width": 16,
+      "budget_safety": 0.95,
+      "candidate_regions": 5,
+      "discount": 0.84,
+      "failure_limit": 0.95,
+      "failure_weight": 1.1,
+      "horizon": 3,
+      "max_extra_depth": 2,
+      "max_extra_regions": 2,
+      "min_relative_gain": -1.0,
+      "min_robust_gain": -1.0,
+      "resource_weight": 0.08,
+      "uncertainty_limit": 1.0,
+      "uncertainty_weight": 0.75,
+      "warmup_transitions": 1
+    },
+    "deployment_policy_source": "unchanged visionamr.vla.world.model/planner defaults; acquisition envelope is training-only",
+    "runtime": {
+      "audit_slack": 0.08,
+      "ccx_timeout": 1800.0,
+      "equation_budget": 120000,
+      "fallback_cooldown": 1,
+      "regression_tolerance": 0.08,
+      "solves_per_case": 6
+    },
+    "tool_gateway": {
+      "core_theta": 0.72,
+      "equation_cap_fraction": 1.0,
+      "max_extra_depth": 2,
+      "nodal_gradation": 1.0,
+      "refine_factor": 0.5,
+      "theta": 0.5
+    },
+    "world_model": {
+      "ensemble_size": 5,
+      "error_power": 1.65,
+      "max_log_residual": 0.7,
+      "max_rows": 3000,
+      "min_rows": 10,
+      "neighbor_spill": 0.18,
+      "prior_uncertainty": 0.24,
+      "refine_factor": 0.5,
+      "ridge": 0.001,
+      "seed": 271828,
+      "uncertainty_scale": 1.8
+    }
+  },
+  "successful_real_training_solve_count": 144,
+  "test_split_accessed": false,
+  "training_case_count": 24,
+  "training_cost_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/training_costs.json",
+  "training_cost_sha256": "580e9ce0da254970f028483c7c70d37c668f5733f2bb8138144c260cd3d9ed6f",
+  "training_plan_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/world_model/training_plan.json",
+  "training_plan_sha256": "4006be5ef5750058be002cbac6aa3f3c17367bb94569cfcf8a60b80496bb7424",
+  "validation_split_accessed": false
+}

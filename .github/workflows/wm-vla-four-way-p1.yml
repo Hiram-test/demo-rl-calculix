@@ -1,0 +1,195 @@
+name: WM-VLA four-way P1  # Name the preregistered implementation, freeze, and explicitly dispatched execution workflow.
+
+on:  # Define bounded pull-request validation and manually authorized campaign phases.
+  pull_request:  # Run only solver-bounded implementation checks for ordinary pull requests.
+    paths:  # Avoid native solver work for unrelated repository changes.
+      - "visionamr/**"  # Revalidate every implementation module used by the four-way harness.
+      - "scripts/**"  # Revalidate manifest, training, freeze, and benchmark entry points.
+      - "tests/**"  # Revalidate all executable scientific contracts.
+      - "requirements.txt"  # Revalidate when the native or Python environment contract changes.
+      - ".github/workflows/wm-vla-four-way-p1.yml"  # Revalidate workflow safety changes themselves.
+  workflow_dispatch:  # Permit explicit train, freeze, or complete one-shot blind campaign commands only after human selection.
+    inputs:  # Define operational dispatch controls without exposing scientific hyperparameter knobs.
+      phase:  # Select exactly one campaign stage.
+        description: "Explicit campaign phase; blind always verifies a committed freeze first"  # Explain the phase safety boundary.
+        required: true  # Require deliberate phase selection.
+        type: choice  # Restrict values to registered stages.
+        options:  # Enumerate the sole accepted campaign stages.
+          - train  # Run an explicitly supplied training command without blind access.
+          - freeze  # Run an explicitly supplied one-shot freeze command and verify its bytes.
+          - blind  # Verify a committed freeze before the sole explicitly supplied complete blind command.
+      phase_command:  # Carry the reviewed phase-specific command rather than inventing a world-model trainer.
+        description: "Reviewed shell command; blind must build/verify references then execute all 16 cases once in ascending case_id order"  # Document the complete unsplit one-shot blind contract.
+        required: true  # Refuse an implicit or guessed training or benchmark invocation.
+        type: string  # Preserve a complete explicitly reviewed command.
+      artifact_path:  # Select evidence uploaded after the explicit command.
+        description: "Campaign artifact path to upload"  # Explain evidence preservation behavior.
+        required: true  # Require an explicit self-contained evidence root.
+        default: "results/wm_vla_four_way_p1"  # Use the protocol-mandated campaign location by default.
+        type: string  # Permit a runner-relative campaign path.
+
+permissions:  # Apply least privilege to tests, training, freezing, and blind execution.
+  contents: read  # Read the selected commit without mutating branches or pull requests.
+
+jobs:  # Define disjoint PR checks and explicit dispatch phases.
+  pr-unit-and-dry-run:  # Run solver-free contracts plus a non-mutating disclosure preflight on pull requests.
+    if: github.event_name == 'pull_request'  # Prevent this bounded PR job from becoming a campaign executor.
+    runs-on: ubuntu-24.04  # Pin the hosted runner generation.
+    timeout-minutes: 20  # Bound all solver-free validation time.
+    steps:  # Execute source checkout, dependency installation, contracts, and dry-run in order.
+      - uses: actions/checkout@v4  # Check out the exact pull-request revision.
+      - uses: actions/setup-python@v5  # Install a reproducible Python runtime.
+        with:  # Configure Python and dependency caching.
+          python-version: "3.12"  # Match the repository validation runtime.
+          cache: pip  # Reuse downloaded solver-free wheels.
+      - name: Install solver-free dependencies  # Install only packages needed by unit and freeze contracts.
+        run: |  # Execute deterministic package installation commands.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install -r requirements.txt --quiet  # Install the complete repository test contract including Torch from the reviewed dependency declaration.
+      - name: Run all unit contracts  # Validate manifest, partition, baseline, benchmark, statistics, reference, and freeze code.
+        run: python -m pytest tests/ -q  # Execute the complete solver-free repository suite.
+      - name: Generate manifest in temporary dry-run campaign  # Exercise exact manifest generation without altering checkout evidence.
+        run: python scripts/make_bridge_case_manifest.py --output-dir "$RUNNER_TEMP/wmvla_four_way_dry/protocol"  # Write only to runner-temporary storage.
+      - name: Run non-mutating freeze disclosure preflight  # Prove PR validation does not create or open blind evidence.
+        run: python scripts/freeze_four_way_protocol.py preflight --root "$RUNNER_TEMP/wmvla_four_way_dry" --repository "$GITHUB_WORKSPACE" --implementation-commit "$GITHUB_SHA" --receipt "$RUNNER_TEMP/wmvla_four_way_dry/preflight.json"  # Record readiness with writes_performed=false and blind_launch_ready=false.
+      - uses: actions/upload-artifact@v4  # Preserve the solve-free manifest and preflight evidence.
+        with:  # Configure the PR dry-run artifact.
+          name: wmvla-four-way-pr-dry-run  # Assign a stable non-blind evidence name.
+          path: ${{ runner.temp }}/wmvla_four_way_dry  # Upload only temporary solve-free outputs.
+          if-no-files-found: error  # Fail rather than silently losing dry-run evidence.
+
+  pr-native-two-solve-smoke:  # Exercise a real three-dimensional Gmsh and CalculiX path without blind cases.
+    if: github.event_name == 'pull_request'  # Prevent automatic native smoke from selecting any blind manifest case.
+    runs-on: ubuntu-24.04  # Pin the hosted native runner generation.
+    timeout-minutes: 60  # Bound installation and two-solve-per-method execution.
+    needs: pr-unit-and-dry-run  # Avoid native work when solver-free contracts already fail.
+    steps:  # Install and execute the real native smoke in an isolated temporary directory.
+      - uses: actions/checkout@v4  # Check out the exact already unit-tested pull-request revision.
+      - uses: actions/setup-python@v5  # Install the matching Python runtime.
+        with:  # Configure Python and dependency caching.
+          python-version: "3.12"  # Match solver-free validation.
+          cache: pip  # Reuse downloaded Python wheels.
+      - name: Install Gmsh and CalculiX  # Install the real finite-element toolchain and Python interfaces.
+        run: |  # Execute deterministic Python and Ubuntu package installation.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install gmsh numpy scipy matplotlib pytest --quiet  # Install repository native-interface dependencies.
+          sudo apt-get update -qq  # Refresh Ubuntu package metadata quietly.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1  # Install CalculiX and Gmsh runtime libraries.
+      - name: Run real paired two-solve bridge smoke  # Execute two counted solves each for WM-VLA and exact Dörfler on a non-manifest smoke geometry.
+        env:  # Freeze native thread counts for reproducibility.
+          OMP_NUM_THREADS: "1"  # Use one native solver thread.
+          OPENBLAS_NUM_THREADS: "1"  # Use one BLAS thread.
+        run: python scripts/run_world_model_bridge.py --output "$RUNNER_TEMP/wmvla_native_smoke" --smoke --max-solves 2 --n-equation-cap 120000 --no-reference --strict-safety  # Exercise real mesh, solver, estimator, partition, planner, tool, and fallback paths without blind reference data.
+      - uses: actions/upload-artifact@v4  # Preserve native logs and measured smoke evidence.
+        if: always()  # Retain debugging evidence after success or native failure.
+        with:  # Configure the native smoke artifact.
+          name: wmvla-four-way-pr-native-two-solve  # Assign a stable explicitly non-blind artifact name.
+          path: ${{ runner.temp }}/wmvla_native_smoke  # Upload only temporary smoke evidence.
+          if-no-files-found: warn  # Preserve the original failure if native startup stops before writing evidence.
+
+  dispatch-train-or-freeze:  # Run an explicitly supplied non-blind campaign command.
+    if: github.event_name == 'workflow_dispatch' && inputs.phase != 'blind'  # Separate train and freeze from the irreversible one-shot blind behavior.
+    runs-on: ubuntu-24.04  # Use a pinned hosted runner generation.
+    timeout-minutes: 360  # Permit long training while retaining a finite hosted-run bound.
+    env:  # Expose only reviewed operational phase values to the explicit command.
+      WMVLA_PHASE: ${{ inputs.phase }}  # Identify train or freeze without inferring scientific settings.
+      PHASE_COMMAND: ${{ inputs.phase_command }}  # Pass the reviewed command through an environment variable to avoid expression injection into script syntax.
+      OMP_NUM_THREADS: "1"  # Bound native solver threads.
+      OPENBLAS_NUM_THREADS: "1"  # Bound BLAS threads.
+    steps:  # Install the complete toolchain, guard disclosure, execute the command, and preserve evidence.
+      - uses: actions/checkout@v4  # Check out the explicitly selected implementation or pre-freeze revision.
+      - uses: actions/setup-python@v5  # Install the campaign Python runtime.
+        with:  # Configure Python and caching.
+          python-version: "3.12"  # Match PR validation.
+          cache: pip  # Reuse downloaded packages.
+      - name: Install complete campaign dependencies  # Install native solver and all learned-baseline dependencies.
+        run: |  # Execute deterministic environment setup.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install -r requirements.txt --quiet  # Install the repository's complete Python contract including Torch.
+          sudo apt-get update -qq  # Refresh Ubuntu package metadata quietly.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1 jq  # Install native solver, Gmsh libraries, and receipt tooling.
+      - name: Guard TEST_NOT_RUN before phase command  # Refuse training or freeze after any blind, ablation, aggregate, or test-reference evidence exists.
+        run: python scripts/freeze_four_way_protocol.py preflight --root "${{ inputs.artifact_path }}" --repository "$GITHUB_WORKSPACE" --implementation-commit "$GITHUB_SHA" --receipt "$RUNNER_TEMP/pre_phase.json"  # Record the exact selected code and disclosure state.
+      - name: Execute explicit train or freeze command  # Run only the human-reviewed dispatch command without inventing a world-model training path.
+        run: |  # Execute the supplied command under strict shell error propagation.
+          bash --noprofile --norc -eo pipefail -c "$PHASE_COMMAND"  # Preserve explicit dispatcher control and fail on the first command error.
+      - name: Verify newly created freeze bytes  # Authenticate every protected artifact immediately after the freeze command.
+        if: inputs.phase == 'freeze'  # Apply full verification only to a completed freeze phase.
+        run: python scripts/freeze_four_way_protocol.py verify --root "${{ inputs.artifact_path }}" --repository "$GITHUB_WORKSPACE" --receipt "$RUNNER_TEMP/post_freeze.json"  # Recompute hashes before artifact upload; committing remains a separate required step.
+      - name: Recheck disclosure after training  # Confirm an explicit training command did not access blind references or write results.
+        if: inputs.phase == 'train'  # Apply the non-mutating scanner after training only.
+        run: python scripts/freeze_four_way_protocol.py preflight --root "${{ inputs.artifact_path }}" --repository "$GITHUB_WORKSPACE" --implementation-commit "$GITHUB_SHA" --receipt "$RUNNER_TEMP/post_train.json"  # Preserve TEST_NOT_RUN evidence after training.
+      - name: Write dispatch run identity  # Record the GitHub run before evidence upload.
+        run: jq -n --arg protocol_id "WMVLA-4WAY-P1" --arg phase "$WMVLA_PHASE" --arg run_id "$GITHUB_RUN_ID" --arg run_attempt "$GITHUB_RUN_ATTEMPT" --arg head_sha "$GITHUB_SHA" --arg workflow_ref "$GITHUB_WORKFLOW_REF" '{protocol_id:$protocol_id,phase:$phase,run_id:$run_id,run_attempt:$run_attempt,head_sha:$head_sha,workflow_ref:$workflow_ref}' > "$RUNNER_TEMP/dispatch_identity.json"  # Build strict JSON without reading secrets.
+      - uses: actions/upload-artifact@v4  # Preserve the explicit command's complete campaign evidence.
+        id: campaign_upload  # Expose the server-assigned artifact ID for the required run receipt.
+        if: always()  # Preserve partial training or freeze evidence for diagnosis.
+        with:  # Configure campaign evidence upload.
+          name: wmvla-four-way-${{ inputs.phase }}-${{ github.run_id }}  # Bind the artifact name to phase and unique run.
+          path: |  # Upload both campaign evidence and pre/post phase receipts.
+            ${{ inputs.artifact_path }}  # Preserve the complete explicit campaign root.
+            ${{ runner.temp }}/pre_phase.json  # Preserve the pre-command TEST_NOT_RUN receipt.
+            ${{ runner.temp }}/post_train.json  # Preserve a post-training disclosure receipt when present.
+            ${{ runner.temp }}/post_freeze.json  # Preserve a post-freeze exact-byte receipt when present.
+          if-no-files-found: warn  # Retain the original command failure when no evidence was written.
+      - name: Seal run and artifact IDs  # Bind GitHub's server-assigned evidence artifact to this workflow run.
+        if: always()  # Write identity evidence after both success and failure uploads.
+        env:  # Pass the upload output without embedding it into shell syntax.
+          EVIDENCE_ARTIFACT_ID: ${{ steps.campaign_upload.outputs.artifact-id }}  # Capture the immutable uploaded artifact identifier.
+        run: jq --arg artifact_id "$EVIDENCE_ARTIFACT_ID" '.artifact_id=$artifact_id' "$RUNNER_TEMP/dispatch_identity.json" > "$RUNNER_TEMP/dispatch_identity_sealed.json"  # Produce the final strict run-to-artifact mapping.
+      - uses: actions/upload-artifact@v4  # Preserve the run-to-artifact mapping as a separate small receipt.
+        if: always()  # Retain identity evidence regardless of phase outcome.
+        with:  # Configure identity receipt upload.
+          name: wmvla-four-way-${{ inputs.phase }}-identity-${{ github.run_id }}  # Name the identity artifact by phase and run.
+          path: ${{ runner.temp }}/dispatch_identity_sealed.json  # Upload the final run and evidence artifact IDs.
+          if-no-files-found: error  # Fail rather than omit mandatory provenance.
+
+  dispatch-blind-once:  # Execute the complete one-shot blind benchmark only after full committed-freeze authentication.
+    if: github.event_name == 'workflow_dispatch' && inputs.phase == 'blind'  # Make blind execution impossible on pull requests or other phases.
+    runs-on: [self-hosted, linux, x64, wmvla-four-way-p1-blind]  # Require a deliberately provisioned dedicated runner carrying the explicit long-campaign label.
+    timeout-minutes: 1440  # Allow one uninterrupted 24-hour window for the estimated 14.6-hour primary solve ceiling plus reference and upload overhead.
+    env:  # Expose deterministic phase and command values.
+      WMVLA_PHASE: blind  # Identify the sole blind execution phase.
+      PHASE_COMMAND: ${{ inputs.phase_command }}  # Pass the reviewed benchmark command without embedding expression text into shell syntax.
+      OMP_NUM_THREADS: "1"  # Bound native solver threads.
+      OPENBLAS_NUM_THREADS: "1"  # Bound BLAS threads.
+    steps:  # Install, authenticate the freeze, execute all sixteen blind cases once, and preserve raw evidence plus IDs.
+      - uses: actions/checkout@v4  # Check out the explicitly selected dedicated freeze commit.
+      - uses: actions/setup-python@v5  # Install the exact campaign Python runtime.
+        with:  # Configure Python and caching.
+          python-version: "3.12"  # Match validated implementation workflows.
+          cache: pip  # Reuse downloaded campaign dependencies.
+      - name: Install complete campaign dependencies  # Install native solver and all learned-baseline requirements.
+        run: |  # Execute deterministic environment setup.
+          python -m pip install --upgrade pip --quiet  # Use the current package installer.
+          python -m pip install -r requirements.txt --quiet  # Install the complete frozen Python dependency range.
+          sudo apt-get update -qq  # Refresh Ubuntu package metadata quietly.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq calculix-ccx libglu1-mesa libxcursor1 libxft2 libxinerama1 jq  # Install CalculiX, Gmsh runtime libraries, and receipt tooling.
+      - name: Authenticate committed freeze before blind access  # Recompute every hash and require the dedicated clean tagged freeze commit.
+        run: python scripts/freeze_four_way_protocol.py verify --root "${{ inputs.artifact_path }}" --repository "$GITHUB_WORKSPACE" --require-committed --receipt "$RUNNER_TEMP/blind_preflight.json"  # Stop before any test reference or method solve on integrity, Git, or disclosure failure.
+      - name: Execute explicit complete blind command  # Run one reviewed command that must retain all sixteen cases in ascending manifest order.
+        run: |  # Execute the supplied command under strict shell error propagation.
+          bash --noprofile --norc -eo pipefail -c "$PHASE_COMMAND"  # Preserve exact dispatcher control while preventing silent command failures.
+      - name: Write blind run identity  # Record run, code, and one-shot identities before upload.
+        if: always()  # Preserve provenance after both successful and failed numerical campaigns.
+        run: jq -n --arg protocol_id "WMVLA-4WAY-P1" --arg phase "blind" --arg one_shot "true" --arg case_order "ascending_case_id" --arg run_id "$GITHUB_RUN_ID" --arg run_attempt "$GITHUB_RUN_ATTEMPT" --arg head_sha "$GITHUB_SHA" --arg workflow_ref "$GITHUB_WORKFLOW_REF" '{protocol_id:$protocol_id,phase:$phase,one_shot:$one_shot,case_order:$case_order,run_id:$run_id,run_attempt:$run_attempt,head_sha:$head_sha,workflow_ref:$workflow_ref}' > "$RUNNER_TEMP/blind_identity.json"  # Build strict non-secret one-shot workflow provenance.
+      - uses: actions/upload-artifact@v4  # Preserve all sixteen cases' raw records, logs, references, and preflight receipt.
+        id: blind_upload  # Expose the server-assigned artifact ID.
+        if: always()  # Never drop failed or unfavorable blind campaign evidence.
+        with:  # Configure complete one-shot evidence upload.
+          name: wmvla-four-way-blind-${{ github.run_id }}  # Bind the complete one-shot artifact name to its unique run.
+          path: |  # Upload the complete campaign path plus preflight evidence.
+            ${{ inputs.artifact_path }}  # Preserve all raw method, reference, failure, and solver artifacts written by the complete campaign.
+            ${{ runner.temp }}/blind_preflight.json  # Preserve the exact committed-freeze verification receipt.
+          if-no-files-found: warn  # Retain the original native failure if no campaign file was written.
+      - name: Seal blind run and artifact IDs  # Bind server-assigned evidence storage to the one-shot run provenance.
+        if: always()  # Produce identity evidence after any upload outcome.
+        env:  # Pass the upload output without embedding expression text into shell syntax.
+          EVIDENCE_ARTIFACT_ID: ${{ steps.blind_upload.outputs.artifact-id }}  # Capture the uploaded complete evidence artifact ID.
+        run: jq --arg artifact_id "$EVIDENCE_ARTIFACT_ID" '.artifact_id=$artifact_id' "$RUNNER_TEMP/blind_identity.json" > "$RUNNER_TEMP/blind_identity_sealed.json"  # Produce the final one-shot run-to-artifact mapping.
+      - uses: actions/upload-artifact@v4  # Preserve the required run and artifact ID receipt separately.
+        if: always()  # Retain provenance regardless of numerical outcome.
+        with:  # Configure identity receipt upload.
+          name: wmvla-four-way-blind-${{ github.run_id }}-identity  # Name the identity artifact by its one-shot run.
+          path: ${{ runner.temp }}/blind_identity_sealed.json  # Upload exact run, commit, case-order, and evidence artifact IDs.
+          if-no-files-found: error  # Fail rather than omit mandatory blind provenance.

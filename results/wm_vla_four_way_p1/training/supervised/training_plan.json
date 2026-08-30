@@ -1,0 +1,218 @@
+{
+  "allow_unqualified_references": true,
+  "dry_run": false,
+  "expedited_reference_levels": 2,
+  "manifest_path": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/protocol/case_manifest.json",
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "output": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/training/supervised",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "reference_root": "/workspace/scratch/cc3bbc935e00/demo-rl-calculix/results/wm_vla_four_way_p1/references",
+  "schema": "wmvla-four-way-supervised-training-plan-v1",
+  "scientific_config": {
+    "deployment": {
+      "common_probe": "uniform_h0",
+      "hold_last_after_solve": 2,
+      "preflight_bisections": 8,
+      "preflight_expansions": 10,
+      "real_solves": 2
+    },
+    "expert": {
+      "equation_budget": 120000,
+      "gradation": 1.0,
+      "max_solves": 6,
+      "theta": 0.5
+    },
+    "feature_count": 9,
+    "network": {
+      "batch_size": 4096,
+      "epochs": 300,
+      "hidden": 64,
+      "learning_rate": 0.002,
+      "seeds": [
+        20260831,
+        20260832,
+        20260833
+      ]
+    },
+    "protocol_id": "WMVLA-4WAY-P1",
+    "schema": "wmvla-four-way-supervised-v1",
+    "validation": {
+      "budgets": [
+        30000,
+        60000,
+        120000
+      ],
+      "failure_error": 10.0,
+      "selection_order": [
+        "failure_point_count",
+        "energy_error_log_mean",
+        "qoi_error_log_mean",
+        "budget_violation_count",
+        "seed"
+      ],
+      "split": "validation"
+    }
+  },
+  "test_case_count_executed": 0,
+  "test_split_accessed_for_training_or_selection": false,
+  "training_case_count": 24,
+  "training_case_ids": [
+    "BGD-001-9b0c353acbb6",
+    "BGD-002-0d35762816f9",
+    "BGD-003-02fe1025238c",
+    "BGD-004-f065941b3ed0",
+    "BGD-005-bf699e48f21e",
+    "BGD-006-be62cd3cf423",
+    "BGD-007-53c63a33a823",
+    "BGD-008-99c543e07d78",
+    "BGD-009-0d8fb9d501d5",
+    "BGD-010-9b748af2d2d8",
+    "BGD-011-38c0a3fb798b",
+    "BGD-012-fb36c407e8b3",
+    "BGD-013-3069b9bfe543",
+    "BGD-014-60e534ea9979",
+    "BGD-015-3e9d4dec32a1",
+    "BGD-016-6b11ec1e5d0b",
+    "BGD-017-c53992da6413",
+    "BGD-018-3995cc18feae",
+    "BGD-019-900def8c1c61",
+    "BGD-020-5233f66a1eeb",
+    "BGD-021-f58ba64107f8",
+    "BGD-022-c25fded28316",
+    "BGD-023-9d7a834a8fdc",
+    "BGD-024-f2c3c99e4d57"
+  ],
+  "validation_case_count": 8,
+  "validation_case_ids": [
+    "BGD-025-80dbdbf223da",
+    "BGD-026-37b64786683a",
+    "BGD-027-1141b1282ce8",
+    "BGD-028-d0cb4d33a43d",
+    "BGD-029-cfb7b4c18a0e",
+    "BGD-030-18e9cac3b187",
+    "BGD-031-05e28fa59371",
+    "BGD-032-6aeee149a81a"
+  ],
+  "validation_reference_preflight": [
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-025-80dbdbf223da",
+      "h_ref": 14.4,
+      "n_elements": 216994,
+      "n_equations": 151065,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.08560785712209328,
+        "passed": false,
+        "qoi_relative_difference": 0.08586683720664741
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-026-37b64786683a",
+      "h_ref": 14.4,
+      "n_elements": 217446,
+      "n_equations": 153053,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.08013140994848658,
+        "passed": false,
+        "qoi_relative_difference": 0.08054597031058672
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-027-1141b1282ce8",
+      "h_ref": 14.4,
+      "n_elements": 227006,
+      "n_equations": 157284,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.06768538804939135,
+        "passed": false,
+        "qoi_relative_difference": 0.06750848848644418
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-028-d0cb4d33a43d",
+      "h_ref": 14.4,
+      "n_elements": 226971,
+      "n_equations": 158828,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.05156749500628975,
+        "passed": false,
+        "qoi_relative_difference": 0.05206188644384371
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-029-cfb7b4c18a0e",
+      "h_ref": 14.4,
+      "n_elements": 217473,
+      "n_equations": 151018,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.03410011853973639,
+        "passed": false,
+        "qoi_relative_difference": 0.03421711047209445
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-030-18e9cac3b187",
+      "h_ref": 14.4,
+      "n_elements": 220138,
+      "n_equations": 152775,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.08834734586935973,
+        "passed": false,
+        "qoi_relative_difference": 0.08866796299168282
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-031-05e28fa59371",
+      "h_ref": 14.4,
+      "n_elements": 229938,
+      "n_equations": 160732,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.09939726601866934,
+        "passed": false,
+        "qoi_relative_difference": 0.09921414161306945
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    },
+    {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "case_id": "BGD-032-6aeee149a81a",
+      "h_ref": 14.4,
+      "n_elements": 211988,
+      "n_equations": 148505,
+      "original_convergence_gate": {
+        "agreement_rtol": 0.005,
+        "energy_relative_difference": 0.1005190985460692,
+        "passed": false,
+        "qoi_relative_difference": 0.10054407760345073
+      },
+      "qualification": false,
+      "status": "complete_unqualified"
+    }
+  ]
+}

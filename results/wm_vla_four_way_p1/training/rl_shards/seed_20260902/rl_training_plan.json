@@ -1,0 +1,145 @@
+{
+  "budget_conditioning": "state_n_equations_over_active_budget",
+  "episode_budget_schedule": "literal_cycle_30000_60000_120000",
+  "episode_case_schedule": "manifest_order_rotated_by_completed_24_case_blocks",
+  "equation_budgets": [
+    30000,
+    60000,
+    120000
+  ],
+  "error_floor": 1e-300,
+  "max_real_solves": 6,
+  "nodal_gradation": 1.0,
+  "nodal_gradation_source": "PR40_V0_default_tool_behavior",
+  "phase": "seed_training_plan",
+  "policies": [
+    {
+      "budget_counts": {
+        "120000": 100,
+        "30000": 100,
+        "60000": 100
+      },
+      "checkpoint_episodes": [
+        25,
+        50,
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        225,
+        250,
+        275,
+        300
+      ],
+      "episodes": 300,
+      "model_file": "rl_seed20260902.pt",
+      "seed": 20260902,
+      "validation_points_per_checkpoint": 24,
+      "validation_reference_policy": {
+        "allow_unqualified_references": true,
+        "authorization": "user_authorized_nonblocking_2026-08-30",
+        "expedited_reference_levels": 2,
+        "reference_execution_amendment": {
+          "authorization": "user_authorized_nonblocking_2026-08-30",
+          "expedited_levels": 2,
+          "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+          "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+          "size_bytes": 2647
+        }
+      }
+    }
+  ],
+  "protocol_id": "WMVLA-4WAY-P1",
+  "schema": "wmvla.bridge-rl.v1",
+  "seeds": [
+    20260901,
+    20260902,
+    20260903
+  ],
+  "selection_order": [
+    "failure_points",
+    "finite_penalty_energy_log_mean",
+    "finite_penalty_qoi_log_mean",
+    "budget_violations",
+    "checkpoint_episode"
+  ],
+  "shard_seed": 20260902,
+  "test_split_access": false,
+  "training_case_episode_counts": {
+    "BGD-001-9b0c353acbb6": 12,
+    "BGD-002-0d35762816f9": 12,
+    "BGD-003-02fe1025238c": 12,
+    "BGD-004-f065941b3ed0": 12,
+    "BGD-005-bf699e48f21e": 12,
+    "BGD-006-be62cd3cf423": 12,
+    "BGD-007-53c63a33a823": 12,
+    "BGD-008-99c543e07d78": 12,
+    "BGD-009-0d8fb9d501d5": 12,
+    "BGD-010-9b748af2d2d8": 12,
+    "BGD-011-38c0a3fb798b": 12,
+    "BGD-012-fb36c407e8b3": 12,
+    "BGD-013-3069b9bfe543": 13,
+    "BGD-014-60e534ea9979": 13,
+    "BGD-015-3e9d4dec32a1": 13,
+    "BGD-016-6b11ec1e5d0b": 13,
+    "BGD-017-c53992da6413": 13,
+    "BGD-018-3995cc18feae": 13,
+    "BGD-019-900def8c1c61": 13,
+    "BGD-020-5233f66a1eeb": 13,
+    "BGD-021-f58ba64107f8": 13,
+    "BGD-022-c25fded28316": 13,
+    "BGD-023-9d7a834a8fdc": 13,
+    "BGD-024-f2c3c99e4d57": 13
+  },
+  "training_split_case_ids": [
+    "BGD-001-9b0c353acbb6",
+    "BGD-002-0d35762816f9",
+    "BGD-003-02fe1025238c",
+    "BGD-004-f065941b3ed0",
+    "BGD-005-bf699e48f21e",
+    "BGD-006-be62cd3cf423",
+    "BGD-007-53c63a33a823",
+    "BGD-008-99c543e07d78",
+    "BGD-009-0d8fb9d501d5",
+    "BGD-010-9b748af2d2d8",
+    "BGD-011-38c0a3fb798b",
+    "BGD-012-fb36c407e8b3",
+    "BGD-013-3069b9bfe543",
+    "BGD-014-60e534ea9979",
+    "BGD-015-3e9d4dec32a1",
+    "BGD-016-6b11ec1e5d0b",
+    "BGD-017-c53992da6413",
+    "BGD-018-3995cc18feae",
+    "BGD-019-900def8c1c61",
+    "BGD-020-5233f66a1eeb",
+    "BGD-021-f58ba64107f8",
+    "BGD-022-c25fded28316",
+    "BGD-023-9d7a834a8fdc",
+    "BGD-024-f2c3c99e4d57"
+  ],
+  "validation_failure_error": 10.0,
+  "validation_reference_policy": {
+    "allow_unqualified_references": true,
+    "authorization": "user_authorized_nonblocking_2026-08-30",
+    "expedited_reference_levels": 2,
+    "reference_execution_amendment": {
+      "authorization": "user_authorized_nonblocking_2026-08-30",
+      "expedited_levels": 2,
+      "path": "protocol/EXPEDITED_EXECUTION_AMENDMENT.md",
+      "sha256": "9537244f297824d7fc5301f6b8b9b11d85c92dee43564e8f1946946d98102c31",
+      "size_bytes": 2647
+    }
+  },
+  "validation_split_case_ids": [
+    "BGD-025-80dbdbf223da",
+    "BGD-026-37b64786683a",
+    "BGD-027-1141b1282ce8",
+    "BGD-028-d0cb4d33a43d",
+    "BGD-029-cfb7b4c18a0e",
+    "BGD-030-18e9cac3b187",
+    "BGD-031-05e28fa59371",
+    "BGD-032-6aeee149a81a"
+  ]
+}

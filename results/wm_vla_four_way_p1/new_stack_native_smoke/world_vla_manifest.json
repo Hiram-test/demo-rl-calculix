@@ -1,0 +1,189 @@
+{
+  "config": {
+    "max_solves": 2,
+    "n_equation_cap": 1000000,
+    "theta": 0.5,
+    "refine_factor": 0.5,
+    "core_theta": 0.72,
+    "audit_slack": 0.08,
+    "fallback_cooldown": 1,
+    "stagnation_tolerance": 0.002,
+    "stagnation_steps": 2,
+    "method_name": "world_model_vla",
+    "artifact_dir": "results/wm_vla_four_way_p1/new_stack_native_smoke",
+    "require_reference": false
+  },
+  "case": {
+    "schema_version": "wmvla.mcp-tool.v1",
+    "name": "box_girder_diaphragm",
+    "dimension": 3,
+    "bbox": [
+      0.0,
+      0.0,
+      0.0,
+      600.0,
+      360.0,
+      284.0
+    ],
+    "h0": 48.0,
+    "h_ref": 18.0,
+    "h_min": 6.0,
+    "material": {
+      "E": 210000.0,
+      "nu": 0.3
+    },
+    "features": [
+      "wheel_center",
+      "wheel_edge_x0",
+      "wheel_edge_x1",
+      "wheel_edge_y0",
+      "wheel_edge_y1",
+      "opening_crown",
+      "opening_invert",
+      "opening_left_rim",
+      "opening_right_rim",
+      "left_web_diaphragm",
+      "right_web_diaphragm",
+      "left_bearing",
+      "right_bearing"
+    ],
+    "parameters": {
+      "length": 600.0,
+      "width": 360.0,
+      "height": 260.0,
+      "top_thickness": 24.0,
+      "bottom_thickness": 20.0,
+      "web_thickness": 18.0,
+      "diaphragm_thickness": 30.0,
+      "opening_radius": 62.0,
+      "frame_width": 18.0,
+      "wheel_size": [
+        150.0,
+        110.0
+      ],
+      "wheel_offset": [
+        45.0,
+        35.0
+      ],
+      "pressure": 4.0,
+      "support_width": 70.0
+    }
+  },
+  "stop_reason": "max_solves",
+  "best_index": 0,
+  "metrics": [
+    25.264697612803857,
+    25.844326300911
+  ],
+  "indicator_sums": [
+    638.3049454664169,
+    667.92920194796
+  ],
+  "actions": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "decisions": [
+    {
+      "action": {
+        "extra_depth": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": "dorfler"
+      },
+      "accepted": false,
+      "reason": "world_model_warmup",
+      "baseline_cost": 1.490365286825356,
+      "selected_cost": 1.490365286825356,
+      "robust_gain": 0.0,
+      "predicted_equations_upper": 6992,
+      "predicted_error_ratio_upper": 1.2145730012343614,
+      "path": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  ],
+  "certificates": [
+    {
+      "schema_version": "wmvla.mcp-tool.v1",
+      "requested_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "executed_action": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source": "dorfler",
+      "target_sha256": "08e021483f461cd6121ec5fb1b27aecc17ea21c7e043c2db19222c1a38c9d465",
+      "base_target_included": true,
+      "no_coarsening": true,
+      "estimated_equations": 6029,
+      "equation_cap": 1000000,
+      "accepted": true,
+      "reason": "exact_dorfler"
+    }
+  ],
+  "model_snapshot": "results/wm_vla_four_way_p1/new_stack_native_smoke/world_vla_model.json",
+  "vision_snapshot": "results/wm_vla_four_way_p1/new_stack_native_smoke/world_vla_vision_partition.json",
+  "timing_s": {
+    "visual_partition": 0.0030250840063672513,
+    "world_model_planning": 0.0014400500076590106,
+    "parameter_tools": 0.012164180996478535,
+    "gmsh_remeshing": 12.267077308002627,
+    "calculix": 0.2843155040027341,
+    "non_solver_total": 12.283706623013131,
+    "trajectory_total": 12.689322306992835,
+    "unattributed_python": 0.12130017997696996
+  }
+}

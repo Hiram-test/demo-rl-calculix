@@ -1,0 +1,78 @@
+{
+  "TEST_NOT_RUN": true,
+  "archive_inventory_sha256": "c9bb4d34c734c63b48b612bd405e1f74ec31e355dbaf52b21568dd3eac38c458",
+  "canonical_validation_point_count": 72,
+  "completed_at_utc": "2026-08-30T09:10:22Z",
+  "execution_environment": {
+    "GMSH_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "launcher_events": [
+    {
+      "effect": "no solver invocation and no point artifact",
+      "exit_code": 123,
+      "kind": "initial_launcher_validation_failure",
+      "reason": "unbound formal_root in the first child launcher"
+    },
+    {
+      "effect": "three already-complete seed helpers were retained without mutation",
+      "exit_code": 130,
+      "kind": "sequential_monitor_shutdown",
+      "session_count": 3
+    },
+    {
+      "effect": "61 unique point receipts completed; 15 preempted tail tuples failed before solver invocation because their immutable output directories already existed",
+      "exit_code": 123,
+      "expected_file_exists_failures": 15,
+      "kind": "parallel_point_launcher_completion",
+      "unknown_error_count": 0
+    }
+  ],
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "parallel_point_receipt_count": 61,
+  "parallel_validation_assembly_sha256": "6220601d6519f1d83622c28af2d1f6aee61e4b3ab752d6c5a520044ee64842bb",
+  "point_receipt_archive_sha256": "7d7ecae627d31c4e0e07b0f8f0b39c1623728c96d048ea50fe53f33b5f2c9268",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "reference_policy": {
+    "allow_unqualified_references": true,
+    "expedited_reference_levels": 2
+  },
+  "retained_original_points_by_seed": {
+    "20260831": 5,
+    "20260832": 3,
+    "20260833": 3
+  },
+  "schema": "wmvla-four-way-supervised-operational-cutover-v1",
+  "selected_model_receipt_sha256": "981ea4f495d89c9294c7c55c22b4e6b09fd5f1bfdf8676f9206f3cd4a7057f25",
+  "selected_model_sha256": "38b0d7ac68b5672056c5ba7dbb6fb956418117785b250a90dbe972200e3f6d2f",
+  "selected_seed": 20260831,
+  "selection_key": [
+    0,
+    -547.3401785857476,
+    -2.8950952565556367,
+    0,
+    20260831
+  ],
+  "stale_scratch_handling": {
+    "diagnostics_preserved": true,
+    "policy": "Only registered scratch-only partials without result or records were replaced by complete receipt-bound point trees; every destination file inventory was required to equal its source inventory.",
+    "replaced_points": [
+      {
+        "case_id": "BGD-026-37b64786683a",
+        "equation_budget": 30000,
+        "seed": 20260832
+      },
+      {
+        "case_id": "BGD-026-37b64786683a",
+        "equation_budget": 30000,
+        "seed": 20260833
+      }
+    ]
+  },
+  "test_results_used": false,
+  "test_split_accessed": false,
+  "training_summary_sha256": "4d63161f33dfbd99e25ccfc0f4116ca122de249d42b35b7a3f91aebedc46bc38",
+  "validation_rows_sha256": "af64a8ba9eeb2c0700bc4e92f9a0873d003a30c991a824265789a026199cd67b"
+}
