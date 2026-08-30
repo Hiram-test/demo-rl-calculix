@@ -51,7 +51,7 @@ AMR 经典循环 SOLVE→ESTIMATE→MARK→REFINE 每轮一次全局求解。三
 
 ### 1.3 对象：三维桥梁构件（主战场）+ 2D 基板（开发/CI）
 
-**主战场（3D，C3D4 四面体，Gmsh HXT）：**
+**主战场（3D，C3D4 四面体，Gmsh HXT；几何质量不合格时整网格确定性回退 Delaunay）：**
 
 | 族 | 结构 | 误差机制 | 工程原型 |
 |---|---|---|---|
@@ -70,7 +70,7 @@ AMR 经典循环 SOLVE→ESTIMATE→MARK→REFINE 每轮一次全局求解。三
 
 | 键 | 值 |
 |---|---|
-| 网格 | Gmsh ≥4.11（试点 4.15.2），2D Frontal-Delaunay / 3D HXT，线性单元（CPS3 / C3D4） |
+| 网格 | Gmsh ≥4.11（试点 4.15.2），2D Frontal-Delaunay / 3D HXT；任一四面体缩放 Jacobian ≤1e-12 时整网格固定回退 Delaunay 并复验，线性单元（CPS3 / C3D4） |
 | 尺寸控制 | 一切决策 → 节点目标尺寸图（逐单元图或分区尺寸）→ Lipschitz 梯度限制（g=0.9）→ `setSizeCallback` 重网格；仓库无任何手写网格操作 |
 | 求解器 | CalculiX ≥2.21，SPOOLES；每次调用经 `FemRunner` 记账（方法/阶段/N/单元数/U/QoI/墙钟） |
 | 材料 | 支座钢 E=210 GPa ν=0.3；面板混凝土 E=34 GPa ν=0.2（示意卡） |

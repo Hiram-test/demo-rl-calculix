@@ -6,7 +6,7 @@ from visionamr.calculix import (
     write_inp,
 )
 from visionamr.geometry import make_bearing_block, make_plate_holes
-from visionamr.mesher import Mesh
+from visionamr.mesher import Mesh, _minimum_tetra_scaled_jacobian  # Exercise the shared pre-CalculiX tetrahedron quality floor directly.
 
 
 def small_mesh_2d() -> Mesh:
@@ -89,6 +89,17 @@ def test_write_inp_preserves_small_positive_tetra_jacobian(tmp_path):  # Prevent
     deck_nodes = np.asarray([[float(value.strip()) for value in line.split(",")[1:4]] for line in lines[node_start:element_start]], dtype=float)  # Reconstruct exactly the coordinates CalculiX will parse.
     jacobian = np.column_stack((deck_nodes[1] - deck_nodes[0], deck_nodes[2] - deck_nodes[0], deck_nodes[3] - deck_nodes[0]))  # Build the C3D4 Jacobian from serialized coordinates.
     assert float(np.linalg.det(jacobian)) > 0.0  # Require the deck to retain the mesh's strictly positive element orientation and volume.
+
+
+def test_tetra_quality_floor_distinguishes_regular_collapsed_and_inverted_elements():  # Prove the common fallback trigger uses signed scale-normalized geometry only.
+    regular_nodes = np.asarray([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], dtype=float)  # Define one well-scaled positively oriented tetrahedron.
+    cells = np.asarray([[0, 1, 2, 3]], dtype=int)  # Reuse one canonical linear-tetrahedron connectivity row.
+    collapsed_nodes = regular_nodes.copy()  # Preserve the regular fixture before introducing a near-coplanar vertex.
+    collapsed_nodes[3] = np.asarray([0.25, 0.25, 1.0e-15], dtype=float)  # Create the same extreme dimensionless sliver class found in the failed bridge probe.
+    inverted_cells = np.asarray([[0, 2, 1, 3]], dtype=int)  # Reverse two vertices to produce a negative signed Jacobian.
+    assert _minimum_tetra_scaled_jacobian(regular_nodes, cells) > 1.0e-3  # Keep ordinary valid tetrahedra far above the conservative fallback threshold.
+    assert _minimum_tetra_scaled_jacobian(collapsed_nodes, cells) <= 1.0e-12  # Require the near-zero-volume sliver to trigger whole-mesh regeneration.
+    assert _minimum_tetra_scaled_jacobian(regular_nodes, inverted_cells) < 0.0  # Require an inverted orientation to trigger the same fail-closed path.
 
 
 def test_frd_parser_fixed_width(tmp_path):
