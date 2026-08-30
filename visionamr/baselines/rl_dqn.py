@@ -101,10 +101,14 @@ class RegionRefineEnv:
     def reset(self):
         problem = self.runner.problem
         mesh = initial_mesh(problem)
+        shared_factory = getattr(self.partitioner, "partition_for_rl", None)  # Detect the frozen WMVLA-4WAY-P1 shared-partition provider before any real solve.
+        if callable(shared_factory):  # Validate exact case and probe identities before spending solver budget.
+            self.partition = shared_factory(problem, mesh)  # Build the uniform-size thin RL adapter from the verified common probe.
         post, rec = self.runner.solve_mesh(mesh, method=self.method, stage="probe")
         eta2 = zz_indicator(problem, post)
-        seeds = self.partitioner.propose(problem, post, eta2)
-        self.partition = Partition(seeds, problem)
+        if not callable(shared_factory):  # Retain backward compatibility for non-protocol experiments.
+            seeds = self.partitioner.propose(problem, post, eta2)  # Build legacy vision seeds for older benchmark families.
+            self.partition = Partition(seeds, problem)  # Build the legacy geodesic partition only outside the frozen protocol.
         self.mesh = mesh
         self.steps = 0
         self.last_rec = rec

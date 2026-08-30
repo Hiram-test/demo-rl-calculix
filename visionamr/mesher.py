@@ -16,6 +16,10 @@ import numpy as np
 
 _GMSH_INITIALIZED = False
 
+
+class GmshMeshingError(RuntimeError):  # Expose an explicitly identified native meshing failure to protocol runners.
+    """Report a Gmsh numerical/materialization failure with no usable simplex mesh."""  # Document the narrow retained-failure category.
+
 _EDGE_LOCAL = {
     2: [(0, 1), (1, 2), (2, 0)],
     3: [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)],
@@ -221,7 +225,7 @@ def generate_mesh(
                     np.asarray(conn, dtype=np.int64).reshape(-1, problem.dim + 1)
                 )
         if not blocks:
-            raise RuntimeError("Gmsh produced no linear simplices")
+            raise GmshMeshingError("Gmsh produced no linear simplices")  # Preserve this native empty-mesh outcome as typed numerical evidence.
         cells = remap[np.vstack(blocks)]
 
         used = np.zeros(len(coords), dtype=bool)

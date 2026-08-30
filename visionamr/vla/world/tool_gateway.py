@@ -2,7 +2,7 @@
 from __future__ import annotations  # Postpone annotation evaluation for compatibility.
 from dataclasses import dataclass  # Import immutable tool contracts.
 import hashlib  # Import deterministic target-field hashing.
-import inspect  # Import constructor signature adaptation.
+import time  # Import a monotonic timer for separated parameter and Gmsh costs.
 from typing import Any  # Import generic repository object types.
 import numpy as np  # Import numerical mesh operations.
 from ...baselines.dorfler import refine_size_map  # Reuse the repository exact-Dörfler target-field implementation.
@@ -44,6 +44,14 @@ class MeshCertificate:  # Store deterministic evidence for one materialized adap
     equation_cap: int  # Store the requested active-equation cap.
     accepted: bool  # Report whether the world-model candidate passed all deterministic checks.
     reason: str  # Explain acceptance, fallback, or stop.
+    base_raw_target_sha256: str = ""  # Bind the complete unsmoothed Dörfler nodal target vector.
+    world_raw_target_sha256: str | None = None  # Bind the complete unsmoothed proactive target vector when one was proposed.
+    base_compiled_field_sha256: str = ""  # Bind source nodes, compiled Dörfler values, interpolation arity, and gradation.
+    world_compiled_field_sha256: str | None = None  # Bind the equivalently compiled proactive field when one was proposed.
+    compiled_field_node_count: int = 0  # Record the exact common source-node count used by both compiled fields.
+    compiled_field_gradation: float = 1.0  # Record the identical Lipschitz gradation used for both field compilations.
+    compiled_max_dorfler_violation: float = 0.0  # Record max(max(h_WM_compiled-h_D_compiled),0) over all source nodes.
+    compiled_dorfler_included: bool = True  # Certify nodewise dominance after clipping and Lipschitz compilation.
 
 @dataclass(frozen=True)  # Make materialized actions immutable.
 class MaterializedAction:  # Store the candidate mesh and its deterministic certificate.
@@ -51,9 +59,10 @@ class MaterializedAction:  # Store the candidate mesh and its deterministic cert
     action: RegionAction  # Store the actually executed action.
     certificate: MeshCertificate  # Store exact parameter and resource evidence.
     base_estimated_equations: int  # Store the exact-Dörfler candidate resource count.
+    timing_s: dict[str, float]  # Store separated deterministic parameter-tool and Gmsh wall times.
 
 class MCPToolGateway:  # Expose inspect, observe, materialize, and certify operations without LLM numeric tuning.
-    schema_version = "wmvla.mcp-tool.v1"  # Define the structured-output contract version.
+    schema_version = "wmvla.mcp-tool.v2"  # Version complete raw and post-gradation nodewise dominance receipts.
     def __init__(self, config: ToolConfig | None = None) -> None:  # Initialize deterministic tool behavior.
         self.config = config or ToolConfig()  # Store immutable tool settings.
         if not 0.0 < self.config.theta <= 1.0:  # Validate the Dörfler bulk parameter.
@@ -97,7 +106,7 @@ class MCPToolGateway:  # Expose inspect, observe, materialize, and certify opera
             volumes = 0.5 * np.abs(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0])  # Evaluate positive triangle areas.
         return sizes, np.maximum(volumes, 1.0e-30)  # Return positive measures.
     def _stress(self, post: Any, count: int) -> np.ndarray:  # Recover an elementwise stress-severity vector.
-        for name in ("von_mises", "vm", "stress_vm", "element_von_mises"):  # Inspect supported field names.
+        for name in ("vm_elem", "von_mises", "vm", "stress_vm", "element_von_mises"):  # Prefer the repository PostState von Mises field before compatibility aliases.
             values = getattr(post, name, None)  # Read the candidate stress field.
             if values is not None and np.asarray(values).size == count:  # Accept one value per element.
                 return np.asarray(values, dtype=float).reshape(-1)  # Return normalized element stress.
@@ -116,6 +125,15 @@ class MCPToolGateway:  # Expose inspect, observe, materialize, and certify opera
                     graph[right, left] += 1.0  # Preserve symmetry.
         totals = np.sum(graph, axis=1)  # Compute regional interaction totals.
         return np.divide(graph, totals[:, None], out=np.zeros_like(graph), where=totals[:, None] > 0.0)  # Return row-normalized coupling weights.
+    def _partition_adjacency(self, partition: Any, mesh: Any, labels: np.ndarray, count: int) -> np.ndarray:  # Prefer a frozen partition-provided graph when the shared partition exposes one.
+        adjacency_matrix = getattr(partition, "adjacency_matrix", None)  # Read the optional frozen-partition adjacency interface.
+        if callable(adjacency_matrix):  # Use the preregistered shared graph instead of reconstructing method-specific topology.
+            graph = np.asarray(adjacency_matrix(mesh, labels), dtype=float)  # Request the partition graph in its frozen semantic ordering.
+            if graph.shape != (count, count):  # Reject a graph whose ordering cannot match the observed regional state.
+                raise ValueError("partition adjacency_matrix must return one square entry per observed region")  # Explain the frozen-graph shape contract.
+            return graph.copy()  # Isolate the immutable world state from partition-owned storage.
+        _, cells = self._arrays(mesh)  # Read connectivity for the legacy deterministic fallback.
+        return self._adjacency(cells, labels, count)  # Reconstruct shared-node coupling only when no frozen graph is available.
     def _equations_from_record(self, problem: Any, record: Any, mesh: Any) -> int:  # Recover measured equations with exact active-DOF fallback.
         for name in ("n_equations", "equations", "neq"):  # Inspect supported record fields.
             if hasattr(record, name) and int(getattr(record, name)) > 0:  # Accept a positive measured value.
@@ -132,7 +150,11 @@ class MCPToolGateway:  # Expose inspect, observe, materialize, and certify opera
         labels = np.asarray(partition.assign(mesh), dtype=int).reshape(-1)  # Assign current elements to fixed semantic regions.
         if labels.shape != indicator.shape or np.any(labels < 0):  # Validate semantic assignment.
             raise ValueError("partition must assign one non-negative label per element")  # Explain the partition contract.
-        count = int(np.max(labels)) + 1  # Determine observed region count.
+        declared_count = len(tuple(getattr(partition, "names", ())))  # Preserve every frozen semantic region even when one is temporarily empty after remeshing.
+        observed_count = int(np.max(labels)) + 1  # Measure the label dimension represented by the current mesh.
+        if declared_count and observed_count > declared_count:  # Reject assignments outside an explicitly frozen state dimension.
+            raise ValueError("partition labels must remain within the declared semantic ordering")  # Explain the stable-ordering contract.
+        count = declared_count or observed_count  # Use the complete frozen ordering while accepting partitions without explicit names.
         names = self._names(partition, count)  # Recover stable semantic names.
         marked = self._marked_mask(indicator)  # Compute the mandatory exact-Dörfler mask.
         element_sizes, element_volumes = self._element_measures(mesh)  # Measure current geometry.
@@ -157,14 +179,14 @@ class MCPToolGateway:  # Expose inspect, observe, materialize, and certify opera
             marked_elements[region] = float(np.count_nonzero(selected) / max(np.count_nonzero(mask), 1))  # Measure selected regional element share.
             hits[region] += float(np.any(selected))  # Count one real Dörfler hit when present.
         equations = self._equations_from_record(problem, record, mesh)  # Recover measured active equations.
-        state = WorldState(names=names, err_sum=err_sum, elems=elems, sizes=sizes, vm_max=vm_max, volume=volume, adjacency=self._adjacency(cells, labels, count), dorfler_error_fraction=marked_error, dorfler_element_fraction=marked_elements, hit_count=hits, n_equations=equations, eq_per_elem=float(equations / max(cells.shape[0], 1)), h_min=float(problem.h_min), h0=float(problem.h0), dim=int(problem.dim), step=int(step))  # Construct the compact measured world state.
+        state = WorldState(names=names, err_sum=err_sum, elems=elems, sizes=sizes, vm_max=vm_max, volume=volume, adjacency=self._partition_adjacency(partition, mesh, labels, count), dorfler_error_fraction=marked_error, dorfler_element_fraction=marked_elements, hit_count=hits, n_equations=equations, eq_per_elem=float(equations / max(cells.shape[0], 1)), h_min=float(problem.h_min), h0=float(problem.h0), dim=int(problem.dim), step=int(step))  # Construct the compact measured world state with the shared frozen graph when available.
         return ToolObservation(problem, partition, post, record, mesh, indicator, labels, marked, state)  # Return the complete observation.
     def estimate_equations(self, problem: Any, mesh: Any) -> int:  # Count active displacement degrees of freedom on a candidate mesh.
         points, _ = self._arrays(mesh)  # Read candidate nodes.
         dimension = int(getattr(problem, "dim", points.shape[1]))  # Recover displacement dimension.
         fixed = np.zeros((points.shape[0], dimension), dtype=bool)  # Allocate one entry per nodal displacement degree of freedom.
         for constraint in getattr(problem, "constraints", []):  # Apply all mesh-independent constraints.
-            mask = np.asarray(constraint.predicate(points), dtype=bool).reshape(-1)  # Evaluate the candidate boundary predicate.
+            mask = np.asarray(constraint.node_predicate(points), dtype=bool).reshape(-1)  # Evaluate the repository Constraint node predicate.
             if mask.shape != (points.shape[0],):  # Reject malformed predicates.
                 raise ValueError("constraint predicate must return one Boolean per node")  # Explain the boundary contract.
             for dof in constraint.dofs:  # Apply each one-based displacement component.
@@ -217,51 +239,64 @@ class MCPToolGateway:  # Expose inspect, observe, materialize, and certify opera
             target[selected_nodes] = np.minimum(target[selected_nodes], desired)  # Refine without coarsening exact Dörfler.
         return np.maximum(float(observation.problem.h_min), target)  # Enforce the admissible minimum size.
     def _field(self, mesh: Any, target: np.ndarray, problem: Any) -> Any:  # Construct a repository-compatible nodal size field.
-        points, _ = self._arrays(mesh)  # Read source nodes.
-        parameters = inspect.signature(NodalSizeField).parameters  # Inspect the active constructor.
-        kwargs: dict[str, Any] = {}  # Collect recognized arguments.
-        for name in parameters:  # Bind only exact repository values.
-            if name in ("points", "nodes", "coordinates"):  # Match coordinate parameters.
-                kwargs[name] = points  # Supply current nodes.
-            elif name in ("sizes", "values", "target_sizes", "h"):  # Match target parameters.
-                kwargs[name] = target  # Supply certified nodal targets.
-            elif name in ("h_min", "minimum", "min_size"):  # Match minimum-size parameters.
-                kwargs[name] = float(problem.h_min)  # Supply the problem minimum size.
-            elif name in ("h_max", "maximum", "max_size"):  # Match maximum-size parameters.
-                kwargs[name] = float(problem.h0)  # Supply the problem initial size.
-        try:  # Prefer keyword construction.
-            return NodalSizeField(**kwargs)  # Construct the repository size field.
-        except TypeError:  # Support the common positional constructor.
-            return NodalSizeField(points, target)  # Construct the same field without guessed parameters.
+        return NodalSizeField(mesh, target, gradation=1.0, h_min=float(problem.h_min), h_max=float(problem.h0))  # Bind the exact repository mesh, target, gradation, and admissible size bounds.
+    def _compiled_field(self, mesh: Any, target: np.ndarray, problem: Any) -> tuple[Any, np.ndarray, str]:  # Compile and content-bind the exact field passed to Gmsh.
+        field = self._field(mesh, target, problem)  # Apply identical clipping and gradation through the repository implementation.
+        values = np.asarray(field._h, dtype=float).reshape(-1).copy()  # Read the complete compiled nodal values rather than the raw input targets.
+        points, _ = self._arrays(mesh)  # Bind compiled values to their exact source-node coordinates and ordering.
+        if values.shape != (points.shape[0],):  # Reject an interpolation field that cannot be checked nodewise.
+            raise ValueError("compiled size field must retain one value per source node")  # Preserve the structural certificate contract.
+        digest = hashlib.sha256()  # Initialize the full compiled-field identity.
+        digest.update(b"wmvla.compiled-nodal-size-field.v1\x00")  # Domain-separate compiled fields from legacy raw-target hashes.
+        digest.update(np.asarray(points.shape, dtype="<i8").tobytes(order="C"))  # Bind node count and coordinate dimension without ambiguous concatenation.
+        digest.update(np.asarray(points, dtype="<f8").tobytes(order="C"))  # Bind every source coordinate in repository ordering.
+        digest.update(np.asarray([int(field._k)], dtype="<i8").tobytes(order="C"))  # Bind the dimensional interpolation-neighbor count.
+        digest.update(np.asarray([1.0], dtype="<f8").tobytes(order="C"))  # Bind the common gradation value explicitly.
+        digest.update(np.asarray(values, dtype="<f8").tobytes(order="C"))  # Bind every compiled nodal target value.
+        return field, values, digest.hexdigest()  # Return the exact Gmsh field, auditable values, and complete SHA-256.
     def _generate(self, problem: Any, source_mesh: Any, target: np.ndarray) -> Any:  # Generate one exact Gmsh candidate mesh.
         field = self._field(source_mesh, target, problem)  # Construct the certified size field.
-        try:  # Prefer the documented keyword interface.
-            return generate_mesh(problem, size_field=field)  # Regenerate a conformal mesh.
-        except TypeError:  # Support positional size-field signatures.
-            return generate_mesh(problem, field)  # Regenerate the same mesh positionally.
+        return generate_mesh(problem, field)  # Regenerate a conformal mesh through the repository positional size-function API.
+    def _timing(self, started: float, gmsh_s: float) -> dict[str, float]:  # Build one non-overlapping materialization timing payload.
+        total_s = float(time.perf_counter() - started)  # Measure the complete gateway call.
+        parameter_s = max(total_s - float(gmsh_s), 0.0)  # Exclude Gmsh from deterministic parameter and certification work.
+        return {"parameter_tools": parameter_s, "gmsh_remeshing": float(gmsh_s), "tool_total": total_s}  # Return auditable disjoint timing components and their total.
     def materialize_action(self, observation: ToolObservation, action: RegionAction, n_equation_cap: int) -> MaterializedAction:  # Materialize, preflight, and certify one planner action.
+        started = time.perf_counter()  # Start complete gateway timing before action validation.
+        gmsh_s = 0.0  # Initialize cumulative exact candidate-mesh generation time.
         action.validate(observation.state, max_depth=self.config.max_extra_depth)  # Validate the discrete action.
         cap = int(self.config.budget_safety * int(n_equation_cap))  # Compute the deterministic resource cap.
         base_target = self._base_target(observation)  # Build exact Dörfler.
-        base_mesh = self._generate(observation.problem, observation.mesh, base_target)  # Generate the baseline candidate without solving it.
+        base_field, base_compiled, base_compiled_hash = self._compiled_field(observation.mesh, base_target, observation.problem)  # Compile and bind the exact Dörfler field before Gmsh.
+        gmsh_started = time.perf_counter()  # Start exact-Dörfler candidate remeshing timing.
+        base_mesh = generate_mesh(observation.problem, base_field)  # Generate the baseline candidate from the exact hashed compiled field.
+        gmsh_s += time.perf_counter() - gmsh_started  # Accumulate exact-Dörfler Gmsh wall time.
         base_equations = self.estimate_equations(observation.problem, base_mesh)  # Count exact candidate active degrees of freedom.
         base_hash = hashlib.sha256(np.asarray(base_target, dtype="<f8").tobytes()).hexdigest()  # Hash the exact target field.
         baseline = RegionAction.dorfler(observation.state)  # Construct the executable baseline action.
         if base_equations > cap:  # Stop when exact Dörfler itself exceeds the cap.
-            certificate = MeshCertificate(self.schema_version, action.extra_depth, baseline.extra_depth, "stop", base_hash, True, True, base_equations, cap, False, "dorfler_candidate_exceeds_cap")  # Record the deterministic stop.
-            return MaterializedAction(None, baseline, certificate, base_equations)  # Return no over-budget candidate.
+            certificate = MeshCertificate(self.schema_version, action.extra_depth, baseline.extra_depth, "stop", base_hash, True, True, base_equations, cap, False, "dorfler_candidate_exceeds_cap", base_raw_target_sha256=base_hash, base_compiled_field_sha256=base_compiled_hash, compiled_field_node_count=int(base_compiled.size), compiled_field_gradation=1.0, compiled_max_dorfler_violation=0.0, compiled_dorfler_included=True)  # Record the deterministic stop with complete compiled Dörfler identity.
+            return MaterializedAction(None, baseline, certificate, base_equations, self._timing(started, gmsh_s))  # Return no over-budget candidate with separated timing.
         if action.is_dorfler_only:  # Execute exact Dörfler directly.
-            certificate = MeshCertificate(self.schema_version, action.extra_depth, action.extra_depth, "dorfler", base_hash, True, True, base_equations, cap, True, "exact_dorfler")  # Certify the baseline.
-            return MaterializedAction(base_mesh, action, certificate, base_equations)  # Return the baseline candidate.
+            certificate = MeshCertificate(self.schema_version, action.extra_depth, action.extra_depth, "dorfler", base_hash, True, True, base_equations, cap, True, "exact_dorfler", base_raw_target_sha256=base_hash, base_compiled_field_sha256=base_compiled_hash, compiled_field_node_count=int(base_compiled.size), compiled_field_gradation=1.0, compiled_max_dorfler_violation=0.0, compiled_dorfler_included=True)  # Certify the baseline and its exact compiled field.
+            return MaterializedAction(base_mesh, action, certificate, base_equations, self._timing(started, gmsh_s))  # Return the baseline candidate with separated timing.
         world_target = self._world_target(observation, action, base_target)  # Add bounded semantic future depth.
-        included = bool(np.all(world_target <= base_target + 1.0e-12))  # Verify componentwise Dörfler inclusion.
-        if not included:  # Reject implementation defects before meshing.
+        raw_violation = float(max(np.max(world_target - base_target), 0.0))  # Measure raw target dominance before field compilation.
+        raw_included = bool(raw_violation <= 1.0e-12)  # Verify componentwise raw Dörfler inclusion.
+        if not raw_included:  # Reject implementation defects before field compilation.
             raise RuntimeError("world target failed exact-Dörfler inclusion check")  # Preserve the Dörfler floor.
-        world_mesh = self._generate(observation.problem, observation.mesh, world_target)  # Generate the world candidate without a real solve.
+        world_field, world_compiled, world_compiled_hash = self._compiled_field(observation.mesh, world_target, observation.problem)  # Compile the proactive field with the identical repository gradation path.
+        compiled_violation = float(max(np.max(world_compiled - base_compiled), 0.0))  # Measure the maximum compiled nodewise coarsening relative to Dörfler.
+        compiled_included = bool(compiled_violation <= 1.0e-12)  # Apply the same explicit numerical tolerance after compilation.
+        if not compiled_included:  # Reject any clipping or smoothing interaction that breaks Dörfler dominance.
+            raise RuntimeError("compiled world field failed exact-Dörfler inclusion check")  # Stop before Gmsh sees a structurally uncertified field.
+        gmsh_started = time.perf_counter()  # Start proactive world-candidate remeshing timing.
+        world_mesh = generate_mesh(observation.problem, world_field)  # Generate the world candidate from the exact hashed compiled field.
+        gmsh_s += time.perf_counter() - gmsh_started  # Accumulate proactive Gmsh wall time.
         world_equations = self.estimate_equations(observation.problem, world_mesh)  # Count exact candidate active degrees of freedom.
         world_hash = hashlib.sha256(np.asarray(world_target, dtype="<f8").tobytes()).hexdigest()  # Hash the world target field.
         if world_equations > cap:  # Reject exact resource-cap violations.
-            certificate = MeshCertificate(self.schema_version, action.extra_depth, baseline.extra_depth, "dorfler_fallback", base_hash, True, True, base_equations, cap, False, "world_candidate_exceeds_cap")  # Record the precise fallback.
-            return MaterializedAction(base_mesh, baseline, certificate, base_equations)  # Execute exact Dörfler instead.
-        certificate = MeshCertificate(self.schema_version, action.extra_depth, action.extra_depth, "world_model", world_hash, True, True, world_equations, cap, True, "world_candidate_certified")  # Certify the accepted world candidate.
-        return MaterializedAction(world_mesh, action, certificate, base_equations)  # Return the exact preflighted candidate.
+            certificate = MeshCertificate(self.schema_version, action.extra_depth, baseline.extra_depth, "dorfler_fallback", base_hash, raw_included and compiled_included, compiled_included, base_equations, cap, False, "world_candidate_exceeds_cap", base_raw_target_sha256=base_hash, world_raw_target_sha256=world_hash, base_compiled_field_sha256=base_compiled_hash, world_compiled_field_sha256=world_compiled_hash, compiled_field_node_count=int(base_compiled.size), compiled_field_gradation=1.0, compiled_max_dorfler_violation=compiled_violation, compiled_dorfler_included=compiled_included)  # Record fallback plus both complete attempted field identities.
+            return MaterializedAction(base_mesh, baseline, certificate, base_equations, self._timing(started, gmsh_s))  # Execute exact Dörfler instead while retaining both candidate timings.
+        certificate = MeshCertificate(self.schema_version, action.extra_depth, action.extra_depth, "world_model", world_hash, raw_included and compiled_included, compiled_included, world_equations, cap, True, "world_candidate_certified", base_raw_target_sha256=base_hash, world_raw_target_sha256=world_hash, base_compiled_field_sha256=base_compiled_hash, world_compiled_field_sha256=world_compiled_hash, compiled_field_node_count=int(base_compiled.size), compiled_field_gradation=1.0, compiled_max_dorfler_violation=compiled_violation, compiled_dorfler_included=compiled_included)  # Certify both raw and compiled nodewise Dörfler dominance.
+        return MaterializedAction(world_mesh, action, certificate, base_equations, self._timing(started, gmsh_s))  # Return the exact preflighted candidate with separated timing.

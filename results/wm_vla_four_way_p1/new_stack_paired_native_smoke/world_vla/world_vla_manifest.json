@@ -1,0 +1,95 @@
+{
+  "config": {
+    "max_solves": 1,
+    "n_equation_cap": 1000000,
+    "theta": 0.5,
+    "refine_factor": 0.5,
+    "core_theta": 0.72,
+    "audit_slack": 0.08,
+    "fallback_cooldown": 1,
+    "stagnation_tolerance": 0.002,
+    "stagnation_steps": 2,
+    "method_name": "world_model_vla",
+    "artifact_dir": "results/wm_vla_four_way_p1/new_stack_paired_native_smoke/world_vla",
+    "require_reference": false
+  },
+  "case": {
+    "schema_version": "wmvla.mcp-tool.v1",
+    "name": "box_girder_diaphragm",
+    "dimension": 3,
+    "bbox": [
+      0.0,
+      0.0,
+      0.0,
+      420.0,
+      300.0,
+      242.0
+    ],
+    "h0": 48.0,
+    "h_ref": 18.0,
+    "h_min": 6.0,
+    "material": {
+      "E": 210000.0,
+      "nu": 0.3
+    },
+    "features": [
+      "wheel_center",
+      "wheel_edge_x0",
+      "wheel_edge_x1",
+      "wheel_edge_y0",
+      "wheel_edge_y1",
+      "opening_crown",
+      "opening_invert",
+      "opening_left_rim",
+      "opening_right_rim",
+      "left_web_diaphragm",
+      "right_web_diaphragm",
+      "left_bearing",
+      "right_bearing"
+    ],
+    "parameters": {
+      "length": 420.0,
+      "width": 300.0,
+      "height": 220.0,
+      "top_thickness": 22.0,
+      "bottom_thickness": 18.0,
+      "web_thickness": 16.0,
+      "diaphragm_thickness": 26.0,
+      "opening_radius": 48.0,
+      "frame_width": 16.0,
+      "wheel_size": [
+        110.0,
+        80.0
+      ],
+      "wheel_offset": [
+        25.0,
+        18.0
+      ],
+      "pressure": 3.0,
+      "support_width": 55.0
+    }
+  },
+  "stop_reason": "max_solves",
+  "best_index": 0,
+  "metrics": [
+    9.36554899856066
+  ],
+  "indicator_sums": [
+    87.7135080444406
+  ],
+  "actions": [],
+  "decisions": [],
+  "certificates": [],
+  "model_snapshot": "results/wm_vla_four_way_p1/new_stack_paired_native_smoke/world_vla/world_vla_model.json",
+  "vision_snapshot": "results/wm_vla_four_way_p1/new_stack_paired_native_smoke/world_vla/world_vla_vision_partition.json",
+  "timing_s": {
+    "visual_partition": 0.00022527399414684623,
+    "world_model_planning": 0.0,
+    "parameter_tools": 0.0,
+    "gmsh_remeshing": 0.09014478800236247,
+    "calculix": 0.057861474007950164,
+    "non_solver_total": 0.09037006199650932,
+    "trajectory_total": 0.1718602940090932,
+    "unattributed_python": 0.02362875800463371
+  }
+}

@@ -1,0 +1,927 @@
+{
+  "calculix_solve_count": 0,
+  "case_count": 48,
+  "covered_splits": [
+    "test",
+    "train",
+    "validation"
+  ],
+  "manifest_sha256": "0536da44e267b78692b5ac1b5df11b5a7fe51a6ec8e838a8f3f42d243b391aa7",
+  "partitions": [
+    {
+      "case_id": "BGD-001-9b0c353acbb6",
+      "file_sha256": "78a6b076b9322ae7751a237c8e4531207b5ca1e626b73a5ef105de2be2d91da1",
+      "geometry_hash": "82c24acc6b834764856beb6a1243bdc0c30db9aa7970cfcc6b6e2186a8c64ce6",
+      "path": "BGD-001-9b0c353acbb6/partition_spec.json",
+      "probe_cell_count": 3188,
+      "probe_mesh_sha256": "50b059440af97e696211d3ce6739f67476bde4b9d0807cabb6a773c461d4ce9f",
+      "probe_node_count": 1070,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "c1a1ba506adea543ab073d4b65bc527d3cf9a96a75244b2effdbb8a07ee6150d",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-002-0d35762816f9",
+      "file_sha256": "cc1d8455888e2eb43a9d859bc89355da6423456431b0ec395f1b765d99e385bd",
+      "geometry_hash": "4435b6a58226e3e2ffae96af7869d2849995e062fc62f7c385a99df333b71230",
+      "path": "BGD-002-0d35762816f9/partition_spec.json",
+      "probe_cell_count": 3151,
+      "probe_mesh_sha256": "f5427484bbf29d612821e2956daad1e6b7c517e145424b5ca08b31e5bed072e8",
+      "probe_node_count": 1063,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "28f4a78ff3e519b971a87571c3883fef9875e4f0031ee94b8dca78e7444441f9",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-003-02fe1025238c",
+      "file_sha256": "51acd155fa3c12c897a58fb5b3d0738623b5fbf17ba5e55eb348ed8564d8eb8b",
+      "geometry_hash": "9225b718a335709351620aa5d0210220ade5ed365244105be664e10335bdbdc4",
+      "path": "BGD-003-02fe1025238c/partition_spec.json",
+      "probe_cell_count": 3157,
+      "probe_mesh_sha256": "bb2e937a33874fbec8b91941204800cc849495bc863c0980ba9d85abfa8571cc",
+      "probe_node_count": 1066,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "960fc196b42322860046e130b59fc45e1c76bd5c9a4dc1dcc789c0c63cbaa5ac",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-004-f065941b3ed0",
+      "file_sha256": "2f06da0aa40d5dc1023ccc91b2f6a205c461c9666dd085a6b6e2ee73f10f3194",
+      "geometry_hash": "8e24ad5d012bc8499ff3d0d900383c5e93e96f8ab10eec3f55ed6e73533e1767",
+      "path": "BGD-004-f065941b3ed0/partition_spec.json",
+      "probe_cell_count": 3205,
+      "probe_mesh_sha256": "d2e10f13028740892f86fb6ddb642056be4b1619a308ede0874138231e965626",
+      "probe_node_count": 1069,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "b7d85b38b9358626aff9d60e76c4055e020a04a4e8a4c20bbbbe576167823e3f",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-005-bf699e48f21e",
+      "file_sha256": "f188b02422f26824d8aade3b907c63d0d39d080964672fcaca80977add0d80b0",
+      "geometry_hash": "41da35302ecaa0991ac67f23b968676e72cc390b4926d92986657c74555e947e",
+      "path": "BGD-005-bf699e48f21e/partition_spec.json",
+      "probe_cell_count": 3183,
+      "probe_mesh_sha256": "272d4d0e23057cd745067871e1154f7a9d1368ad880758d535b95c796878dd75",
+      "probe_node_count": 1067,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "06c8ac61887bb0464765a89051680c67f36b7558c1dd9ddf98a89106e4dcf04f",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-006-be62cd3cf423",
+      "file_sha256": "85158effa219d8a1521dbd7575ed3a6eaeada6792442bb457977a3577688a537",
+      "geometry_hash": "e25c7aa966b9851720974a5810857a92541ccf42bc510c7162c1ff8921882b7e",
+      "path": "BGD-006-be62cd3cf423/partition_spec.json",
+      "probe_cell_count": 3212,
+      "probe_mesh_sha256": "e584d9ce59dbd9429067150c77b02cfb5c93f285fe88ff22aa862b2bac843b77",
+      "probe_node_count": 1079,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "ff142986174226e35668e2cdedbfee7e25c49cbf9a9984549f588ee9676fc000",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-007-53c63a33a823",
+      "file_sha256": "a5da43dbfd6d83dfab75f403279047dcecaf99530757dedf03960083fb5b2084",
+      "geometry_hash": "671859e6a5ce83cbbd222ce28f1ce4c51d08746d9737285d3b4abd7245dd6fb9",
+      "path": "BGD-007-53c63a33a823/partition_spec.json",
+      "probe_cell_count": 3136,
+      "probe_mesh_sha256": "8fa9c8746d134dd26c832f2928a7630c3e74272260fec7f5020d938425e00dc3",
+      "probe_node_count": 1059,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "9d7e18ae5ff3949a652f58849b7e8fdeba8e15bc532ed93de064421aa3b2c134",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-008-99c543e07d78",
+      "file_sha256": "83a51bb6e54c29da6197caca0b51a46c6607910497bf4fa010ed7d06f4c0ece7",
+      "geometry_hash": "298acfde9b11bc9e8721fbaa43c94dcd98ea326956e8bea9b58c5e55b80a83f1",
+      "path": "BGD-008-99c543e07d78/partition_spec.json",
+      "probe_cell_count": 3112,
+      "probe_mesh_sha256": "32ee4bc7123455665595ec03404be160380a8f3671551e0b33cec8521ba229fe",
+      "probe_node_count": 1048,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "3e91f361baab216023c02cb7f07ae26407a2852c96da1c1d1dec5ce8887b68fb",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-009-0d8fb9d501d5",
+      "file_sha256": "3a30e88a75f404f6d51317ffa62767f9608da366b618d8ebd4b93a19d5e94b92",
+      "geometry_hash": "42e03162610ed4f02bde7d84e3ce8974b51cd9be8a9c048dfd0773c4be90f4aa",
+      "path": "BGD-009-0d8fb9d501d5/partition_spec.json",
+      "probe_cell_count": 3160,
+      "probe_mesh_sha256": "65a049cc85c8e2d29f794d097c8af9b15bdcf33cdb011d6f8d94ebb3dff2523c",
+      "probe_node_count": 1067,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "ca285d85404b5cbc1f67a4ce1071c371ba26bccb0e7594f5be6ed38adaf841a4",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-010-9b748af2d2d8",
+      "file_sha256": "b2eadd56c7e102347729aa6eaca334fbb3ef43cea137c4276c3edc66881423c2",
+      "geometry_hash": "d9b9fd2474969cb4871e87a44218ebfb0fbdd651438af289a0de025f1ab919e0",
+      "path": "BGD-010-9b748af2d2d8/partition_spec.json",
+      "probe_cell_count": 3150,
+      "probe_mesh_sha256": "c8e58b84cfdd64d858201d74f305593e2d00cb12fcdb6a5230443414759ed657",
+      "probe_node_count": 1062,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "2b739027703df7d8961fc7de7d4a461bf968461be2767c9525f9593966f8ced3",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-011-38c0a3fb798b",
+      "file_sha256": "52b548da96cc60d49ba9884951fb4ebcd1fbd61e4083f11296d27f7501e32c32",
+      "geometry_hash": "4017baa1f8d8a15b74753bb60ca91a7d1bf23971a16176cd17310517f4ea744d",
+      "path": "BGD-011-38c0a3fb798b/partition_spec.json",
+      "probe_cell_count": 3153,
+      "probe_mesh_sha256": "2b15b9ec084d83f0d0dd8ac058ee62a1ecc18efd2e420a1c9291e64ce6f4192f",
+      "probe_node_count": 1063,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "1026385bea7895992ee09f2cfe2c109b2afb37baaa1db5676afc64ac381a429b",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-012-fb36c407e8b3",
+      "file_sha256": "92fcdb67c5582ab1d203493b4de38d728d5001dbaeb13023f28ecb39b8b75839",
+      "geometry_hash": "d8eedefdb24c210760f15f9582ad0ef6c76bf1e732f3dbb99325eb4b38b38e69",
+      "path": "BGD-012-fb36c407e8b3/partition_spec.json",
+      "probe_cell_count": 3190,
+      "probe_mesh_sha256": "63ecf69661556883b65f6605dde847b13640557a18d509406945250a985b22dd",
+      "probe_node_count": 1072,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "c4fe1522c0a57ec1f90162f725b089148869b7420aee4a7da95cef83545b5615",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-013-3069b9bfe543",
+      "file_sha256": "09cd8d1d82d2a89a23adc1eab83646b0021f21c521cd69df61074259a26a1e79",
+      "geometry_hash": "81b6de80c48445d5b8aed54de0d713ed95957fe5b48ee2d2bc973e1a6a80a11f",
+      "path": "BGD-013-3069b9bfe543/partition_spec.json",
+      "probe_cell_count": 3097,
+      "probe_mesh_sha256": "36a78512b83592b6e806871c0eb0324c79717390ac4a21fcd79cc7e7bae087b5",
+      "probe_node_count": 1043,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "6ae86fe38d7d705ca5a13bc53151491c491251567989dd0e8caaa7dac7ea2456",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-014-60e534ea9979",
+      "file_sha256": "099a1106922cda9b9e2ea3c817e77dfd7bab19e70fe17f7fa82cc065e3b5a47d",
+      "geometry_hash": "ef9c02ea5d3b20a125991d8b388dc5272ab4be471d0ffa23afcd92ab659b9262",
+      "path": "BGD-014-60e534ea9979/partition_spec.json",
+      "probe_cell_count": 3181,
+      "probe_mesh_sha256": "7a8a0c0d189ff5ae790989c3f9cc7e15a28d4eeb8b0c5db50c1ff671ce4a5508",
+      "probe_node_count": 1070,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "7b0aa6aec44890702ac5cd48bb236ffaa8aa402c427da9c2d8ba07b0000a9acf",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-015-3e9d4dec32a1",
+      "file_sha256": "e6a82b84a5eab6c23e2595ce3d53e030d05ec1d37f6b855db3f2b652dba3610a",
+      "geometry_hash": "de3e21be0c9b44675fce145d570a41f9162d369185b4c92a5fe6a02eab272dad",
+      "path": "BGD-015-3e9d4dec32a1/partition_spec.json",
+      "probe_cell_count": 3153,
+      "probe_mesh_sha256": "c95fd008f1515a9c615a544d177eed5c70c0d34bf39899c2573cccd3e634f8b7",
+      "probe_node_count": 1066,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "73653f73cb4d9b5e2f35e7a60b1b8b612d706d31e3e212a306d448c2e2d1614c",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-016-6b11ec1e5d0b",
+      "file_sha256": "a54ac9e8aff3f4aed9d22130d310cec4c94ad42d1d30c6c08c46dfe5e293aab7",
+      "geometry_hash": "a9836784afcb12eae0af2632a6ab2ea728d7240e130a4f17562e593ccf8d3402",
+      "path": "BGD-016-6b11ec1e5d0b/partition_spec.json",
+      "probe_cell_count": 3214,
+      "probe_mesh_sha256": "894e57dc7a7520c11f8e4b73c123e126b0432d39876f6af51f11f173a283b4b0",
+      "probe_node_count": 1068,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "54cd6fa05835f9fc12c32bed8257297617855a62791fa0cceac3165e41b0c5a5",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-017-c53992da6413",
+      "file_sha256": "5787153f47fcbd0769670b6d7f619def5e9d7d3170a46c4704d8a6514cbdf4c0",
+      "geometry_hash": "62613160aca8acf03823dd37a616a94c7e9534d7a5b497b07418b5c457a09412",
+      "path": "BGD-017-c53992da6413/partition_spec.json",
+      "probe_cell_count": 3179,
+      "probe_mesh_sha256": "4f797faeea911c62a5c2213a71e540d9ac42f709862ccc20277331ba879ce648",
+      "probe_node_count": 1069,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "95068c11120c9f13a522ec8edb38345b798c5a585b2c0b6a86073bb6575f7fbb",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-018-3995cc18feae",
+      "file_sha256": "aea2a65f38ff227db151d2d836aca113cfb5c64414574bf880345e24590e1cc0",
+      "geometry_hash": "b117896f621f6d75c87a43ce1f0739fddc550baf1ba9073b765c04d98d51301e",
+      "path": "BGD-018-3995cc18feae/partition_spec.json",
+      "probe_cell_count": 3186,
+      "probe_mesh_sha256": "addf00a7a7616dd6d85e932d3ef6550c96943c2f3588638c295f92bffe69a605",
+      "probe_node_count": 1068,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "d08d23190cbb8242b781c5eea87b8dde3e243f3f8ab9f20d689b7f149753cb97",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-019-900def8c1c61",
+      "file_sha256": "eefd12f1a1f6d2c2f1b3a87d8f981fd795bdb8bca522ea8bc5b372e59ade0a55",
+      "geometry_hash": "b8ae7bc228604833fdaec3156eba68ca3f2a4079d38f4ed92c14577ab462d7ea",
+      "path": "BGD-019-900def8c1c61/partition_spec.json",
+      "probe_cell_count": 3186,
+      "probe_mesh_sha256": "6c1e073b2fe13236cde6e370395e14d07877ba07b9063168db5984db9d186208",
+      "probe_node_count": 1078,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "012172cf178c89d345dbac05bd7974905310ba7deecfac7bc848d33f3de497aa",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-020-5233f66a1eeb",
+      "file_sha256": "af226040378f91bf476138182d28e8e2fc4486dce06600955be1a546ad3096d9",
+      "geometry_hash": "ecee6acb37c44a343642ad3acb522dd3b527ec5908f2aebeab1d2fbb51c45331",
+      "path": "BGD-020-5233f66a1eeb/partition_spec.json",
+      "probe_cell_count": 3218,
+      "probe_mesh_sha256": "ac38c94d7941b4ebc1b052872fb822d9c322b1dfb644521fb8379f69942e5faa",
+      "probe_node_count": 1074,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "20b5da488c4ecf8bf09964848b770c74b450f48029dc3595f818d0c7a28cd69f",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-021-f58ba64107f8",
+      "file_sha256": "c3a5715398309b47e98948774ade86f03076f28b742af8d50638e8f67bf2c27e",
+      "geometry_hash": "de534ba0697d24769ee1ab27ba84f5f4e02c7eaf399522d83b7e7971b113dbb9",
+      "path": "BGD-021-f58ba64107f8/partition_spec.json",
+      "probe_cell_count": 3178,
+      "probe_mesh_sha256": "27776ed17c49487919213361d321a671d5e5f2c8b220a858839c28ced53940be",
+      "probe_node_count": 1069,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "80a555eab2ffb19203db0737f1dbed0abf62e67e7c97c7606f33fd940547111b",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-022-c25fded28316",
+      "file_sha256": "8f115dc2dadd48870298b6afd0e70b01563c3dcfeb891348cb5b3512b55cf65a",
+      "geometry_hash": "00888bc827618e6680e945b35ddb52eedd4f39f7dddfb43564bb8168a575fa35",
+      "path": "BGD-022-c25fded28316/partition_spec.json",
+      "probe_cell_count": 3145,
+      "probe_mesh_sha256": "b7fc0acae80f257a27f940bbd7b96103354249e1a490a2b412e898640814d310",
+      "probe_node_count": 1055,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "967b4c58dfd78b1a443e781a02a7c6e8727369c290d7cbd0af103d4c6d1ce26e",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-023-9d7a834a8fdc",
+      "file_sha256": "142a312c67a6601d23d44142bccc9be67fd38ca85b59d12083368ed99302889b",
+      "geometry_hash": "e0d8ff59baa3231561ad88745c2a45fb9117ae23afb71e4725f268e762f095c5",
+      "path": "BGD-023-9d7a834a8fdc/partition_spec.json",
+      "probe_cell_count": 3147,
+      "probe_mesh_sha256": "d616bc7869471d315969d4b4e08af247c727c2b38f43b52fa5687462f53810f2",
+      "probe_node_count": 1054,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "65d7b4ece92a5a15423cd3f4e92073f37ee137cf877e1fa99eebdf2755b97b77",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-024-f2c3c99e4d57",
+      "file_sha256": "41e7f09d8f1c93a12490f2d26a79c7dd6e5d31228323c538fbd4308bf45e780a",
+      "geometry_hash": "e5eaaeb061840485bc61751ed8ca1537bcb6a65ae618622d0a50f941959f105d",
+      "path": "BGD-024-f2c3c99e4d57/partition_spec.json",
+      "probe_cell_count": 3150,
+      "probe_mesh_sha256": "cdf8276f6ffb56aa576321dcad0f65366a7f666b9112ba6be038dc50bae38195",
+      "probe_node_count": 1062,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "3e0194c9f025ee7719d69475257e5420e40d2977564063050fc918941fe05bf6",
+      "split": "train"
+    },
+    {
+      "case_id": "BGD-025-80dbdbf223da",
+      "file_sha256": "c8e8bf618524b9d635d02ae8b7a315969ee9fa3922a36ae6f9357594641f0c5a",
+      "geometry_hash": "fc7fc0c068ced56d5cc19fdbe541c78dfdec057c1167ce4d268f2fe917333474",
+      "path": "BGD-025-80dbdbf223da/partition_spec.json",
+      "probe_cell_count": 3119,
+      "probe_mesh_sha256": "356ce0e5ec21ad6d8443e259e09e38cd1e6981f8ab6df1f3eacade91c3fda14b",
+      "probe_node_count": 1048,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "56c194344f2bd5bc0a7aa8f8ecc1cfca1c04078c4737c329468ac125be5a30b4",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-026-37b64786683a",
+      "file_sha256": "179a73a50442ab5df836400b12a58c49c3eae733dbc531bd3f1ed53ca0581982",
+      "geometry_hash": "53da1dee03a8bef3e3a590d92d07b45d4860d11e174c91484b8ba5b6e8487d84",
+      "path": "BGD-026-37b64786683a/partition_spec.json",
+      "probe_cell_count": 3210,
+      "probe_mesh_sha256": "3d17a689bac04c16597a05d55b93e496c3adb276eb6db7178580461ac23714ae",
+      "probe_node_count": 1070,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "a8f56054e98e259766fcf56c6ca4628731f9e65de2514c3c548a4ae7926bc543",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-027-1141b1282ce8",
+      "file_sha256": "f51d075d6bbfea577e116067c7e5f7389e17f1eb21abb6a3ef19075acb068d34",
+      "geometry_hash": "2947a5c743886c380f2f716835c3ae4b4bc974c01a5edf935db6d004fddf0546",
+      "path": "BGD-027-1141b1282ce8/partition_spec.json",
+      "probe_cell_count": 3131,
+      "probe_mesh_sha256": "6070e2b0cea63522f98ada251e51d32b7781ee6b2ca6ac9e2beea4e818a4d3ca",
+      "probe_node_count": 1056,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "e7a4f74d5da6eee3ef7c89ec57fcada617ca74fb5ce20698937b32cafb9212ed",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-028-d0cb4d33a43d",
+      "file_sha256": "af1073ffd0f9c05eb5553f1a1e4f153e59acd540aaa4c593c1895b75457347d8",
+      "geometry_hash": "f899971c68baec2225698cdc8e33b9df1566647def8eb7628fcf87342ebeb340",
+      "path": "BGD-028-d0cb4d33a43d/partition_spec.json",
+      "probe_cell_count": 3231,
+      "probe_mesh_sha256": "6c1f395d11db9f3af3b5e7b6069c5a0327ddc86a7a75a3c0abf6996e16bb418e",
+      "probe_node_count": 1089,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "5e3be9dbe46caca54e0fabd261a876e4d7f01a03dae14390a801aa851e492c77",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-029-cfb7b4c18a0e",
+      "file_sha256": "97c1be8059468bc3c8c6faebd1a97f4cd2c34a73e23669da1e69f7e10595bf19",
+      "geometry_hash": "46fbcbe92ca59042023d770e7e924c8e7a4c822cebfd25a821edd15ab7e87e25",
+      "path": "BGD-029-cfb7b4c18a0e/partition_spec.json",
+      "probe_cell_count": 3058,
+      "probe_mesh_sha256": "72ba017b0610a72057d8306aa254fd19b3f3d741eaa428056833fe0b26bf016b",
+      "probe_node_count": 1028,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "b93bc3a8aebbdb10fae43f9bcacde3312cab04d2af19f301b3d87eb8c9b4a7e3",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-030-18e9cac3b187",
+      "file_sha256": "bedd46739a57b5596d6d7d86e9ba56bb2b87b7e17e9d2b9df8b4d47df1f65401",
+      "geometry_hash": "bca6135737bf2b0a0e2578e703b0596313ea26efe1d287684ec7ebb6d0fcd618",
+      "path": "BGD-030-18e9cac3b187/partition_spec.json",
+      "probe_cell_count": 3110,
+      "probe_mesh_sha256": "59a6ff332dbd987ac74720e4d5fc91acb9da7647999e72d131b80e851e5e71db",
+      "probe_node_count": 1046,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "c44920ced8766fe0c5cc6733e43e405a3f11324e547272e8543dcf78928553ff",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-031-05e28fa59371",
+      "file_sha256": "468b00c6f5c7b895e4d622d30dc835f91b06ef195ea8eb1f27daf21296f80ab8",
+      "geometry_hash": "587a149646f7978061486c7f283cf9979c4c9cbc0adea495febe58ceee8e90eb",
+      "path": "BGD-031-05e28fa59371/partition_spec.json",
+      "probe_cell_count": 3160,
+      "probe_mesh_sha256": "5886f4b5d72268ca5a4cbffd6b19d299f11075c3347a7c3207c28a9e8a8a4903",
+      "probe_node_count": 1071,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "2027b17a6e4d4a750a9a015c594421dea493e0d303284b1126c43abe390580f5",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-032-6aeee149a81a",
+      "file_sha256": "988f78a711fe8faad786a336c34c2a36cb182093cc8287b76e1a4e15193bb568",
+      "geometry_hash": "fae7bfea5e8e09ae0793bc80d556c072d1d7d703a1e8b312d1f61e635a1b2eb7",
+      "path": "BGD-032-6aeee149a81a/partition_spec.json",
+      "probe_cell_count": 3128,
+      "probe_mesh_sha256": "8be80767a2cc1bd8eacc02c02808d9e5dd7ec32055f1f4590b1fa2ff8abc826c",
+      "probe_node_count": 1048,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "5598f3f2e751a35a7a8c8ef38031c629aa7dd0a747190125500d4d0150f44074",
+      "split": "validation"
+    },
+    {
+      "case_id": "BGD-033-04a3f9b20025",
+      "file_sha256": "c9646f8e2c780a7478d78dba6904ff057e4d4bad0dedf097bd76aadc112e07b3",
+      "geometry_hash": "40f770531be551c26b96100c35cf69e55f69a0b59f209630736af538e6bdfc4d",
+      "path": "BGD-033-04a3f9b20025/partition_spec.json",
+      "probe_cell_count": 3179,
+      "probe_mesh_sha256": "6a55c72c561c289b9d5f5e76e2b3ec55a9b08349de6988a99b7655a0486a45b7",
+      "probe_node_count": 1077,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "db69557578d01cd0f06d928a773bcd5704c4b1b74c3b029f7bbac8abab1debe5",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-034-8d4faa7b4a69",
+      "file_sha256": "85e1b88584123502e2ac1c377084eb736d88e7e079c622dbed66147b82136a05",
+      "geometry_hash": "4f64ad0954123f4c6d20f17d73b164f595df8a002d3c75d48730903dab03aa24",
+      "path": "BGD-034-8d4faa7b4a69/partition_spec.json",
+      "probe_cell_count": 3145,
+      "probe_mesh_sha256": "1d1f414acc8216c02e5987a9c0b0242f9b0e914a660196e4600e076c0e7c8853",
+      "probe_node_count": 1059,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "4fb6559153c7a1e75aa00fd03199550118862066f9f37cd68e9d6a2f3e542fda",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-035-229450b37603",
+      "file_sha256": "9c4b64f8da3845d4e544fbc2874bc15c282b4a296c421e6476359bc67df921cf",
+      "geometry_hash": "3d20a3c2bb63f246f720ba559a64c14046405d4c10641061d38a8bc82da872ba",
+      "path": "BGD-035-229450b37603/partition_spec.json",
+      "probe_cell_count": 3204,
+      "probe_mesh_sha256": "3cc17498e67e6fb602f23d1bbc768685c6d048fbad8a045775c0fe5686c58af1",
+      "probe_node_count": 1071,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "e9b8e3a32fdd8e37e23d49385e81dfb3cbe744868cf8341f6a14e438bdde9d3a",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-036-cea97c8331a1",
+      "file_sha256": "4f7decab43166befedafc997b91b1a8d24652cb6f6507371b7a603ae0e6ecec1",
+      "geometry_hash": "c9a2af53cad9611dc27d5abe5e79fcfa5bdbb1fc69c5acc78835e3ac27d79401",
+      "path": "BGD-036-cea97c8331a1/partition_spec.json",
+      "probe_cell_count": 3172,
+      "probe_mesh_sha256": "1b31ee3eddd14e1a8e112204ceaeee23e4d82d4b40c58b95e5b53d81b49b33a9",
+      "probe_node_count": 1066,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "8f1ef5f9189513cd0790a2d92fb09aed8077cf0e0501f671d28fdd68810633b7",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-037-04194cd230f1",
+      "file_sha256": "bcf52d438736e54f02dc18893f3e8797e25ea814419e9e48a20e1ec7e158fc35",
+      "geometry_hash": "6d4692b94b8ef2c4d0dce21ad59934df1364e0df13eb3ffaf29a3bb80a68b962",
+      "path": "BGD-037-04194cd230f1/partition_spec.json",
+      "probe_cell_count": 3083,
+      "probe_mesh_sha256": "79fbfb4d706efd2cf89b7878238ae126ea73c762906bb35a2318b12b59d786ae",
+      "probe_node_count": 1042,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "d1a88b6cbdd88a6af7f84e7b7ba5b6891c6a8304dc818a409f66061dd98b4221",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-038-90b83e65fb68",
+      "file_sha256": "bde00373325607d22f85972ea7451612b1daa5d3524fd813f066e4374758a629",
+      "geometry_hash": "e8884bbbcde66c4ec177aa5f64aa19178046c39b71caf70807af8384327839e5",
+      "path": "BGD-038-90b83e65fb68/partition_spec.json",
+      "probe_cell_count": 3167,
+      "probe_mesh_sha256": "2eb256c447214982caf63f214230d8054e762763e7a7098775ce476c24ce8a57",
+      "probe_node_count": 1067,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "b71fe1763f8f417f4f63c5544decd726536ae0b2e1601a1d1665c2ec3af63d24",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-039-b2da2def1ef5",
+      "file_sha256": "cc261e3a971ae35632e7491542803f3400ee5662da8967be8f48a1a37124df50",
+      "geometry_hash": "154b18842c61572b5e7cc0befdda55688d1d759c0f18608f58b60026e6cc31a7",
+      "path": "BGD-039-b2da2def1ef5/partition_spec.json",
+      "probe_cell_count": 3175,
+      "probe_mesh_sha256": "a7cb961b92d9ad4b15e7f7b65b01c60d8e66d1e3ea08b3f23bd05f47c361367a",
+      "probe_node_count": 1068,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "eb78d556649309aa2cd1963034b26b5719dfdb2875249b98d1d538b7ab29f513",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-040-2414039554ce",
+      "file_sha256": "82b407ce16c1f45ce95ac04e7ae953f70747d6542cbcf51f195c241a52e2c388",
+      "geometry_hash": "2c0a8049d94b0f28413b4ce7a4161601cec717f57412859c421b9e9f98ed71e9",
+      "path": "BGD-040-2414039554ce/partition_spec.json",
+      "probe_cell_count": 3159,
+      "probe_mesh_sha256": "b18ef436998284ce192f3dbc11438e703749b40deb86810f8cb23cf76ab8ed95",
+      "probe_node_count": 1063,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "4d7fe852d6c25a6943cbb699842ef7cd4ec6b0ab05fc2cfa0b1e4d71231ad22c",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-041-a29fbf8f6b08",
+      "file_sha256": "00b671d61067293e271ed80552b7727f04c4b1226ec65d5bf59b09d81aaefb4a",
+      "geometry_hash": "ac0f2e4a75a87382d240fa40cfba6b309399d7c6ab9f2574813f78df0f8ae4fe",
+      "path": "BGD-041-a29fbf8f6b08/partition_spec.json",
+      "probe_cell_count": 3115,
+      "probe_mesh_sha256": "68665f8c7b426a2892d37fc0066ea4101b03af63d38080a52a2b22ebc38bd4d6",
+      "probe_node_count": 1048,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "98d2cb12d94ac011361f630c2f79949776e403e4797f075444490ce0d5dc5082",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-042-ce9bc31afaa6",
+      "file_sha256": "4e51f80a017cac728aca3ccfb10a339a5a89b9c6f1b1190fc4d9daa9c7b5d352",
+      "geometry_hash": "89fb68be2f952be5df666a0b4bc18caeb987f319c34b108e5ee20d39d5986e58",
+      "path": "BGD-042-ce9bc31afaa6/partition_spec.json",
+      "probe_cell_count": 3126,
+      "probe_mesh_sha256": "7724f97b4f483418619901334a384b5d8b093181276d7a1a71460c8ffe1342e7",
+      "probe_node_count": 1058,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "0951c7a644b4bad7f5f79ffba38b11682500fc077931ddea5c81ade301c97d97",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-043-6f7ca7b029eb",
+      "file_sha256": "56138610618aee4919b23648d206d8cb076a66fa403684ba0ece0ebd13e04d3f",
+      "geometry_hash": "e7d6678dc5a389602dcadb53fee59d15265a0980833c55172318506cbb50f2bc",
+      "path": "BGD-043-6f7ca7b029eb/partition_spec.json",
+      "probe_cell_count": 3218,
+      "probe_mesh_sha256": "444f102e322a9d61f345d4ff33145be490f30d896fbf6ab68230a26ec5c088e7",
+      "probe_node_count": 1085,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "53237ac6506b01fa6ae0bca7d11e355cbe3c4f184d11cdccfebb6348d6e9251d",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-044-87c518abf6ee",
+      "file_sha256": "898fd1cf5ff125beeb3d2862f9be1027a3967b8f0ee7453d2b752765d5d8b09d",
+      "geometry_hash": "ba1e413b2b05b078b655e5893bb7a715f4d5cbbc84405ed86a15855ff0758e85",
+      "path": "BGD-044-87c518abf6ee/partition_spec.json",
+      "probe_cell_count": 3199,
+      "probe_mesh_sha256": "adc3f9693bf9b82e7c70e85693b93a703eb8e41c0d65e562ec2669c004feb1fc",
+      "probe_node_count": 1070,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "47ae191f40e7f2d26df1f532794d246b2a072d597f184f77039911f84f5ff40d",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-045-57d94dfe3aad",
+      "file_sha256": "af29571d8659a5b82bd8c9fa008a944ab7762a4353c608cba1262abe8beed1d7",
+      "geometry_hash": "d3bfc8db031fa492920e83a3364637bc1a618d9e372c553e03aebf745a7ca277",
+      "path": "BGD-045-57d94dfe3aad/partition_spec.json",
+      "probe_cell_count": 3148,
+      "probe_mesh_sha256": "c9dd4218da641979cf41a41242b3085e3dc40c7886d409af25a6212b03e00287",
+      "probe_node_count": 1059,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "db1d370ada564063217ee96fe46b48a1110c782f66bc6d2294b2f64a0d86e280",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-046-72e4b00c981c",
+      "file_sha256": "c17dd5e69ace299fc456a55880256df18a2b31e836a4c78ea2aa1f0b18300ef3",
+      "geometry_hash": "3af504880389fc1633533b4c930952f015770bcfe5a2c10a0a89b9ca04f7923c",
+      "path": "BGD-046-72e4b00c981c/partition_spec.json",
+      "probe_cell_count": 3175,
+      "probe_mesh_sha256": "e6c72c3cec90e1b9bee4e2d2cdf368f950fb8f07f5217665a829c589cfb88ff2",
+      "probe_node_count": 1064,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "6d2a57e2c168ddbda6adf14501bfbcce8fb67d42ea2e01d7b6c1591ac3edee2d",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-047-2d1094dc2680",
+      "file_sha256": "1f704c9ceb6799d5b1d62e0f61b209772033280446e17156b3a8ec6978db4ef0",
+      "geometry_hash": "bc055cd8822746a49a7aa407ce87f552eb0e11cee546ea3e358ed438bc2403db",
+      "path": "BGD-047-2d1094dc2680/partition_spec.json",
+      "probe_cell_count": 3216,
+      "probe_mesh_sha256": "9a24023dfcdf2dc35da62df05532ad0406eb1cfcdb5f418ab994f1bacb2153ce",
+      "probe_node_count": 1082,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "96703e5cfc00a2a9890d73d8da9449d9e6eb07f519b910d475e79fd3f4edc3d1",
+      "split": "test"
+    },
+    {
+      "case_id": "BGD-048-27d80b19deb3",
+      "file_sha256": "8eef708b165f2670afd586bb1c7f1a88ec4c0b80b43f223b4d0a7f1650ec39b1",
+      "geometry_hash": "f2cedacb74e41421117a49f55ba3430a555c295af8e5cdbeb0d5e0a598a74aa5",
+      "path": "BGD-048-27d80b19deb3/partition_spec.json",
+      "probe_cell_count": 3129,
+      "probe_mesh_sha256": "e20ac8fb4eabfc29df9a2c98e2878c2bda910dc2659210af5904694105a5cd26",
+      "probe_node_count": 1052,
+      "region_order": [
+        "diaphragm_joints",
+        "inspection_opening",
+        "left_bearing",
+        "right_bearing",
+        "wheel_load",
+        "field_remainder"
+      ],
+      "spec_sha256": "425782dd154e8f5c6b034fe2011935e2f5c51486b14c33bbeedd3de048875d49",
+      "split": "test"
+    }
+  ],
+  "phase": "partition_registry",
+  "protocol_id": "WMVLA-4WAY-P1",
+  "schema": "wmvla-four-way-partition-index-v1"
+}

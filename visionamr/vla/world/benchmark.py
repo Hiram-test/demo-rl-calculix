@@ -6,8 +6,8 @@ import json  # Import benchmark-result serialization.
 from pathlib import Path  # Import portable campaign paths.
 from typing import Any  # Import generic repository runner and record types.
 import numpy as np  # Import curve and Pareto-envelope calculations.
+from ...bridge_cases import make_box_girder_diaphragm  # Import the canonical repository bridge-case factory.
 from ...experiment import FemRunner  # Reuse the repository CalculiX experiment runner.
-from .bridge_case import make_box_girder_diaphragm, make_box_girder_diaphragm_smoke  # Import the bridge benchmark factories.
 from .model import RegionAction, ResidualWorldModel, WorldModelConfig  # Import exact-Dörfler and learned world-model actions.
 from .pipeline import WorldVLAConfig, WorldVLAResult, _RuntimeAdapter, _record_metric, run_world_model_vla  # Reuse the common real-solve runtime and metric selection.
 from .planner import MultiStepPlanner, PlannerConfig  # Import finite-horizon planning.
@@ -93,9 +93,9 @@ def _record_payload(record: Any) -> dict[str, Any]:  # Serialize a solve record 
         return value  # Preserve already compatible values.
     return {str(key): normalize(value) for key, value in payload.items()}  # Return the normalized record payload.
 
-def run_exact_dorfler(runner: Any, partition: CachedVisionPartition, *, max_solves: int, n_equation_cap: int, theta: float, refine_factor: float) -> DorflerResult:  # Execute the paired exact-Dörfler trajectory with the same real-solve protocol.
+def run_exact_dorfler(runner: Any, partition: CachedVisionPartition, *, max_solves: int, n_equation_cap: int, theta: float, refine_factor: float, require_reference: bool = True) -> DorflerResult:  # Execute the paired exact-Dörfler trajectory with optional reference metrics.
     adapter = _RuntimeAdapter(runner)  # Reuse the common solver and estimator adapter.
-    adapter.ensure_reference()  # Ensure trusted energy-error metrics exist.
+    adapter.ensure_reference(require_reference)  # Build trusted energy-error metrics only when requested.
     gateway = MCPToolGateway(ToolConfig(theta=theta, refine_factor=refine_factor, core_theta=0.72, max_extra_depth=2))  # Configure exact Dörfler materialization only.
     mesh = adapter.initial_mesh()  # Generate the same uniform initial mesh used by world VLA.
     records: list[Any] = []  # Collect real baseline solve records.
@@ -137,21 +137,20 @@ def _budget_ratios(d_metrics: list[float], d_equations: list[int], w_metrics: li
         ratios.append(float(min(w_candidates) / max(min(d_candidates), 1.0e-30)))  # Compare Pareto-envelope errors at the same cap.
     return ratios  # Return common-budget error ratios.
 
-def run_bridge_benchmark(output_dir: str | Path, *, smoke: bool = False, max_solves: int = 7, n_equation_cap: int = 120000, theta: float = 0.5, refine_factor: float = 0.5, noninferiority_tolerance: float = 0.03) -> BenchmarkResult:  # Run the clean paired bridge-component benchmark.
+def run_bridge_benchmark(output_dir: str | Path, *, smoke: bool = False, max_solves: int = 7, n_equation_cap: int = 120000, theta: float = 0.5, refine_factor: float = 0.5, noninferiority_tolerance: float = 0.03, require_reference: bool = True) -> BenchmarkResult:  # Run the clean paired canonical bridge-component benchmark.
     root = Path(output_dir)  # Normalize the campaign output directory.
     root.mkdir(parents=True, exist_ok=True)  # Create the campaign directory.
-    problem = make_box_girder_diaphragm_smoke() if smoke else make_box_girder_diaphragm()  # Select CI or medium-complexity geometry.
+    problem = make_box_girder_diaphragm(length=420.0, width=300.0, height=220.0, top_thickness=22.0, bottom_thickness=18.0, web_thickness=16.0, diaphragm_thickness=26.0, opening_radius=48.0, frame_width=16.0, wheel_size=(110.0, 80.0), wheel_offset=(25.0, 18.0), pressure=3.0, support_width=55.0) if smoke else make_box_girder_diaphragm()  # Select a reduced or default instance from the canonical root factory.
     partition = CachedVisionPartition.from_problem(problem)  # Create one shared cached semantic vision output.
     partition.save(root / "shared_vision_partition.json")  # Persist identical perception for audit.
     dorfler_runner = _make_runner(problem, root / "dorfler", n_equation_cap)  # Construct the isolated exact-Dörfler runner.
     world_runner = _make_runner(problem, root / "world_vla", n_equation_cap)  # Construct the isolated world-VLA runner.
-    dorfler = run_exact_dorfler(dorfler_runner, partition, max_solves=max_solves, n_equation_cap=n_equation_cap, theta=theta, refine_factor=refine_factor)  # Execute the exact baseline first.
-    for name in ("reference", "_reference", "reference_solution", "_reference_solution"):  # Share the trusted reference object when the runner exposes one.
-        if hasattr(dorfler_runner, name) and hasattr(world_runner, name):  # Require matching reference fields.
-            setattr(world_runner, name, getattr(dorfler_runner, name))  # Reuse identical reference evidence without another solve.
+    dorfler = run_exact_dorfler(dorfler_runner, partition, max_solves=max_solves, n_equation_cap=n_equation_cap, theta=theta, refine_factor=refine_factor, require_reference=require_reference)  # Execute the exact baseline first under the selected reference contract.
+    if require_reference:  # Share reference evidence only when a reference was requested.
+        world_runner.reference = dorfler_runner.reference  # Reuse the exact repository Reference object without another solve.
     planner = MultiStepPlanner(PlannerConfig(horizon=4 if smoke else 5, beam_width=18 if smoke else 28, warmup_transitions=1, min_robust_gain=0.010 if smoke else 0.018))  # Configure genuine multi-step internal planning.
     world_model = ResidualWorldModel(WorldModelConfig(refine_factor=refine_factor))  # Match the world prior to the common refinement factor.
-    world = run_world_model_vla(world_runner, partition=partition, config=WorldVLAConfig(max_solves=max_solves, n_equation_cap=n_equation_cap, theta=theta, refine_factor=refine_factor, artifact_dir=str(root / "world_vla")), model=world_model, planner=planner)  # Execute the clean world-model VLA route.
+    world = run_world_model_vla(world_runner, partition=partition, config=WorldVLAConfig(max_solves=max_solves, n_equation_cap=n_equation_cap, theta=theta, refine_factor=refine_factor, artifact_dir=str(root / "world_vla"), require_reference=require_reference), model=world_model, planner=planner)  # Execute the clean world-model VLA route under the selected reference contract.
     d_metrics = [_record_metric(record, dorfler.indicator_sums[index]) for index, record in enumerate(dorfler.records)]  # Compute real baseline quality metrics.
     w_metrics = [_record_metric(record, world.indicator_sums[index]) for index, record in enumerate(world.records)]  # Compute real world-VLA quality metrics.
     d_equations = [_record_equations(record) for record in dorfler.records]  # Read measured baseline active equations.
@@ -165,6 +164,6 @@ def run_bridge_benchmark(output_dir: str | Path, *, smoke: bool = False, max_sol
     budgetwise_noninferior = bool(all(ratio <= 1.0 + noninferiority_tolerance for ratio in budgetwise)) if budgetwise else False  # Apply the common-budget non-inferiority gate.
     terminal_advantage = bool(min(w_metrics, default=np.inf) < (1.0 - 0.005) * min(d_metrics, default=np.inf))  # Require a measurable best-error improvement for terminal advantage.
     result = BenchmarkResult(dorfler=dorfler, world_vla=world, dorfler_metrics=tuple(d_metrics), world_metrics=tuple(w_metrics), dorfler_equations=tuple(d_equations), world_equations=tuple(w_equations), solvewise_ratios=tuple(solvewise), budgetwise_ratios=tuple(budgetwise), world_action_count=int(action_count), dorfler_inclusion_all=bool(inclusion), solvewise_noninferior=solvewise_noninferior, budgetwise_noninferior=budgetwise_noninferior, terminal_advantage=terminal_advantage)  # Build the complete paired benchmark result.
-    payload = {"configuration": {"smoke": smoke, "max_solves": max_solves, "n_equation_cap": n_equation_cap, "theta": theta, "refine_factor": refine_factor, "noninferiority_tolerance": noninferiority_tolerance}, "dorfler": {"records": [_record_payload(record) for record in dorfler.records], "indicator_sums": list(dorfler.indicator_sums), "metrics": d_metrics, "equations": d_equations, "stop_reason": dorfler.stop_reason, "certificates": [asdict(certificate) for certificate in dorfler.certificates]}, "world_vla": {"records": [_record_payload(record) for record in world.records], "indicator_sums": list(world.indicator_sums), "metrics": w_metrics, "equations": w_equations, "stop_reason": world.stop_reason, "actions": [list(action) for action in world.actions], "decisions": [asdict(decision) for decision in world.decisions], "certificates": [asdict(certificate) for certificate in world.certificates]}, "gates": {"world_action_count": action_count, "dorfler_inclusion_all": inclusion, "solvewise_noninferior": solvewise_noninferior, "budgetwise_noninferior": budgetwise_noninferior, "terminal_advantage": terminal_advantage, "solvewise_ratios": solvewise, "budgetwise_ratios": budgetwise}}  # Build the complete human-auditable benchmark payload.
+    payload = {"configuration": {"smoke": smoke, "max_solves": max_solves, "n_equation_cap": n_equation_cap, "theta": theta, "refine_factor": refine_factor, "noninferiority_tolerance": noninferiority_tolerance, "require_reference": require_reference}, "dorfler": {"records": [_record_payload(record) for record in dorfler.records], "indicator_sums": list(dorfler.indicator_sums), "metrics": d_metrics, "equations": d_equations, "stop_reason": dorfler.stop_reason, "certificates": [asdict(certificate) for certificate in dorfler.certificates]}, "world_vla": {"records": [_record_payload(record) for record in world.records], "indicator_sums": list(world.indicator_sums), "metrics": w_metrics, "equations": w_equations, "stop_reason": world.stop_reason, "actions": [list(action) for action in world.actions], "decisions": [asdict(decision) for decision in world.decisions], "certificates": [asdict(certificate) for certificate in world.certificates], "timing_s": world.timing_s}, "gates": {"world_action_count": action_count, "dorfler_inclusion_all": inclusion, "solvewise_noninferior": solvewise_noninferior, "budgetwise_noninferior": budgetwise_noninferior, "terminal_advantage": terminal_advantage, "solvewise_ratios": solvewise, "budgetwise_ratios": budgetwise}}  # Build the complete human-auditable benchmark payload including reference and separated timing provenance.
     (root / "benchmark_summary.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")  # Persist all real-solve curves and scientific gates.
     return result  # Return the paired benchmark result.
