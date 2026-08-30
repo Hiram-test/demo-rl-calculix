@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies (no Gmsh/CalculiX native libs)
         run: |
           python -m pip install --upgrade pip --quiet
-          python -m pip install numpy scipy pytest --quiet
+          python -m pip install numpy scipy matplotlib pytest --quiet  # Install numerical, figure-rendering, and test dependencies.
 
       - name: Run unit tests
         run: python -m pytest tests/ -q
