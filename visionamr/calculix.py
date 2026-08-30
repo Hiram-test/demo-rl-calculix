@@ -71,7 +71,7 @@ def write_inp(path: Path, mesh: Mesh, problem: Problem, heading: str) -> None:
     lines.append(heading)
     lines.append("*NODE, NSET=NALL")
     for i, (x, y, z) in enumerate(mesh.nodes, start=1):
-        lines.append(f"{i}, {x:.9g}, {y:.9g}, {z:.9g}")
+        lines.append(f"{i}, {x:.17g}, {y:.17g}, {z:.17g}")  # Preserve IEEE-754 coordinates so thin valid tetrahedra do not collapse into zero-Jacobian deck elements.
     lines.append(f"*ELEMENT, TYPE={etype}, ELSET=EALL")
     for i, conn in enumerate(mesh.cells + 1, start=1):
         lines.append(f"{i}, " + ", ".join(str(c) for c in conn))

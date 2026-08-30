@@ -77,6 +77,20 @@ def test_write_inp_2d_structure(tmp_path):
         assert card in text, card
 
 
+def test_write_inp_preserves_small_positive_tetra_jacobian(tmp_path):  # Prevent node text precision from collapsing a valid thin tetrahedron in CalculiX.
+    problem = make_bearing_block(patch=(140.0, 140.0), offset=(0.0, 0.0), pressure=10.0)  # Supply matching top traction and bottom constraint predicates.
+    nodes = np.array([[200.0, 200.0, 0.0], [200.0, 200.0, 120.0], [200.0000001, 200.0, 120.0], [200.0, 200.0000001, 120.0]], dtype=float)  # Create a positive tetrahedron whose small top edges vanish at nine significant digits.
+    mesh = Mesh(nodes=nodes, cells=np.array([[0, 1, 2, 3]], dtype=int), dim=3)  # Build the minimal valid C3D4 mesh without invoking Gmsh.
+    path = tmp_path / "thin_tetra.inp"  # Isolate the generated deck beneath pytest temporary storage.
+    write_inp(path, mesh, problem, "precision regression deck")  # Serialize the exact node coordinates through the production writer.
+    lines = path.read_text(encoding="utf-8").splitlines()  # Read the complete text deck for an independent round-trip check.
+    node_start = lines.index("*NODE, NSET=NALL") + 1  # Locate the first one-based node record.
+    element_start = lines.index("*ELEMENT, TYPE=C3D4, ELSET=EALL")  # Locate the boundary after the four node records.
+    deck_nodes = np.asarray([[float(value.strip()) for value in line.split(",")[1:4]] for line in lines[node_start:element_start]], dtype=float)  # Reconstruct exactly the coordinates CalculiX will parse.
+    jacobian = np.column_stack((deck_nodes[1] - deck_nodes[0], deck_nodes[2] - deck_nodes[0], deck_nodes[3] - deck_nodes[0]))  # Build the C3D4 Jacobian from serialized coordinates.
+    assert float(np.linalg.det(jacobian)) > 0.0  # Require the deck to retain the mesh's strictly positive element orientation and volume.
+
+
 def test_frd_parser_fixed_width(tmp_path):
     frd = tmp_path / "model.frd"
     lines = [
