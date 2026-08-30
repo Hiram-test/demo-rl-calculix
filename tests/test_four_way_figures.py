@@ -47,7 +47,7 @@ def _sha(path: Path) -> str:  # Hash one complete synthetic artifact exactly.
 
 
 def _refresh_analysis_index(campaign: Path) -> None:  # Rebuild the non-self-referential analyzer artifact index after a deliberate test mutation.
-    artifacts = []  # Collect all thirteen required aggregate and report receipts.
+    artifacts = []  # Collect all fourteen required aggregate and report receipts.
     for relative in EXPECTED_ANALYSIS_ARTIFACTS:  # Preserve the current analyzer delivery order.
         path = campaign / relative  # Resolve only the synthetic tmp_path artifact.
         artifacts.append({"path": relative, "sha256": _sha(path), "size_bytes": path.stat().st_size})  # Bind exact mutated or original bytes.
@@ -116,6 +116,7 @@ def _build_campaign(root: Path) -> Path:  # Build one complete analyzer-shaped c
     _write_json(aggregate / "failure_matrix.json", {"schema": ANALYSIS_SCHEMA, "protocol_id": PROTOCOL_ID, "rows": failure_rows})  # Publish the synthetic failure JSON source.
     methods = {method: {"training_seconds": float(100.0 + 10.0 * index), "representative_online_seconds_per_case": float(4.0 + index), "formula": "synthetic test receipt"} for index, method in enumerate(("world_model_vla", "supervised", "rl_median"))}  # Create finite actual-cost-shaped evidence for all learned methods.
     _write_json(aggregate / "amortized_cost.json", {"schema": "wmvla-four-way-amortized-cost-v1", "protocol_id": PROTOCOL_ID, "available": True, "methods": methods})  # Publish the complete synthetic cost receipt.
+    _write_json(aggregate / "reference_qualification.json", {"schema": "wmvla-four-way-reference-qualification-v1", "protocol_id": PROTOCOL_ID, "qualification": False, "authorization": "synthetic_nonblocking_test_receipt"})  # Publish the analyzer-indexed denominator-qualification receipt required by the renderer boundary.
     _write_json(aggregate / "coverage.json", coverage)  # Publish the sole synthetic completeness boundary.
     final_gate = {"schema": "wmvla-four-way-final-gate-v1", "protocol_id": PROTOCOL_ID, "DORFLER_SAFE": True, "BEAT_LOCAL_PREDICTION": True, "BEAT_SUPERVISED": True, "BEAT_RL": True, "WORLD_MODEL_MECHANISM": True, "ONLINE_TIME_ACCEPTABLE": True, "OVERALL_WIN": True, "analysis_complete": True, "coverage": coverage}  # Provide all seven complete machine conclusions without influencing plot data.
     _write_json(aggregate / "final_gate.json", final_gate)  # Publish the complete synthetic final gate.
