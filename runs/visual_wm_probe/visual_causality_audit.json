@@ -1,0 +1,606 @@
+{
+  "status": "complete",
+  "notes": {
+    "scope": "Retrospective fixed-model input intervention on archived one-step candidates; predictions are written before this script reads case.json outcomes, not a new prospective trial.",
+    "fixed_inputs": "All target arrays, mesh transport, scalar state, original total eta2 and actual candidate equations are held fixed; only WM image input changes.",
+    "ood_controls": "Shuffled and constant images are out-of-distribution sensitivity controls; changed choices alone do not prove useful visual understanding or generalization.",
+    "scalar_control": "The scalar snapshot was independently retrained from scratch on the original shared training branches and is evaluated on the same fixed candidate set.",
+    "decoder_controls": "Archived image_shuffled/image_constant actions alter the decoder; they remain recorded but are excluded from deployment choices as in the original experiment.",
+    "reference_baselines": "Best Dorfler and best-candidate oracle are hindsight evaluation references, never model-selection inputs."
+  },
+  "cases": [
+    {
+      "case": "test_bearing_901",
+      "metrics": {
+        "eta_norm": {
+          "candidate_values": {
+            "analytic_density": 11.299382563882224,
+            "dorfler_0.2": 11.246715802975917,
+            "dorfler_0.5": 11.273555373434057,
+            "dorfler_0.8": 11.310077209587176,
+            "uniform": 11.673261575328834,
+            "visual_err_diffuse": 11.305548468607878,
+            "visual_err_focused": 11.400691912800445,
+            "visual_err_s0": 11.446895637620232,
+            "visual_err_s1": 11.430336016593985,
+            "visual_err_s2": 11.546450604464956
+          },
+          "oracle_action": "dorfler_0.2",
+          "oracle_value": 11.246715802975917,
+          "best_dorfler_action": "dorfler_0.2",
+          "best_dorfler_value": 11.246715802975917,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "dorfler_0.8",
+                "value": 11.310077209587176,
+                "relative_regret_to_shared_oracle": 0.005633769690747803,
+                "ratio_to_best_dorfler": 1.0056337696907478,
+                "ratio_to_analytic_density": 1.0009464805394885
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 11.305548468607878,
+                "relative_regret_to_shared_oracle": 0.005231097385460126,
+                "ratio_to_best_dorfler": 1.0052310973854601,
+                "ratio_to_analytic_density": 1.0005456851018888
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "dorfler_0.8",
+                "value": 11.310077209587176,
+                "relative_regret_to_shared_oracle": 0.005633769690747803,
+                "ratio_to_best_dorfler": 1.0056337696907478,
+                "ratio_to_analytic_density": 1.0009464805394885,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 11.305548468607878,
+                "relative_regret_to_shared_oracle": 0.005231097385460126,
+                "ratio_to_best_dorfler": 1.0052310973854601,
+                "ratio_to_analytic_density": 1.0005456851018888,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_diffuse",
+                "value": 11.305548468607878,
+                "relative_regret_to_shared_oracle": 0.005231097385460126,
+                "ratio_to_best_dorfler": 1.0052310973854601,
+                "ratio_to_analytic_density": 1.0005456851018888,
+                "relative_regret_change_from_original": -0.00040267230528767683,
+                "value_ratio_to_original_selection": 0.999599583548779
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 11.305548468607878,
+                "relative_regret_to_shared_oracle": 0.005231097385460126,
+                "ratio_to_best_dorfler": 1.0052310973854601,
+                "ratio_to_analytic_density": 1.0005456851018888,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "analytic_density",
+                "value": 11.299382563882224,
+                "relative_regret_to_shared_oracle": 0.0046828569183166024,
+                "ratio_to_best_dorfler": 1.0046828569183166,
+                "ratio_to_analytic_density": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 11.446895637620232,
+                "relative_regret_to_shared_oracle": 0.017798959105141288,
+                "ratio_to_best_dorfler": 1.0177989591051413,
+                "ratio_to_analytic_density": 1.0130549676412872
+              }
+            }
+          }
+        },
+        "reference_error": {
+          "candidate_values": {
+            "analytic_density": 0.3643916559363986,
+            "dorfler_0.2": 0.36973747821452685,
+            "dorfler_0.5": 0.36573167010974184,
+            "dorfler_0.8": 0.3608713369781355,
+            "uniform": 0.3803249488368733,
+            "visual_err_diffuse": 0.3766412248625956,
+            "visual_err_focused": 0.3701885977621435,
+            "visual_err_s0": 0.3735168517558166,
+            "visual_err_s1": 0.37284733858369024,
+            "visual_err_s2": 0.3758550999161267
+          },
+          "oracle_action": "dorfler_0.8",
+          "oracle_value": 0.3608713369781355,
+          "best_dorfler_action": "dorfler_0.8",
+          "best_dorfler_value": 0.3608713369781355,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "dorfler_0.8",
+                "value": 0.3608713369781355,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 1.0,
+                "ratio_to_analytic_density": 0.9903391888894472
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 0.3766412248625956,
+                "relative_regret_to_shared_oracle": 0.04369947476713998,
+                "ratio_to_best_dorfler": 1.04369947476714,
+                "ratio_to_analytic_density": 1.0336164912852315
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "dorfler_0.8",
+                "value": 0.3608713369781355,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 1.0,
+                "ratio_to_analytic_density": 0.9903391888894472,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 0.3766412248625956,
+                "relative_regret_to_shared_oracle": 0.04369947476713998,
+                "ratio_to_best_dorfler": 1.04369947476714,
+                "ratio_to_analytic_density": 1.0336164912852315,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_diffuse",
+                "value": 0.3766412248625956,
+                "relative_regret_to_shared_oracle": 0.04369947476713998,
+                "ratio_to_best_dorfler": 1.04369947476714,
+                "ratio_to_analytic_density": 1.0336164912852315,
+                "relative_regret_change_from_original": 0.04369947476713998,
+                "value_ratio_to_original_selection": 1.04369947476714
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 0.3766412248625956,
+                "relative_regret_to_shared_oracle": 0.04369947476713998,
+                "ratio_to_best_dorfler": 1.04369947476714,
+                "ratio_to_analytic_density": 1.0336164912852315,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "analytic_density",
+                "value": 0.3643916559363986,
+                "relative_regret_to_shared_oracle": 0.00975505283334921,
+                "ratio_to_best_dorfler": 1.0097550528333492,
+                "ratio_to_analytic_density": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 0.3735168517558166,
+                "relative_regret_to_shared_oracle": 0.03504161589438537,
+                "ratio_to_best_dorfler": 1.0350416158943854,
+                "ratio_to_analytic_density": 1.0250422743516683
+              }
+            }
+          }
+        }
+      },
+      "input_intervention_changes_selection": {
+        "shuffled": false,
+        "constant": true
+      },
+      "input_intervention_changes_visual_only_selection": {
+        "shuffled": false,
+        "constant": false
+      }
+    },
+    {
+      "case": "test_bearing_902",
+      "metrics": {
+        "eta_norm": {
+          "candidate_values": {
+            "analytic_density": 7.195419777663151,
+            "dorfler_0.2": 7.210940425555115,
+            "dorfler_0.5": 7.304823462896656,
+            "dorfler_0.8": 7.119049981050474,
+            "uniform": 7.45519248019759,
+            "visual_err_diffuse": 7.0790507235180185,
+            "visual_err_focused": 7.249264817785215,
+            "visual_err_s0": 7.104638825898317,
+            "visual_err_s1": 7.230696694804271,
+            "visual_err_s2": 7.183205698493486
+          },
+          "oracle_action": "visual_err_diffuse",
+          "oracle_value": 7.0790507235180185,
+          "best_dorfler_action": "dorfler_0.8",
+          "best_dorfler_value": 7.119049981050474,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "visual_err_focused",
+                "value": 7.249264817785215,
+                "relative_regret_to_shared_oracle": 0.024044762626394434,
+                "ratio_to_best_dorfler": 1.0182910412318142,
+                "ratio_to_analytic_density": 1.0074832381967784
+              },
+              "visual_only": {
+                "action": "visual_err_focused",
+                "value": 7.249264817785215,
+                "relative_regret_to_shared_oracle": 0.024044762626394434,
+                "ratio_to_best_dorfler": 1.0182910412318142,
+                "ratio_to_analytic_density": 1.0074832381967784
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "visual_err_focused",
+                "value": 7.249264817785215,
+                "relative_regret_to_shared_oracle": 0.024044762626394434,
+                "ratio_to_best_dorfler": 1.0182910412318142,
+                "ratio_to_analytic_density": 1.0074832381967784,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_focused",
+                "value": 7.249264817785215,
+                "relative_regret_to_shared_oracle": 0.024044762626394434,
+                "ratio_to_best_dorfler": 1.0182910412318142,
+                "ratio_to_analytic_density": 1.0074832381967784,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_diffuse",
+                "value": 7.0790507235180185,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 0.9943813770602923,
+                "ratio_to_analytic_density": 0.9838273432626713,
+                "relative_regret_change_from_original": -0.024044762626394434,
+                "value_ratio_to_original_selection": 0.9765198128988755
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 7.0790507235180185,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 0.9943813770602923,
+                "ratio_to_analytic_density": 0.9838273432626713,
+                "relative_regret_change_from_original": -0.024044762626394434,
+                "value_ratio_to_original_selection": 0.9765198128988755
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "visual_err_s1",
+                "value": 7.230696694804271,
+                "relative_regret_to_shared_oracle": 0.021421794702283226,
+                "ratio_to_best_dorfler": 1.0156828107754516,
+                "ratio_to_analytic_density": 1.004902690632537
+              },
+              "visual_only": {
+                "action": "visual_err_s1",
+                "value": 7.230696694804271,
+                "relative_regret_to_shared_oracle": 0.021421794702283226,
+                "ratio_to_best_dorfler": 1.0156828107754516,
+                "ratio_to_analytic_density": 1.004902690632537
+              }
+            }
+          }
+        },
+        "reference_error": {
+          "candidate_values": {
+            "analytic_density": 0.395485429707351,
+            "dorfler_0.2": 0.40418809367897635,
+            "dorfler_0.5": 0.40377668991002813,
+            "dorfler_0.8": 0.3925426853228472,
+            "uniform": 0.4152991398380253,
+            "visual_err_diffuse": 0.3850125540659884,
+            "visual_err_focused": 0.3919419570438227,
+            "visual_err_s0": 0.3907532162784318,
+            "visual_err_s1": 0.3962973950154375,
+            "visual_err_s2": 0.3962533308041436
+          },
+          "oracle_action": "visual_err_diffuse",
+          "oracle_value": 0.3850125540659884,
+          "best_dorfler_action": "dorfler_0.8",
+          "best_dorfler_value": 0.3925426853228472,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "visual_err_focused",
+                "value": 0.3919419570438227,
+                "relative_regret_to_shared_oracle": 0.01799786241943324,
+                "ratio_to_best_dorfler": 0.9984696485210762,
+                "ratio_to_analytic_density": 0.9910401941579734
+              },
+              "visual_only": {
+                "action": "visual_err_focused",
+                "value": 0.3919419570438227,
+                "relative_regret_to_shared_oracle": 0.01799786241943324,
+                "ratio_to_best_dorfler": 0.9984696485210762,
+                "ratio_to_analytic_density": 0.9910401941579734
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "visual_err_focused",
+                "value": 0.3919419570438227,
+                "relative_regret_to_shared_oracle": 0.01799786241943324,
+                "ratio_to_best_dorfler": 0.9984696485210762,
+                "ratio_to_analytic_density": 0.9910401941579734,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              },
+              "visual_only": {
+                "action": "visual_err_focused",
+                "value": 0.3919419570438227,
+                "relative_regret_to_shared_oracle": 0.01799786241943324,
+                "ratio_to_best_dorfler": 0.9984696485210762,
+                "ratio_to_analytic_density": 0.9910401941579734,
+                "relative_regret_change_from_original": 0.0,
+                "value_ratio_to_original_selection": 1.0
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_diffuse",
+                "value": 0.3850125540659884,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 0.980817038405223,
+                "ratio_to_analytic_density": 0.9735189343154506,
+                "relative_regret_change_from_original": -0.01799786241943324,
+                "value_ratio_to_original_selection": 0.9823203337808013
+              },
+              "visual_only": {
+                "action": "visual_err_diffuse",
+                "value": 0.3850125540659884,
+                "relative_regret_to_shared_oracle": 0.0,
+                "ratio_to_best_dorfler": 0.980817038405223,
+                "ratio_to_analytic_density": 0.9735189343154506,
+                "relative_regret_change_from_original": -0.01799786241943324,
+                "value_ratio_to_original_selection": 0.9823203337808013
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "visual_err_s1",
+                "value": 0.3962973950154375,
+                "relative_regret_to_shared_oracle": 0.029310319443544675,
+                "ratio_to_best_dorfler": 1.0095650991165515,
+                "ratio_to_analytic_density": 1.0020530852645755
+              },
+              "visual_only": {
+                "action": "visual_err_s1",
+                "value": 0.3962973950154375,
+                "relative_regret_to_shared_oracle": 0.029310319443544675,
+                "ratio_to_best_dorfler": 1.0095650991165515,
+                "ratio_to_analytic_density": 1.0020530852645755
+              }
+            }
+          }
+        }
+      },
+      "input_intervention_changes_selection": {
+        "shuffled": false,
+        "constant": true
+      },
+      "input_intervention_changes_visual_only_selection": {
+        "shuffled": false,
+        "constant": true
+      }
+    },
+    {
+      "case": "test_bearing_903",
+      "metrics": {
+        "eta_norm": {
+          "candidate_values": {
+            "analytic_density": 11.43316532910522,
+            "dorfler_0.2": 11.20755928490401,
+            "dorfler_0.5": 11.489838425747367,
+            "dorfler_0.8": 11.56067580747812,
+            "uniform": 11.591520240882103,
+            "visual_err_diffuse": 11.317604754896317,
+            "visual_err_focused": 11.585527873846605,
+            "visual_err_s0": 11.506877242529702,
+            "visual_err_s1": 11.447835648242373,
+            "visual_err_s2": 11.455585823464723
+          },
+          "oracle_action": "dorfler_0.2",
+          "oracle_value": 11.20755928490401,
+          "best_dorfler_action": "dorfler_0.2",
+          "best_dorfler_value": 11.20755928490401,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "visual_err_s0",
+                "value": 11.506877242529702,
+                "relative_regret_to_shared_oracle": 0.02670679226554329,
+                "ratio_to_best_dorfler": 1.0267067922655433,
+                "ratio_to_analytic_density": 1.0064472008671854
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 11.506877242529702,
+                "relative_regret_to_shared_oracle": 0.02670679226554329,
+                "ratio_to_best_dorfler": 1.0267067922655433,
+                "ratio_to_analytic_density": 1.0064472008671854
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "visual_err_s2",
+                "value": 11.455585823464723,
+                "relative_regret_to_shared_oracle": 0.02213029012434431,
+                "ratio_to_best_dorfler": 1.0221302901243443,
+                "ratio_to_analytic_density": 1.0019610049985395,
+                "relative_regret_change_from_original": -0.004576502141198979,
+                "value_ratio_to_original_selection": 0.9955425422567815
+              },
+              "visual_only": {
+                "action": "visual_err_s2",
+                "value": 11.455585823464723,
+                "relative_regret_to_shared_oracle": 0.02213029012434431,
+                "ratio_to_best_dorfler": 1.0221302901243443,
+                "ratio_to_analytic_density": 1.0019610049985395,
+                "relative_regret_change_from_original": -0.004576502141198979,
+                "value_ratio_to_original_selection": 0.9955425422567815
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_s2",
+                "value": 11.455585823464723,
+                "relative_regret_to_shared_oracle": 0.02213029012434431,
+                "ratio_to_best_dorfler": 1.0221302901243443,
+                "ratio_to_analytic_density": 1.0019610049985395,
+                "relative_regret_change_from_original": -0.004576502141198979,
+                "value_ratio_to_original_selection": 0.9955425422567815
+              },
+              "visual_only": {
+                "action": "visual_err_s2",
+                "value": 11.455585823464723,
+                "relative_regret_to_shared_oracle": 0.02213029012434431,
+                "ratio_to_best_dorfler": 1.0221302901243443,
+                "ratio_to_analytic_density": 1.0019610049985395,
+                "relative_regret_change_from_original": -0.004576502141198979,
+                "value_ratio_to_original_selection": 0.9955425422567815
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "dorfler_0.5",
+                "value": 11.489838425747367,
+                "relative_regret_to_shared_oracle": 0.025186495441837486,
+                "ratio_to_best_dorfler": 1.0251864954418375,
+                "ratio_to_analytic_density": 1.0049569034480657
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 11.506877242529702,
+                "relative_regret_to_shared_oracle": 0.02670679226554329,
+                "ratio_to_best_dorfler": 1.0267067922655433,
+                "ratio_to_analytic_density": 1.0064472008671854
+              }
+            }
+          }
+        },
+        "reference_error": {
+          "candidate_values": {
+            "analytic_density": 0.41630862426474047,
+            "dorfler_0.2": 0.41061602308704503,
+            "dorfler_0.5": 0.4114415835447322,
+            "dorfler_0.8": 0.4154295307621317,
+            "uniform": 0.421041216297023,
+            "visual_err_diffuse": 0.40479506968477463,
+            "visual_err_focused": 0.4137691294990683,
+            "visual_err_s0": 0.4146402745189527,
+            "visual_err_s1": 0.4091212244171352,
+            "visual_err_s2": 0.41448414786108445
+          },
+          "oracle_action": "visual_err_diffuse",
+          "oracle_value": 0.40479506968477463,
+          "best_dorfler_action": "dorfler_0.2",
+          "best_dorfler_value": 0.41061602308704503,
+          "selections": {
+            "original": {
+              "shared_candidates": {
+                "action": "visual_err_s0",
+                "value": 0.4146402745189527,
+                "relative_regret_to_shared_oracle": 0.024321454413574806,
+                "ratio_to_best_dorfler": 1.009800522156084,
+                "ratio_to_analytic_density": 0.9959925169728724
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 0.4146402745189527,
+                "relative_regret_to_shared_oracle": 0.024321454413574806,
+                "ratio_to_best_dorfler": 1.009800522156084,
+                "ratio_to_analytic_density": 0.9959925169728724
+              }
+            },
+            "shuffled": {
+              "shared_candidates": {
+                "action": "visual_err_s2",
+                "value": 0.41448414786108445,
+                "relative_regret_to_shared_oracle": 0.023935761331912886,
+                "ratio_to_best_dorfler": 1.009420296716525,
+                "ratio_to_analytic_density": 0.9956174907332792,
+                "relative_regret_change_from_original": -0.00038569308166191973,
+                "value_ratio_to_original_selection": 0.9996234648019916
+              },
+              "visual_only": {
+                "action": "visual_err_s2",
+                "value": 0.41448414786108445,
+                "relative_regret_to_shared_oracle": 0.023935761331912886,
+                "ratio_to_best_dorfler": 1.009420296716525,
+                "ratio_to_analytic_density": 0.9956174907332792,
+                "relative_regret_change_from_original": -0.00038569308166191973,
+                "value_ratio_to_original_selection": 0.9996234648019916
+              }
+            },
+            "constant": {
+              "shared_candidates": {
+                "action": "visual_err_s2",
+                "value": 0.41448414786108445,
+                "relative_regret_to_shared_oracle": 0.023935761331912886,
+                "ratio_to_best_dorfler": 1.009420296716525,
+                "ratio_to_analytic_density": 0.9956174907332792,
+                "relative_regret_change_from_original": -0.00038569308166191973,
+                "value_ratio_to_original_selection": 0.9996234648019916
+              },
+              "visual_only": {
+                "action": "visual_err_s2",
+                "value": 0.41448414786108445,
+                "relative_regret_to_shared_oracle": 0.023935761331912886,
+                "ratio_to_best_dorfler": 1.009420296716525,
+                "ratio_to_analytic_density": 0.9956174907332792,
+                "relative_regret_change_from_original": -0.00038569308166191973,
+                "value_ratio_to_original_selection": 0.9996234648019916
+              }
+            },
+            "scalar_retrained": {
+              "shared_candidates": {
+                "action": "dorfler_0.5",
+                "value": 0.4114415835447322,
+                "relative_regret_to_shared_oracle": 0.01641945358952479,
+                "ratio_to_best_dorfler": 1.002010541263053,
+                "ratio_to_analytic_density": 0.9883090562233628
+              },
+              "visual_only": {
+                "action": "visual_err_s0",
+                "value": 0.4146402745189527,
+                "relative_regret_to_shared_oracle": 0.024321454413574806,
+                "ratio_to_best_dorfler": 1.009800522156084,
+                "ratio_to_analytic_density": 0.9959925169728724
+              }
+            }
+          }
+        }
+      },
+      "input_intervention_changes_selection": {
+        "shuffled": true,
+        "constant": true
+      },
+      "input_intervention_changes_visual_only_selection": {
+        "shuffled": true,
+        "constant": true
+      }
+    }
+  ],
+  "skipped": [],
+  "decisions_file": "visual_causality_decisions.json"
+}

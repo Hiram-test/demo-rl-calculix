@@ -1,0 +1,175 @@
+{
+  "source_image_sha256": "676b42d4c7d4760cc7fec9ebc0e63ccdde936fcd4e841d4e9efa7911a9511c6c",
+  "source_image": "gpt_input_current.png",
+  "decision_agent": "GPT assistant in this conversation; direct image inspection",
+  "case": "bearing_1001",
+  "assessment_phase": "new holdout after 901-903 diagnostic pilot",
+  "goal": "Reduce reference energy error within twice the initial free-equation budget",
+  "primary": "gpt_column",
+  "information_used": [
+    "Current estimator projections",
+    "Current load and constrained-node images"
+  ],
+  "future_outcomes_seen": false,
+  "rationale": "The bright current error fills much of the upper loaded cap, rather than only a thin perimeter. XZ shows a broad band from x=.2 to .55 with appreciable error down to z=.5. I prefer a graded upper load column, with rim and surface variants retained.",
+  "candidates": [
+    {
+      "name": "gpt_rim_depth",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.17,
+            0.47,
+            0.7
+          ],
+          "hi": [
+            0.24000000000000002,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.51,
+            0.47,
+            0.7
+          ],
+          "hi": [
+            0.5800000000000001,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.2,
+            0.47,
+            0.72
+          ],
+          "hi": [
+            0.55,
+            0.54,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.2,
+            0.71,
+            0.72
+          ],
+          "hi": [
+            0.55,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.18000000000000002,
+            0.48,
+            0.38
+          ],
+          "hi": [
+            0.5700000000000001,
+            0.79,
+            0.82
+          ],
+          "ratio": 0.76,
+          "halo": 0.12
+        }
+      ]
+    },
+    {
+      "name": "gpt_column",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.17,
+            0.47,
+            0.55
+          ],
+          "hi": [
+            0.5800000000000001,
+            0.8,
+            1.0
+          ],
+          "ratio": 0.6,
+          "halo": 0.12
+        }
+      ]
+    },
+    {
+      "name": "gpt_surface_rim",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.17,
+            0.47,
+            0.8
+          ],
+          "hi": [
+            0.24000000000000002,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.51,
+            0.47,
+            0.8
+          ],
+          "hi": [
+            0.5800000000000001,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.2,
+            0.47,
+            0.8
+          ],
+          "hi": [
+            0.55,
+            0.54,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.2,
+            0.71,
+            0.8
+          ],
+          "hi": [
+            0.55,
+            0.78,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        }
+      ]
+    }
+  ]
+}

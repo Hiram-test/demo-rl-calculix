@@ -59,6 +59,8 @@
 
 新收益排序器在旧 902 上修正了选择错误，这是诊断后的重分析，不是新的泛化成绩；详见独立审查文件与原始训练报告。
 
+固定原有数值模型的候选、尺寸场与实际自由度后，对输入图像做干预：打乱改变 1/3 个选择，抹平改变 3/3 个选择。原图与原封存预测重建差均为零，但破坏图像有时反而改善参考误差。这说明该数值模型的预测依赖图像，还没有稳定有用的视觉收益证据。此审计使用原三例 h0/3 评价，且不等于对 GPT 本身完成无图消融。记录在 `runs/visual_wm_probe/visual_causality_audit.json`。
+
 ## 有证据支持的突破方向
 
 **优先扩充视觉动作表达，并让收益模型围绕强基线学习“哪里值得偏离”。**
@@ -88,6 +90,8 @@
 - `scripts/run_gpt_visual_action.py`：显式 GPT 动作编译、封存、真实求解，支持 `--ranker-model`。
 - `scripts/train_gpt_action_ranker.py`：模板增强与组内收益训练。
 - `scripts/check_gpt_reference_resolution.py`：固定动作的参考网格敏感性检查。
+- `scripts/audit_visual_causality.py`：固定动作集合的数值模型输入图像干预。
+- `scripts/plot_visual_world_experiment.py`：五例比较图与真实图像—动作—网格对应图。
 - `runs/gpt_visual_results.json`：五例统一 h0/4 数值与真实求解计数。
 
 重放已经给出的 GPT 动作不会再次调用 GPT。须先安装可用的 CalculiX、Gmsh 与本项目依赖；运行时来源、校验与验证记录保存在证据包中。以仓库根目录为工作目录：

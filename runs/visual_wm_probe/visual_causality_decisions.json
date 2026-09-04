@@ -1,0 +1,492 @@
+{
+  "status": "predictions_sealed",
+  "notes": {
+    "scope": "Retrospective fixed-model input intervention on archived one-step candidates; predictions are written before this script reads case.json outcomes, not a new prospective trial.",
+    "fixed_inputs": "All target arrays, mesh transport, scalar state, original total eta2 and actual candidate equations are held fixed; only WM image input changes.",
+    "ood_controls": "Shuffled and constant images are out-of-distribution sensitivity controls; changed choices alone do not prove useful visual understanding or generalization.",
+    "scalar_control": "The scalar snapshot was independently retrained from scratch on the original shared training branches and is evaluated on the same fixed candidate set.",
+    "decoder_controls": "Archived image_shuffled/image_constant actions alter the decoder; they remain recorded but are excluded from deployment choices as in the original experiment.",
+    "reference_baselines": "Best Dorfler and best-candidate oracle are hindsight evaluation references, never model-selection inputs."
+  },
+  "requested_seeds": [
+    901,
+    902,
+    903
+  ],
+  "visual_model_sha256": "884c63ae7a8ab9491c3c1e6fcf4d18195170c75add42b89784ff534802d9ac33",
+  "scalar_model_sha256": "1e877900e35b3a6951729516f92444552e1e765d0b283caefac1c4455cb537fd",
+  "cases": [
+    {
+      "case": "test_bearing_901",
+      "family": "bearing",
+      "seed": 901,
+      "reconstruction": {
+        "eta2_max_abs_difference": 0.0,
+        "image_max_abs_difference": 0.0,
+        "bbox_matches": true
+      },
+      "initial_equations": 666,
+      "candidate_names": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "image_constant",
+        "image_shuffled",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "candidate_equations": [
+        1320,
+        1326,
+        1314,
+        1311,
+        1290,
+        1284,
+        1284,
+        1320,
+        1308,
+        1308,
+        1281,
+        1287
+      ],
+      "target_sha256": [
+        "3eeea7cb7713a52ff3c39f7a4dfba893f3c1e8b131e073520f1f061794596375",
+        "5c6625f74ac785e48c0eb32efcd83dd5a6f05660752d030c4cffc9be64b0d943",
+        "653c85fdcb9c6794ed824f695700f28b2c061d4b3bd290ca9bf89ea493510b72",
+        "b5c0b7793567acbd7162b0917e46f29f103bbc07d10c149177a8bf3e23adef1a",
+        "41af3d82e653e781ee1475fd1b194ed599e8ed9b139b8d5b66fa505b12eaeecb",
+        "d7ee7d3556b73327dc1939c6f8a2f7d3108984a54206b21e4fe8d051aa3aa79c",
+        "caeb75bddf97fb0c65299df7ff263eb02ef061eb637e24c3c2847175af1f395a",
+        "588638c4dfb3926832a6926e175a362f7fd9e5dafd82cb06ec6042bdbd80cb65",
+        "04bab076a23deac4605d4bca45ffe38040574296311ea2bc00094dc08c2f833f",
+        "ef77a0a6cf015d08a0d35c1f099b8dbd3db0cdda332f7f6b10169a12d08d3728",
+        "3fbddd8be8d0c50248693ffe9a095983c1ea3865873fea81dfa173963173a61d",
+        "b706a62b6537bcd0bc9a63f9c0e6751e4a5818f712ae57c5b0c3308a4b4593a6"
+      ],
+      "deployment_candidates": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "visual_only_candidates": [
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "predictions": {
+        "original": {
+          "image_sha256": "287085d214d0e06e3cf968327892603ed38fc1a68538ddf7a2e2eef2f340e350",
+          "feature_sha256": "2d3c8123c76fd51f4551b3408a10bdd151ba6e6073834a56529070210627c519",
+          "feature_l2_difference_from_original": 0.0,
+          "predicted_total_eta2_ratio": [
+            0.7028053985380288,
+            0.6997759726895454,
+            0.69829647609925,
+            0.6973754839896985,
+            0.7193545500658031,
+            0.7231450131385897,
+            0.7435704893791804,
+            0.6983363577129698,
+            0.7082211073716642,
+            0.7082681357690005,
+            0.7083410184906358,
+            0.7030743553321392
+          ],
+          "selected": "dorfler_0.8",
+          "selected_visual_only": "visual_err_diffuse"
+        },
+        "shuffled": {
+          "image_sha256": "3739858a346a29580b302380be59e24ea2b54877d1f29fb551e6c0f6d34e94b7",
+          "feature_sha256": "8d187f943ee43be67f5d7886e6756b2cd945759323d67eb7caf00a57dae9e1ee",
+          "feature_l2_difference_from_original": 184.98421512278742,
+          "predicted_total_eta2_ratio": [
+            0.7405080787252013,
+            0.7279180594176192,
+            0.7322831983100224,
+            0.7251138658850649,
+            0.7490328403821851,
+            0.7513598192761105,
+            0.7768674483681772,
+            0.7283412647741292,
+            0.7364977298864229,
+            0.7429527407997697,
+            0.7389827728789917,
+            0.7313096897334272
+          ],
+          "selected": "dorfler_0.8",
+          "selected_visual_only": "visual_err_diffuse"
+        },
+        "constant": {
+          "image_sha256": "58d34e14930142421966db7c57b3c276c5a97c0208349f0b665e142efd741fbe",
+          "feature_sha256": "32788a4f784b9ccd31e3a4feac8593ad64831d2cebe39e65a299604b3ca85493",
+          "feature_l2_difference_from_original": 1419.4626462125093,
+          "predicted_total_eta2_ratio": [
+            0.7705036431543617,
+            0.7625210553449671,
+            0.7582758447908897,
+            0.7690645219091122,
+            0.7826488082458805,
+            0.7829727106852238,
+            0.7957106283649035,
+            0.7580592854976127,
+            0.7721060155114914,
+            0.7762057452637303,
+            0.7762384084323133,
+            0.7646470957150138
+          ],
+          "selected": "visual_err_diffuse",
+          "selected_visual_only": "visual_err_diffuse"
+        },
+        "scalar_retrained": {
+          "feature_sha256": "3014442551373e4139da391b4c7fc00d39c73df8fdaacf3a1bfd64fbbbd82fb5",
+          "predicted_total_eta2_ratio": [
+            0.8948460891581484,
+            0.9072982704504895,
+            0.9303217075187538,
+            0.9863125867921575,
+            0.9136496139712342,
+            0.9172107697530648,
+            0.9112343753192812,
+            0.9416798239205423,
+            0.9385637882613158,
+            0.9182136656194099,
+            0.930869919211345,
+            0.9255660502748472
+          ],
+          "selected": "analytic_density",
+          "selected_visual_only": "visual_err_s0"
+        }
+      },
+      "candidate_resource_source": "Archived branch mesh nodes/cells only; these geometric resources were known before the original solve."
+    },
+    {
+      "case": "test_bearing_902",
+      "family": "bearing",
+      "seed": 902,
+      "reconstruction": {
+        "eta2_max_abs_difference": 0.0,
+        "image_max_abs_difference": 0.0,
+        "bbox_matches": true
+      },
+      "initial_equations": 684,
+      "candidate_names": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "image_constant",
+        "image_shuffled",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "candidate_equations": [
+        1332,
+        1326,
+        1230,
+        1332,
+        1323,
+        1332,
+        1317,
+        1341,
+        1368,
+        1362,
+        1368,
+        1341
+      ],
+      "target_sha256": [
+        "1d52dfdbe30ee15cec1e987cdb40439aa6750bd6c4d5b334da52d57455cc00c6",
+        "6339376f97def5f164275eaab3581b660acd5ce95eee6729dbe27852c6ba07e1",
+        "59cda7cc1f65041a7c12db209a62f53fa72986742a4ec03508137174fc0910d0",
+        "e3c04742151b10eb48568872b5a93f00514d6c694277a598a29a4cc7a2daab9b",
+        "83b4d9bab732f1f4c9a1356fac3a45db1dd46719443384e9e55017607ca75d66",
+        "dc05c6dcfd556625a6b8e7f7889b0ae1fee7766bdaf845d6d8a6147e7f3f4efb",
+        "9f695c99ce1da76fb2a8b9a28df4a2d54e16bcbe2aa922c65b351a80454bf689",
+        "5fc250c2da6cead20dd186d4e2b811b1c5872a2f7517a50470b49b1977bad9c0",
+        "5df302b4c47d89936e971065af20fe1bbf38e912da57f410b49a9fc7f3f252cf",
+        "0cee89ff4734eddc18dfcf07f8d023c004231071e6c58bc861c9f5ff123f6e25",
+        "369e4aaadf79aec1c8fb35e166ce902434d97e0c8bfd8b1bd8759941f3e0b9cf",
+        "fd3573daf8469fd6a94d77cc1e074d6647a378843abcecf238e0a392d58dc032"
+      ],
+      "deployment_candidates": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "visual_only_candidates": [
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "predictions": {
+        "original": {
+          "image_sha256": "b5d95bc8614091c1f8d1fba98338c09f1a7a81bd8cfb2aeb4eebc60a3c516972",
+          "feature_sha256": "8b9e5b07b5b0a7b897a33658dafe1ffc20f35e42fc0bb7c49f7003040e4d8a16",
+          "feature_l2_difference_from_original": 0.0,
+          "predicted_total_eta2_ratio": [
+            0.7019057069470152,
+            0.724961655196718,
+            0.716851471838922,
+            0.7140969777637487,
+            0.7364072202249663,
+            0.7381025016522802,
+            0.7541106714291737,
+            0.7047954246701598,
+            0.6997824109030337,
+            0.7009720060912922,
+            0.7013684149230354,
+            0.7061930869175942
+          ],
+          "selected": "visual_err_focused",
+          "selected_visual_only": "visual_err_focused"
+        },
+        "shuffled": {
+          "image_sha256": "8a7faf1d9042b4610eec745a238505754f68de5e959d72c29d08379e93c4b8a4",
+          "feature_sha256": "9fa8ae7626cd0e6c0c50dc63d84c8af0ae7fac5dbd310317c12465f8eaf07d98",
+          "feature_l2_difference_from_original": 255.68094175675577,
+          "predicted_total_eta2_ratio": [
+            0.7316444285789914,
+            0.7415473444464941,
+            0.7402259576598508,
+            0.7412092119723726,
+            0.7444488531404232,
+            0.7412793803303077,
+            0.7588826789336748,
+            0.7225953506526357,
+            0.7138584931424272,
+            0.7228312884351359,
+            0.7153674786919584,
+            0.7314829131096632
+          ],
+          "selected": "visual_err_focused",
+          "selected_visual_only": "visual_err_focused"
+        },
+        "constant": {
+          "image_sha256": "60b9e8048552b0a605e7b2c9e488000f8b23fea6a7c411af70912c06b17acf57",
+          "feature_sha256": "4ffe3c7c61be61acdb8fabc29f84d07f446d65b8ffad3a77c2a5878339543932",
+          "feature_l2_difference_from_original": 1736.3068751088003,
+          "predicted_total_eta2_ratio": [
+            0.7526239400142087,
+            0.7640409239785972,
+            0.7625587823464591,
+            0.7612757886620283,
+            0.7686285228116463,
+            0.7718800453775256,
+            0.7929384026803222,
+            0.7428687339351547,
+            0.748493000013065,
+            0.7472846996432185,
+            0.7459759117585039,
+            0.749589365282266
+          ],
+          "selected": "visual_err_diffuse",
+          "selected_visual_only": "visual_err_diffuse"
+        },
+        "scalar_retrained": {
+          "feature_sha256": "ab03d7eadcb2d9eed554084d9ae8b697c2e789fdeafb23e30d32429ec56f9dfd",
+          "predicted_total_eta2_ratio": [
+            0.7233541893489481,
+            0.7346894824626216,
+            0.7578458829672448,
+            0.7201509108789663,
+            0.7242992571547782,
+            0.7195255411574994,
+            0.7505580078482362,
+            0.7183319636473547,
+            0.7155044072758121,
+            0.7174805616392285,
+            0.7147005139365337,
+            0.7183007878806974
+          ],
+          "selected": "visual_err_s1",
+          "selected_visual_only": "visual_err_s1"
+        }
+      },
+      "candidate_resource_source": "Archived branch mesh nodes/cells only; these geometric resources were known before the original solve."
+    },
+    {
+      "case": "test_bearing_903",
+      "family": "bearing",
+      "seed": 903,
+      "reconstruction": {
+        "eta2_max_abs_difference": 0.0,
+        "image_max_abs_difference": 0.0,
+        "bbox_matches": true
+      },
+      "initial_equations": 672,
+      "candidate_names": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "image_constant",
+        "image_shuffled",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "candidate_equations": [
+        1293,
+        1320,
+        1218,
+        1305,
+        1311,
+        1317,
+        1308,
+        1323,
+        1335,
+        1314,
+        1311,
+        1338
+      ],
+      "target_sha256": [
+        "38f58ed8d0d8774f87baaf3c31304cbe9c17b9cbc05d42c7d68b2f89d9303c1b",
+        "006fb179edc8d3a17e250cd4b35a9c6bcfd45d4a6cfa606ac87849053e66df06",
+        "d8065b4e2177d56ee91fb99a25153a19f92558fb301bb486a530cedd97b7553c",
+        "6ce9c902109c3930360163c98c5b24ba8f82a94f47b797d7223c0b533a25ff8d",
+        "5f283a24640f442b5a83882098f35268aee5993b400dbed1682bfd81ba3ca0d2",
+        "d8d604853a918835275d22016e70b71b6be6d812eb9464a0ae051390e4782468",
+        "88df9940d13ecb64957cf995cbf1d828b065930ae815aa9889ccebb25547208f",
+        "2e88e29d5ca3a1eec54ef5c7c288f02c2cb3f71c0e228f450bc6c646d9bceeaa",
+        "85826161a76a382256cb203cb72041606c24cc03acd00166503ade720d37cb48",
+        "0d1458a3f76bbedf66c1d16db153e01bb9508754911f66209c625e505d406d3d",
+        "a4419c8abb45d114a091958d85db0b8b1873bdf36b2afad06cd003ca32432ee1",
+        "2763743cad5438d3851a219ffcd5a2d668e906563c6e2a6036da09cbe20a4fd1"
+      ],
+      "deployment_candidates": [
+        "analytic_density",
+        "dorfler_0.2",
+        "dorfler_0.5",
+        "dorfler_0.8",
+        "uniform",
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "visual_only_candidates": [
+        "visual_err_diffuse",
+        "visual_err_focused",
+        "visual_err_s0",
+        "visual_err_s1",
+        "visual_err_s2"
+      ],
+      "predictions": {
+        "original": {
+          "image_sha256": "cb4f00785774efed2857024d7940a7a5377f088579316017be670deb33f58c8a",
+          "feature_sha256": "7838036b92fcf976a95ecf1b3aa67eed913a7d5a42ef067718fc72f5ef803871",
+          "feature_l2_difference_from_original": 0.0,
+          "predicted_total_eta2_ratio": [
+            0.7762792515710764,
+            0.7811407185522856,
+            0.7714961363044042,
+            0.7654640955758226,
+            0.7919627027646972,
+            0.8076087391227971,
+            0.8124751850744532,
+            0.7647416215515161,
+            0.7666765661924064,
+            0.7631212239819348,
+            0.7686957654268491,
+            0.7638467606010867
+          ],
+          "selected": "visual_err_s0",
+          "selected_visual_only": "visual_err_s0"
+        },
+        "shuffled": {
+          "image_sha256": "071163670fc7500290871457f2df60f83887d5c7e5249b7dc00c1b9aa21440fe",
+          "feature_sha256": "0999ff2a540743147c9f2deb4c6c7a5106ad0fcb55387092af034aca47325912",
+          "feature_l2_difference_from_original": 279.5647520551484,
+          "predicted_total_eta2_ratio": [
+            0.7614068779313419,
+            0.7711954322392216,
+            0.7599338996932201,
+            0.7424665159958403,
+            0.769750639611921,
+            0.7736227052139664,
+            0.7913931079158042,
+            0.7510531112729438,
+            0.7480092788647081,
+            0.7540870489210965,
+            0.7519502694205045,
+            0.7423154414581221
+          ],
+          "selected": "visual_err_s2",
+          "selected_visual_only": "visual_err_s2"
+        },
+        "constant": {
+          "image_sha256": "9f040df540c73e30723b6a2fa9e70d197911d502e5a60cc2ecb83f69d964a020",
+          "feature_sha256": "d2595735061cc9106ed8a9e2cc42ac3f1da5f5f6744af9a9bf148da022d322f8",
+          "feature_l2_difference_from_original": 1744.7240834602605,
+          "predicted_total_eta2_ratio": [
+            0.7899955345021276,
+            0.7958294812740285,
+            0.7976884073651257,
+            0.7946448946807454,
+            0.8073402817203006,
+            0.8081632423296865,
+            0.8245496619816932,
+            0.7885378505818432,
+            0.7892960864655922,
+            0.7926142243366978,
+            0.7972141764789628,
+            0.78138353526413
+          ],
+          "selected": "visual_err_s2",
+          "selected_visual_only": "visual_err_s2"
+        },
+        "scalar_retrained": {
+          "feature_sha256": "bdcc791d35744876ea4da8e75b9efd9bbcb088ac097a16df876b0239d5de1fd1",
+          "predicted_total_eta2_ratio": [
+            0.7146184126849806,
+            0.7150954273768688,
+            0.7053735748153194,
+            0.7220467794662392,
+            0.7138820443962547,
+            0.7050130737653084,
+            0.7416842412161426,
+            0.7230402904929101,
+            0.7227787596567807,
+            0.7152386642666622,
+            0.7234208996390306,
+            0.7221193720735342
+          ],
+          "selected": "dorfler_0.5",
+          "selected_visual_only": "visual_err_s0"
+        }
+      },
+      "candidate_resource_source": "Archived branch mesh nodes/cells only; these geometric resources were known before the original solve."
+    }
+  ],
+  "skipped": []
+}

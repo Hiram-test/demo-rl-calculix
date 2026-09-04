@@ -1,0 +1,175 @@
+{
+  "source_image_sha256": "b85f785669546cf7de6ba25182b470653f5f3f08ef68e86c2f6038f2a3e140e6",
+  "source_image": "gpt_input_current.png",
+  "decision_agent": "GPT assistant in this conversation; direct image inspection",
+  "case": "bearing_1002",
+  "assessment_phase": "new holdout after 901-903 diagnostic pilot",
+  "goal": "Reduce reference energy error within twice the initial free-equation budget",
+  "primary": "gpt_rim_depth",
+  "information_used": [
+    "Current estimator projections",
+    "Current load and constrained-node images"
+  ],
+  "future_outcomes_seen": false,
+  "rationale": "The load footprint sits near x=.4-.7,y=.34-.62. XY shows strong lower and right perimeter concentrations; both depth views show sustained upper-half error. I refine the visible perimeter plus a moderate transition into the depth, without allocating significant budget to the remote bottom support.",
+  "candidates": [
+    {
+      "name": "gpt_rim_depth",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.37,
+            0.31000000000000005,
+            0.7
+          ],
+          "hi": [
+            0.44,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.6699999999999999,
+            0.31000000000000005,
+            0.7
+          ],
+          "hi": [
+            0.74,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.4,
+            0.31000000000000005,
+            0.72
+          ],
+          "hi": [
+            0.71,
+            0.38,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.4,
+            0.58,
+            0.72
+          ],
+          "hi": [
+            0.71,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.5,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.38,
+            0.32,
+            0.38
+          ],
+          "hi": [
+            0.73,
+            0.66,
+            0.82
+          ],
+          "ratio": 0.76,
+          "halo": 0.12
+        }
+      ]
+    },
+    {
+      "name": "gpt_column",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.37,
+            0.31000000000000005,
+            0.55
+          ],
+          "hi": [
+            0.74,
+            0.67,
+            1.0
+          ],
+          "ratio": 0.6,
+          "halo": 0.12
+        }
+      ]
+    },
+    {
+      "name": "gpt_surface_rim",
+      "background_ratio": 1.12,
+      "regions": [
+        {
+          "lo": [
+            0.37,
+            0.31000000000000005,
+            0.8
+          ],
+          "hi": [
+            0.44,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.6699999999999999,
+            0.31000000000000005,
+            0.8
+          ],
+          "hi": [
+            0.74,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.4,
+            0.31000000000000005,
+            0.8
+          ],
+          "hi": [
+            0.71,
+            0.38,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        },
+        {
+          "lo": [
+            0.4,
+            0.58,
+            0.8
+          ],
+          "hi": [
+            0.71,
+            0.65,
+            1.0
+          ],
+          "ratio": 0.44,
+          "halo": 0.08
+        }
+      ]
+    }
+  ]
+}

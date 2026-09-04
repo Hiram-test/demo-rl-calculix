@@ -82,6 +82,8 @@ def main() -> None:  # Execute explicit live-assistant decisions without invokin
     parser.add_argument("--source-image", type=Path)  # Optionally verify the exact image bytes whose digest GPT recorded.
     parser.add_argument("--ranker-model", type=Path)  # Optionally freeze a separately trained action-benefit ranker before any new solve.
     args = parser.parse_args()  # Parse concrete execution options.
+    if (args.output / "predictions_before_solves.json").exists():  # Preserve existing sealed choices and their linked physical outcomes during accidental reruns.
+        raise FileExistsError("output already contains a sealed decision; choose a new output directory for replay")  # Require a new evidence location rather than silently replacing a completed decision record.
     started = time.perf_counter()  # Begin local preprocessing accounting after the external GPT decision already exists.
     case_dir = args.case_dir.resolve()  # Resolve the physical case directory without reading future branch results.
     match = re.fullmatch(r"(?:train|test)_(bearing|deck)_(\d+)", case_dir.name)  # Derive family and seed from the existing experiment's directory contract.
