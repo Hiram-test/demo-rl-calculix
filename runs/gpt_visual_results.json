@@ -1,0 +1,207 @@
+{
+  "scope": "one-step real GPT image decisions; 3D bearing blocks; finite common reference",
+  "negative_difference_means": "lower reference error than the comparator",
+  "reference_convergence_proven": false,
+  "exact_equal_actual_equations": false,
+  "common_budget_cap_enforced": true,
+  "all_methods_beaten": false,
+  "additional_ranker_increment_on_prospective_cases": false,
+  "real_solver_input_deck_counts": {
+    "visual_wm_probe": 94,
+    "gpt_direct_901": 3,
+    "gpt_direct_902": 3,
+    "gpt_direct_903": 3,
+    "gpt_reference_check": 3,
+    "gpt_ranker_training": 12,
+    "gpt_holdout": 28,
+    "gpt_direct_1001": 3,
+    "gpt_direct_1002": 3
+  },
+  "total_experiment_solver_calls": 152,
+  "cases": [
+    {
+      "seed": 901,
+      "phase": "diagnostic_pilot",
+      "reference_factor": 4,
+      "cap": 1332,
+      "best_dorfler": {
+        "action": "dorfler_0.8",
+        "reference_error": 0.3608002921026663,
+        "n_equations": 1311
+      },
+      "analytic_density": {
+        "reference_error": 0.36765161111429345,
+        "n_equations": 1320
+      },
+      "selections": {
+        "gpt": {
+          "action": "gpt_rim_depth",
+          "reference_error": 0.3700737160341995,
+          "n_equations": 1290,
+          "difference_percent_vs_dorfler": 2.570237368015893,
+          "difference_percent_vs_analytic": 0.6588043807465027
+        },
+        "gpt_plus_old_world_model": {
+          "action": "gpt_column",
+          "reference_error": 0.3685414489904842,
+          "n_equations": 1320,
+          "difference_percent_vs_dorfler": 2.145551724114214,
+          "difference_percent_vs_analytic": 0.24203290541655598
+        }
+      },
+      "source_image_sha256": "b79fb4541fc508ef4f04da168e0b4a86c4c43de8f62c390038694b1fe2e36d8c",
+      "source_image_hash_verified": true,
+      "predictions_before_solves_sha256": "a73e1ca380a5ebfa000f788e853555fd5862344c5e83dc7cf26006f97646d430"
+    },
+    {
+      "seed": 902,
+      "phase": "diagnostic_pilot",
+      "reference_factor": 4,
+      "cap": 1368,
+      "best_dorfler": {
+        "action": "dorfler_0.8",
+        "reference_error": 0.3907130513532749,
+        "n_equations": 1332
+      },
+      "analytic_density": {
+        "reference_error": 0.39528324163680656,
+        "n_equations": 1332
+      },
+      "selections": {
+        "gpt": {
+          "action": "gpt_column",
+          "reference_error": 0.40150275664277674,
+          "n_equations": 1362,
+          "difference_percent_vs_dorfler": 2.7615420708703153,
+          "difference_percent_vs_analytic": 1.5734325037955355
+        },
+        "gpt_plus_old_world_model": {
+          "action": "gpt_column",
+          "reference_error": 0.40150275664277674,
+          "n_equations": 1362,
+          "difference_percent_vs_dorfler": 2.7615420708703153,
+          "difference_percent_vs_analytic": 1.5734325037955355
+        }
+      },
+      "source_image_sha256": "a21b08b3ea39cd90f535f03229b6df0145ca4f8db764aba4bcca09665fca0b2c",
+      "source_image_hash_verified": true,
+      "predictions_before_solves_sha256": "bf1a0467c2753cb3dfb0399992d8d22a952bdea3f85fe6577601b40157475ab7"
+    },
+    {
+      "seed": 903,
+      "phase": "diagnostic_pilot",
+      "reference_factor": 4,
+      "cap": 1344,
+      "best_dorfler": {
+        "action": "dorfler_0.5",
+        "reference_error": 0.41119823123646565,
+        "n_equations": 1218
+      },
+      "analytic_density": {
+        "reference_error": 0.41231751791272864,
+        "n_equations": 1293
+      },
+      "selections": {
+        "gpt": {
+          "action": "gpt_rim_depth",
+          "reference_error": 0.40089539131505053,
+          "n_equations": 1260,
+          "difference_percent_vs_dorfler": -2.505565233205076,
+          "difference_percent_vs_analytic": -2.770225882106647
+        },
+        "gpt_plus_old_world_model": {
+          "action": "gpt_column",
+          "reference_error": 0.40348845298515534,
+          "n_equations": 1323,
+          "difference_percent_vs_dorfler": -1.8749541378442092,
+          "difference_percent_vs_analytic": -2.141326658219278
+        }
+      },
+      "source_image_sha256": "f21de833b8cebd4440537a28bc630038407f5e676af9baceef004b3bfa774f15",
+      "source_image_hash_verified": true,
+      "predictions_before_solves_sha256": "c41c43f52e3e18b054536e7731cde267c76a3c4e6f215d85c3f36eed8e1e6cc6"
+    },
+    {
+      "seed": 1001,
+      "phase": "prospective_holdout",
+      "reference_factor": 4,
+      "cap": 1350,
+      "best_dorfler": {
+        "action": "dorfler_0.5",
+        "reference_error": 0.4147591779947635,
+        "n_equations": 1350
+      },
+      "analytic_density": {
+        "reference_error": 0.4111605251943704,
+        "n_equations": 1323
+      },
+      "selections": {
+        "gpt": {
+          "action": "gpt_column",
+          "reference_error": 0.41377004605833023,
+          "n_equations": 1341,
+          "difference_percent_vs_dorfler": -0.23848343542761663,
+          "difference_percent_vs_analytic": 0.6346720329550637
+        },
+        "gpt_plus_old_world_model": {
+          "action": "gpt_column",
+          "reference_error": 0.41377004605833023,
+          "n_equations": 1341,
+          "difference_percent_vs_dorfler": -0.23848343542761663,
+          "difference_percent_vs_analytic": 0.6346720329550637
+        },
+        "gpt_plus_action_ranker": {
+          "action": "gpt_column",
+          "reference_error": 0.41377004605833023,
+          "n_equations": 1341,
+          "difference_percent_vs_dorfler": -0.23848343542761663,
+          "difference_percent_vs_analytic": 0.6346720329550637
+        }
+      },
+      "source_image_sha256": "676b42d4c7d4760cc7fec9ebc0e63ccdde936fcd4e841d4e9efa7911a9511c6c",
+      "source_image_hash_verified": true,
+      "predictions_before_solves_sha256": "6774dd209482d9a8ab3faeb396db7b70760b35194bbec2cbdd4609e9549b3f31"
+    },
+    {
+      "seed": 1002,
+      "phase": "prospective_holdout",
+      "reference_factor": 4,
+      "cap": 1326,
+      "best_dorfler": {
+        "action": "dorfler_0.2",
+        "reference_error": 0.41188134101840895,
+        "n_equations": 1323
+      },
+      "analytic_density": {
+        "reference_error": 0.4031365249842993,
+        "n_equations": 1311
+      },
+      "selections": {
+        "gpt": {
+          "action": "gpt_rim_depth",
+          "reference_error": 0.4078446091378472,
+          "n_equations": 1269,
+          "difference_percent_vs_dorfler": -0.9800715591001596,
+          "difference_percent_vs_analytic": 1.1678634561160806
+        },
+        "gpt_plus_old_world_model": {
+          "action": "gpt_surface_rim",
+          "reference_error": 0.40465033616357887,
+          "n_equations": 1314,
+          "difference_percent_vs_dorfler": -1.7556038923615347,
+          "difference_percent_vs_analytic": 0.3755083167764406
+        },
+        "gpt_plus_action_ranker": {
+          "action": "gpt_surface_rim",
+          "reference_error": 0.40465033616357887,
+          "n_equations": 1314,
+          "difference_percent_vs_dorfler": -1.7556038923615347,
+          "difference_percent_vs_analytic": 0.3755083167764406
+        }
+      },
+      "source_image_sha256": "b85f785669546cf7de6ba25182b470653f5f3f08ef68e86c2f6038f2a3e140e6",
+      "source_image_hash_verified": true,
+      "predictions_before_solves_sha256": "2846fe18bf55204c48a1e7941ff9cbe231da2755896500c0d438b16d4c58b658"
+    }
+  ]
+}
