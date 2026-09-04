@@ -168,11 +168,14 @@ class ResidualWorldModel:  # Learn deviations from an explicit Dörfler and reme
         mean = np.mean(x_train, axis=0)  # Compute online feature centering.
         scale = np.std(x_train, axis=0)  # Compute online feature scaling.
         scale[scale < 1.0e-8] = 1.0  # Avoid amplifying constant features.
+        mean[0] = 0.0  # Preserve the existing leading-one feature as an intercept without changing stored raw rows.
+        scale[0] = 1.0  # Keep the intercept equal to one in both training and query features.
         x_std = (x_train - mean) / scale  # Standardize training features.
         q_std = (features - mean) / scale  # Standardize queried features with the same transform.
         rng = np.random.default_rng(self.seed + self.transition_count)  # Build a reproducible bootstrap generator.
         members: list[np.ndarray] = []  # Collect one prediction matrix per ensemble member.
         identity = np.eye(x_std.shape[1], dtype=float)  # Construct the ridge regularizer matrix.
+        identity[0, 0] = 0.0  # Leave systematic log-residual bias unpenalized while retaining ridge on feature responses.
         for _ in range(self.config.ensemble_size):  # Fit several bootstrap ridge regressors.
             indices = rng.integers(0, x_std.shape[0], size=x_std.shape[0])  # Sample regional transitions with replacement.
             xb = x_std[indices]  # Select bootstrap feature rows.
