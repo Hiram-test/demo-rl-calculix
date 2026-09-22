@@ -1,0 +1,294 @@
+{
+ "vla_result": {
+  "seeds_initial": [
+   "patch_hot_core",
+   "patch_edge_west",
+   "patch_edge_east",
+   "patch_edge_south",
+   "patch_edge_north",
+   "bottom_reaction_y1",
+   "bottom_reaction_x0",
+   "bottom_reaction_y0",
+   "bottom_reaction_x1",
+   "field_se",
+   "field_e"
+  ],
+  "seeds_final": [
+   "patch_hot_core",
+   "patch_edge_west",
+   "patch_edge_east",
+   "patch_edge_south",
+   "patch_edge_north",
+   "bottom_reaction_y1",
+   "bottom_reaction_x0",
+   "bottom_reaction_y0",
+   "bottom_reaction_x1",
+   "field_se",
+   "field_e",
+   "patch_edge_south_hot"
+  ],
+  "sizes_initial": [
+   15.805526107816688,
+   21.583632882782812,
+   23.6823539599516,
+   23.540608577171568,
+   23.990623516726288,
+   29.475808126726285,
+   31.395765670742634,
+   50.0,
+   50.0,
+   50.0,
+   45.38277106612619
+  ],
+  "sizes_final": [
+   13.685762652635646,
+   18.159104152804172,
+   20.74370626409372,
+   20.512176705824253,
+   19.460511593984734,
+   25.859846505253564,
+   28.275556091929438,
+   50.0,
+   50.0,
+   50.0,
+   50.0,
+   11.307717679073715
+  ],
+  "s_last": 0.5073335533472688,
+  "kappa_last": -0.0837279094869864,
+  "n_distinct_gate": true,
+  "solves": 4,
+  "stopped_early": false,
+  "info": {
+   "round": {
+    "delta": [
+     -0.3173665903141206,
+     -0.3431982536341603,
+     -0.3270258886160107,
+     -0.3280144462217495,
+     -0.3515327257230534,
+     -0.1989647930471288,
+     -0.15938357411186568,
+     0.2004934742158282,
+     0.1214574992595763,
+     0.34572324615134703,
+     -0.23200319915507323
+    ],
+    "global_step": -0.04663877743354222,
+    "err_log_ratio": [
+     2.135667700153887,
+     2.217349315972644,
+     2.1147100281500038,
+     1.7248613456581572,
+     2.3942579557410797,
+     0.5611519063551221,
+     0.39384359399604824,
+     -1.4322847149028108,
+     -1.3320337459376788,
+     -2.9598804258196405,
+     -0.2828277725002513
+    ],
+    "res_log_ratio": [
+     1.097483418835731,
+     0.4314709545007076,
+     0.00743167173719181,
+     0.12444767721687068,
+     0.225284477764189,
+     -0.08943161010211498,
+     -0.1960439804252734,
+     -1.765618444089474,
+     -2.483348837747195,
+     -2.258894595283868,
+     -1.4365539482956091
+    ]
+   },
+   "pso": {
+    "s": 0.5073335533472688,
+    "kappa": -0.0837279094869864,
+    "tau": [
+     0.019647624705229245,
+     -0.025404800468417435,
+     -0.41176115782784833,
+     -0.2350618877315528,
+     0.0762074721239219,
+     0.5264873373848985,
+     0.4560676331958704,
+     0.4497045610080564,
+     0.006037433597533949,
+     1.0,
+     0.06770888471751063,
+     -0.26257694641808316
+    ],
+    "fitness": 184.74754525119363,
+    "surrogate_evals": 63,
+    "E_pred": 19.3231093200117,
+    "R_pred_elems": 12107.50484860667,
+    "err_limit": 12.317835850550896,
+    "elems_budget": 14243.686868686867,
+    "resource_drift": 1.0,
+    "mode": "sk"
+   }
+  }
+ },
+ "problem": "bearing_block-0fa341ce",
+ "params": {
+  "W": 400.0,
+  "D": 400.0,
+  "H": 120.0,
+  "patch": [
+   156.15543389294507,
+   105.85539778083609
+  ],
+  "offset": [
+   -40.03019875651339,
+   53.705223380220474
+  ],
+  "pressure": 8.672528426576104
+ },
+ "method": "vla",
+ "head": "llm",
+ "n_eq_budget": 8000,
+ "vision": {
+  "source": "llm_cache",
+  "cache_source": "llm_ortho_views",
+  "attempts": 0,
+  "n_seeds": 11,
+  "cache": "/workspace/visionamr_pr36_grok/repo/results/campaign/bearing_block/test_9004/llm_seeds.json",
+  "note": "Milder hot island in the upper-left (~160,255); front/side stay dark. SE corner is the calm bulk."
+ },
+ "records": [
+  {
+   "method": "vla",
+   "stage": "probe",
+   "solve_index": 1,
+   "n_nodes": 325,
+   "n_elems": 954,
+   "n_equations": 681,
+   "U_total": 140.61976282178549,
+   "qoi": 0.0019647626668039438,
+   "wall_s": 0.021708226000100694,
+   "h_min": 38.397122825009745,
+   "h_max": 90.67168628593272,
+   "e_energy": 0.4887633833756556,
+   "e_qoi": 0.2430624004753739,
+   "extra": {
+    "sum_eta2": 49.271343402203584,
+    "n_eq_budget": 8000,
+    "head": "llm"
+   }
+  },
+  {
+   "method": "vla",
+   "stage": "regional",
+   "solve_index": 2,
+   "n_nodes": 1126,
+   "n_elems": 4526,
+   "n_equations": 2667,
+   "U_total": 169.04012000682357,
+   "qoi": 0.00236575436744694,
+   "wall_s": 0.10503273600011198,
+   "h_min": 18.00235675839018,
+   "h_max": 70.74362873836908,
+   "e_energy": 0.29165608427131035,
+   "e_qoi": 0.08857773907464164,
+   "extra": {
+    "sum_eta2": 24.842385390060038,
+    "regions": {
+     "patch_hot_core": 16.987459361593576,
+     "patch_edge_west": 23.12816076624398,
+     "patch_edge_east": 25.430964452531814,
+     "patch_edge_south": 25.248032403662428,
+     "patch_edge_north": 25.470165658422193,
+     "bottom_reaction_y1": 31.37613994582009,
+     "bottom_reaction_x0": 33.38361526909398,
+     "bottom_reaction_y0": 50.0,
+     "bottom_reaction_x1": 50.0,
+     "field_se": 50.0,
+     "field_e": 50.0
+    },
+    "n_eq_budget": 8000,
+    "head": "llm"
+   }
+  },
+  {
+   "method": "vla",
+   "stage": "cal3",
+   "solve_index": 3,
+   "n_nodes": 2534,
+   "n_elems": 11281,
+   "n_equations": 6336,
+   "U_total": 175.21953880050174,
+   "qoi": 0.002456501012701296,
+   "wall_s": 0.28555738300019584,
+   "h_min": 11.415930674592147,
+   "h_max": 70.51592485451467,
+   "e_energy": 0.22719354852930382,
+   "e_qoi": 0.05361700362078575,
+   "extra": {
+    "sum_eta2": 17.27856330898405,
+    "regions": {
+     "patch_hot_core": 11.87782170522187,
+     "patch_edge_west": 16.111743693530023,
+     "patch_edge_east": 17.533232846023928,
+     "patch_edge_south": 17.613349789775242,
+     "patch_edge_north": 17.55969129543845,
+     "bottom_reaction_y1": 20.801875251905855,
+     "bottom_reaction_x0": 21.733874424437047,
+     "bottom_reaction_y0": 50.0,
+     "bottom_reaction_x1": 50.0,
+     "field_se": 50.0,
+     "field_e": 42.59107550343743
+    },
+    "certified_pick": true,
+    "n_eq_budget": 8000,
+    "head": "llm"
+   }
+  },
+  {
+   "method": "vla",
+   "stage": "certified",
+   "solve_index": 4,
+   "n_nodes": 2994,
+   "n_elems": 14001,
+   "n_equations": 7530,
+   "U_total": 174.51793192685614,
+   "qoi": 0.0024458863298996427,
+   "wall_s": 0.32201106799993795,
+   "h_min": 10.593342960926151,
+   "h_max": 70.66874834168482,
+   "e_energy": 0.23540260210638414,
+   "e_qoi": 0.05770637922596692,
+   "extra": {
+    "sum_eta2": 17.80311993236274,
+    "regions": {
+     "patch_hot_core": 13.685762652635646,
+     "patch_edge_west": 18.159104152804172,
+     "patch_edge_east": 20.74370626409372,
+     "patch_edge_south": 20.512176705824253,
+     "patch_edge_north": 19.460511593984734,
+     "bottom_reaction_y1": 25.859846505253564,
+     "bottom_reaction_x0": 28.275556091929438,
+     "bottom_reaction_y0": 50.0,
+     "bottom_reaction_x1": 50.0,
+     "field_se": 50.0,
+     "field_e": 50.0,
+     "patch_edge_south_hot": 11.307717679073715
+    },
+    "pso": {
+     "s": 0.5073335533472688,
+     "kappa": -0.0837279094869864,
+     "fitness": 184.74754525119363,
+     "surrogate_evals": 63,
+     "E_pred": 19.3231093200117,
+     "R_pred_elems": 12107.50484860667,
+     "err_limit": 12.317835850550896,
+     "elems_budget": 14243.686868686867,
+     "resource_drift": 1.0,
+     "mode": "sk"
+    },
+    "n_eq_budget": 8000,
+    "head": "llm"
+   }
+  }
+ ]
+}
